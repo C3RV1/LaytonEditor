@@ -1,3 +1,6 @@
 
 *.xml
 *.iml
+*.pyc
+laytoneditor/bin/main.exe
+laytoneditor/main.spec

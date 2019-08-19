@@ -82,9 +82,9 @@ class Part:
         if pixelvalue == palette.colours[0]:
             return 0
         best_dist = 10000.
-        best = 0
-        for i in range(len(palette.colours[1:])):
-            color = palette.colours[1:][i]
+        best = 1
+        for i in range(1, len(palette.colours)):
+            color = palette.colours[i]
             r = color[0] - pixelvalue[0]
             g = color[1] - pixelvalue[1]
             b = color[2] - pixelvalue[2]
@@ -92,7 +92,7 @@ class Part:
             if dist < best_dist:
                 best_dist = dist
                 best = i
-        return best+1
+        return best
 
 
 class Animation:
@@ -133,7 +133,7 @@ class Image:
 
     def export_image(self, palette):
         w, h = self.__get_original_size()
-        final = PIL.Image.new("RGB", (w, h))
+        final = PIL.Image.new("RGB", (w, h), palette.colours[0])
         pix = final.load()
         for part in self.parts:
             for y in range(part.h):
@@ -148,6 +148,8 @@ class Image:
         self.w, self.h = image.size
         w, h = self.w, self.h
         w = (w >> 3) << 3
+        if w < self.w: w+=8
+        if h < self.h: h+=8
         h = (h >> 3) << 3
         rimage = PIL.Image.new("RGB", (w, h), palette.colours[0])
         rimage.paste(image)
