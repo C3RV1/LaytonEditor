@@ -297,8 +297,8 @@ class Arc:
         forpalette = PIL.Image.new("RGB", (total_width, total_height), self.palette.colours[0])
         forpalette.paste(image)
         forpalette.paste(all, (image.width, 0))
-        forpalette = forpalette.quantize(2**self.colordepth).convert("RGB")
-        newcolors = forpalette.getcolors(2**self.colordepth)
+        forpalette = forpalette.quantize(2**self.colordepth-1).convert("RGB")
+        newcolors = forpalette.getcolors(2**self.colordepth-1)
         newcolors = [x[1] for x in newcolors]
         if (0, 248, 0) in newcolors:
             newcolors.remove((0, 248, 0))
