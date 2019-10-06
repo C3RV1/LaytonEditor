@@ -1,3 +1,3 @@
-# Professor Layton and the Unbreakable Nightmare
+# Layton Editor
 
-A database for all the things used for Professor Layton and the Unbreakable Nightmare by Team Top Hat
+Rom editor for a professor layton romhack

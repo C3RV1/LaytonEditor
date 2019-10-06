@@ -25,7 +25,14 @@ class MainFrame ( wx.Frame ):
 
 		bSizer14 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.m_panel_leftside = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_panel9 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer141 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_splitter1 = wx.SplitterWindow( self.m_panel9, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter1.Bind( wx.EVT_IDLE, self.m_splitter1OnIdle )
+
+		self.m_panel_leftside = wx.Panel( self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.m_panel_leftside.SetBackgroundColour( wx.Colour( 240, 240, 240 ) )
 
 		bSizer_leftside = wx.BoxSizer( wx.VERTICAL )
@@ -54,9 +61,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_leftside.SetSizer( bSizer_leftside )
 		self.m_panel_leftside.Layout()
 		bSizer_leftside.Fit( self.m_panel_leftside )
-		bSizer14.Add( self.m_panel_leftside, 1, wx.EXPAND |wx.ALL, 5 )
-
-		self.m_panel_imageinfo = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel_imageinfo = wx.Panel( self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.m_panel_imageinfo.SetBackgroundColour( wx.Colour( 240, 240, 240 ) )
 
 		bSizer_imageinfo = wx.BoxSizer( wx.VERTICAL )
@@ -127,7 +132,18 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_imageinfo.SetSizer( bSizer_imageinfo )
 		self.m_panel_imageinfo.Layout()
 		bSizer_imageinfo.Fit( self.m_panel_imageinfo )
-		bSizer14.Add( self.m_panel_imageinfo, 1, wx.ALL|wx.EXPAND, 5 )
+		self.m_splitter1.SplitVertically( self.m_panel_leftside, self.m_panel_imageinfo, 0 )
+		bSizer141.Add( self.m_splitter1, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel9.SetSizer( bSizer141 )
+		self.m_panel9.Layout()
+		bSizer141.Fit( self.m_panel9 )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
+		self.m_panel8 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_notebook1.AddPage( self.m_panel8, u"Other", False )
+
+		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
 
 		bSizer13.Add( bSizer14, 1, wx.ALL|wx.EXPAND, 0 )
@@ -211,6 +227,10 @@ class MainFrame ( wx.Frame ):
 
 	def OnMenuSelectionSaveAs( self, event ):
 		event.Skip()
+
+	def m_splitter1OnIdle( self, event ):
+		self.m_splitter1.SetSashPosition( 0 )
+		self.m_splitter1.Unbind( wx.EVT_IDLE )
 
 
 ###########################################################################

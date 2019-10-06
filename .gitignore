@@ -4,3 +4,4 @@
 *.pyc
 laytoneditor/bin/main.exe
 laytoneditor/main.spec
+test.py

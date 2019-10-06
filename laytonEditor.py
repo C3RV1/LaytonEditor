@@ -1,14 +1,11 @@
-#!python3
-
 import sys
 print(f"Layton Editor running in python version {sys.version}")
 sys.path.append(".")
-sys.path.append("..")
 
-from laytoneditor import gui
+import GUI
 
 def main():
-    app = gui.LaytonEditor()
+    app = GUI.LaytonEditor()
     app.MainLoop()
 
 
