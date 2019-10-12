@@ -4,7 +4,7 @@ from ndspy.rom import NintendoDSRom
 class File:
     def __init__(self, rom: NintendoDSRom, id: int):
         self.rom = rom
-        self._id = id
+        self._id: int = id
 
     @property
     def name(self):
@@ -19,3 +19,7 @@ class File:
 
     def write(self, data):
         self.rom.files[self._id] = data
+
+    @property
+    def id(self):
+        return int(self._id)

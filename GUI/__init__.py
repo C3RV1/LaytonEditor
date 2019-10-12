@@ -34,6 +34,7 @@ class MainFrame(gen.MainFrame):
             except IOError:
                 raise IOError("Unable to load rom.")
         self.updateAniImageList()
+        self.tree_imagefiles.Expand(self.tree_imagefiles.GetRootItem())
 
     def OnMenuSelectionSave(self, event):
         self.saveFile()
@@ -106,7 +107,7 @@ class MainFrame(gen.MainFrame):
         image = self.selected_imagefile.images[self.selected_image - 1].to_PIL()
         self.swap_preview_image(image)
 
-    def OnButtonClickNextImage( self, event ):
+    def OnButtonClickNextImage(self, event):
         if len(self.selected_imagefile.images) < 2:
             return
         self.selected_image += 1
@@ -128,8 +129,8 @@ class MainFrame(gen.MainFrame):
                 return
 
     def OnButtonClickReplace(self, event):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Replace File", style=wx.FD_OPEN) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -142,9 +143,9 @@ class MainFrame(gen.MainFrame):
             except IOError:
                 return
 
-    def OnButtonClickExtractDecom( self, event ):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+    def OnButtonClickExtractDecom(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Extract Decompressed File", style=wx.FD_SAVE) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -156,9 +157,9 @@ class MainFrame(gen.MainFrame):
             except IOError:
                 return
 
-    def OnButtonClickReplaceDecom( self, event ):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+    def OnButtonClickReplaceDecom(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Replace File", style=wx.FD_OPEN) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -178,21 +179,21 @@ class MainFrame(gen.MainFrame):
             except IOError:
                 return
 
-    def OnButtonClickSaveImage( self, event ):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+    def OnButtonClickSaveImage(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Save Image", style=wx.FD_SAVE, wildcard="PNG files (*.png)\
                 |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return
             pathname = fileDialog.GetPath()
-            img = self.selected_imagefile.images[self.selected_image-1].to_PIL()
+            img = self.selected_imagefile.images[self.selected_image - 1].to_PIL()
             img.save(pathname)
 
-    def OnButtonClickReplaceImage( self, event ):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+    def OnButtonClickReplaceImage(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
                         |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
@@ -202,11 +203,11 @@ class MainFrame(gen.MainFrame):
             img = imgl.open(pathname)
             self.selected_imagefile.frame_from_PIL_nopalswap(self.selected_image - 1, img)
             self.selected_imagefile.save()
-        self.swap_preview_image(self.selected_imagefile.frame_to_PIL(self.selected_image-1))
+        self.swap_preview_image(self.selected_imagefile.frame_to_PIL(self.selected_image - 1))
 
-    def OnButtonClickReplaceImageAddPall( self, event ):
-        id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
-        if not id:
+    def OnButtonClickReplaceImageAddPall(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
             return
         with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
                                 |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
@@ -240,11 +241,116 @@ class MainFrame(gen.MainFrame):
 
         self.previewImage.SetBitmap(wximage.ConvertToBitmap())
 
+    def OnButtonClickEditFile(self, event):
+        file_id = self.tree_imagefiles.GetItemData(self.tree_imagefiles.GetSelection())
+        if not file_id:
+            return
+        imagefileeditor = ImageEdit(self, self.selected_imagefile)
+        imagefileeditor.Show(True)
+
+
+class ImageEdit(generated.ImageEdit):
+    def __init__(self, parent, base_image_file):
+        super().__init__(parent)
+        self.base_image_file: LaytonLib.images.ani.AniFile = base_image_file
+        self.imageIndex = 0
+        self.update_previewimage()
+        self.m_staticText5.SetLabel(f"1/{len(self.base_image_file.images)}")  # Frame Index
+        self.m_staticText9.SetLabel(f"ID: {self.base_image_file._id} | {hex(self.base_image_file.id)}")  # File ID
+        self.m_staticText11.SetLabel(self.base_image_file.name)  # File Name
+        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit") # Colordepth
+
+    # Helper function to swap the previouw image
+    def update_previewimage(self):
+        image = self.base_image_file.frame_to_PIL(self.imageIndex)
+
+        # Create a the full sized image
+        fullimage = imgl.new("RGBA", (258, 194))
+
+        # Paste it onto the full sized image
+        fullimage.paste(image, (1, 1))
+        edit = fullimage.load()
+        for i in range(258):
+            edit[i, 0] = (0, 0, 0, 255)
+            edit[i, -1] = (0, 0, 0, 255)
+        for i in range(1, 193):
+            edit[0, i] = (0, 0, 0, 255)
+            edit[-1, -i] = (0, 0, 0, 255)
+
+        # Temporarely save it as a file to load it in wx
+        fullimage.save("temp.bmp")
+        wximage = wx.Image("temp.bmp")
+        remove("temp.bmp")
+
+        self.m_previewImage.SetBitmap(wximage.ConvertToBitmap())
+
+    def OnButtonClickNextImage(self, event):
+        if len(self.base_image_file.images) < 2:
+            return
+        self.imageIndex += 1
+        if self.imageIndex >= len(self.base_image_file.images):
+            self.imageIndex = 0
+        self.m_staticText5.SetLabel(f"{self.imageIndex + 1}/{len(self.base_image_file.images)}")
+        self.update_previewimage()
+
+    def OnButtonClickPreviousImage(self, event):
+        if len(self.base_image_file.images) < 2:
+            return
+        self.imageIndex -= 1
+        if self.imageIndex < 0:
+            self.imageIndex = len(self.base_image_file.images) - 1
+        self.m_staticText5.SetLabel(f"{self.imageIndex + 1}/{len(self.base_image_file.images)}")
+        self.update_previewimage()
+
+    def OnButtonClickReplNoPal(self, event):
+        with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
+                               |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            img = imgl.open(pathname)
+            self.base_image_file.frame_from_PIL_nopalswap(self.imageIndex, img)
+            self.base_image_file.save()
+        self.update_previewimage()
+
+    def OnButtonClickReplAddPal(self, event):
+        with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
+                               |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            img = imgl.open(pathname)
+            self.base_image_file.frame_from_PIL_addpal(self.imageIndex, img)
+            self.base_image_file.save()
+        self.update_previewimage()
+
+    def OnButtonClickExport(self, event):
+        with wx.FileDialog(self, "Save Image", style=wx.FD_SAVE, wildcard="PNG files (*.png)\
+                        |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            img = self.base_image_file.images[self.imageIndex - 1].to_PIL()
+            img.save(pathname)
+
+    def OnButtonClickSwapColorDepth(self, event):
+        if self.base_image_file.colordepth == 4:
+            # For four bit we don't have to change anything but the colordepth itself
+            self.base_image_file.colordepth = 8
+        else:
+            # From 8 to 4 requires quantizing the image to 16 colors.
+            # It uses a hacky selution of reimporting one of the images
+            self.base_image_file.colordepth = 4
+            self.base_image_file.frame_from_PIL_addpal(0, self.base_image_file.frame_to_PIL(0))
+            self.base_image_file.save()
+            self.update_previewimage()
+        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit") # Colordepth
+
 
 class LaytonEditor(wx.App):
     def __init__(self):
         super().__init__()
-        self.mainFrame = None
+        self.mainFrame: MainFrame
 
     def OnInit(self):
         self.mainFrame = MainFrame(None)
