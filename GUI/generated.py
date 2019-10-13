@@ -140,8 +140,59 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
 		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
-		self.m_panel8 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.m_notebook1.AddPage( self.m_panel8, u"Other", False )
+		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer15 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_staticText10 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"Warning: Only don't use on an already patched rom. It will break the setupcode.", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText10.Wrap( -1 )
+
+		bSizer15.Add( self.m_staticText10, 0, wx.ALL, 5 )
+
+		bSizer17 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText12 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"Setup Code Folder: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText12.Wrap( -1 )
+
+		bSizer17.Add( self.m_staticText12, 0, wx.ALL, 5 )
+
+		self.m_textCtrl2 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer17.Add( self.m_textCtrl2, 1, wx.ALL, 5 )
+
+		self.m_button24 = wx.Button( self.m_panel_asmhacks, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer17.Add( self.m_button24, 0, wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer17, 0, wx.EXPAND, 5 )
+
+		bSizer18 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText13 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"Patch Code Folder: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText13.Wrap( -1 )
+
+		bSizer18.Add( self.m_staticText13, 0, wx.ALL, 5 )
+
+		self.m_textCtrl3 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer18.Add( self.m_textCtrl3, 1, wx.ALL, 5 )
+
+		self.m_button25 = wx.Button( self.m_panel_asmhacks, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer18.Add( self.m_button25, 0, wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer18, 0, wx.EXPAND, 5 )
+
+		bSizer19 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_button26 = wx.Button( self.m_panel_asmhacks, wx.ID_ANY, u"Patch", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer19.Add( self.m_button26, 1, wx.ALIGN_BOTTOM|wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer19, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel_asmhacks.SetSizer( bSizer15 )
+		self.m_panel_asmhacks.Layout()
+		bSizer15.Fit( self.m_panel_asmhacks )
+		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", True )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 

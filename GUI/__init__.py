@@ -14,7 +14,7 @@ class MainFrame(gen.MainFrame):
         self.rom = None
         self.selected_image = 1
         self.selected_imagefile = None
-        self.location = ""
+        self.save_location = ""
 
     def OnMenuSelectionOpen(self, event):
         self.openFile()
@@ -27,7 +27,6 @@ class MainFrame(gen.MainFrame):
 
             # Proceed loading the file chosen by the user
             pathname = fileDialog.GetPath()
-            self.location = pathname
             try:
                 with open(pathname, 'rb') as file:
                     self.rom = NintendoDSRom(file.read())
@@ -38,6 +37,9 @@ class MainFrame(gen.MainFrame):
         self.tree_imagefiles.Expand(self.tree_imagefiles.GetRootItem())
 
     def OnMenuSelectionSave(self, event):
+        if not self.save_location:
+            self.OnMenuSelectionSaveAs(event)
+            return
         self.saveFile()
 
     def OnMenuSelectionSaveAs(self, event):
@@ -48,13 +50,13 @@ class MainFrame(gen.MainFrame):
 
                 # Proceed loading the file chosen by the user
             pathname = fileDialog.GetPath()
-            self.location = pathname
+            self.save_location = pathname
         self.saveFile()
 
     def saveFile(self):
-        if not self.location:
+        if not self.save_location:
             return
-        with open(self.location, "wb+") as file:
+        with open(self.save_location, "wb+") as file:
             file.write(self.rom.save())
 
     # Helper function to update the list of image files

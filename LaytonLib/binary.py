@@ -129,6 +129,9 @@ class BinaryEditor:
         while len(self.data) % by:
             self.addU8(0)
 
+    def __len__(self):
+        return len(self.data)
+
 # Splits byte into 2 u4
 def split_byte(byte):
     low = byte & 0xf
