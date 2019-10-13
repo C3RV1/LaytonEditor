@@ -20,27 +20,12 @@ class AniWriter(LaytonLib.binary.BinaryWriter):
         self.filetype = filetype
         super().__init__()
 
-class AnimationFrameData():
-    def __init__(self):
-        self.id = None
-        self.unk = None
-        self.imageIndexes = None
-
-    def from_reader(self, rdr):
-        self.id = rdr.readU32()
-        self.unk = rdr.readU32()
-        self.imageIndexes = rdr.readU32()
-
-    def to_writer(self, wtr: AniWriter):
-        wtr.writeU32(self.id)
-        wtr.writeU32(self.unk)
-        wtr.writeU32(self.imageIndexes)
-
-
 class Animation():
     def __init__(self):
         self.name = ""
-        self.frame_data = []
+        self.frameIDs = []
+        self.imageIndexes = []
+        self.frameUnks = []
 
     def name_from_reader(self, rdr):
         self.name = rdr.readChars(0x1E).split("\0")[0]
@@ -48,9 +33,11 @@ class Animation():
     def framedata_from_reader(self, rdr):
         n_frames = rdr.readU32()
         for i in range(n_frames):
-            framedata = AnimationFrameData()
-            self.frame_data.append(framedata)
-            framedata.from_reader(rdr)
+            self.frameIDs.append(rdr.readU32())
+        for i in range(n_frames):
+            self.frameUnks.append(rdr.readU32())
+        for i in range(n_frames):
+            self.imageIndexes.append(rdr.readU32())
 
     def name_to_writer(self, wtr: AniWriter):
         name = self.name
@@ -59,10 +46,13 @@ class Animation():
         wtr.write(name)
 
     def framedata_to_writer(self, wtr: AniWriter):
-        wtr.writeU32(len(self.frame_data))
-        for frame in self.frame_data:
-            frame: AnimationFrameData
-            frame.to_writer(wtr)
+        wtr.writeU32(len(self.imageIndexes))
+        for i in range(len(self.frameIDs)):
+            wtr.writeU32(self.frameIDs[i])
+        for i in range(len(self.frameIDs)):
+            wtr.writeU32(self.frameUnks[i])
+        for i in range(len(self.frameIDs)):
+            wtr.writeU32(self.imageIndexes[i])
 
 
 class Palette():
@@ -320,6 +310,7 @@ class Ani():
         self.palette.from_reader(rdr, palettesize)
 
         # Work trough each of the animations
+        rdr.c += 0x1E
         n_animations = rdr.readU32()
         for i in range(n_animations):
             animation = Animation()
@@ -344,6 +335,8 @@ class Ani():
             image.to_writer(wtr)
 
         self.palette.to_writer(wtr)
+
+        wtr.writeZeros(0x1E)
 
         wtr.writeU32(len(self.animations))
         for animation in self.animations:

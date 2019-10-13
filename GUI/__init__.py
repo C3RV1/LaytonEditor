@@ -5,6 +5,7 @@ from ndspy.fnt import Folder
 import wx
 from os import remove
 import PIL.Image as imgl
+from os.path import join
 
 
 class MainFrame(gen.MainFrame):
@@ -258,7 +259,12 @@ class ImageEdit(generated.ImageEdit):
         self.m_staticText5.SetLabel(f"1/{len(self.base_image_file.images)}")  # Frame Index
         self.m_staticText9.SetLabel(f"ID: {self.base_image_file._id} | {hex(self.base_image_file.id)}")  # File ID
         self.m_staticText11.SetLabel(self.base_image_file.name)  # File Name
-        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit") # Colordepth
+        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit")  # Colordepth
+
+        # The Animations Part
+        self.animationIndex = 0
+        self.m_staticText51.SetLabel(f"1/{len(self.base_image_file.animations)}")  # Frame Index
+        self.m_textCtrl1.SetLabel(self.base_image_file.animations[0].name)
 
     # Helper function to swap the previouw image
     def update_previewimage(self):
@@ -344,8 +350,71 @@ class ImageEdit(generated.ImageEdit):
             self.base_image_file.frame_from_PIL_addpal(0, self.base_image_file.frame_to_PIL(0))
             self.base_image_file.save()
             self.update_previewimage()
-        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit") # Colordepth
+        self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit")  # Colordepth
 
+    def OnButtonClickAddImage(self, event):
+        new_image = LaytonLib.images.ani.Image(self.base_image_file.palette)
+        with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
+                               |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+        new_image.from_PIL(imgl.open(pathname))
+        self.base_image_file.images.insert(self.imageIndex + 1, new_image)
+        self.imageIndex += 1
+        self.m_staticText5.SetLabel(f"{self.imageIndex + 1}/{len(self.base_image_file.images)}")
+        self.update_previewimage()
+
+    def OnButtonClickRemoveImage(self, event):
+        if len(self.base_image_file.images) == 1:
+            return
+        del self.base_image_file.images[self.imageIndex]
+        self.imageIndex -= 1
+        if self.imageIndex < 0:
+            self.imageIndex = len(self.base_image_file.images) - 1
+
+    def OnButtonClickAddImageAddPal(self, event):
+        new_image = LaytonLib.images.ani.Image(self.base_image_file.palette)
+        with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
+                                       |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+        new_image.from_PIL(imgl.open(pathname))
+        self.base_image_file.images.insert(self.imageIndex + 1, new_image)
+        self.base_image_file.frame_from_PIL_addpal(self.imageIndex + 1, imgl.open(pathname))
+        self.imageIndex += 1
+        self.m_staticText5.SetLabel(f"{self.imageIndex + 1}/{len(self.base_image_file.images)}")
+        self.update_previewimage()
+
+    def OnButtonClickExportAll(self, event):
+        with wx.DirDialog(self, "Choose Folder", style=wx.FD_OPEN) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+        for i in range(len(self.base_image_file.images)):
+            image = self.base_image_file.images[i]
+            pil_image: imgl.Image = image.to_PIL()
+            filename = self.base_image_file.name.split('/')[-1]
+            pil_image.save(join(pathname, f"{filename}_{i + 1}.png"))
+
+    def OnButtonClickNextAnimation(self, event):
+        self.animationIndex += 1
+        if self.animationIndex >= len(self.base_image_file.animations):
+            self.animationIndex = 0
+        self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
+        self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        anim: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        print(self.animationIndex)
+        for i in range(len(anim.imageIndexes)):
+            print(anim.frameIDs[i], anim.frameUnks[i], anim.imageIndexes[i])
+
+    def OnButtonClickPreviousAnimation(self, event):
+        self.animationIndex -= 1
+        if self.animationIndex < 0:
+            self.animationIndex = len(self.base_image_file.animations)-1
+        self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
+        self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
 
 class LaytonEditor(wx.App):
     def __init__(self):

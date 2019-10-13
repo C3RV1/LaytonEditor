@@ -98,20 +98,20 @@ class MainFrame ( wx.Frame ):
 
 		bSizer_imageinfo.Add( bSizer_selectimage, 0, wx.EXPAND, 5 )
 
-		self.m_staticText_Colordepth = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_Colordepth = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText_Colordepth.Wrap( -1 )
 
-		bSizer_imageinfo.Add( self.m_staticText_Colordepth, 0, wx.ALL, 5 )
+		bSizer_imageinfo.Add( self.m_staticText_Colordepth, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_staticText_imagename = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_imagename = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText_imagename.Wrap( -1 )
 
-		bSizer_imageinfo.Add( self.m_staticText_imagename, 0, wx.ALL, 5 )
+		bSizer_imageinfo.Add( self.m_staticText_imagename, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_staticText_imageID = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_imageID = wx.StaticText( self.m_panel_imageinfo, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText_imageID.Wrap( -1 )
 
-		bSizer_imageinfo.Add( self.m_staticText_imageID, 0, wx.ALL, 5 )
+		bSizer_imageinfo.Add( self.m_staticText_imageID, 0, wx.ALL|wx.EXPAND, 5 )
 
 		self.m_panel_filler = wx.Panel( self.m_panel_imageinfo, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer_imageinfo.Add( self.m_panel_filler, 1, wx.EXPAND |wx.ALL, 5 )
@@ -310,17 +310,17 @@ class ImageEdit ( wx.Frame ):
 		self.m_button24 = wx.Button( self.m_panel3, wx.ID_ANY, u"Swap Colordepth", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_button24, 1, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_button32 = wx.Button( self.m_panel3, wx.ID_ANY, u"Add Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_button32 = wx.Button( self.m_panel3, wx.ID_ANY, u"Add Image (No Palette Change)", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_button32, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_button33 = wx.Button( self.m_panel3, wx.ID_ANY, u"Remove", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_button33 = wx.Button( self.m_panel3, wx.ID_ANY, u"Remove Image", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_button33, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_button43 = wx.Button( self.m_panel3, wx.ID_ANY, u"Import All", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer2.Add( self.m_button43, 0, wx.ALL|wx.EXPAND, 5 )
+		self.m_button25 = wx.Button( self.m_panel3, wx.ID_ANY, u"Add Image (Add to Palette)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_button25, 1, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_button42 = wx.Button( self.m_panel3, wx.ID_ANY, u"Export All", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer2.Add( self.m_button42, 0, wx.ALL|wx.EXPAND, 5 )
+		self.m_button26 = wx.Button( self.m_panel3, wx.ID_ANY, u"Export All Images", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_button26, 1, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizer21.Add( gSizer2, 1, wx.EXPAND, 5 )
@@ -339,7 +339,7 @@ class ImageEdit ( wx.Frame ):
 		self.m_button81 = wx.Button( self.m_panel4, wx.ID_ANY, u"<", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
 		bSizer111.Add( self.m_button81, 1, wx.ALL, 5 )
 
-		self.m_staticText51 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"1/1", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL )
+		self.m_staticText51 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"1/1", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText51.Wrap( -1 )
 
 		bSizer111.Add( self.m_staticText51, 1, wx.ALL, 10 )
@@ -350,21 +350,11 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer15.Add( bSizer111, 0, wx.EXPAND, 5 )
 
-		self.m_textCtrl1 = wx.TextCtrl( self.m_panel4, wx.ID_ANY, u"Create an Animation", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
+		self.m_textCtrl1 = wx.TextCtrl( self.m_panel4, wx.ID_ANY, u"none", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
 		self.m_textCtrl1.SetMaxLength( 24 )
 		bSizer15.Add( self.m_textCtrl1, 0, wx.ALL|wx.EXPAND, 5 )
 
-		m_checkList1Choices = [u"Image 1"]
-		self.m_checkList1 = wx.CheckListBox( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_checkList1Choices, 0 )
-		bSizer15.Add( self.m_checkList1, 1, wx.ALL|wx.EXPAND, 5 )
-
 		bSizer14 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.m_button19 = wx.Button( self.m_panel4, wx.ID_ANY, u"Add Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer14.Add( self.m_button19, 1, wx.ALL, 5 )
-
-		self.m_button20 = wx.Button( self.m_panel4, wx.ID_ANY, u"Remove Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer14.Add( self.m_button20, 1, wx.ALL, 5 )
 
 
 		bSizer15.Add( bSizer14, 0, wx.EXPAND, 5 )
@@ -392,6 +382,12 @@ class ImageEdit ( wx.Frame ):
 		self.m_button31.Bind( wx.EVT_BUTTON, self.OnButtonClickExport )
 		self.m_button23.Bind( wx.EVT_BUTTON, self.OnButtonClickReplAddPal )
 		self.m_button24.Bind( wx.EVT_BUTTON, self.OnButtonClickSwapColorDepth )
+		self.m_button32.Bind( wx.EVT_BUTTON, self.OnButtonClickAddImage )
+		self.m_button33.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveImage )
+		self.m_button25.Bind( wx.EVT_BUTTON, self.OnButtonClickAddImageAddPal )
+		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickExportAll )
+		self.m_button81.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimation )
+		self.m_button91.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimation )
 
 	def __del__( self ):
 		pass
@@ -414,6 +410,24 @@ class ImageEdit ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickSwapColorDepth( self, event ):
+		event.Skip()
+
+	def OnButtonClickAddImage( self, event ):
+		event.Skip()
+
+	def OnButtonClickRemoveImage( self, event ):
+		event.Skip()
+
+	def OnButtonClickAddImageAddPal( self, event ):
+		event.Skip()
+
+	def OnButtonClickExportAll( self, event ):
+		event.Skip()
+
+	def OnButtonClickPreviousAnimation( self, event ):
+		event.Skip()
+
+	def OnButtonClickNextAnimation( self, event ):
 		event.Skip()
 
 	def m_splitter2OnIdle( self, event ):
