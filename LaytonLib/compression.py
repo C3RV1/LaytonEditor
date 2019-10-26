@@ -46,8 +46,7 @@ class HuffTreeNode:
             self.isFilled = False
             return
         self.isFilled = True
-        readData = rdr.readU8()
-        self.data = readData
+        self.data = rdr.readU8()
         if not isData:
             offset = self.data & 0x3F
             zeroIsData = (self.data & 0x80) > 0
@@ -82,48 +81,42 @@ class huff8bit():
         type = rdr.readU8()
         if type != 0x28:
             raise Exception("Tried to decompress data that isn't Huffman")
-        ds = rdr.readU8() + rdr.readU16() << 8
+
+        ds = rdr.readU8() + (rdr.readU16() << 8)
 
         if ds == 0:
             ds = rdr.readU32()
 
         # Read the tree
         treesize = (rdr.readU8() + 1) * 2
-        tree_end = rdr.c - 1 + treesize
+        tree_end = (rdr.c - 1) + treesize
         rootNode = HuffTreeNode(rdr, False, 5, tree_end)
         rdr.c = tree_end
 
         # Decompress with the tree
-        c_data = 0  # u32 to read from
         bitsleft = 0  # amount of bits left to read from {data}
-
         current_size = 0
         currentNode = rootNode
 
-        isgoing = True
-
-        while (current_size < ds) and isgoing:
+        while (current_size < ds):
             # Find next refrence to data node
             while not currentNode.isData:
                 if bitsleft == 0:
-                    try:
-                        data = rdr.readU32()
-                    except:
-                        isgoing = False
-                        break
+                    data = rdr.readU32()
                     bitsleft = 32
-                bitsleft-=1
-                nextIsOne = (c_data & (1 << bitsleft)) != 0
-                currentNode = currentNode.child1 if nextIsOne else currentNode.child0
 
-            if not isgoing:
-                break
+                bitsleft-=1
+                nextIsOne = (data & (1 << bitsleft)) != 0
+                if nextIsOne:
+                    currentNode = currentNode.child1
+                else:
+                    currentNode = currentNode.child0
 
             wtr.writeU8(currentNode.data)
             current_size += 1
+            currentNode = rootNode
 
         return wtr.data
-
 
 def decompress(data: bytes):
     if int(data[0]) == LZ10:
