@@ -5,3 +5,14 @@
 laytoneditor/bin/main.exe
 laytoneditor/main.spec
 test.py
+gamecode/.vscode/c_cpp_properties.json
+*.d
+*.o
+gamecode/build/newcode.map
+*.bin
+gamecode/newcode.elf
+gamecode/newcode.sym
+setupcode/.vscode/c_cpp_properties.json
+*.map
+*.elf
+*.sym
