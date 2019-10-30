@@ -16,6 +16,7 @@ def makeBranchOpcode(srcAddr, destAddr, withLink):
     res |= offs
     return res
 
+
 class Overlay_Change():
     def __init__(self, ov, offs_original, new_data):
         self.ov = ov
@@ -61,7 +62,6 @@ class PatchRom:
         for change in self.overlay_changes:
             change: Overlay_Change
             self.patchcode_edit.addU32((change.ov << 24) | (change.offs_original & 0xffffff))
-            print("haha", hex(change.offs_original& 0xffffff))
             self.patchcode_edit.addU32(change.new_data)
         self.patchcode_edit.addU32(0)
         self.patchcode_edit.addU32(0)
@@ -72,7 +72,7 @@ class PatchRom:
         self.replace_setupcodeplaceholders()
 
         # Finally change the value in the arenaLo ptr
-        print("original arena (heap) offset:",  hex(self.offset_patchcode))
+        print("\n\noriginal arena (heap) offset:", hex(self.offset_patchcode))
         print("new arena offset:", hex(self.offset_patchcode + len(self.patchcode_edit) + 0x10))
         print("change:", hex(len(self.patchcode_edit) + 0x10))
         self.arm9_edit.replU32(self.offset_patchcode + len(self.patchcode_edit) + 0x100000,  # Extra offset
@@ -157,12 +157,10 @@ class PatchRom:
                 offset_original = int(line[offset_original_hex:offset_original_hex + 8], 16)
                 offset_hookpoint = self.offset_patchcode + len(self.patchcode_edit.data)
 
-
                 offset_arm9_original = offset_original - 0x02000000
                 original_instruction = self.arm9_edit.readU32(offset_original - 0x02000000)
                 self.arm9_edit.replU32(makeBranchOpcode(offset_original, offset_hookpoint, False),
                                        offset_arm9_original)
-                print(hex(original_instruction))
 
                 self.patchcode_edit.addU32(original_instruction)
                 self.patchcode_edit.addU32(0xE92D1FFF)  # push {r0-r12}
@@ -180,16 +178,57 @@ class PatchRom:
                     overlay_hex = line.find("repl_") + 5
                     offset_original_hex = overlay_hex + 2
                     overlay = int(line[overlay_hex])
-                    if line[overlay_hex+1] != "_":
+                    if line[overlay_hex + 1] != "_":
                         offset_original_hex += 1
-                        overlay = int(line[overlay_hex:overlay_hex+2])
+                        overlay = int(line[overlay_hex:overlay_hex + 2])
                     offset_original = int(line[offset_original_hex:offset_original_hex + 8], 16)
                     new_data = makeBranchOpcode(offset_original, offset_function, True)
                     self.overlay_changes.append(Overlay_Change(overlay, offset_original, new_data))
 
                 except:
                     print("Warning: repl function not working:", line)
+            elif "ovnsub_" in line:
+                try:
+                    offset_function = int(line[:8], 16)
+                    overlay_hex = line.find("nsub_") + 5
+                    offset_original_hex = overlay_hex + 2
+                    overlay = int(line[overlay_hex])
+                    if line[overlay_hex + 1] != "_":
+                        offset_original_hex += 1
+                        overlay = int(line[overlay_hex:overlay_hex + 2])
+                    offset_original = int(line[offset_original_hex:offset_original_hex + 8], 16)
+                    new_data = makeBranchOpcode(offset_original, offset_function, False)
+                    self.overlay_changes.append(Overlay_Change(overlay, offset_original, new_data))
 
+                except:
+                    print("Warning: nsub function not working:", line)
+
+            elif "ovhook_" in line:
+                offset_function = int(line[:8], 16)
+                overlay_hex = line.find("hook_") + 5
+                offset_original_hex = overlay_hex + 2
+                overlay = int(line[overlay_hex])
+                if line[overlay_hex + 1] != "_":
+                    offset_original_hex += 1
+                    overlay = int(line[overlay_hex:overlay_hex + 2])
+                offset_original = int(line[offset_original_hex:offset_original_hex + 8], 16)
+                offset_hookpoint = self.offset_patchcode + len(self.patchcode_edit.data)
+
+                original_instruction = self.readInOverlay(overlay, offset_original)
+                self.overlay_changes.append(
+                    Overlay_Change(overlay, offset_original,
+                                   makeBranchOpcode(offset_original, offset_hookpoint, False)))
+
+                self.patchcode_edit.addU32(original_instruction)
+                self.patchcode_edit.addU32(0xE92D1FFF)  # push {r0-r12}
+                self.patchcode_edit.addU32(0xE52DE004)  # push {r14}
+                self.patchcode_edit.addU32(
+                    makeBranchOpcode(self.offset_patchcode + len(self.patchcode_edit.data),
+                                     offset_function, True))
+                self.patchcode_edit.addU32(0xE49DE004)  # pop {r14}
+                self.patchcode_edit.addU32(0xE8BD1FFF)  # pop {r0-r12}
+                self.patchcode_edit.addU32(
+                    makeBranchOpcode(self.offset_patchcode + len(self.patchcode_edit.data), offset_original + 4, False))
 
     def replace_setupcodeplaceholders(self):
         for line in self.setupcode_sym.split("\n"):
@@ -203,7 +242,6 @@ class PatchRom:
             if "OVChange_Offset" in line:
                 offset_real = int(line[:8], 16)
                 offset_now = offset_real - self.offset_patchcode
-                print(hex(self.patchcode_edit.readU32(offset_now)))
                 self.patchcode_edit.replU32(self.offset_ovchange_table, offset_now)
 
     def clean_all(self):
@@ -213,3 +251,9 @@ class PatchRom:
         process = subprocess.Popen(f"make clean",
                                    cwd=self.setupcode_folder)
         process.wait()
+
+    def readInOverlay(self, overlay_n, offset):
+        overlay = self.rom.loadArm9Overlays([overlay_n, ])[overlay_n]
+        edit = BinaryEditor(overlay.data)
+        data = edit.readU32(offset - overlay.ramAddress)
+        return data

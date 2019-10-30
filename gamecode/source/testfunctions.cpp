@@ -54,6 +54,11 @@ void patchoverlays()
     }
 }
 
+void ovhook_9_020eff18()
+{
+    printf("hooked!");
+}
+
 // FS_LoadOverlay End
 void arm9hook_0202496c()
 {
