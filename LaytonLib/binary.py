@@ -120,10 +120,12 @@ class BinaryEditor:
     def replU32(self, x, pos):
         while pos + 4 >= len(self.data):
             self.addZeros(4)
+        self.data = bytearray(self.data)
         self.data[pos] = x & 0xFF
         self.data[pos + 1] = x >> 8 & 0xFF
         self.data[pos + 2] = x >> 16 & 0xFF
         self.data[pos + 3] = x >> 24 & 0xFF
+        self.data = bytes(self.data)
 
     def align(self, by):
         while len(self.data) % by:

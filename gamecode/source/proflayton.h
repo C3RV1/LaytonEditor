@@ -9,10 +9,7 @@ extern "C"
 {
 #endif
 	//Printing
-	void nocashPrint(const char *txt);
-	void nocashPrint1(const char *txt, u32 r0);
-	void nocashPrint2(const char *txt, u32 r0, u32 r1);
-	void nocashPrint3(const char *txt, u32 r0, u32 r1, u32 r2);
+
 #ifdef __cplusplus
 }
 #endif
@@ -38,7 +35,11 @@ extern "C"
 void myScanKeys();
 int myKeysHeld();
 int myKeysDown();
-void  waitForUserInput(u32 input);
+void waitForUserInput(u32 input);
 void waitForVBlankIrqLess();
+
+//Usefull things
+void sprintf(char *buffer, const char *format, ...);
+void printf(const char *format, ...);
 
 #endif

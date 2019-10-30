@@ -139,7 +139,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.SetSizer( bSizer141 )
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
-		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", True )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -192,7 +192,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_asmhacks.SetSizer( bSizer15 )
 		self.m_panel_asmhacks.Layout()
 		bSizer15.Fit( self.m_panel_asmhacks )
-		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", True )
+		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", False )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
