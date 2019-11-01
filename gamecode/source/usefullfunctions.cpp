@@ -1,7 +1,7 @@
 #include "proflayton.h"
 #include <string.h>
 
-#define PRINTF_BUFFER_SIZE 50
+#define PRINTF_BUFFER_SIZE 200
 
 void sprintf(char *buffer, const char *format, ...)
 {
@@ -69,7 +69,7 @@ void sprintf(char *buffer, const char *format, ...)
     }
 }
 
-void printf(const char * format, ...)
+void printf(const char *format, ...)
 {
     char buffer[PRINTF_BUFFER_SIZE];
     char *bufferptr = buffer;
@@ -127,6 +127,10 @@ void printf(const char * format, ...)
                     *bufferptr++ = pad0 ? '0' : ' ';
                 while (*p)
                     *bufferptr++ = *p++;
+                break;
+
+            case '%':
+                *bufferptr++ = '%';
                 break;
 
             default:

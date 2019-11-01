@@ -139,7 +139,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.SetSizer( bSizer141 )
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
-		self.m_notebook1.AddPage( self.m_panel9, u"Images", True )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -148,37 +148,49 @@ class MainFrame ( wx.Frame ):
 
 		bSizer15.Add( self.m_staticText10, 0, wx.ALL, 5 )
 
-		bSizer17 = wx.BoxSizer( wx.HORIZONTAL )
+		bSizer191 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer20 = wx.BoxSizer( wx.HORIZONTAL )
 
 		self.m_staticText12 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"Setup Code Folder: ", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText12.Wrap( -1 )
 
-		bSizer17.Add( self.m_staticText12, 0, wx.ALL, 5 )
+		bSizer20.Add( self.m_staticText12, 0, wx.ALL, 5 )
 
-		self.m_textCtrl2 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer17.Add( self.m_textCtrl2, 1, wx.ALL, 5 )
-
-		self.m_button24 = wx.Button( self.m_panel_asmhacks, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
-		bSizer17.Add( self.m_button24, 0, wx.ALL, 5 )
+		self.m_textCtrl2 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, u"setupcode/", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer20.Add( self.m_textCtrl2, 1, wx.ALL|wx.EXPAND, 5 )
 
 
-		bSizer15.Add( bSizer17, 0, wx.EXPAND, 5 )
+		bSizer191.Add( bSizer20, 0, wx.EXPAND, 5 )
 
-		bSizer18 = wx.BoxSizer( wx.HORIZONTAL )
+		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
 
 		self.m_staticText13 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"Patch Code Folder: ", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText13.Wrap( -1 )
 
-		bSizer18.Add( self.m_staticText13, 0, wx.ALL, 5 )
+		bSizer21.Add( self.m_staticText13, 0, wx.ALL, 5 )
 
-		self.m_textCtrl3 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer18.Add( self.m_textCtrl3, 1, wx.ALL, 5 )
-
-		self.m_button25 = wx.Button( self.m_panel_asmhacks, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
-		bSizer18.Add( self.m_button25, 0, wx.ALL, 5 )
+		self.m_textCtrl3 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, u"gamecode/", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer21.Add( self.m_textCtrl3, 1, wx.ALL|wx.EXPAND, 5 )
 
 
-		bSizer15.Add( bSizer18, 0, wx.EXPAND, 5 )
+		bSizer191.Add( bSizer21, 1, wx.EXPAND, 5 )
+
+		bSizer22 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText131 = wx.StaticText( self.m_panel_asmhacks, wx.ID_ANY, u"ArenaLoOffsetPtr: (hex)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText131.Wrap( -1 )
+
+		bSizer22.Add( self.m_staticText131, 1, wx.ALL, 5 )
+
+		self.m_textCtrl31 = wx.TextCtrl( self.m_panel_asmhacks, wx.ID_ANY, u"0x0201efb8", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer22.Add( self.m_textCtrl31, 0, wx.ALL, 5 )
+
+
+		bSizer191.Add( bSizer22, 1, wx.EXPAND, 5 )
+
+
+		bSizer15.Add( bSizer191, 0, wx.EXPAND, 5 )
 
 		bSizer19 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -186,13 +198,13 @@ class MainFrame ( wx.Frame ):
 		bSizer19.Add( self.m_button26, 1, wx.ALIGN_BOTTOM|wx.ALL, 5 )
 
 
-		bSizer15.Add( bSizer19, 1, wx.EXPAND, 5 )
+		bSizer15.Add( bSizer19, 1, wx.ALIGN_BOTTOM|wx.EXPAND, 5 )
 
 
 		self.m_panel_asmhacks.SetSizer( bSizer15 )
 		self.m_panel_asmhacks.Layout()
 		bSizer15.Fit( self.m_panel_asmhacks )
-		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", False )
+		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", True )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -232,6 +244,7 @@ class MainFrame ( wx.Frame ):
 		self.m_button_replaceimage.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImage )
 		self.m_button_replaceimageandpalette.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageAddPall )
 		self.m_button_editfile.Bind( wx.EVT_BUTTON, self.OnButtonClickEditFile )
+		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionOpen, id = self.m_menuItem_openfile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSaveAs, id = self.m_menuItem_savefileas.GetId() )
@@ -272,6 +285,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickEditFile( self, event ):
+		event.Skip()
+
+	def OnButtonClickPatchRom( self, event ):
 		event.Skip()
 
 	def OnMenuSelectionOpen( self, event ):

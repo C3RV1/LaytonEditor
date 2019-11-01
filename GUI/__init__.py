@@ -6,6 +6,7 @@ import wx
 from os import remove
 import PIL.Image as imgl
 from os.path import join
+import LaytonLib.asm_patching
 
 
 class MainFrame(gen.MainFrame):
@@ -15,6 +16,8 @@ class MainFrame(gen.MainFrame):
         self.selected_image = 1
         self.selected_imagefile = None
         self.save_location = ""
+
+        self.arm9backup = None
 
     def OnMenuSelectionOpen(self, event):
         self.openFile()
@@ -33,6 +36,8 @@ class MainFrame(gen.MainFrame):
 
             except IOError:
                 raise IOError("Unable to load rom.")
+        self.rom.arm9 = self.rom.loadArm9().save(compress=False)
+        self.arm9backup = self.rom.arm9
         self.updateAniImageList()
         self.tree_imagefiles.Expand(self.tree_imagefiles.GetRootItem())
 
@@ -251,6 +256,13 @@ class MainFrame(gen.MainFrame):
         imagefileeditor = ImageEdit(self, self.selected_imagefile)
         imagefileeditor.Show(True)
 
+    def OnButtonClickPatchRom( self, event ):
+        print(self.arm9backup)
+        setupcode_folder = self.m_textCtrl2.GetLabelText()
+        gamecode_folder = self.m_textCtrl3.GetLabelText()
+        arenalooffsptr = int(self.m_textCtrl31.GetLabelText(), 16)
+        self.rom.arm9 = self.arm9backup
+        LaytonLib.asm_patching.PatchRom(self.rom, setupcode_folder, gamecode_folder, arenalooffsptr)
 
 class ImageEdit(generated.ImageEdit):
     def __init__(self, parent, base_image_file):

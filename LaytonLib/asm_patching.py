@@ -81,6 +81,8 @@ class PatchRom:
         # Save the new arm9
         rom.arm9 = self.arm9_edit.data
 
+        print("done!")
+
     def apply_setupcodehook(self):
         # First we read the instruction that will be replaced (In our case 0x800,
         # because that's the first instruction of the game. And put it at the
@@ -242,6 +244,7 @@ class PatchRom:
             if "OVChange_Offset" in line:
                 offset_real = int(line[:8], 16)
                 offset_now = offset_real - self.offset_patchcode
+                print(offset_real, self.offset_patchcode)
                 self.patchcode_edit.replU32(self.offset_ovchange_table, offset_now)
 
     def clean_all(self):

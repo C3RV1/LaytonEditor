@@ -1,5 +1,4 @@
 #include <nds.h>
-#include "makehooks.h"
 
 #ifndef _NSMB_H
 #define _NSMB_H
