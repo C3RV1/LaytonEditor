@@ -14,14 +14,14 @@ class rle():
         wtr = BinaryWriter()
         type = rdr.readU8()
         if type != 0x30:
-            raise Exception("Tried to decompress data that isn't RLE")
+            raise Exception("Tried to decompress commands that isn't RLE")
         ds = rdr.readU8() + rdr.readU16() << 8  # Decompressed size we dont care
         # about unless it's 0
         if ds == 0:
             rdr.readU32()
 
         while True:
-            try:  # Test if we've run out of data
+            try:  # Test if we've run out of commands
                 flag = rdr.readU8()
             except IndexError:  # If we have, nice, cause we're done!
                 break
@@ -80,7 +80,7 @@ class huff8bit():
         wtr = BinaryWriter()
         type = rdr.readU8()
         if type != 0x28:
-            raise Exception("Tried to decompress data that isn't Huffman")
+            raise Exception("Tried to decompress commands that isn't Huffman")
 
         ds = rdr.readU8() + (rdr.readU16() << 8)
 
@@ -94,12 +94,12 @@ class huff8bit():
         rdr.c = tree_end
 
         # Decompress with the tree
-        bitsleft = 0  # amount of bits left to read from {data}
+        bitsleft = 0  # amount of bits left to read from {commands}
         current_size = 0
         currentNode = rootNode
 
         while (current_size < ds):
-            # Find next refrence to data node
+            # Find next refrence to commands node
             while not currentNode.isData:
                 if bitsleft == 0:
                     data = rdr.readU32()

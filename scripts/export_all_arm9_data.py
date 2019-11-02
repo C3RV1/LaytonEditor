@@ -43,5 +43,5 @@ for i in range(START_AT_OV, N_OVERLAYS):
     data += f"  end address: {hex(overlay.ramAddress+overlay.ramSize)}\n"
     data += "\n"
 
-with open(os.path.join(SAVE_FOLDER, "data.txt"), "w+") as file:
+with open(os.path.join(SAVE_FOLDER, "commands.txt"), "w+") as file:
     file.write(data)

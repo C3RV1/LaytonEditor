@@ -4,7 +4,7 @@
 *.pyc
 laytoneditor/bin/main.exe
 laytoneditor/main.spec
-test.py
+quickbuild.py
 gamecode/.vscode/c_cpp_properties.json
 *.d
 *.o

@@ -1,14 +1,11 @@
-FILE_LEN = 0
-FILE_START = 2
-
 def extract_from_gds(raw):
     data_str = raw
     data = [hex(x) for x in data_str]
     data_ext = []
 
-    filestart = FILE_START
+    filestart = 2
 
-    current = FILE_START
+    current = 2
     current_data = []
     first = True
     zeros = 0
@@ -32,12 +29,12 @@ def extract_from_gds(raw):
             current += 2
             n = int(data[current], 0)
             current += 1
-            current_data.append(n+int(data[current], 0)*256)
+            current_data.append(n + int(data[current], 0) * 256)
             current += 1
             continue
         elif int(data[current], 0) == 3:
             current += 2
-            end = int(data[current], 0) + (int(data[current+1], 0)*256) + current
+            end = int(data[current], 0) + (int(data[current + 1], 0) * 256) + current
             current_string = ""
             current += 1
             while current < end:
@@ -63,7 +60,6 @@ def extract_from_gds(raw):
     return {"start": filestart, "commands": data_ext}
 
 
-
 def extract_from_simplified(raw):
     data_str = raw
     lines = [l.split('#')[0] for l in data_str.split('\n')]
@@ -75,27 +71,28 @@ def extract_from_simplified(raw):
     while current < len(lines):
         line = lines[current]
         if line:
-           if line[0:6] == "START:":
-               filestart = int(line[6:])
-           elif line[0:2] == "0x":
-               current_data = [line, ]
-               if lines[current + 1] == "[":
-                   offset = 2
-                   while lines[current + offset] != ']':
-                       if lines[current + offset][1:5] == 'int:':
-                           current_data.append(int(lines[current + offset][6:]))
-                       if lines[current + offset][1:5] == 'hex:':
-                           current_data.append(int(lines[current + offset][6:], 16))
-                       if lines[current + offset][1:5] == 'str:':
-                           current_data.append(lines[current + offset][6:])
-                       if lines[current + offset][1:5] == "vec:":
-                           strs = lines[current + offset].replace(']', '').split('[')[1].split(',')
-                           current_data.append([int(strs[0]), int(strs[1])])
-                       offset += 1
-               data_ext.append(current_data)
+            if line[0:6] == "START:":
+                filestart = int(line[6:])
+            elif line[0:2] == "0x":
+                current_data = [line, ]
+                if lines[current + 1] == "[":
+                    offset = 2
+                    while lines[current + offset] != ']':
+                        if lines[current + offset][1:5] == 'int:':
+                            current_data.append(int(lines[current + offset][6:]))
+                        if lines[current + offset][1:5] == 'hex:':
+                            current_data.append(int(lines[current + offset][6:], 16))
+                        if lines[current + offset][1:5] == 'str:':
+                            current_data.append(lines[current + offset][6:])
+                        if lines[current + offset][1:5] == "vec:":
+                            strs = lines[current + offset].replace(']', '').split('[')[1].split(',')
+                            current_data.append([int(strs[0]), int(strs[1])])
+                        offset += 1
+                data_ext.append(current_data)
         current += 1
 
     return {"start": filestart, "commands": data_ext}
+
 
 def convert_to_gds(data):
     filestart = data["start"]
@@ -107,10 +104,10 @@ def convert_to_gds(data):
             raw += bytes(1)
             for ii, subitem in enumerate(item[1:]):
                 if type(subitem) is int:
-                    raw += bytes([1, 0, subitem%256, int(subitem/256)])
+                    raw += bytes([1, 0, subitem % 256, int(subitem / 256)])
                     raw += bytes([0, 0])
                 if type(subitem) is str:
-                    raw += bytes([3, 0, (len(subitem) + 1)%256, int((len(subitem) + 1)/256)])
+                    raw += bytes([3, 0, (len(subitem) + 1) % 256, int((len(subitem) + 1) / 256)])
                     raw += bytes(subitem, "ascii")
                     raw += bytes(1)
                 if type(subitem) is list:
@@ -125,6 +122,7 @@ def convert_to_gds(data):
     final += bytes(filestart - 2)
     final += raw
     return final
+
 
 def convert_to_simplified(data):
     filestart = data["start"]
@@ -145,60 +143,3 @@ def convert_to_simplified(data):
             lines.append(']')
         lines.append('')
     return "\n".join(lines)
-
-# Tests with a puzzle
-def test_case_1():
-    with open("case 1 puzzle/q1_param.gds", "rb") as file:
-        raw = file.read()
-
-    data = extract_from_gds(raw)
-    print(convert_to_simplified(data))
-    new = convert_to_gds(data)
-    with open("case 1 puzzle/q1_new.gds", "wb+") as file:
-        file.write(new)
-
-# Tests with some dialogue
-def test_case_2():
-    with open("case 2 dialoque/t10_030_501.gds", "rb") as file:
-        raw = file.read()
-
-    data = extract_from_gds(raw)
-    print(convert_to_simplified(data))
-    new = convert_to_gds(data)
-    with open("case 2 dialoque/t10_new.gds", "wb+") as file:
-        file.write(new)
-
-# Tests with an event file
-def test_case_3():
-    with open("case 3 event/e10_030.gds", "rb") as file:
-        raw = file.read()
-
-    data = extract_from_gds(raw)
-    print(convert_to_simplified(data))
-    new = convert_to_gds(data)
-    with open("case 3 event/e10_new.gds", "wb+") as file:
-        file.write(new)
-
-# Tests with the logo commands
-def test_case_4():
-    with open("case 4 logo info/logo.gds", "rb") as file:
-        raw = file.read()
-
-    data = extract_from_gds(raw)
-    print(convert_to_simplified(data))
-    new = convert_to_gds(data)
-    with open("case 4 logo info/logo_new.gds", "wb+") as file:
-        file.write(new)
-
-def test_case_5():
-    with open("case 5 movie info/m1.gds", "rb") as file:
-        raw = file.read()
-
-    data = extract_from_gds(raw)
-    print(convert_to_simplified(data))
-    new = convert_to_gds(data)
-    with open("case 5 movie info/m1_new.gds", "wb+") as file:
-        file.write(new)
-
-if __name__ == "__main__":
-    test_case_2()
