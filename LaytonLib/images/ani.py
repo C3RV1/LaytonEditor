@@ -25,7 +25,7 @@ class Animation():
         self.name = ""
         self.frameIDs = []
         self.imageIndexes = []
-        self.frameUnks = []
+        self.frameDurations = []
 
     def name_from_reader(self, rdr):
         self.name = rdr.readChars(0x1E).split("\0")[0]
@@ -35,7 +35,7 @@ class Animation():
         for i in range(n_frames):
             self.frameIDs.append(rdr.readU32())
         for i in range(n_frames):
-            self.frameUnks.append(rdr.readU32())
+            self.frameDurations.append(rdr.readU32())
         for i in range(n_frames):
             self.imageIndexes.append(rdr.readU32())
 
@@ -50,7 +50,7 @@ class Animation():
         for i in range(len(self.frameIDs)):
             wtr.writeU32(self.frameIDs[i])
         for i in range(len(self.frameIDs)):
-            wtr.writeU32(self.frameUnks[i])
+            wtr.writeU32(self.frameDurations[i])
         for i in range(len(self.frameIDs)):
             wtr.writeU32(self.imageIndexes[i])
 

@@ -419,9 +419,6 @@ class ImageEdit(generated.ImageEdit):
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
         anim: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
-        print(self.animationIndex)
-        for i in range(len(anim.imageIndexes)):
-            print(anim.frameIDs[i], anim.frameUnks[i], anim.imageIndexes[i])
 
     def OnButtonClickPreviousAnimation(self, event):
         self.animationIndex -= 1
@@ -429,6 +426,12 @@ class ImageEdit(generated.ImageEdit):
             self.animationIndex = len(self.base_image_file.animations)-1
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+
+    def OnButtonClickSaveAnimationName( self, event ):
+        animation = self.base_image_file.animations[self.animationIndex]
+        animation: LaytonLib.images.ani.Animation
+        animation.name = self.m_textCtrl1.GetValue()
+        print(self.m_textCtrl1.GetValue())
 
 class LaytonEditor(wx.App):
     def __init__(self):

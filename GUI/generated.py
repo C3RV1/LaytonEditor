@@ -139,7 +139,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.SetSizer( bSizer141 )
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
-		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", True )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -204,7 +204,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_asmhacks.SetSizer( bSizer15 )
 		self.m_panel_asmhacks.Layout()
 		bSizer15.Fit( self.m_panel_asmhacks )
-		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", True )
+		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", False )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -417,9 +417,17 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer15.Add( bSizer111, 0, wx.EXPAND, 5 )
 
+		bSizer211 = wx.BoxSizer( wx.HORIZONTAL )
+
 		self.m_textCtrl1 = wx.TextCtrl( self.m_panel4, wx.ID_ANY, u"none", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
 		self.m_textCtrl1.SetMaxLength( 24 )
-		bSizer15.Add( self.m_textCtrl1, 0, wx.ALL|wx.EXPAND, 5 )
+		bSizer211.Add( self.m_textCtrl1, 1, wx.ALL, 5 )
+
+		self.m_button241 = wx.Button( self.m_panel4, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer211.Add( self.m_button241, 0, wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer211, 1, wx.EXPAND, 5 )
 
 		bSizer14 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -455,6 +463,7 @@ class ImageEdit ( wx.Frame ):
 		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickExportAll )
 		self.m_button81.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimation )
 		self.m_button91.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimation )
+		self.m_button241.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveAnimationName )
 
 	def __del__( self ):
 		pass
@@ -495,6 +504,9 @@ class ImageEdit ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickNextAnimation( self, event ):
+		event.Skip()
+
+	def OnButtonClickSaveAnimationName( self, event ):
 		event.Skip()
 
 	def m_splitter2OnIdle( self, event ):
