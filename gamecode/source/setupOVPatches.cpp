@@ -35,23 +35,6 @@ void patchoverlays()
     }
 }
 
-void ovnsub_43_020f78a8()
-{
-    register u32 r14 asm("r14");
-    register u32 r0 asm("r0");
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
-    register u32 r3 asm("r3");
-    u32 r0str = r0;
-    u32 r1str = r1;
-    u32 r2str = r2;
-    u32 r3str = r3;
-    u32 r14str = r14;
-    printf("ran function 1 from %x, r0: %x, r1: %x, r2: %x, r3: %x", r14str, r0str, r1str, r2str, r3str);
-    for (;;)
-        swiWaitForVBlank();
-}
-
 // FS_LoadOverlay End
 void arm9hook_0202496c()
 {

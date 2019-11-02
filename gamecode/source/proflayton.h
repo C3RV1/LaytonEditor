@@ -1,4 +1,5 @@
 #include <nds.h>
+#include "someptrs.h"
 
 #ifndef _NSMB_H
 #define _NSMB_H
