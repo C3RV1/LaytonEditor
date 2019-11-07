@@ -67,6 +67,7 @@ void sprintf(char *buffer, const char *format, ...)
             }
         }
     }
+    *buffer++ = 0x0;
 }
 
 void printf(const char *format, ...)

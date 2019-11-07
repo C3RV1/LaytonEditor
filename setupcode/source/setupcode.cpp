@@ -7,11 +7,12 @@ u32 PatchCodeOffset = 0xDEADBEAF;
 u32 CustomCodeLenght = 0xDEADBEAF;
 u32 TestAddress = 0xDEADBEAF;
 char text[] = "Hello World!";
+extern "C"
+{
+    void MIi_CpuCopy32(void *src, void *dest, u32 len);
+}
 
 void setupcustomcode()
 {
-    u8 *startCustomCode = (u8 *)(&_end);
-    u8 *arenaLo = (u8 *)PatchCodeOffset;
-    for (u32 i = 0; i < CustomCodeLenght; i++)
-        arenaLo[i] = startCustomCode[i];
+    MIi_CpuCopy32((void *)(&_end), (void *)PatchCodeOffset, CustomCodeLenght);
 }

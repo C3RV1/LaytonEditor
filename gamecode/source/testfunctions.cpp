@@ -14,7 +14,7 @@ typedef struct arm9data
 } arm9data_t;
 
 arm9data_t *dataptr;
-bool go_left = 0;
+bool go_right = 1;
 
 extern "C"
 {
@@ -39,9 +39,9 @@ void ovhook_9_020f036c()
     myScanKeys();
     if (myKeysDown() & LEFT)
     {
-        if (not go_left)
+        if (not go_right)
         {
-            go_left = true;
+            go_right = true;
             short *bgspd = PTR_TITLESCREEN_BG_SPEED;
             *bgspd = 2;
             bushspeed = 1;
@@ -49,9 +49,9 @@ void ovhook_9_020f036c()
     }
     else if (myKeysDown() & RIGHT)
     {
-        if (go_left)
+        if (go_right)
         {
-            go_left = false;
+            go_right = false;
             *(PTR_TITLESCREEN_BG_SPEED) = -2;
             bushspeed = -1;
         }

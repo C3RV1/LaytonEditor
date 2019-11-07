@@ -3,6 +3,8 @@
 
 u32 Overlay = 0;
 u32 OVChange_Offset = 0xDEADBEAF;
+u32 LoadedOverlays0 = 0x0;
+u32 LoadedOverlays1 = 0x0;
 
 extern "C"
 {
@@ -10,16 +12,72 @@ extern "C"
     extern void testHook_020eff3c_end();
 }
 
-void arm9hook_0202492c()
+void set_overlay_enabled(int ov)
 {
-    register u32 r1 asm("r1");
-    Overlay = r1;
+    if (ov < 32)
+    {
+        LoadedOverlays0 |= 1 << ov;
+    }
+    else
+    {
+        LoadedOverlays1 |= 1 << (ov - 32);
+    }
+}
+
+void set_overlay_disabled(int ov)
+{
+    if (ov < 32)
+    {
+        LoadedOverlays0 &= ~(1 << ov);
+    }
+    else
+    {
+        LoadedOverlays1 &= ~(1 << (ov - 32));
+    }
+}
+
+void print_enabled_overlays()
+{
+    char final[200] = "Overlays loaded: ";
+    char *finalptr = final;
+    finalptr += strlen(final);
+    char buffer[20];
+    int ov = 0;
+    while (ov < 32)
+    {
+        if (LoadedOverlays0 & (1 << ov))
+        {
+            sprintf(buffer, "%d ", ov);
+            strcpy(finalptr, buffer);
+            finalptr += strlen(buffer);
+        }
+        ov++;
+    }
+    while (ov < 64)
+    {
+        if (LoadedOverlays0 & (1 << ov))
+        {
+            sprintf(buffer, "%d ", ov);
+            strcpy(finalptr, buffer);
+            finalptr += strlen(buffer);
+        }
+        ov++;
+    }
+    *finalptr++ = 0;
+    printf(final);
+}
+
+void arm9hook_0202492c(u32 param1, u32 param2)
+{
+    Overlay = param2;
 }
 
 void patchoverlays()
 {
 
     printf("Loaded Overlay %d", Overlay);
+    set_overlay_enabled(Overlay);
+    print_enabled_overlays();
     u32 data0;
     u32 data1;
     u32 *original_ptr;
@@ -47,9 +105,11 @@ void arm9hook_0202495c()
     patchoverlays();
 }
 
-void arm9hook_02024980()
+void arm9hook_02024980(u32 param1, u32 param2)
 {
-    register u32 r1 asm("r1");
-    Overlay = r1;
-    printf("Unloaded Overlay %d", Overlay);
+    // register u32 r1 asm("r1");
+    // Overlay = r1;
+    printf("Unloaded Overlay %d", param2);
+    set_overlay_disabled(param2);
+    print_enabled_overlays();
 }
