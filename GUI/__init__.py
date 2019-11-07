@@ -256,13 +256,14 @@ class MainFrame(gen.MainFrame):
         imagefileeditor = ImageEdit(self, self.selected_imagefile)
         imagefileeditor.Show(True)
 
-    def OnButtonClickPatchRom( self, event ):
+    def OnButtonClickPatchRom(self, event):
         print(self.arm9backup)
         setupcode_folder = self.m_textCtrl2.GetLabelText()
         gamecode_folder = self.m_textCtrl3.GetLabelText()
         arenalooffsptr = int(self.m_textCtrl31.GetLabelText(), 16)
         self.rom.arm9 = self.arm9backup
         LaytonLib.asm_patching.PatchRom(self.rom, setupcode_folder, gamecode_folder, arenalooffsptr)
+
 
 class ImageEdit(generated.ImageEdit):
     def __init__(self, parent, base_image_file):
@@ -279,6 +280,10 @@ class ImageEdit(generated.ImageEdit):
         self.animationIndex = 0
         self.m_staticText51.SetLabel(f"1/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[0].name)
+
+        self.animationFrameIndex = 0
+        self.update_animation_data()
+        self.update_animation_previewimage()
 
     # Helper function to swap the previouw image
     def update_previewimage(self):
@@ -418,20 +423,146 @@ class ImageEdit(generated.ImageEdit):
             self.animationIndex = 0
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
-        anim: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+
+        self.animationFrameIndex = 0
+        self.update_animation_data()
+        self.update_animation_previewimage()
 
     def OnButtonClickPreviousAnimation(self, event):
         self.animationIndex -= 1
         if self.animationIndex < 0:
-            self.animationIndex = len(self.base_image_file.animations)-1
+            self.animationIndex = len(self.base_image_file.animations) - 1
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
 
-    def OnButtonClickSaveAnimationName( self, event ):
+        self.animationFrameIndex = 0
+        self.update_animation_data()
+        self.update_animation_previewimage()
+
+    def OnButtonClickSaveAnimationName(self, event):
         animation = self.base_image_file.animations[self.animationIndex]
         animation: LaytonLib.images.ani.Animation
         animation.name = self.m_textCtrl1.GetValue()
-        print(self.m_textCtrl1.GetValue())
+
+    # Helper function to swap the previouw image of the animation editor
+    def update_animation_previewimage(self):
+        if len(self.base_image_file.animations[self.animationIndex].frameIDs) == 0:
+            fullimage = imgl.new("RGBA", (258, 194))
+            # Temporarely save it as a file to load it in wx
+            fullimage.save("temp.bmp")
+            wximage = wx.Image("temp.bmp")
+            remove("temp.bmp")
+            self.m_previewImage1.SetBitmap(wximage.ConvertToBitmap())
+            return
+
+        image = self.base_image_file.frame_to_PIL(
+            self.base_image_file.animations[self.animationIndex].imageIndexes[self.animationFrameIndex])
+
+        # Create a the full sized image
+        fullimage = imgl.new("RGBA", (258, 194))
+
+        # Paste it onto the full sized image
+        fullimage.paste(image, (1, 1))
+        edit = fullimage.load()
+        for i in range(258):
+            edit[i, 0] = (0, 0, 0, 255)
+            edit[i, -1] = (0, 0, 0, 255)
+        for i in range(1, 193):
+            edit[0, i] = (0, 0, 0, 255)
+            edit[-1, -i] = (0, 0, 0, 255)
+
+        # Temporarely save it as a file to load it in wx
+        fullimage.save("temp.bmp")
+        wximage = wx.Image("temp.bmp")
+        remove("temp.bmp")
+
+        self.m_previewImage1.SetBitmap(wximage.ConvertToBitmap())
+
+    def update_animation_data(self):
+        if len(self.base_image_file.animations[self.animationIndex].frameIDs) == 0:
+            self.m_staticText511.SetLabel("0/0")
+            self.m_textCtrl11.SetLabel("")
+            self.m_textCtrl13.SetLabel("")
+            return
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        self.m_staticText511.SetLabel(f"{self.animationFrameIndex + 1}/{len(animation.frameIDs)}")
+        self.m_textCtrl11.SetLabel(str(animation.imageIndexes[self.animationFrameIndex]))
+        self.m_textCtrl13.SetLabel(str(animation.frameDurations[self.animationFrameIndex]))
+        self.m_textCtrl131.SetLabel(str(animation.frameIDs[self.animationFrameIndex]))
+
+    def OnButtonClickNextAnimationFrame(self, event):
+        if len(self.base_image_file.animations[self.animationIndex].frameIDs) == 0:
+            return
+        self.animationFrameIndex += 1
+        if self.animationFrameIndex >= len(self.base_image_file.animations[self.animationIndex].frameIDs):
+            self.animationFrameIndex = 0
+        self.update_animation_data()
+        self.update_animation_previewimage()
+
+    def OnButtonClickPreviousAnimationFrame( self, event ):
+        animation = self.base_image_file.animations[self.animationIndex]
+        if len(animation.frameIDs) == 0:
+            return
+        self.animationFrameIndex -= 1
+        if self.animationFrameIndex < 0:
+            self.animationFrameIndex = len(animation.frameIDs) - 1
+        self.update_animation_data()
+        self.update_animation_previewimage()
+
+    def OnButtonClickAddAnimation( self, event ):
+        newanimation = LaytonLib.images.ani.Animation()
+        newanimation.name = "New Animation"
+        self.animationIndex += 1
+        self.base_image_file.animations.insert(self.animationIndex, newanimation)
+        self.update_animation_previewimage()
+        self.update_animation_data()
+        self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
+        self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.base_image_file.save()
+
+    def OnButtonClickRemoveAnimation( self, event ):
+        if self.animationIndex == 0:
+            print("Can't remove this animation")
+            return
+        del self.base_image_file.animations[self.animationIndex]
+        self.update_animation_previewimage()
+        self.update_animation_data()
+        self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
+        self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.base_image_file.save()
+
+    def OnButtonClickAddAFrame( self, event ):
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        self.animationFrameIndex += 1
+        animation.imageIndexes.insert(self.animationFrameIndex, 0)
+        animation.frameDurations.insert(self.animationFrameIndex, 60)
+        animation.frameIDs.insert(self.animationFrameIndex, self.animationFrameIndex)
+        self.update_animation_previewimage()
+        self.update_animation_data()
+        self.base_image_file.save()
+
+    def OnButtonClickRemoveAFrame( self, event ):
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        animation.imageIndexes.pop(self.animationFrameIndex)
+        animation.frameDurations.pop(self.animationFrameIndex)
+        animation.frameIDs.pop(self.animationFrameIndex)
+        self.update_animation_previewimage()
+        self.update_animation_data()
+        self.base_image_file.save()
+
+    def OnTextEnterFrameDur( self, event ):
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        animation.frameDurations[self.animationFrameIndex] = int(self.m_textCtrl13.GetValue())
+
+    def OnTextEnterFrameID( self, event ):
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        animation.frameIDs[self.animationFrameIndex] = int(self.m_textCtrl131.GetValue())
+
+    def OnTextEnterImgID( self, event ):
+        animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
+        animation.imageIndexes[self.animationFrameIndex] = int(self.m_textCtrl11.GetValue())
+        self.update_animation_previewimage()
+
 
 class LaytonEditor(wx.App):
     def __init__(self):

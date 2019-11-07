@@ -427,12 +427,95 @@ class ImageEdit ( wx.Frame ):
 		bSizer211.Add( self.m_button241, 0, wx.ALL, 5 )
 
 
-		bSizer15.Add( bSizer211, 1, wx.EXPAND, 5 )
+		bSizer15.Add( bSizer211, 0, wx.EXPAND, 5 )
 
-		bSizer14 = wx.BoxSizer( wx.HORIZONTAL )
+		self.m_panel10 = wx.Panel( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel10.SetBackgroundColour( wx.Colour( 230, 230, 230 ) )
+
+		bSizer26 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_previewImage1 = wx.StaticBitmap( self.m_panel10, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_previewImage1.SetMinSize( wx.Size( 258,194 ) )
+
+		bSizer26.Add( self.m_previewImage1, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+		bSizer1111 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_button811 = wx.Button( self.m_panel10, wx.ID_ANY, u"<", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer1111.Add( self.m_button811, 1, wx.ALL, 5 )
+
+		self.m_staticText511 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"1/1", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText511.Wrap( -1 )
+
+		bSizer1111.Add( self.m_staticText511, 1, wx.ALL, 10 )
+
+		self.m_button911 = wx.Button( self.m_panel10, wx.ID_ANY, u">", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer1111.Add( self.m_button911, 1, wx.ALL, 5 )
 
 
-		bSizer15.Add( bSizer14, 0, wx.EXPAND, 5 )
+		bSizer26.Add( bSizer1111, 0, wx.EXPAND, 5 )
+
+		bSizer31 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText24 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"Image ID:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText24.Wrap( -1 )
+
+		bSizer31.Add( self.m_staticText24, 1, wx.ALL, 5 )
+
+		self.m_staticText26 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"Frame Duration:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText26.Wrap( -1 )
+
+		bSizer31.Add( self.m_staticText26, 1, wx.ALL, 5 )
+
+		self.m_staticText241 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"Frame ID:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText241.Wrap( -1 )
+
+		bSizer31.Add( self.m_staticText241, 1, wx.ALL, 5 )
+
+
+		bSizer26.Add( bSizer31, 0, wx.EXPAND, 5 )
+
+		bSizer33 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_textCtrl11 = wx.TextCtrl( self.m_panel10, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+		bSizer33.Add( self.m_textCtrl11, 1, wx.ALL, 5 )
+
+		self.m_textCtrl13 = wx.TextCtrl( self.m_panel10, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+		bSizer33.Add( self.m_textCtrl13, 1, wx.ALL, 5 )
+
+		self.m_textCtrl131 = wx.TextCtrl( self.m_panel10, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+		bSizer33.Add( self.m_textCtrl131, 1, wx.ALL, 5 )
+
+
+		bSizer26.Add( bSizer33, 0, wx.EXPAND, 5 )
+
+		bSizer34 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_button34 = wx.Button( self.m_panel10, wx.ID_ANY, u"Add frame", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer34.Add( self.m_button34, 1, wx.ALL|wx.ALIGN_BOTTOM, 5 )
+
+		self.m_button35 = wx.Button( self.m_panel10, wx.ID_ANY, u"Remove frame", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer34.Add( self.m_button35, 1, wx.ALL|wx.ALIGN_BOTTOM, 5 )
+
+
+		bSizer26.Add( bSizer34, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel10.SetSizer( bSizer26 )
+		self.m_panel10.Layout()
+		bSizer26.Fit( self.m_panel10 )
+		bSizer15.Add( self.m_panel10, 1, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer35 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_button36 = wx.Button( self.m_panel4, wx.ID_ANY, u"Add Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer35.Add( self.m_button36, 1, wx.ALL, 5 )
+
+		self.m_button37 = wx.Button( self.m_panel4, wx.ID_ANY, u"Remove Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer35.Add( self.m_button37, 1, wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer35, 0, wx.EXPAND, 5 )
 
 
 		self.m_panel4.SetSizer( bSizer15 )
@@ -464,6 +547,15 @@ class ImageEdit ( wx.Frame ):
 		self.m_button81.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimation )
 		self.m_button91.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimation )
 		self.m_button241.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveAnimationName )
+		self.m_button811.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimationFrame )
+		self.m_button911.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimationFrame )
+		self.m_textCtrl11.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterImgID )
+		self.m_textCtrl13.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterFrameDur )
+		self.m_textCtrl131.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterFrameID )
+		self.m_button34.Bind( wx.EVT_BUTTON, self.OnButtonClickAddAFrame )
+		self.m_button35.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveAFrame )
+		self.m_button36.Bind( wx.EVT_BUTTON, self.OnButtonClickAddAnimation )
+		self.m_button37.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveAnimation )
 
 	def __del__( self ):
 		pass
@@ -507,6 +599,33 @@ class ImageEdit ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickSaveAnimationName( self, event ):
+		event.Skip()
+
+	def OnButtonClickPreviousAnimationFrame( self, event ):
+		event.Skip()
+
+	def OnButtonClickNextAnimationFrame( self, event ):
+		event.Skip()
+
+	def OnTextEnterImgID( self, event ):
+		event.Skip()
+
+	def OnTextEnterFrameDur( self, event ):
+		event.Skip()
+
+	def OnTextEnterFrameID( self, event ):
+		event.Skip()
+
+	def OnButtonClickAddAFrame( self, event ):
+		event.Skip()
+
+	def OnButtonClickRemoveAFrame( self, event ):
+		event.Skip()
+
+	def OnButtonClickAddAnimation( self, event ):
+		event.Skip()
+
+	def OnButtonClickRemoveAnimation( self, event ):
 		event.Skip()
 
 	def m_splitter2OnIdle( self, event ):
