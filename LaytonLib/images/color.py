@@ -23,3 +23,6 @@ class Color():
         self.r = (bgr555_sum & (2 ** 5 - 1)) << 3
         self.g = ((bgr555_sum >> 5) & (2 ** 5 - 1)) << 3
         self.b = ((bgr555_sum >> 10) & (2 ** 5 - 1)) << 3
+
+    def __repr__(self):
+        return f"Color(({self.r}, {self.g}, {self.b}))"

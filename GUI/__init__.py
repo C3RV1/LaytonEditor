@@ -36,9 +36,13 @@ class MainFrame(gen.MainFrame):
 
             except IOError:
                 raise IOError("Unable to load rom.")
+        self.setupAfterOpen()
+
+    def setupAfterOpen(self):
         self.rom.arm9 = self.rom.loadArm9().save(compress=False)
         self.arm9backup = self.rom.arm9
         self.updateAniImageList()
+        self.updateBGImageList()
         self.tree_imagefiles.Expand(self.tree_imagefiles.GetRootItem())
 
     def OnMenuSelectionSave(self, event):
@@ -263,6 +267,63 @@ class MainFrame(gen.MainFrame):
         arenalooffsptr = int(self.m_textCtrl31.GetLabelText(), 16)
         self.rom.arm9 = self.arm9backup
         LaytonLib.asm_patching.PatchRom(self.rom, setupcode_folder, gamecode_folder, arenalooffsptr)
+
+    # Helper function to update the list of image files
+    def updateBGImageList(self):
+        self.tree_imagefiles1.DeleteAllItems()
+        folder: Folder = self.rom.filenames["data_lt2/bg"]
+        root = self.tree_imagefiles1.AddRoot("bg")
+        for img in folder.files:
+            i = self.tree_imagefiles1.AppendItem(root, img)
+            self.tree_imagefiles1.SetItemData(i, folder.idOf(img))
+        for f in folder.folders:
+            self.addFolderBG(root, f)
+
+    # Helper function to add the contents of one folder with recursion.
+    def addFolderBG(self, root, folder):
+        nroot = self.tree_imagefiles1.AppendItem(root, folder[0])
+        fol = folder[1]
+        for i in fol.files:
+            j = self.tree_imagefiles1.AppendItem(nroot, i)
+            self.tree_imagefiles1.SetItemData(j, fol.idOf(i))
+        for f in fol.folders:
+            self.addFolderBG(nroot, f)
+
+    def tree_imagefilesbgOnTreeSelChanged( self, event ):
+        file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
+        if not file_id:
+            return
+
+        self.selected_imagefile = LaytonLib.filesystem.File(self.rom, file_id)
+        self.selected_imagefile = LaytonLib.images.bg.BgFile(self.rom, file_id)
+
+        self.updateBGImagePreview()
+
+    def updateBGImagePreview(self):
+        fullimage = self.selected_imagefile.img
+        fullimage.save("temp.bmp")
+        wximage = wx.Image("temp.bmp")
+        remove("temp.bmp")
+
+        self.previewImage1.SetBitmap(wximage.ConvertToBitmap())
+
+    def OnButtonClickReplaceImageBG( self, event ):
+        pass
+
+    def OnButtonClickSaveImageBG( self, event ):
+        pass
+
+    def OnButtonClickExtractBG( self, event ):
+        pass
+
+    def OnButtonClickExtractDecomBG( self, event ):
+        pass
+
+    def OnButtonClickReplaceBG( self, event ):
+        pass
+
+    def OnButtonClickReplaceDecomBG( self, event ):
+        pass
 
 
 class ImageEdit(generated.ImageEdit):

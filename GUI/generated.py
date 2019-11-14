@@ -139,7 +139,105 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.SetSizer( bSizer141 )
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
-		self.m_notebook1.AddPage( self.m_panel9, u"Images", True )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
+		self.m_panel10 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer27 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_splitter3 = wx.SplitterWindow( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter3.Bind( wx.EVT_IDLE, self.m_splitter3OnIdle )
+
+		self.m_panel11 = wx.Panel( self.m_splitter3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer28 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer_leftside1 = wx.BoxSizer( wx.VERTICAL )
+
+		self.tree_imagefiles1 = wx.TreeCtrl( self.m_panel11, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
+		bSizer_leftside1.Add( self.tree_imagefiles1, 1, wx.EXPAND|wx.ALL, 5 )
+
+		gSizer_buttonsleft1 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_button_extract1 = wx.Button( self.m_panel11, wx.ID_ANY, u"Extract", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer_buttonsleft1.Add( self.m_button_extract1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_replacefile1 = wx.Button( self.m_panel11, wx.ID_ANY, u"Replace", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer_buttonsleft1.Add( self.m_button_replacefile1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_extractdecom1 = wx.Button( self.m_panel11, wx.ID_ANY, u"Extract Decompressed", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer_buttonsleft1.Add( self.m_button_extractdecom1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button231 = wx.Button( self.m_panel11, wx.ID_ANY, u"Replace Decompressed", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer_buttonsleft1.Add( self.m_button231, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer_leftside1.Add( gSizer_buttonsleft1, 0, wx.EXPAND, 5 )
+
+
+		bSizer28.Add( bSizer_leftside1, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel11.SetSizer( bSizer28 )
+		self.m_panel11.Layout()
+		bSizer28.Fit( self.m_panel11 )
+		self.m_panel12 = wx.Panel( self.m_splitter3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer29 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer_imageinfo1 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_panel_previewimage1 = wx.Panel( self.m_panel12, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel_previewimage1.SetMinSize( wx.Size( 276,202 ) )
+
+		bSizer_previewimage1 = wx.BoxSizer( wx.VERTICAL )
+
+		self.previewImage1 = wx.StaticBitmap( self.m_panel_previewimage1, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.previewImage1.SetMinSize( wx.Size( 256,192 ) )
+
+		bSizer_previewimage1.Add( self.previewImage1, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+
+		self.m_panel_previewimage1.SetSizer( bSizer_previewimage1 )
+		self.m_panel_previewimage1.Layout()
+		bSizer_previewimage1.Fit( self.m_panel_previewimage1 )
+		bSizer_imageinfo1.Add( self.m_panel_previewimage1, 0, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_staticText_Colordepth1 = wx.StaticText( self.m_panel12, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_Colordepth1.Wrap( -1 )
+
+		bSizer_imageinfo1.Add( self.m_staticText_Colordepth1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_staticText_imagename1 = wx.StaticText( self.m_panel12, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_imagename1.Wrap( -1 )
+
+		bSizer_imageinfo1.Add( self.m_staticText_imagename1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_staticText_imageID1 = wx.StaticText( self.m_panel12, wx.ID_ANY, u"N/A", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText_imageID1.Wrap( -1 )
+
+		bSizer_imageinfo1.Add( self.m_staticText_imageID1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_panel_filler1 = wx.Panel( self.m_panel12, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer_imageinfo1.Add( self.m_panel_filler1, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_button_saveimage1 = wx.Button( self.m_panel12, wx.ID_ANY, u"Save Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer_imageinfo1.Add( self.m_button_saveimage1, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_replaceimageandpalette1 = wx.Button( self.m_panel12, wx.ID_ANY, u"Replace Image (add to palette)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer_imageinfo1.Add( self.m_button_replaceimageandpalette1, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer29.Add( bSizer_imageinfo1, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel12.SetSizer( bSizer29 )
+		self.m_panel12.Layout()
+		bSizer29.Fit( self.m_panel12 )
+		self.m_splitter3.SplitVertically( self.m_panel11, self.m_panel12, 0 )
+		bSizer27.Add( self.m_splitter3, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel10.SetSizer( bSizer27 )
+		self.m_panel10.Layout()
+		bSizer27.Fit( self.m_panel10 )
+		self.m_notebook1.AddPage( self.m_panel10, u"Backgrounds", True )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -244,6 +342,13 @@ class MainFrame ( wx.Frame ):
 		self.m_button_replaceimage.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImage )
 		self.m_button_replaceimageandpalette.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageAddPall )
 		self.m_button_editfile.Bind( wx.EVT_BUTTON, self.OnButtonClickEditFile )
+		self.tree_imagefiles1.Bind( wx.EVT_TREE_SEL_CHANGED, self.tree_imagefilesbgOnTreeSelChanged )
+		self.m_button_extract1.Bind( wx.EVT_BUTTON, self.OnButtonClickExtractBG )
+		self.m_button_replacefile1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceBG )
+		self.m_button_extractdecom1.Bind( wx.EVT_BUTTON, self.OnButtonClickExtractDecomBG )
+		self.m_button231.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceDecomBG )
+		self.m_button_saveimage1.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveImageBG )
+		self.m_button_replaceimageandpalette1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageBG )
 		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionOpen, id = self.m_menuItem_openfile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
@@ -287,6 +392,27 @@ class MainFrame ( wx.Frame ):
 	def OnButtonClickEditFile( self, event ):
 		event.Skip()
 
+	def tree_imagefilesbgOnTreeSelChanged( self, event ):
+		event.Skip()
+
+	def OnButtonClickExtractBG( self, event ):
+		event.Skip()
+
+	def OnButtonClickReplaceBG( self, event ):
+		event.Skip()
+
+	def OnButtonClickExtractDecomBG( self, event ):
+		event.Skip()
+
+	def OnButtonClickReplaceDecomBG( self, event ):
+		event.Skip()
+
+	def OnButtonClickSaveImageBG( self, event ):
+		event.Skip()
+
+	def OnButtonClickReplaceImageBG( self, event ):
+		event.Skip()
+
 	def OnButtonClickPatchRom( self, event ):
 		event.Skip()
 
@@ -302,6 +428,10 @@ class MainFrame ( wx.Frame ):
 	def m_splitter1OnIdle( self, event ):
 		self.m_splitter1.SetSashPosition( 0 )
 		self.m_splitter1.Unbind( wx.EVT_IDLE )
+
+	def m_splitter3OnIdle( self, event ):
+		self.m_splitter3.SetSashPosition( 0 )
+		self.m_splitter3.Unbind( wx.EVT_IDLE )
 
 
 ###########################################################################

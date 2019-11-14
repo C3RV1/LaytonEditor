@@ -73,6 +73,10 @@ class BinaryWriter:
         for l in u8list:
             self.writeU8(l)
 
+    def writeU16List(self, u16list: list):
+        for l in u16list:
+            self.writeU16(l)
+
     def writeU4List(self, u4list: list):
         if len(u4list) % 2 != 0:
             u4list.append(0)
@@ -143,3 +147,26 @@ def split_byte(byte):
 # Joins 2 u4 into one byte
 def join_U4(high, low):
     return (high<<4) + low
+
+class BitReader(BinaryReader):
+    def __init__(self, stream: bytes):
+        super().__init__(stream)
+        self.bitpos = 0
+        self.last = 0
+
+    def resetBits(self):
+        self.bitpos = 0
+
+    def Pop(self):
+        if (self.bitpos % 16 == 0):
+            self.last = self.readU16()
+        else:
+            self.last = (self.last << 1) & 0xffff
+        self.bitpos += 1
+        return 1 if self.last & 0x8000 > 0 else 0
+
+    def PopInt(self, n):
+        value = 0
+        for i in range(n):
+            value = 2 * value + self.Pop()
+        return value
