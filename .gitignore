@@ -16,3 +16,4 @@ setupcode/.vscode/c_cpp_properties.json
 *.map
 *.elf
 *.sym
+gamecode/
