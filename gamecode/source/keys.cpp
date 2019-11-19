@@ -7,7 +7,8 @@ void myScanKeys()
 {
 	first = false;
 	int keys = ~REG_KEYINPUT;
-	if(first) oldKeys = keys;
+	if (first)
+		oldKeys = keys;
 	keysDw = keys & ~oldKeys;
 	oldKeys = keys;
 }
@@ -23,8 +24,8 @@ int myKeysDown()
 
 void waitForUserInput(u32 input)
 {
-    while ((REG_KEYINPUT & input) == input)
-    {
-        swiWaitForVBlank();
-    }
+	while ((REG_KEYINPUT & input) == input)
+	{
+		swiWaitForVBlank();
+	}
 }

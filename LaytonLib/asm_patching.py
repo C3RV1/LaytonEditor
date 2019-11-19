@@ -244,7 +244,6 @@ class PatchRom:
             if "OVChange_Offset" in line:
                 offset_real = int(line[:8], 16)
                 offset_now = offset_real - self.offset_patchcode
-                print(offset_real, self.offset_patchcode)
                 self.patchcode_edit.replU32(self.offset_ovchange_table, offset_now)
 
     def clean_all(self):

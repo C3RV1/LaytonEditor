@@ -37,6 +37,75 @@ class rle():
 
         return wtr.data
 
+    @staticmethod
+    def compress(data):
+        rdr = BinaryReader(data)
+        wtr = BinaryWriter()
+        wtr.writeU8(0x30)
+
+        wtr.writeU8(len(data)&0xff)
+        wtr.writeU16(len(data)>>8)
+
+        readLenght = 0
+        repCount = 1
+        currentBlockLenght = 0
+        dataBlock = [0 for _ in range(130)]
+        while rdr.c < len(rdr.data):
+            foundRepetition = False
+            while (currentBlockLenght < 130 and rdr.c < len(rdr.data)):
+                nextByte = rdr.readU8()
+                readLenght+=1
+                print(currentBlockLenght)
+                dataBlock[currentBlockLenght] = nextByte
+                currentBlockLenght += 1
+                if (currentBlockLenght > 1):
+                    if nextByte == dataBlock[currentBlockLenght - 2]:
+                        repCount += 1
+                    else:
+                        repCount = 1
+                foundRepetition = repCount > 2
+                if foundRepetition:
+                    break
+            numUncompToCopy = 0
+            if foundRepetition:
+                numUncompToCopy = currentBlockLenght - 3
+            else:
+                numUncompToCopy = min(currentBlockLenght, 130-2)
+
+            if numUncompToCopy > 0:
+                flag = numUncompToCopy - 1
+                wtr.writeU8(flag)
+                for i in range(numUncompToCopy):
+                    wtr.writeU8(dataBlock[i])
+                for i in range(numUncompToCopy, currentBlockLenght):
+                    dataBlock[i - numUncompToCopy] = dataBlock[i]
+                currentBlockLenght -= numUncompToCopy
+            if foundRepetition:
+                while currentBlockLenght < 130 and rdr.c < len(rdr.data):
+                    nextByte = rdr.readU8()
+                    readLenght += 1
+                    dataBlock[currentBlockLenght] = nextByte
+                    currentBlockLenght += 1
+                    if nextByte != dataBlock[0]:
+                        break
+                    else:
+                        repCount+=1
+                flag = 0x80 | (repCount-3)
+                wtr.writeU8(flag)
+                wtr.writeU8(dataBlock[0])
+                if (repCount != currentBlockLenght):
+                    dataBlock[0] = dataBlock[currentBlockLenght-1]
+                currentBlockLenght -= repCount
+
+        if currentBlockLenght > 0:
+            flag = currentBlockLenght - 1
+            wtr.writeU8(flag)
+            for i in range(currentBlockLenght):
+                wtr.writeU8(dataBlock[i])
+            currentBlockLenght = 0
+
+
+        return wtr.data
 
 class HuffTreeNode:
     def __init__(self, rdr: BinaryReader, isData: bool, relOffset, maxStreamPos):
@@ -70,7 +139,6 @@ class HuffTreeNode:
 
             # reset stream
             rdr.c = currStreamPos
-
 
 # Mostly copied from Tinke
 class huff8bit():
@@ -132,5 +200,7 @@ def decompress(data: bytes):
 def compress(data: bytes, type):
     if type == 0x10:
         return lz10.compress(data)
+    elif type == RLE:
+        return rle.compress(data)
     else:
         raise Exception("Unsupported compression filetype with starting byte %s" % type)

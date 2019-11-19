@@ -4,11 +4,36 @@
 #ifndef _NSMB_H
 #define _NSMB_H
 
+typedef u8 FSFile[0x48];
+typedef u8 OSThread[0xC0];
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-	//Printing
+	// Allocating and freeing
+	void FreeSomething(void *ptr);
+	void* AllocSomething(u32 size);
+
+	// Files
+	void FS_InitFile(FSFile *p_file);
+	void FS_CloseFile(FSFile *p_file);
+	s32 FS_ReadFile(FSFile *p_file, void *dst, s32 len);
+	s32 FS_OpenFile(FSFile *p_file, const char *filename);
+	bool FS_SeekFile(FSFile *p_file, s32 offset, int origin);
+	bool FS_OpenFileFast(FSFile *p_file, u32 archivePtr, int file_id);
+
+	//Threading funcs
+	void OS_CreateThread(OSThread *thread, void (*func)(void *), void *arg, void *stack, u32 stackSize, u32 prio);
+	void OS_WakeupThreadDirect(OSThread *thread);
+	
+	// Sound
+    void setupsound(void* ptr_sounddata, u32 p2unki, u32 stream_n, s32 p4ni, u32 p5ni);
+    void stopsound(void* ptr_sounddata, u32 p2unki);
+    void startsound(void* ptr_sounddata, u32 p2unki);
+
+	// Irq
+    void enableIRQ(u32 irq);
 
 #ifdef __cplusplus
 }
@@ -38,7 +63,8 @@ int myKeysDown();
 void waitForUserInput(u32 input);
 void waitForVBlankIrqLess();
 
-//Usefull things
+// Usefull things:
+// String Formatting
 void sprintf(char *buffer, const char *format, ...);
 void printf(const char *format, ...);
 
