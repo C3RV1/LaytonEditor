@@ -308,22 +308,61 @@ class MainFrame(gen.MainFrame):
         self.previewImage1.SetBitmap(wximage.ConvertToBitmap())
 
     def OnButtonClickReplaceImageBG( self, event ):
-        pass
+        file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
+        if not file_id:
+            return
+        with wx.FileDialog(self, "Choose Image", style=wx.FD_OPEN, wildcard="PNG files (*.png)\
+                                |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            img = imgl.open(pathname)
+            self.selected_imagefile.img = img
+        self.updateBGImagePreview()
+        self.selected_imagefile.save()
 
     def OnButtonClickSaveImageBG( self, event ):
-        pass
+        file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
+        if not file_id:
+            return
+        with wx.FileDialog(self, "Save Image", style=wx.FD_SAVE, wildcard="PNG files (*.png)\
+                        |*.png;JPG files (*.jpg)|*.jpg;BMP files (*.bmp)|*.bmp;All FIles") as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            img = self.selected_imagefile.img
+            img.save(pathname)
 
     def OnButtonClickExtractBG( self, event ):
-        pass
-
-    def OnButtonClickExtractDecomBG( self, event ):
-        pass
+        file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
+        if not file_id:
+            return
+        with wx.FileDialog(self, "Extract File", style=wx.FD_SAVE) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return  # the user changed their mind
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, 'wb+') as file:
+                    file.write(self.selected_imagefile.read())
+            except IOError:
+                return
 
     def OnButtonClickReplaceBG( self, event ):
-        pass
+        file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
+        if not file_id:
+            return
+        with wx.FileDialog(self, "Replace File", style=wx.FD_OPEN) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, 'rb') as file:
+                    self.selected_imagefile.write(file.read())
+                    self.selected_imagefile.reload()
+            except IOError:
+                return
+        self.updateBGImagePreview()
 
-    def OnButtonClickReplaceDecomBG( self, event ):
-        pass
 
 
 class ImageEdit(generated.ImageEdit):

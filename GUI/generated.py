@@ -162,12 +162,6 @@ class MainFrame ( wx.Frame ):
 		self.m_button_replacefile1 = wx.Button( self.m_panel11, wx.ID_ANY, u"Replace", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer_buttonsleft1.Add( self.m_button_replacefile1, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_button_extractdecom1 = wx.Button( self.m_panel11, wx.ID_ANY, u"Extract Decompressed", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer_buttonsleft1.Add( self.m_button_extractdecom1, 0, wx.ALL|wx.EXPAND, 5 )
-
-		self.m_button231 = wx.Button( self.m_panel11, wx.ID_ANY, u"Replace Decompressed", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer_buttonsleft1.Add( self.m_button231, 0, wx.ALL|wx.EXPAND, 5 )
-
 
 		bSizer_leftside1.Add( gSizer_buttonsleft1, 0, wx.EXPAND, 5 )
 
@@ -345,8 +339,6 @@ class MainFrame ( wx.Frame ):
 		self.tree_imagefiles1.Bind( wx.EVT_TREE_SEL_CHANGED, self.tree_imagefilesbgOnTreeSelChanged )
 		self.m_button_extract1.Bind( wx.EVT_BUTTON, self.OnButtonClickExtractBG )
 		self.m_button_replacefile1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceBG )
-		self.m_button_extractdecom1.Bind( wx.EVT_BUTTON, self.OnButtonClickExtractDecomBG )
-		self.m_button231.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceDecomBG )
 		self.m_button_saveimage1.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveImageBG )
 		self.m_button_replaceimageandpalette1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageBG )
 		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
@@ -399,12 +391,6 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickReplaceBG( self, event ):
-		event.Skip()
-
-	def OnButtonClickExtractDecomBG( self, event ):
-		event.Skip()
-
-	def OnButtonClickReplaceDecomBG( self, event ):
 		event.Skip()
 
 	def OnButtonClickSaveImageBG( self, event ):
