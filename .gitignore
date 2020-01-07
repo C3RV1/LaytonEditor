@@ -20,3 +20,4 @@ gamecode/
 test*.py
 custom*.py
 *.spec
+dist/
