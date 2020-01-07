@@ -47,6 +47,13 @@ class BinaryReader:
     def readFinal(self):
         return self.data[self.c:]
 
+    def readString(self):
+        string = ""
+        while self.data[self.c] != 0:
+            string += self.readChars(1)
+        self.c += 1
+        return string
+
 # Makes writing binaries easier
 class BinaryWriter:
     def __init__(self):
@@ -86,6 +93,11 @@ class BinaryWriter:
     def __len__(self):
         return len(self.data)
 
+    def align(self, by):
+        while len(self.data) % by:
+            self.writeU8(0)
+
+
 # Makes editing binaries easier
 class BinaryEditor:
     def __init__(self, data: bytes):
@@ -121,15 +133,39 @@ class BinaryEditor:
             at + 3] * 256 ** 3
         return out
 
+    def replU8(self, x, pos):
+        while pos >= len(self.data):
+            self.addZeros(1)
+        self.data = bytearray(self.data)
+        self.data[pos] = x & 0xFF
+        self.data = bytes(self.data)
+
+    def replU16(self, x, pos):
+        while pos + 1 >= len(self.data):
+            self.addZeros(1)
+        self.data = bytearray(self.data)
+        self.data[pos] = x & 0xFF
+        self.data[pos + 1] = x >> 8 & 0xFF
+        self.data = bytes(self.data)
+
     def replU32(self, x, pos):
-        while pos + 4 >= len(self.data):
-            self.addZeros(4)
+        while pos + 3 >= len(self.data):
+            self.addZeros(1)
         self.data = bytearray(self.data)
         self.data[pos] = x & 0xFF
         self.data[pos + 1] = x >> 8 & 0xFF
         self.data[pos + 2] = x >> 16 & 0xFF
         self.data[pos + 3] = x >> 24 & 0xFF
         self.data = bytes(self.data)
+
+    def readChars(self, pos, len):
+        return str(self.data[pos:pos+len], "ascii")
+
+    def replChars(self, x, pos, len):
+        x = bytes(x[:len], "ascii")
+        while(len(x)) < len:
+            x += 0x0
+        self.data[pos:pos+len] = x
 
     def align(self, by):
         while len(self.data) % by:
