@@ -19,3 +19,4 @@ setupcode/.vscode/c_cpp_properties.json
 gamecode/
 test*.py
 custom*.py
+*.spec
