@@ -7,6 +7,7 @@ from os import remove
 import PIL.Image as imgl
 from os.path import join
 import LaytonLib.asm_patching
+import LaytonLib.gdslegacy
 
 
 class MainFrame(gen.MainFrame):
@@ -16,6 +17,10 @@ class MainFrame(gen.MainFrame):
         self.selected_image = 1
         self.selected_imagefile = None
         self.save_location = ""
+
+        # For script/text editing
+        self.selected_file = None
+        self.selected_pack = None
 
         self.arm9backup = None
 
@@ -43,7 +48,7 @@ class MainFrame(gen.MainFrame):
         self.arm9backup = self.rom.arm9
         self.updateAniImageList()
         self.updateBGImageList()
-        self.tree_imagefiles.Expand(self.tree_imagefiles.GetRootItem())
+        self.updateSimplifiedScriptList()
 
     def OnMenuSelectionSave(self, event):
         if not self.save_location:
@@ -289,7 +294,7 @@ class MainFrame(gen.MainFrame):
         for f in fol.folders:
             self.addFolderBG(nroot, f)
 
-    def tree_imagefilesbgOnTreeSelChanged( self, event ):
+    def tree_imagefilesbgOnTreeSelChanged(self, event):
         file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
         if not file_id:
             return
@@ -307,7 +312,7 @@ class MainFrame(gen.MainFrame):
 
         self.previewImage1.SetBitmap(wximage.ConvertToBitmap())
 
-    def OnButtonClickReplaceImageBG( self, event ):
+    def OnButtonClickReplaceImageBG(self, event):
         file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
         if not file_id:
             return
@@ -321,7 +326,7 @@ class MainFrame(gen.MainFrame):
         self.updateBGImagePreview()
         self.selected_imagefile.save()
 
-    def OnButtonClickSaveImageBG( self, event ):
+    def OnButtonClickSaveImageBG(self, event):
         file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
         if not file_id:
             return
@@ -333,7 +338,7 @@ class MainFrame(gen.MainFrame):
             img = self.selected_imagefile.img
             img.save(pathname)
 
-    def OnButtonClickExtractBG( self, event ):
+    def OnButtonClickExtractBG(self, event):
         file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
         if not file_id:
             return
@@ -347,7 +352,7 @@ class MainFrame(gen.MainFrame):
             except IOError:
                 return
 
-    def OnButtonClickReplaceBG( self, event ):
+    def OnButtonClickReplaceBG(self, event):
         file_id = self.tree_imagefiles1.GetItemData(self.tree_imagefiles1.GetSelection())
         if not file_id:
             return
@@ -363,6 +368,130 @@ class MainFrame(gen.MainFrame):
                 return
         self.updateBGImagePreview()
 
+    # Helper function to update the list of script files
+    def updateSimplifiedScriptList(self):
+        self.m_tree_scripts_text.DeleteAllItems()
+        root = self.m_tree_scripts_text.AddRoot("items")
+        event_data_root = self.m_tree_scripts_text.AppendItem(root, "event data")
+        event_text_root = self.m_tree_scripts_text.AppendItem(root, "event text")
+        pack = None
+        for f in str(self.rom.filenames).split("\n"):
+            id, filename = [x for x in f.split(" ") if x]
+            id: int = int(id)
+            filename: str
+            if filename.endswith(".gds") or filename.endswith(".txt"):
+                print(self.rom.filenames.filenameOf(id))
+                self.m_tree_scripts_text.AppendItem(root, filename, data=[id, 0])  # TODO: ADD Data
+            if filename.endswith(".plz"):
+                has_script_or_text = False
+                plz = LaytonLib.filesystem.PlzFile(self.rom, id)
+                for f in plz.filenames:
+                    if f.endswith(".gds") or f.endswith(".txt"):
+                        if not has_script_or_text:
+                            has_script_or_text = True
+                            if filename.startswith("ev_d"):
+                                pack = self.m_tree_scripts_text.AppendItem(event_data_root, filename)
+                            elif filename.startswith("ev_t"):
+                                pack = self.m_tree_scripts_text.AppendItem(event_text_root, filename)
+                            else:
+                                pack = self.m_tree_scripts_text.AppendItem(root, filename)
+                        self.m_tree_scripts_text.AppendItem(pack, f, data=[plz.idOf(f), id])  # TODO: Add Data
+
+    def m_tree_scripts_textOnTreeSelChanged(self, event):
+        data = self.m_tree_scripts_text.GetItemData(self.m_tree_scripts_text.GetSelection())
+        if not data:
+            return
+
+        file_id, pack_id = data
+        self.selected_file = file_id
+        self.selected_pack = pack_id
+        file = None
+        if pack_id:
+            plz = LaytonLib.filesystem.PlzFile(self.rom, pack_id)
+            filename = plz.filenames[file_id]
+            file = plz.files[file_id]
+        else:
+            filename = self.rom.filenames.filenameOf(file_id).split("/")[-1]
+            file = self.rom.files[file_id]
+        if filename.endswith(".txt"):
+            text = str(file, encoding="shift_jis")
+        elif filename.endswith(".gds"):
+            text = LaytonLib.gdslegacy.convert_to_simplified(LaytonLib.gdslegacy.extract_from_gds(file))
+        else:
+            return
+        self.m_textCtrl8.Clear()
+        self.m_textCtrl8.WriteText(text)
+
+    def m_button_extr_textOnButtonClick(self, event):
+        if self.selected_pack:
+            plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
+            filename = plz.filenames[self.selected_file]
+            file_data = plz.files[self.selected_file]
+        else:
+            filename = self.rom.filenames.filenameOf(self.selected_file).split("/")[-1]
+            file_data = self.rom.files[self.selected_file]
+
+        if filename.endswith(".gds"):
+            with wx.FileDialog(self, "Save Script", style=wx.FD_SAVE,
+                               wildcard="GDS scripts (*.gds)|*.gds;All FIles") as fileDialog:
+                if fileDialog.ShowModal() == wx.ID_CANCEL:
+                    return
+                pathname = fileDialog.GetPath()
+                with open(pathname, "wb+") as file: file.write(file_data)
+
+        if filename.endswith(".txt"):
+            with wx.FileDialog(self, "Save text", style=wx.FD_SAVE,
+                               wildcard="Text file (*.txt)|*.txt;All FIles") as fileDialog:
+                if fileDialog.ShowModal() == wx.ID_CANCEL:
+                    return
+                pathname = fileDialog.GetPath()
+                with open(pathname, "wb+") as file: file.write(file_data)
+
+    def m_button_repl_textOnButtonClick(self, event):
+        with wx.FileDialog(self, "Replace File", style=wx.FD_OPEN) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, 'rb') as file:
+                    if self.selected_pack:
+                        plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
+                        plz.files[self.selected_file] = file.read()
+                        plz.save()
+
+                    else:
+                        self.rom.files[self.selected_file] = file.read()
+
+            except IOError:
+                return
+        self.m_tree_scripts_textOnTreeSelChanged(None)
+
+    def m_button_revert_textOnButtonClick(self, event):
+        self.m_tree_scripts_textOnTreeSelChanged(None)
+
+    def m_button_save_textOnButtonClick( self, event ):
+        if self.selected_pack:
+            plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
+            filename = plz.filenames[self.selected_file]
+        else:
+            filename = self.rom.filenames.filenameOf(self.selected_file).split("/")[-1]
+
+        if filename.endswith(".txt"):
+            if self.selected_pack:
+                plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
+                plz.files[self.selected_file] = self.m_textCtrl8.GetValue()
+                plz.save()
+            else:
+                self.rom.files[self.selected_file] = self.m_textCtrl8.GetValue()
+        if filename.endswith(".gds"):
+            if self.selected_pack:
+                plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
+                plz.files[self.selected_file] = LaytonLib.gdslegacy.convert_to_gds(
+                    LaytonLib.gdslegacy.extract_from_simplified(self.m_textCtrl8.GetValue()))
+                plz.save()
+            else:
+                self.rom.files[self.selected_file] = LaytonLib.gdslegacy.convert_to_gds(
+                    LaytonLib.gdslegacy.extract_from_simplified(self.m_textCtrl8.GetValue()))
 
 
 class ImageEdit(generated.ImageEdit):
@@ -599,7 +728,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.update_animation_previewimage()
 
-    def OnButtonClickPreviousAnimationFrame( self, event ):
+    def OnButtonClickPreviousAnimationFrame(self, event):
         animation = self.base_image_file.animations[self.animationIndex]
         if len(animation.frameIDs) == 0:
             return
@@ -609,7 +738,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.update_animation_previewimage()
 
-    def OnButtonClickAddAnimation( self, event ):
+    def OnButtonClickAddAnimation(self, event):
         newanimation = LaytonLib.images.ani.Animation()
         newanimation.name = "New Animation"
         self.animationIndex += 1
@@ -620,7 +749,7 @@ class ImageEdit(generated.ImageEdit):
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
         self.base_image_file.save()
 
-    def OnButtonClickRemoveAnimation( self, event ):
+    def OnButtonClickRemoveAnimation(self, event):
         if self.animationIndex == 0:
             print("Can't remove this animation")
             return
@@ -631,7 +760,7 @@ class ImageEdit(generated.ImageEdit):
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
         self.base_image_file.save()
 
-    def OnButtonClickAddAFrame( self, event ):
+    def OnButtonClickAddAFrame(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         self.animationFrameIndex += 1
         animation.imageIndexes.insert(self.animationFrameIndex, 0)
@@ -641,7 +770,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.base_image_file.save()
 
-    def OnButtonClickRemoveAFrame( self, event ):
+    def OnButtonClickRemoveAFrame(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         animation.imageIndexes.pop(self.animationFrameIndex)
         animation.frameDurations.pop(self.animationFrameIndex)
@@ -650,15 +779,15 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.base_image_file.save()
 
-    def OnTextEnterFrameDur( self, event ):
+    def OnTextEnterFrameDur(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         animation.frameDurations[self.animationFrameIndex] = int(self.m_textCtrl13.GetValue())
 
-    def OnTextEnterFrameID( self, event ):
+    def OnTextEnterFrameID(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         animation.frameIDs[self.animationFrameIndex] = int(self.m_textCtrl131.GetValue())
 
-    def OnTextEnterImgID( self, event ):
+    def OnTextEnterImgID(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         animation.imageIndexes[self.animationFrameIndex] = int(self.m_textCtrl11.GetValue())
         self.update_animation_previewimage()

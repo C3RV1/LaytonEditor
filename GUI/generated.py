@@ -37,7 +37,7 @@ class MainFrame ( wx.Frame ):
 
 		bSizer_leftside = wx.BoxSizer( wx.VERTICAL )
 
-		self.tree_imagefiles = wx.TreeCtrl( self.m_panel_leftside, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
+		self.tree_imagefiles = wx.TreeCtrl( self.m_panel_leftside, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
 		bSizer_leftside.Add( self.tree_imagefiles, 1, wx.EXPAND|wx.ALL, 5 )
 
 		gSizer_buttonsleft = wx.GridSizer( 0, 2, 0, 0 )
@@ -151,7 +151,7 @@ class MainFrame ( wx.Frame ):
 
 		bSizer_leftside1 = wx.BoxSizer( wx.VERTICAL )
 
-		self.tree_imagefiles1 = wx.TreeCtrl( self.m_panel11, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
+		self.tree_imagefiles1 = wx.TreeCtrl( self.m_panel11, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
 		bSizer_leftside1.Add( self.tree_imagefiles1, 1, wx.EXPAND|wx.ALL, 5 )
 
 		gSizer_buttonsleft1 = wx.GridSizer( 0, 2, 0, 0 )
@@ -231,7 +231,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel10.SetSizer( bSizer27 )
 		self.m_panel10.Layout()
 		bSizer27.Fit( self.m_panel10 )
-		self.m_notebook1.AddPage( self.m_panel10, u"Backgrounds", True )
+		self.m_notebook1.AddPage( self.m_panel10, u"Backgrounds", False )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -297,6 +297,62 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_asmhacks.Layout()
 		bSizer15.Fit( self.m_panel_asmhacks )
 		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", False )
+		self.m_panel_text = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer33 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_splitter4 = wx.SplitterWindow( self.m_panel_text, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter4.Bind( wx.EVT_IDLE, self.m_splitter4OnIdle )
+
+		self.m_panel16 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer34 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_tree_scripts_text = wx.TreeCtrl( self.m_panel16, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
+		bSizer34.Add( self.m_tree_scripts_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+		gSizer4 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_button_extr_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Extract", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.m_button_extr_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_repl_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Replace", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.m_button_repl_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer34.Add( gSizer4, 0, wx.EXPAND, 5 )
+
+
+		self.m_panel16.SetSizer( bSizer34 )
+		self.m_panel16.Layout()
+		bSizer34.Fit( self.m_panel16 )
+		self.m_panel17 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer35 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_textCtrl8 = wx.TextCtrl( self.m_panel17, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE )
+		bSizer35.Add( self.m_textCtrl8, 1, wx.ALL|wx.EXPAND, 5 )
+
+		gSizer5 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_button_save_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer5.Add( self.m_button_save_text, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_revert_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Revert", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer5.Add( self.m_button_revert_text, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer35.Add( gSizer5, 0, wx.EXPAND, 5 )
+
+
+		self.m_panel17.SetSizer( bSizer35 )
+		self.m_panel17.Layout()
+		bSizer35.Fit( self.m_panel17 )
+		self.m_splitter4.SplitVertically( self.m_panel16, self.m_panel17, 0 )
+		bSizer33.Add( self.m_splitter4, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel_text.SetSizer( bSizer33 )
+		self.m_panel_text.Layout()
+		bSizer33.Fit( self.m_panel_text )
+		self.m_notebook1.AddPage( self.m_panel_text, u"(Script) Text", True )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -342,6 +398,11 @@ class MainFrame ( wx.Frame ):
 		self.m_button_saveimage1.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveImageBG )
 		self.m_button_replaceimageandpalette1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageBG )
 		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
+		self.m_tree_scripts_text.Bind( wx.EVT_TREE_SEL_CHANGED, self.m_tree_scripts_textOnTreeSelChanged )
+		self.m_button_extr_text.Bind( wx.EVT_BUTTON, self.m_button_extr_textOnButtonClick )
+		self.m_button_repl_text.Bind( wx.EVT_BUTTON, self.m_button_repl_textOnButtonClick )
+		self.m_button_save_text.Bind( wx.EVT_BUTTON, self.m_button_save_textOnButtonClick )
+		self.m_button_revert_text.Bind( wx.EVT_BUTTON, self.m_button_revert_textOnButtonClick )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionOpen, id = self.m_menuItem_openfile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSaveAs, id = self.m_menuItem_savefileas.GetId() )
@@ -402,6 +463,21 @@ class MainFrame ( wx.Frame ):
 	def OnButtonClickPatchRom( self, event ):
 		event.Skip()
 
+	def m_tree_scripts_textOnTreeSelChanged( self, event ):
+		event.Skip()
+
+	def m_button_extr_textOnButtonClick( self, event ):
+		event.Skip()
+
+	def m_button_repl_textOnButtonClick( self, event ):
+		event.Skip()
+
+	def m_button_save_textOnButtonClick( self, event ):
+		event.Skip()
+
+	def m_button_revert_textOnButtonClick( self, event ):
+		event.Skip()
+
 	def OnMenuSelectionOpen( self, event ):
 		event.Skip()
 
@@ -418,6 +494,10 @@ class MainFrame ( wx.Frame ):
 	def m_splitter3OnIdle( self, event ):
 		self.m_splitter3.SetSashPosition( 0 )
 		self.m_splitter3.Unbind( wx.EVT_IDLE )
+
+	def m_splitter4OnIdle( self, event ):
+		self.m_splitter4.SetSashPosition( 0 )
+		self.m_splitter4.Unbind( wx.EVT_IDLE )
 
 
 ###########################################################################
