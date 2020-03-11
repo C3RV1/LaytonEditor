@@ -7,16 +7,18 @@ import PIL.Image as imgl
 # Defines
 MAX_COLORS = 200
 
+
 class Bg:
-    def __init__(self):
+    def __init__(self, is_arb=False):
         self.start_word = 2
         self.img = imgl.new("RGB", (256, 192))
+        self.is_arb = is_arb
 
     def import_data(self, data: bytes):
         compressed_rdr = BinaryReader(data)
-        self.start_word = compressed_rdr.readU32()
+        self.start_word = compressed_rdr.readU32() if not self.is_arb else 2
 
-        rdr = BinaryReader(decompress(compressed_rdr.readFinal()))
+        rdr = BinaryReader(decompress(compressed_rdr.readFinal())) if not self.is_arb else compressed_rdr
 
         # Read colors
         colors = []  # reset
@@ -86,7 +88,7 @@ class Bg:
                             i += 1
                         tile.append(c_index)
                 all_tiles.append(tile)
-        map = list(range(int(width/8)*int(height/8)))
+        map = list(range(int(width / 8) * int(height / 8)))
 
         # Reduce
         reduced_tiles = []
@@ -104,24 +106,28 @@ class Bg:
             tiles += tile
 
         # Write
-        wtr.writeU32(int(len(tiles)/0x40))
+        wtr.writeU32(int(len(tiles) / 0x40))
         wtr.writeU8List(tiles)
 
         # Write map
-        wtr.writeU16(int(width/8))
-        wtr.writeU16(int(height/8))
+        wtr.writeU16(int(width / 8))
+        wtr.writeU16(int(height / 8))
         wtr.writeU16List(map)
 
-        compressed = compress(wtr.data, LZ10)
-        compressed_wtr = BinaryWriter()
-        compressed_wtr.writeU32(self.start_word)
-        compressed_wtr.write(compressed)
+        if self.is_arb:
+            compressed_wtr = wtr
+        else:
+            compressed = compress(wtr.data, LZ10)
+            compressed_wtr = BinaryWriter()
+            compressed_wtr.writeU32(self.start_word)
+            compressed_wtr.write(compressed)
 
         return compressed_wtr.data
 
+
 class BgFile(Bg, LaytonLib.filesystem.File):
     def __init__(self, rom: LaytonLib.filesystem.NintendoDSRom, id):
-        Bg.__init__(self)
+        Bg.__init__(self, rom.filenames.filenameOf(id).endswith(".arb"))
         LaytonLib.filesystem.File.__init__(self, rom, id)
         self.reload()
 
