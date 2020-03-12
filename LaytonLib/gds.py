@@ -28,7 +28,7 @@ class GDSScript:
             elif data_type == 1:
                 self.params.append(rdr.readU32())
             elif data_type == 2:
-                self.params.append([rdr.readU16(), rdr.readU16()])
+                self.params.append(rdr.readFloat())
             elif data_type == 3:
                 lenght = rdr.readU16()
                 self.params.append(rdr.readString())
@@ -45,7 +45,7 @@ class GDSScript:
                 elif data_type == 1:
                     command.params.append(rdr.readU32())
                 elif data_type == 2:
-                    command.params.append([rdr.readU16(), rdr.readU16()])
+                    command.params.append(rdr.readFloat())
                 elif data_type == 3:
                     lenght = rdr.readU16()
                     command.params.append(rdr.readString())
@@ -58,9 +58,9 @@ class GDSScript:
             if type(p) == int:
                 data_wtr.writeU16(1)
                 data_wtr.writeU32(p)
-            elif type(p) == list:
+            elif type(p) == float:
                 data_wtr.writeU16(2)
-                data_wtr.writeU16List(p)
+                data_wtr.writeFloat(p)
             elif type(p) == str:
                 data_wtr.writeU16(3)
                 data_wtr.writeU16(len(p))
@@ -73,9 +73,9 @@ class GDSScript:
                 if type(p) == int:
                     data_wtr.writeU16(1)
                     data_wtr.writeU32(p)
-                elif type(p) == list:
+                elif type(p) == float:
                     data_wtr.writeU16(2)
-                    data_wtr.writeU16List(p)
+                    data_wtr.writeFloat(p)
                 elif type(p) == str:
                     data_wtr.writeU16(3)
                     data_wtr.writeU16(len(p))
@@ -98,8 +98,8 @@ class GDSScript:
             l = lines[i].split("#")[0]
             if re.match(r"int: *[0-9]+[ \t]*", l):
                 self.params.append(int(re.findall("[0-9]+", l)[0]))
-            elif re.match(r"vec: *\[[0-9]+, *[0-9]+\][ \t]*", l):
-                self.params.append([int(x) for x in re.findall("\[([0-9]*), *([0-9]*)\]", l)[0]])
+            elif re.match(r"float: *.+[ \t]*", l):
+                self.params.append(float(re.findall(r"\tfloat: *(.+)[ \t]*", l)[0]))
             elif re.match(r"str: \".*\"[ \t]*", l):
                 self.params.append(re.findall("\"(.*)\"", l)[0])
             elif re.match(r"0x[0-9a-zA-Z]+[ \t]*", l):
@@ -107,8 +107,8 @@ class GDSScript:
                 self.commands.append(current_command)
             elif re.match(r"\tint: *[0-9]+[ \t]*", l):
                 current_command.params.append(int(re.findall("[0-9]+", l)[0]))
-            elif re.match(r"\tvec: *\[[0-9]+, *[0-9]+\][ \t]*", l):
-                current_command.params.append([int(x) for x in re.findall("\[([0-9]*), *([0-9]*)\]", l)[0]])
+            elif re.match(r"\tfloat: *.+[ \t]*", l):
+                current_command.params.append(float(re.findall(r"\tfloat: *(.+)[ \t]*", l)[0]))
             elif re.match(r"\tstr: \".*\"[ \t]*", l):
                 current_command.params.append(re.findall("\"(.*)\"", l)[0])
             i += 1
@@ -119,8 +119,8 @@ class GDSScript:
         for p in self.params:
             if type(p) == int:
                 lines.append(f"int: {p}\t#hex: {hex(p)}")
-            elif type(p) == list:
-                lines.append(f"vec: {p}")
+            elif type(p) == float:
+                lines.append(f"float: {p:.6g}")
             elif type(p) == str:
                 lines.append(f"str: {p}")
         for c in self.commands:
@@ -128,8 +128,8 @@ class GDSScript:
             for p in c.params:
                 if type(p) == int:
                     lines.append(f"\tint: {p}\t\t#hex: {hex(p)}")
-                elif type(p) == list:
-                    lines.append(f"\tvec: {p}")
+                elif type(p) == float:
+                    lines.append(f"\tfloat: {p:.6g}")
                 elif type(p) == str:
                     lines.append(f"\tstr: \"{p}\"")
             lines.append("")

@@ -1,3 +1,5 @@
+import struct
+
 # Makes reading binaries easier
 class BinaryReader:
     def __init__(self, data: (bytes, str)):
@@ -54,6 +56,9 @@ class BinaryReader:
         self.c += 1
         return string
 
+    def readFloat(self):
+        return struct.unpack("f", self.readBytes(4))[0]
+
 # Makes writing binaries easier
 class BinaryWriter:
     def __init__(self):
@@ -96,6 +101,9 @@ class BinaryWriter:
     def align(self, by):
         while len(self.data) % by:
             self.writeU8(0)
+
+    def writeFloat(self, x: float):
+        self.write(struct.pack("f", x))
 
 
 # Makes editing binaries easier
