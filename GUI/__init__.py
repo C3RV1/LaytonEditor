@@ -7,7 +7,7 @@ from os import remove
 import PIL.Image as imgl
 from os.path import join
 import LaytonLib.asm_patching
-import LaytonLib.gdslegacy
+import LaytonLib.gds
 
 
 class MainFrame(gen.MainFrame):
@@ -416,7 +416,7 @@ class MainFrame(gen.MainFrame):
         if filename.endswith(".txt"):
             text = str(file, encoding="shift_jis")
         elif filename.endswith(".gds"):
-            text = LaytonLib.gdslegacy.convert_to_simplified(LaytonLib.gdslegacy.extract_from_gds(file))
+            text = LaytonLib.gds.GDSScript.from_bytes(file).to_simplified()
         else:
             return
         self.m_textCtrl8.Clear()
@@ -469,7 +469,7 @@ class MainFrame(gen.MainFrame):
     def m_button_revert_textOnButtonClick(self, event):
         self.m_tree_scripts_textOnTreeSelChanged(None)
 
-    def m_button_save_textOnButtonClick( self, event ):
+    def m_button_save_textOnButtonClick(self, event):
         if self.selected_pack:
             plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
             filename = plz.filenames[self.selected_file]
@@ -486,12 +486,12 @@ class MainFrame(gen.MainFrame):
         if filename.endswith(".gds"):
             if self.selected_pack:
                 plz = LaytonLib.filesystem.PlzFile(self.rom, self.selected_pack)
-                plz.files[self.selected_file] = LaytonLib.gdslegacy.convert_to_gds(
-                    LaytonLib.gdslegacy.extract_from_simplified(self.m_textCtrl8.GetValue()))
+                plz.files[self.selected_file] = \
+                    LaytonLib.gds.GDSScript.from_simplified(self.m_textCtrl8.GetValue()).to_bytes()
                 plz.save()
             else:
-                self.rom.files[self.selected_file] = LaytonLib.gdslegacy.convert_to_gds(
-                    LaytonLib.gdslegacy.extract_from_simplified(self.m_textCtrl8.GetValue()))
+                self.rom.files[self.selected_file] = \
+                    LaytonLib.gds.GDSScript.from_simplified(self.m_textCtrl8.GetValue()).to_bytes()
 
 
 class ImageEdit(generated.ImageEdit):
