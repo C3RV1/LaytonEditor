@@ -45,6 +45,9 @@ class PatchRom:
         if complete_rebuild:
             self.clean_all()
 
+        if self.arm9_edit.readU32(0x800) != 0xe3a0c301: # standard word located there
+            raise Exception("tried to patch already patched rom")
+
         self.offset_setupcode_hook = 0x02000000 | len(self.arm9_edit.data)
         self.offset_setupcode = self.offset_setupcode_hook + 5 * 4  # 5 instructions
         self.offset_patchcode = self.arm9_edit.readU32(arenaLoPtrAddress & 0xFFFFFF)
