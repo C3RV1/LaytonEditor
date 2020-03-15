@@ -50,9 +50,10 @@ class BinaryReader:
         self.c += len
         return out
 
-    def readChars(self, len):
+    def readChars(self, len, zeroterminated=True):
         out = str(self.data[self.c:self.c + len], encoding="ascii")
         self.c += len
+        if zeroterminated: out = out.split("\0")[0]
         return out
 
     def readBytes(self, len):

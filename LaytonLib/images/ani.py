@@ -4,7 +4,7 @@ from LaytonLib.images.color import Color
 import numpy as np
 import PIL.Image as imgl
 from math import log, sqrt
-
+from hexdump import hexdump
 
 # Special Reader to have extra values
 class AniReader(LaytonLib.binary.BinaryReader):
@@ -26,6 +26,9 @@ class Animation():
         self.frameIDs = []
         self.imageIndexes = []
         self.frameDurations = []
+        self.child_spr_x = 0
+        self.child_spr_y = 0
+        self.child_spr_index = 0
 
     def name_from_reader(self, rdr):
         self.name = rdr.readChars(0x1E).split("\0")[0]
@@ -53,6 +56,24 @@ class Animation():
             wtr.writeU32(self.frameDurations[i])
         for i in range(len(self.frameIDs)):
             wtr.writeU32(self.imageIndexes[i])
+
+    def child_spr_x_from_reader(self, rdr):
+        self.child_spr_x = rdr.readU16()
+
+    def child_spr_y_from_reader(self, rdr):
+        self.child_spr_y = rdr.readU16()
+
+    def child_spr_index_from_reader(self, rdr):
+        self.child_spr_index = rdr.readU8()
+
+    def child_spr_x_to_writer(self, wtr):
+        wtr.writeU16(self.child_spr_x)
+
+    def child_spr_y_to_writer(self, wtr):
+        wtr.writeU16(self.child_spr_y)
+
+    def child_spr_index_to_writer(self, wtr):
+        wtr.writeU8(self.child_spr_index)
 
 
 class Palette():
@@ -269,6 +290,16 @@ class Image:
                 y += part_h
             x += part_w
 
+class AniVariable:
+    def __init__(self, label="", params=None):
+        self.label = label
+        self.params = [bytes(2) for _ in range(8)] if params == None else params
+
+    def label_from_reader(self, rdr):
+        self.label = rdr.readChars(16)
+
+    def label_to_writer(self, wtr: LaytonLib.binary.BinaryWriter):
+        wtr.writeChars(self.label, 16)
 
 
 class Ani():
@@ -277,9 +308,10 @@ class Ani():
         self.colordepth = 8
         self.images = []
         self.animations = []
-        self.vars = []
+        self.variables = []
         self.palette = Palette()
         self.startbyte = 0x02
+        self.child_image = ""
 
     def import_data(self, data: bytes):
         # Work with the image in compressed format
@@ -319,9 +351,18 @@ class Ani():
         for a in self.animations:
             a.framedata_from_reader(rdr)
 
-        # Now read variable data
-        self.vars = rdr.readFinal()
-        # TODO: Figure out how variables work
+        rdr.c += 2 # 0x34 and 0x12
+
+        self.variables = [AniVariable() for _ in range(16)]
+        for x in self.variables: x.label_from_reader(rdr)
+        for i in range(8):
+            for v in self.variables:
+                v.params[i] = rdr.readBytes(2)
+
+        for anim in self.animations: anim.child_spr_x_from_reader(rdr)
+        for anim in self.animations: anim.child_spr_y_from_reader(rdr)
+        for anim in self.animations: anim.child_spr_index_from_reader(rdr)
+        self.child_image = rdr.readChars(128)
 
     def export_data(self):
         wtr = AniWriter(self.colordepth, self.filetype)
@@ -345,7 +386,20 @@ class Ani():
         for animation in self.animations:
             animation.framedata_to_writer(wtr)
 
-        wtr.write(self.vars)
+        wtr.writeU8(0x34)
+        wtr.writeU8(0x12)
+
+        for x in self.variables: x.label_to_writer(wtr)
+
+        for i in range(8):
+            for v in self.variables:
+                wtr.write(v.params[i])
+
+        for anim in self.animations: anim.child_spr_x_to_writer(wtr)
+        for anim in self.animations: anim.child_spr_y_to_writer(wtr)
+        for anim in self.animations: anim.child_spr_index_to_writer(wtr)
+
+        wtr.writeChars(self.child_image, 128)
 
         compressed = LaytonLib.binary.BinaryWriter()
         compressed.writeU32(self.startbyte)

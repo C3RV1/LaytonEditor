@@ -8,6 +8,11 @@ import PIL.Image as imgl
 from os.path import join
 import LaytonLib.asm_patching
 import LaytonLib.gds
+from wx import propgrid as pg
+import codecs
+
+hexencoder = codecs.getencoder('hex_codec')
+hexdecoder = codecs.getdecoder('hex_codec')
 
 
 class MainFrame(gen.MainFrame):
@@ -23,6 +28,10 @@ class MainFrame(gen.MainFrame):
         self.selected_pack = None
 
         self.arm9backup = None
+
+        # For character editing
+        self.txt1_file = None
+        self.selected_character = 0
 
     def OnMenuSelectionOpen(self, event):
         self.openFile()
@@ -380,13 +389,12 @@ class MainFrame(gen.MainFrame):
             id: int = int(id)
             filename: str
             if filename.endswith(".gds") or filename.endswith(".txt"):
-                print(self.rom.filenames.filenameOf(id))
                 self.m_tree_scripts_text.AppendItem(root, filename, data=[id, 0])  # TODO: ADD Data
             if filename.endswith(".plz"):
                 has_script_or_text = False
                 plz = LaytonLib.filesystem.PlzFile(self.rom, id)
-                for f in plz.filenames:
-                    if f.endswith(".gds") or f.endswith(".txt"):
+                for f2 in plz.filenames:
+                    if f2.endswith(".gds") or f2.endswith(".txt"):
                         if not has_script_or_text:
                             has_script_or_text = True
                             if filename.startswith("ev_d"):
@@ -395,7 +403,7 @@ class MainFrame(gen.MainFrame):
                                 pack = self.m_tree_scripts_text.AppendItem(event_text_root, filename)
                             else:
                                 pack = self.m_tree_scripts_text.AppendItem(root, filename)
-                        self.m_tree_scripts_text.AppendItem(pack, f, data=[plz.idOf(f), id])  # TODO: Add Data
+                        self.m_tree_scripts_text.AppendItem(pack, f2, data=[plz.idOf(f2), id])
 
     def m_tree_scripts_textOnTreeSelChanged(self, event):
         data = self.m_tree_scripts_text.GetItemData(self.m_tree_scripts_text.GetSelection())
@@ -405,7 +413,6 @@ class MainFrame(gen.MainFrame):
         file_id, pack_id = data
         self.selected_file = file_id
         self.selected_pack = pack_id
-        file = None
         if pack_id:
             plz = LaytonLib.filesystem.PlzFile(self.rom, pack_id)
             filename = plz.filenames[file_id]
@@ -437,7 +444,8 @@ class MainFrame(gen.MainFrame):
                 if fileDialog.ShowModal() == wx.ID_CANCEL:
                     return
                 pathname = fileDialog.GetPath()
-                with open(pathname, "wb+") as file: file.write(file_data)
+                with open(pathname, "wb+") as file:
+                    file.write(file_data)
 
         if filename.endswith(".txt"):
             with wx.FileDialog(self, "Save text", style=wx.FD_SAVE,
@@ -445,7 +453,8 @@ class MainFrame(gen.MainFrame):
                 if fileDialog.ShowModal() == wx.ID_CANCEL:
                     return
                 pathname = fileDialog.GetPath()
-                with open(pathname, "wb+") as file: file.write(file_data)
+                with open(pathname, "wb+") as file:
+                    file.write(file_data)
 
     def m_button_repl_textOnButtonClick(self, event):
         with wx.FileDialog(self, "Replace File", style=wx.FD_OPEN) as fileDialog:
@@ -495,20 +504,51 @@ class MainFrame(gen.MainFrame):
 
 
 class ImageEdit(generated.ImageEdit):
-    def __init__(self, parent, base_image_file):
+    def __init__(self, parent: MainFrame, base_image_file):
         super().__init__(parent)
         self.base_image_file: LaytonLib.images.ani.AniFile = base_image_file
         self.imageIndex = 0
+
+        # buffering
+        self.buffered_main_image = ["none", None]
+        self.buffered_child_image = ["none", None]
+
         self.update_previewimage()
         self.m_staticText5.SetLabel(f"1/{len(self.base_image_file.images)}")  # Frame Index
-        self.m_staticText9.SetLabel(f"ID: {self.base_image_file._id} | {hex(self.base_image_file.id)}")  # File ID
+        self.m_staticText9.SetLabel(f"ID: {self.base_image_file.id} | {hex(self.base_image_file.id)}")  # File ID
         self.m_staticText11.SetLabel(self.base_image_file.name)  # File Name
         self.m_staticText7.SetLabel(f"Colordepth: {self.base_image_file.colordepth}bit")  # Colordepth
+
+        self.m_text_child_image.SetLabel(f"{self.base_image_file.child_image}")
 
         # The Animations Part
         self.animationIndex = 0
         self.m_staticText51.SetLabel(f"1/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[0].name)
+        self.m_spin_child_img_x.SetMax(255)
+        self.m_spin_child_img_y.SetMax(255)
+        self.m_spin_child_img_id.SetMax(255)
+
+        self.m_spin_child_img_x.SetValue(f"{self.base_image_file.animations[0].child_spr_x}")
+        self.m_spin_child_img_y.SetValue(f"{self.base_image_file.animations[0].child_spr_y}")
+        self.m_spin_child_img_id.SetValue(f"{self.base_image_file.animations[0].child_spr_index}")
+
+        self.child_image_file = None
+        if self.base_image_file.child_image:
+            # search for childimage id
+            rom: NintendoDSRom = parent.rom
+            for l in str(rom.filenames["data_lt2/ani/"]).split("\n"):
+                if l.endswith(self.base_image_file.child_image.replace("ani", "arc")):
+                    self.child_image_file = LaytonLib.images.ani.AniFile(rom, int(l[:4]))
+
+        # noinspection PyUnresolvedReferences
+        self.m_propertyGrid_vars.SetFont(wx.Font(8, wx.TELETYPE, wx.FONTSTYLE_NORMAL,
+                                                 wx.FONTWEIGHT_NORMAL))
+        for i in range(16):
+            label = self.base_image_file.variables[i].label
+            values = [str(hexencoder(self.base_image_file.variables[i].params[x])[0], "ascii") for x in range(8)]
+            value = " ".join(values)
+            self.m_propertyGrid_vars.Append(pg.StringProperty(label, f"Var{i}", value=value))
 
         self.animationFrameIndex = 0
         self.update_animation_data()
@@ -652,6 +692,9 @@ class ImageEdit(generated.ImageEdit):
             self.animationIndex = 0
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.m_spin_child_img_x.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_x}")
+        self.m_spin_child_img_y.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_y}")
+        self.m_spin_child_img_id.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_index}")
 
         self.animationFrameIndex = 0
         self.update_animation_data()
@@ -663,12 +706,15 @@ class ImageEdit(generated.ImageEdit):
             self.animationIndex = len(self.base_image_file.animations) - 1
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.m_spin_child_img_x.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_x}")
+        self.m_spin_child_img_y.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_y}")
+        self.m_spin_child_img_id.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_index}")
 
         self.animationFrameIndex = 0
         self.update_animation_data()
         self.update_animation_previewimage()
 
-    def OnButtonClickSaveAnimationName(self, event):
+    def m_textCtrl1OnTextEnter(self, event):
         animation = self.base_image_file.animations[self.animationIndex]
         animation: LaytonLib.images.ani.Animation
         animation.name = self.m_textCtrl1.GetValue()
@@ -684,8 +730,13 @@ class ImageEdit(generated.ImageEdit):
             self.m_previewImage1.SetBitmap(wximage.ConvertToBitmap())
             return
 
-        image = self.base_image_file.frame_to_PIL(
-            self.base_image_file.animations[self.animationIndex].imageIndexes[self.animationFrameIndex])
+        main_index = self.base_image_file.animations[self.animationIndex].imageIndexes[self.animationFrameIndex]
+        if self.buffered_main_image[0] != f"{main_index}":
+            image = self.base_image_file.frame_to_PIL(main_index)
+            self.buffered_main_image[0] = f"{main_index}"
+            self.buffered_main_image[1] = image
+        else:
+            image = self.buffered_main_image[1]
 
         # Create a the full sized image
         fullimage = imgl.new("RGBA", (258, 194))
@@ -700,7 +751,21 @@ class ImageEdit(generated.ImageEdit):
             edit[0, i] = (0, 0, 0, 255)
             edit[-1, -i] = (0, 0, 0, 255)
 
+        # draw child image if neccesary
+        child_spr_index = self.base_image_file.animations[self.animationIndex].child_spr_index
+        if self.child_image_file and child_spr_index and self.m_checkBox_draw_child_img.GetValue():
+            img_index = self.child_image_file.animations[child_spr_index].imageIndexes[0]
+            if self.buffered_child_image[0] != f"{img_index}":
+                img = self.child_image_file.images[img_index].to_PIL()
+                self.buffered_child_image[0] = f"{img_index}"
+                self.buffered_child_image[1] = img
+            else:
+                img = self.buffered_child_image[1]
+            fullimage.paste(img, (self.base_image_file.animations[self.animationIndex].child_spr_x+1,
+                                  self.base_image_file.animations[self.animationIndex].child_spr_y+1))
+
         # Temporarely save it as a file to load it in wx
+
         fullimage.save("temp.bmp")
         wximage = wx.Image("temp.bmp")
         remove("temp.bmp")
@@ -747,6 +812,9 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.m_spin_child_img_x.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_x}")
+        self.m_spin_child_img_y.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_y}")
+        self.m_spin_child_img_id.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_index}")
         self.base_image_file.save()
 
     def OnButtonClickRemoveAnimation(self, event):
@@ -758,6 +826,9 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_data()
         self.m_staticText51.SetLabel(f"{self.animationIndex + 1}/{len(self.base_image_file.animations)}")  # Frame Index
         self.m_textCtrl1.SetLabel(self.base_image_file.animations[self.animationIndex].name)
+        self.m_spin_child_img_x.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_x}")
+        self.m_spin_child_img_y.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_y}")
+        self.m_spin_child_img_id.SetValue(f"{self.base_image_file.animations[self.animationIndex].child_spr_index}")
         self.base_image_file.save()
 
     def OnButtonClickAddAFrame(self, event):
@@ -790,6 +861,39 @@ class ImageEdit(generated.ImageEdit):
     def OnTextEnterImgID(self, event):
         animation: LaytonLib.images.ani.Animation = self.base_image_file.animations[self.animationIndex]
         animation.imageIndexes[self.animationFrameIndex] = int(self.m_textCtrl11.GetValue())
+        self.update_animation_previewimage()
+
+    def m_text_child_imageOnTextEnter(self, event):
+        self.base_image_file.child_image = self.m_text_child_image.GetValue()
+        self.base_image_file.save()
+        if self.m_checkBox_draw_child_img.GetValue():
+            self.update_animation_previewimage()
+
+    def m_spin_child_img_xOnSpinCtrl( self, event ):
+        self.base_image_file.animations[self.animationIndex].child_spr_x = int(self.m_spin_child_img_x.GetValue())
+        self.base_image_file.save()
+        if self.m_checkBox_draw_child_img.GetValue():
+            self.update_animation_previewimage()
+
+    def m_spin_child_img_yOnSpinCtrl( self, event ):
+        self.base_image_file.animations[self.animationIndex].child_spr_y = int(self.m_spin_child_img_y.GetValue())
+        self.base_image_file.save()
+        if self.m_checkBox_draw_child_img.GetValue():
+            self.update_animation_previewimage()
+
+    def m_spin_child_img_idOnSpinCtrl( self, event ):
+        self.base_image_file.animations[self.animationIndex].child_spr_index = int(self.m_spin_child_img_id.GetValue())
+        self.base_image_file.save()
+        if self.m_checkBox_draw_child_img.GetValue():
+            self.update_animation_previewimage()
+
+    def m_propertyGrid_varsOnPropertyGridChanged(self, event):
+        for i in range(16):
+            spaceless = self.m_propertyGrid_vars.GetPropertyByName(f"Var{i}").GetValue().replace(" ", "")
+            for part, offset in enumerate(range(0, 32, 4)):
+                self.base_image_file.variables[i].params[part] = hexdecoder(spaceless[offset:offset + 4])[0]
+
+    def m_checkBox_draw_child_imgOnCheckBox( self, event ):
         self.update_animation_previewimage()
 
 

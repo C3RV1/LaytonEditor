@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+import wx.propgrid as pg
 
 ###########################################################################
 ## Class MainFrame
@@ -139,7 +140,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel9.SetSizer( bSizer141 )
 		self.m_panel9.Layout()
 		bSizer141.Fit( self.m_panel9 )
-		self.m_notebook1.AddPage( self.m_panel9, u"Images", False )
+		self.m_notebook1.AddPage( self.m_panel9, u"Images", True )
 		self.m_panel10 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 
@@ -232,6 +233,62 @@ class MainFrame ( wx.Frame ):
 		self.m_panel10.Layout()
 		bSizer27.Fit( self.m_panel10 )
 		self.m_notebook1.AddPage( self.m_panel10, u"Backgrounds", False )
+		self.m_panel_text = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer33 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_splitter4 = wx.SplitterWindow( self.m_panel_text, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter4.Bind( wx.EVT_IDLE, self.m_splitter4OnIdle )
+
+		self.m_panel16 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer34 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_tree_scripts_text = wx.TreeCtrl( self.m_panel16, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
+		bSizer34.Add( self.m_tree_scripts_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+		gSizer4 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_button_extr_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Extract", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.m_button_extr_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_repl_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Replace", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.m_button_repl_text, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer34.Add( gSizer4, 0, wx.EXPAND, 5 )
+
+
+		self.m_panel16.SetSizer( bSizer34 )
+		self.m_panel16.Layout()
+		bSizer34.Fit( self.m_panel16 )
+		self.m_panel17 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer35 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_textCtrl8 = wx.TextCtrl( self.m_panel17, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE )
+		bSizer35.Add( self.m_textCtrl8, 1, wx.ALL|wx.EXPAND, 5 )
+
+		gSizer5 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_button_save_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer5.Add( self.m_button_save_text, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_button_revert_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Revert", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer5.Add( self.m_button_revert_text, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer35.Add( gSizer5, 0, wx.EXPAND, 5 )
+
+
+		self.m_panel17.SetSizer( bSizer35 )
+		self.m_panel17.Layout()
+		bSizer35.Fit( self.m_panel17 )
+		self.m_splitter4.SplitVertically( self.m_panel16, self.m_panel17, 0 )
+		bSizer33.Add( self.m_splitter4, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel_text.SetSizer( bSizer33 )
+		self.m_panel_text.Layout()
+		bSizer33.Fit( self.m_panel_text )
+		self.m_notebook1.AddPage( self.m_panel_text, u"(Script) Text", False )
 		self.m_panel_asmhacks = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
 
@@ -297,62 +354,6 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_asmhacks.Layout()
 		bSizer15.Fit( self.m_panel_asmhacks )
 		self.m_notebook1.AddPage( self.m_panel_asmhacks, u"ASM Patcher", False )
-		self.m_panel_text = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer33 = wx.BoxSizer( wx.VERTICAL )
-
-		self.m_splitter4 = wx.SplitterWindow( self.m_panel_text, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
-		self.m_splitter4.Bind( wx.EVT_IDLE, self.m_splitter4OnIdle )
-
-		self.m_panel16 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer34 = wx.BoxSizer( wx.VERTICAL )
-
-		self.m_tree_scripts_text = wx.TreeCtrl( self.m_panel16, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
-		bSizer34.Add( self.m_tree_scripts_text, 1, wx.ALL|wx.EXPAND, 5 )
-
-		gSizer4 = wx.GridSizer( 0, 2, 0, 0 )
-
-		self.m_button_extr_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Extract", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer4.Add( self.m_button_extr_text, 1, wx.ALL|wx.EXPAND, 5 )
-
-		self.m_button_repl_text = wx.Button( self.m_panel16, wx.ID_ANY, u"Replace", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer4.Add( self.m_button_repl_text, 1, wx.ALL|wx.EXPAND, 5 )
-
-
-		bSizer34.Add( gSizer4, 0, wx.EXPAND, 5 )
-
-
-		self.m_panel16.SetSizer( bSizer34 )
-		self.m_panel16.Layout()
-		bSizer34.Fit( self.m_panel16 )
-		self.m_panel17 = wx.Panel( self.m_splitter4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer35 = wx.BoxSizer( wx.VERTICAL )
-
-		self.m_textCtrl8 = wx.TextCtrl( self.m_panel17, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE )
-		bSizer35.Add( self.m_textCtrl8, 1, wx.ALL|wx.EXPAND, 5 )
-
-		gSizer5 = wx.GridSizer( 0, 2, 0, 0 )
-
-		self.m_button_save_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer5.Add( self.m_button_save_text, 0, wx.ALL|wx.EXPAND, 5 )
-
-		self.m_button_revert_text = wx.Button( self.m_panel17, wx.ID_ANY, u"Revert", wx.DefaultPosition, wx.DefaultSize, 0 )
-		gSizer5.Add( self.m_button_revert_text, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-		bSizer35.Add( gSizer5, 0, wx.EXPAND, 5 )
-
-
-		self.m_panel17.SetSizer( bSizer35 )
-		self.m_panel17.Layout()
-		bSizer35.Fit( self.m_panel17 )
-		self.m_splitter4.SplitVertically( self.m_panel16, self.m_panel17, 0 )
-		bSizer33.Add( self.m_splitter4, 1, wx.EXPAND, 5 )
-
-
-		self.m_panel_text.SetSizer( bSizer33 )
-		self.m_panel_text.Layout()
-		bSizer33.Fit( self.m_panel_text )
-		self.m_notebook1.AddPage( self.m_panel_text, u"(Script) Text", True )
 
 		bSizer14.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -397,12 +398,12 @@ class MainFrame ( wx.Frame ):
 		self.m_button_replacefile1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceBG )
 		self.m_button_saveimage1.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveImageBG )
 		self.m_button_replaceimageandpalette1.Bind( wx.EVT_BUTTON, self.OnButtonClickReplaceImageBG )
-		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
 		self.m_tree_scripts_text.Bind( wx.EVT_TREE_SEL_CHANGED, self.m_tree_scripts_textOnTreeSelChanged )
 		self.m_button_extr_text.Bind( wx.EVT_BUTTON, self.m_button_extr_textOnButtonClick )
 		self.m_button_repl_text.Bind( wx.EVT_BUTTON, self.m_button_repl_textOnButtonClick )
 		self.m_button_save_text.Bind( wx.EVT_BUTTON, self.m_button_save_textOnButtonClick )
 		self.m_button_revert_text.Bind( wx.EVT_BUTTON, self.m_button_revert_textOnButtonClick )
+		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickPatchRom )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionOpen, id = self.m_menuItem_openfile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSaveAs, id = self.m_menuItem_savefileas.GetId() )
@@ -460,9 +461,6 @@ class MainFrame ( wx.Frame ):
 	def OnButtonClickReplaceImageBG( self, event ):
 		event.Skip()
 
-	def OnButtonClickPatchRom( self, event ):
-		event.Skip()
-
 	def m_tree_scripts_textOnTreeSelChanged( self, event ):
 		event.Skip()
 
@@ -476,6 +474,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def m_button_revert_textOnButtonClick( self, event ):
+		event.Skip()
+
+	def OnButtonClickPatchRom( self, event ):
 		event.Skip()
 
 	def OnMenuSelectionOpen( self, event ):
@@ -549,15 +550,28 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer21.Add( self.m_staticText9, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_staticText11 = wx.StaticText( self.m_panel3, wx.ID_ANY, u"i.jpg", wx.DefaultPosition, wx.DefaultSize, wx.ST_NO_AUTORESIZE )
+		self.m_staticText11 = wx.StaticText( self.m_panel3, wx.ID_ANY, u"i.jpg", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText11.Wrap( -1 )
 
-		bSizer21.Add( self.m_staticText11, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		bSizer21.Add( self.m_staticText11, 0, wx.ALL|wx.EXPAND, 5 )
 
 		self.m_staticText7 = wx.StaticText( self.m_panel3, wx.ID_ANY, u"Colordepth: 4bit", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
 		self.m_staticText7.Wrap( -1 )
 
 		bSizer21.Add( self.m_staticText7, 0, wx.ALL|wx.EXPAND, 5 )
+
+		bSizer54 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText27 = wx.StaticText( self.m_panel3, wx.ID_ANY, u"Child Image:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText27.Wrap( -1 )
+
+		bSizer54.Add( self.m_staticText27, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_text_child_image = wx.TextCtrl( self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+		bSizer54.Add( self.m_text_child_image, 1, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+
+		bSizer21.Add( bSizer54, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
 		gSizer2 = wx.GridSizer( 0, 2, 0, 0 )
 
@@ -592,7 +606,11 @@ class ImageEdit ( wx.Frame ):
 		self.m_panel3.SetSizer( bSizer21 )
 		self.m_panel3.Layout()
 		bSizer21.Fit( self.m_panel3 )
-		self.m_panel4 = wx.Panel( self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_splitter2.Initialize( self.m_panel3 )
+		bSizer19.Add( self.m_splitter2, 1, wx.EXPAND, 5 )
+
+		self.m_notebook2 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_panel4 = wx.Panel( self.m_notebook2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.m_panel4.SetBackgroundColour( wx.Colour( 240, 240, 240 ) )
 
 		bSizer15 = wx.BoxSizer( wx.VERTICAL )
@@ -615,12 +633,9 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer211 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.m_textCtrl1 = wx.TextCtrl( self.m_panel4, wx.ID_ANY, u"none", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
+		self.m_textCtrl1 = wx.TextCtrl( self.m_panel4, wx.ID_ANY, u"none", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
 		self.m_textCtrl1.SetMaxLength( 24 )
 		bSizer211.Add( self.m_textCtrl1, 1, wx.ALL, 5 )
-
-		self.m_button241 = wx.Button( self.m_panel4, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
-		bSizer211.Add( self.m_button241, 0, wx.ALL, 5 )
 
 
 		bSizer15.Add( bSizer211, 0, wx.EXPAND, 5 )
@@ -702,6 +717,62 @@ class ImageEdit ( wx.Frame ):
 		bSizer26.Fit( self.m_panel10 )
 		bSizer15.Add( self.m_panel10, 1, wx.EXPAND |wx.ALL, 5 )
 
+		bSizer311 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText242 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Child Image X:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText242.Wrap( -1 )
+
+		bSizer311.Add( self.m_staticText242, 1, wx.ALL, 5 )
+
+		self.m_staticText261 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Child Image Y:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText261.Wrap( -1 )
+
+		bSizer311.Add( self.m_staticText261, 1, wx.ALL, 5 )
+
+		self.m_staticText2411 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Child Image ID:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.ST_NO_AUTORESIZE )
+		self.m_staticText2411.Wrap( -1 )
+
+		bSizer311.Add( self.m_staticText2411, 1, wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer311, 0, wx.EXPAND, 5 )
+
+		bSizer331 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_panel19 = wx.Panel( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer331.Add( self.m_panel19, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_spin_child_img_x = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 10, 0 )
+		self.m_spin_child_img_x.SetMaxSize( wx.Size( 80,-1 ) )
+
+		bSizer331.Add( self.m_spin_child_img_x, 1, wx.ALL, 5 )
+
+		self.m_panel22 = wx.Panel( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer331.Add( self.m_panel22, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_spin_child_img_y = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 10, 0 )
+		self.m_spin_child_img_y.SetMaxSize( wx.Size( 80,-1 ) )
+
+		bSizer331.Add( self.m_spin_child_img_y, 1, wx.ALL, 5 )
+
+		self.m_panel20 = wx.Panel( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer331.Add( self.m_panel20, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_spin_child_img_id = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 10, 0 )
+		self.m_spin_child_img_id.SetMaxSize( wx.Size( 80,-1 ) )
+
+		bSizer331.Add( self.m_spin_child_img_id, 0, wx.ALL, 5 )
+
+		self.m_panel21 = wx.Panel( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer331.Add( self.m_panel21, 1, wx.EXPAND |wx.ALL, 5 )
+
+
+		bSizer15.Add( bSizer331, 0, wx.EXPAND, 5 )
+
+		self.m_checkBox_draw_child_img = wx.CheckBox( self.m_panel4, wx.ID_ANY, u"Draw Child Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_checkBox_draw_child_img.SetValue(True)
+		bSizer15.Add( self.m_checkBox_draw_child_img, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.RIGHT|wx.LEFT, 5 )
+
 		bSizer35 = wx.BoxSizer( wx.HORIZONTAL )
 
 		self.m_button36 = wx.Button( self.m_panel4, wx.ID_ANY, u"Add Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -717,8 +788,20 @@ class ImageEdit ( wx.Frame ):
 		self.m_panel4.SetSizer( bSizer15 )
 		self.m_panel4.Layout()
 		bSizer15.Fit( self.m_panel4 )
-		self.m_splitter2.SplitVertically( self.m_panel3, self.m_panel4, 0 )
-		bSizer19.Add( self.m_splitter2, 1, wx.EXPAND, 5 )
+		self.m_notebook2.AddPage( self.m_panel4, u"Animations", True )
+		self.m_panel34 = wx.Panel( self.m_notebook2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer56 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_propertyGrid_vars = pg.PropertyGrid(self.m_panel34, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PG_DEFAULT_STYLE)
+		bSizer56.Add( self.m_propertyGrid_vars, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.m_panel34.SetSizer( bSizer56 )
+		self.m_panel34.Layout()
+		bSizer56.Fit( self.m_panel34 )
+		self.m_notebook2.AddPage( self.m_panel34, u"Variables", False )
+
+		bSizer19.Add( self.m_notebook2, 1, wx.EXPAND, 5 )
 
 
 		bSizer18.Add( bSizer19, 1, wx.ALL|wx.EXPAND, 5 )
@@ -732,6 +815,7 @@ class ImageEdit ( wx.Frame ):
 		# Connect Events
 		self.m_button8.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousImage )
 		self.m_button9.Bind( wx.EVT_BUTTON, self.OnButtonClickNextImage )
+		self.m_text_child_image.Bind( wx.EVT_TEXT_ENTER, self.m_text_child_imageOnTextEnter )
 		self.m_button30.Bind( wx.EVT_BUTTON, self.OnButtonClickReplNoPal )
 		self.m_button31.Bind( wx.EVT_BUTTON, self.OnButtonClickExport )
 		self.m_button23.Bind( wx.EVT_BUTTON, self.OnButtonClickReplAddPal )
@@ -742,7 +826,7 @@ class ImageEdit ( wx.Frame ):
 		self.m_button26.Bind( wx.EVT_BUTTON, self.OnButtonClickExportAll )
 		self.m_button81.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimation )
 		self.m_button91.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimation )
-		self.m_button241.Bind( wx.EVT_BUTTON, self.OnButtonClickSaveAnimationName )
+		self.m_textCtrl1.Bind( wx.EVT_TEXT_ENTER, self.m_textCtrl1OnTextEnter )
 		self.m_button811.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimationFrame )
 		self.m_button911.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimationFrame )
 		self.m_textCtrl11.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterImgID )
@@ -750,8 +834,13 @@ class ImageEdit ( wx.Frame ):
 		self.m_textCtrl131.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterFrameID )
 		self.m_button34.Bind( wx.EVT_BUTTON, self.OnButtonClickAddAFrame )
 		self.m_button35.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveAFrame )
+		self.m_spin_child_img_x.Bind( wx.EVT_SPINCTRL, self.m_spin_child_img_xOnSpinCtrl )
+		self.m_spin_child_img_y.Bind( wx.EVT_SPINCTRL, self.m_spin_child_img_yOnSpinCtrl )
+		self.m_spin_child_img_id.Bind( wx.EVT_SPINCTRL, self.m_spin_child_img_idOnSpinCtrl )
+		self.m_checkBox_draw_child_img.Bind( wx.EVT_CHECKBOX, self.m_checkBox_draw_child_imgOnCheckBox )
 		self.m_button36.Bind( wx.EVT_BUTTON, self.OnButtonClickAddAnimation )
 		self.m_button37.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveAnimation )
+		self.m_propertyGrid_vars.Bind( pg.EVT_PG_CHANGED, self.m_propertyGrid_varsOnPropertyGridChanged )
 
 	def __del__( self ):
 		pass
@@ -762,6 +851,9 @@ class ImageEdit ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonClickNextImage( self, event ):
+		event.Skip()
+
+	def m_text_child_imageOnTextEnter( self, event ):
 		event.Skip()
 
 	def OnButtonClickReplNoPal( self, event ):
@@ -794,7 +886,7 @@ class ImageEdit ( wx.Frame ):
 	def OnButtonClickNextAnimation( self, event ):
 		event.Skip()
 
-	def OnButtonClickSaveAnimationName( self, event ):
+	def m_textCtrl1OnTextEnter( self, event ):
 		event.Skip()
 
 	def OnButtonClickPreviousAnimationFrame( self, event ):
@@ -818,10 +910,25 @@ class ImageEdit ( wx.Frame ):
 	def OnButtonClickRemoveAFrame( self, event ):
 		event.Skip()
 
+	def m_spin_child_img_xOnSpinCtrl( self, event ):
+		event.Skip()
+
+	def m_spin_child_img_yOnSpinCtrl( self, event ):
+		event.Skip()
+
+	def m_spin_child_img_idOnSpinCtrl( self, event ):
+		event.Skip()
+
+	def m_checkBox_draw_child_imgOnCheckBox( self, event ):
+		event.Skip()
+
 	def OnButtonClickAddAnimation( self, event ):
 		event.Skip()
 
 	def OnButtonClickRemoveAnimation( self, event ):
+		event.Skip()
+
+	def m_propertyGrid_varsOnPropertyGridChanged( self, event ):
 		event.Skip()
 
 	def m_splitter2OnIdle( self, event ):
