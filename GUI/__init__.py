@@ -509,10 +509,6 @@ class ImageEdit(generated.ImageEdit):
         self.base_image_file: LaytonLib.images.ani.AniFile = base_image_file
         self.imageIndex = 0
 
-        # buffering
-        self.buffered_main_image = ["none", None]
-        self.buffered_child_image = ["none", None]
-
         self.update_previewimage()
         self.m_staticText5.SetLabel(f"1/{len(self.base_image_file.images)}")  # Frame Index
         self.m_staticText9.SetLabel(f"ID: {self.base_image_file.id} | {hex(self.base_image_file.id)}")  # File ID
@@ -551,6 +547,8 @@ class ImageEdit(generated.ImageEdit):
             self.m_propertyGrid_vars.Append(pg.StringProperty(label, f"Var{i}", value=value))
 
         self.animationFrameIndex = 0
+        self.main_image = wx.Bitmap(0, 0)
+        self.child_image = wx.Bitmap(0, 0)
         self.update_animation_data()
         self.update_animation_previewimage()
 
@@ -722,55 +720,39 @@ class ImageEdit(generated.ImageEdit):
     # Helper function to swap the previouw image of the animation editor
     def update_animation_previewimage(self):
         if len(self.base_image_file.animations[self.animationIndex].frameIDs) == 0:
-            fullimage = imgl.new("RGBA", (258, 194))
-            # Temporarely save it as a file to load it in wx
-            fullimage.save("temp.bmp")
-            wximage = wx.Image("temp.bmp")
-            remove("temp.bmp")
-            self.m_previewImage1.SetBitmap(wximage.ConvertToBitmap())
+            self.main_image = wx.Bitmap(0, 0)
+            self.m_panel_animation_preview.Refresh()
             return
-
         main_index = self.base_image_file.animations[self.animationIndex].imageIndexes[self.animationFrameIndex]
-        if self.buffered_main_image[0] != f"{main_index}":
-            image = self.base_image_file.frame_to_PIL(main_index)
-            self.buffered_main_image[0] = f"{main_index}"
-            self.buffered_main_image[1] = image
+        pil_image = self.base_image_file.frame_to_PIL(main_index)
+        wx_image = wx.Image(*pil_image.size)
+        wx_image.SetData(pil_image.convert("RGB").tobytes())
+        self.main_image = wx.Bitmap(wx_image)
+        if not self.child_image_file or len(self.child_image_file.animations[
+                   self.base_image_file.animations[self.animationIndex].child_spr_index].frameIDs) == 0:
+            self.child_image = wx.Bitmap(0, 0)
         else:
-            image = self.buffered_main_image[1]
+            child_index = self.child_image_file.animations[
+                self.base_image_file.animations[self.animationIndex].child_spr_index].imageIndexes[0]
+            pil_image = self.child_image_file.frame_to_PIL(child_index)
+            wx_image = wx.Image(*pil_image.size)
+            wx_image.SetData(pil_image.convert("RGB").tobytes())
+            self.child_image = wx.Bitmap(wx_image)
 
-        # Create a the full sized image
-        fullimage = imgl.new("RGBA", (258, 194))
+        self.m_panel_animation_preview.Refresh()
 
-        # Paste it onto the full sized image
-        fullimage.paste(image, (1, 1))
-        edit = fullimage.load()
-        for i in range(258):
-            edit[i, 0] = (0, 0, 0, 255)
-            edit[i, -1] = (0, 0, 0, 255)
-        for i in range(1, 193):
-            edit[0, i] = (0, 0, 0, 255)
-            edit[-1, -i] = (0, 0, 0, 255)
+    def m_panel_animation_previewOnPaint( self, event ):
+        dc = wx.PaintDC(self.m_panel_animation_preview)
+        w, h = self.m_panel_animation_preview.GetSize()
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        dc.DrawRectangle(0, 0, w, h)
+        dc.DrawBitmap(self.main_image, 1, 1)
+        if self.m_checkBox_draw_child_img.GetValue():
+            anim = self.base_image_file.animations[self.animationIndex]
+            dc.DrawBitmap(self.child_image, anim.child_spr_x+1, anim.child_spr_y+1)
 
-        # draw child image if neccesary
-        child_spr_index = self.base_image_file.animations[self.animationIndex].child_spr_index
-        if self.child_image_file and child_spr_index and self.m_checkBox_draw_child_img.GetValue():
-            img_index = self.child_image_file.animations[child_spr_index].imageIndexes[0]
-            if self.buffered_child_image[0] != f"{img_index}":
-                img = self.child_image_file.images[img_index].to_PIL()
-                self.buffered_child_image[0] = f"{img_index}"
-                self.buffered_child_image[1] = img
-            else:
-                img = self.buffered_child_image[1]
-            fullimage.paste(img, (self.base_image_file.animations[self.animationIndex].child_spr_x+1,
-                                  self.base_image_file.animations[self.animationIndex].child_spr_y+1))
-
-        # Temporarely save it as a file to load it in wx
-
-        fullimage.save("temp.bmp")
-        wximage = wx.Image("temp.bmp")
-        remove("temp.bmp")
-
-        self.m_previewImage1.SetBitmap(wximage.ConvertToBitmap())
+    def m_panel_animation_previewOnSize( self, event ):
+        self.m_panel_animation_preview.Refresh()
 
     def update_animation_data(self):
         if len(self.base_image_file.animations[self.animationIndex].frameIDs) == 0:
@@ -871,21 +853,24 @@ class ImageEdit(generated.ImageEdit):
 
     def m_spin_child_img_xOnSpinCtrl( self, event ):
         self.base_image_file.animations[self.animationIndex].child_spr_x = int(self.m_spin_child_img_x.GetValue())
-        self.base_image_file.save()
+        #self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
-            self.update_animation_previewimage()
+            self.m_panel_animation_preview.Refresh()
 
     def m_spin_child_img_yOnSpinCtrl( self, event ):
         self.base_image_file.animations[self.animationIndex].child_spr_y = int(self.m_spin_child_img_y.GetValue())
-        self.base_image_file.save()
+        #self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
-            self.update_animation_previewimage()
+            self.m_panel_animation_preview.Refresh()
 
     def m_spin_child_img_idOnSpinCtrl( self, event ):
         self.base_image_file.animations[self.animationIndex].child_spr_index = int(self.m_spin_child_img_id.GetValue())
-        self.base_image_file.save()
+        #self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.update_animation_previewimage()
+
+    def m_button_save_child_img_posOnButtonClick( self, event ):
+        self.base_image_file.save()
 
     def m_propertyGrid_varsOnPropertyGridChanged(self, event):
         for i in range(16):

@@ -508,7 +508,7 @@ class MainFrame ( wx.Frame ):
 class ImageEdit ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Edit Image", pos = wx.DefaultPosition, size = wx.Size( 800,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Edit Image", pos = wx.DefaultPosition, size = wx.Size( 800,621 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
@@ -645,10 +645,10 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer26 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_previewImage1 = wx.StaticBitmap( self.m_panel10, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_previewImage1.SetMinSize( wx.Size( 258,194 ) )
+		self.m_panel_animation_preview = wx.Panel( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel_animation_preview.SetMinSize( wx.Size( 258,194 ) )
 
-		bSizer26.Add( self.m_previewImage1, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		bSizer26.Add( self.m_panel_animation_preview, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
 		bSizer1111 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -769,9 +769,17 @@ class ImageEdit ( wx.Frame ):
 
 		bSizer15.Add( bSizer331, 0, wx.EXPAND, 5 )
 
+		bSizer40 = wx.BoxSizer( wx.HORIZONTAL )
+
 		self.m_checkBox_draw_child_img = wx.CheckBox( self.m_panel4, wx.ID_ANY, u"Draw Child Image", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_checkBox_draw_child_img.SetValue(True)
-		bSizer15.Add( self.m_checkBox_draw_child_img, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.RIGHT|wx.LEFT, 5 )
+		bSizer40.Add( self.m_checkBox_draw_child_img, 1, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_button_save_child_img_pos = wx.Button( self.m_panel4, wx.ID_ANY, u"save", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer40.Add( self.m_button_save_child_img_pos, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+
+		bSizer15.Add( bSizer40, 1, wx.EXPAND, 5 )
 
 		bSizer35 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -827,6 +835,8 @@ class ImageEdit ( wx.Frame ):
 		self.m_button81.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimation )
 		self.m_button91.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimation )
 		self.m_textCtrl1.Bind( wx.EVT_TEXT_ENTER, self.m_textCtrl1OnTextEnter )
+		self.m_panel_animation_preview.Bind( wx.EVT_PAINT, self.m_panel_animation_previewOnPaint )
+		self.m_panel_animation_preview.Bind( wx.EVT_SIZE, self.m_panel_animation_previewOnSize )
 		self.m_button811.Bind( wx.EVT_BUTTON, self.OnButtonClickPreviousAnimationFrame )
 		self.m_button911.Bind( wx.EVT_BUTTON, self.OnButtonClickNextAnimationFrame )
 		self.m_textCtrl11.Bind( wx.EVT_TEXT_ENTER, self.OnTextEnterImgID )
@@ -838,6 +848,7 @@ class ImageEdit ( wx.Frame ):
 		self.m_spin_child_img_y.Bind( wx.EVT_SPINCTRL, self.m_spin_child_img_yOnSpinCtrl )
 		self.m_spin_child_img_id.Bind( wx.EVT_SPINCTRL, self.m_spin_child_img_idOnSpinCtrl )
 		self.m_checkBox_draw_child_img.Bind( wx.EVT_CHECKBOX, self.m_checkBox_draw_child_imgOnCheckBox )
+		self.m_button_save_child_img_pos.Bind( wx.EVT_BUTTON, self.m_button_save_child_img_posOnButtonClick )
 		self.m_button36.Bind( wx.EVT_BUTTON, self.OnButtonClickAddAnimation )
 		self.m_button37.Bind( wx.EVT_BUTTON, self.OnButtonClickRemoveAnimation )
 		self.m_propertyGrid_vars.Bind( pg.EVT_PG_CHANGED, self.m_propertyGrid_varsOnPropertyGridChanged )
@@ -889,6 +900,12 @@ class ImageEdit ( wx.Frame ):
 	def m_textCtrl1OnTextEnter( self, event ):
 		event.Skip()
 
+	def m_panel_animation_previewOnPaint( self, event ):
+		event.Skip()
+
+	def m_panel_animation_previewOnSize( self, event ):
+		event.Skip()
+
 	def OnButtonClickPreviousAnimationFrame( self, event ):
 		event.Skip()
 
@@ -920,6 +937,9 @@ class ImageEdit ( wx.Frame ):
 		event.Skip()
 
 	def m_checkBox_draw_child_imgOnCheckBox( self, event ):
+		event.Skip()
+
+	def m_button_save_child_img_posOnButtonClick( self, event ):
 		event.Skip()
 
 	def OnButtonClickAddAnimation( self, event ):
