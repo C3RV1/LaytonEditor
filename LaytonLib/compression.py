@@ -4,7 +4,7 @@ from LaytonLib.binary import BinaryReader, BinaryWriter
 LZ10 = 0x10
 RLE = 0x30
 HUFF8BIT = 0x28
-
+HUFF4BIT = 0x24
 
 # Mostly copied from Tinke
 class rle():
@@ -55,7 +55,6 @@ class rle():
             while (currentBlockLenght < 130 and rdr.c < len(rdr.data)):
                 nextByte = rdr.readU8()
                 readLenght+=1
-                print(currentBlockLenght)
                 dataBlock[currentBlockLenght] = nextByte
                 currentBlockLenght += 1
                 if (currentBlockLenght > 1):
@@ -141,14 +140,18 @@ class HuffTreeNode:
             rdr.c = currStreamPos
 
 # Mostly copied from Tinke
-class huff8bit():
+class huffman():
     @staticmethod
     def decompress(data: bytes):
         rdr = BinaryReader(data)
         wtr = BinaryWriter()
         type = rdr.readU8()
-        if type != 0x28:
-            raise Exception("Tried to decompress commands that isn't Huffman")
+        if type == 0x24:
+            blocksize = 4
+        elif type == 0x28:
+            blocksize = 8
+        else:
+            raise Exception("Tried to decompress something as huffman that isn't huffman")
 
         ds = rdr.readU8() + (rdr.readU16() << 8)
 
@@ -166,6 +169,8 @@ class huff8bit():
         current_size = 0
         currentNode = rootNode
 
+        cashedbyte = -1
+
         while (current_size < ds):
             # Find next refrence to commands node
             while not currentNode.isData:
@@ -180,8 +185,18 @@ class huff8bit():
                 else:
                     currentNode = currentNode.child0
 
-            wtr.writeU8(currentNode.data)
-            current_size += 1
+            if blocksize == 8:
+                current_size += 1
+                wtr.writeU8(currentNode.data)
+
+            elif blocksize == 4:
+                if cashedbyte < 0:
+                    cashedbyte = currentNode.data
+                else:
+                    cashedbyte |= currentNode.data << 4
+                    wtr.writeU8(cashedbyte)
+                    current_size += 1
+                    cashedbyte = -1
             currentNode = rootNode
 
         return wtr.data
@@ -192,7 +207,11 @@ def decompress(data: bytes):
     elif int(data[0]) == RLE:
         return rle.decompress(data)
     elif int(data[0]) == HUFF8BIT:
-        return huff8bit.decompress(data)
+        return huffman.decompress(data)
+    elif int(data[0]) == HUFF4BIT:
+        return huffman.decompress(data)
+    elif int(data[0]) == 0x0:
+        return data[4:]
     else:
         raise Exception("Unsupported compression filetype with starting byte %s" % hex(data[0]))
 

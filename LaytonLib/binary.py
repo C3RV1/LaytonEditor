@@ -51,10 +51,10 @@ class BinaryReader:
         return out
 
     def readChars(self, len, zeroterminated=True):
-        out = str(self.data[self.c:self.c + len], encoding="ascii")
+        out = self.data[self.c:self.c + len]
         self.c += len
-        if zeroterminated: out = out.split("\0")[0]
-        return out
+        if zeroterminated: out = out.split(b"\0")[0]
+        return str(out, encoding="ascii")
 
     def readBytes(self, len):
         out = self.data[self.c:self.c + len]
@@ -233,7 +233,7 @@ class BinaryEditor:
 # Splits byte into 2 u4
 def split_byte(byte):
     low = byte & 0xf
-    high = (byte >> 4) % 0xf
+    high = (byte >> 4) & 0xf
     return high, low
 
 

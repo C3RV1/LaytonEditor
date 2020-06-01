@@ -85,7 +85,14 @@ class MainFrame(gen.MainFrame):
     # Helper function to update the list of image files
     def updateAniImageList(self):
         self.tree_imagefiles.DeleteAllItems()
-        folder: Folder = self.rom.filenames["data_lt2/ani"]
+        self.rom: NintendoDSRom
+        if self.rom.name == b'LAYTON1':
+            folder: Folder = self.rom.filenames["data/ani"]
+        elif self.rom.name == b'LAYTON2':
+            folder: Folder = self.rom.filenames["data_lt2/ani"]
+        else:
+            print(f"Could get images for: {self.rom.name}")
+            return
         root = self.tree_imagefiles.AddRoot("ani")
         for img in folder.files:
             i = self.tree_imagefiles.AppendItem(root, img)
@@ -285,7 +292,10 @@ class MainFrame(gen.MainFrame):
     # Helper function to update the list of image files
     def updateBGImageList(self):
         self.tree_imagefiles1.DeleteAllItems()
-        folder: Folder = self.rom.filenames["data_lt2/bg"]
+        if self.rom.name == b'LAYTON1':
+            folder: Folder = self.rom.filenames["data/bg"]
+        elif self.rom.name == b'LAYTON2':
+            folder: Folder = self.rom.filenames["data_lt2/bg"]
         root = self.tree_imagefiles1.AddRoot("bg")
         for img in folder.files:
             i = self.tree_imagefiles1.AppendItem(root, img)
@@ -540,7 +550,7 @@ class ImageEdit(generated.ImageEdit):
         # noinspection PyUnresolvedReferences
         self.m_propertyGrid_vars.SetFont(wx.Font(8, wx.TELETYPE, wx.FONTSTYLE_NORMAL,
                                                  wx.FONTWEIGHT_NORMAL))
-        for i in range(16):
+        for i in range(len(self.base_image_file.variables)):
             label = self.base_image_file.variables[i].label
             values = [str(hexencoder(self.base_image_file.variables[i].params[x])[0], "ascii") for x in range(8)]
             value = " ".join(values)

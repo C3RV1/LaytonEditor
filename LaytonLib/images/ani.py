@@ -91,7 +91,8 @@ class Palette():
     def to_writer(self, wtr: AniWriter):
         if wtr.filetype == "arc":
             wtr.writeU32(len(self.colors))
-        for c in self.colors:
+        wtr.writeU16(self.colors[0].bgr555int + 0x8000)
+        for c in self.colors[1:]:
             c: Color
             wtr.writeU16(c.bgr555int)
 
@@ -102,7 +103,7 @@ class Palette():
         self.colors = []
 
     def get_closest_color(self, rgb):
-        if rgb == self.colors[0].rgb:
+        if rgb == (0, 255, 0) or rgb == (0, 248, 0):
             return 0
         best_dist = 10000.
         best = 1
@@ -351,18 +352,20 @@ class Ani():
         for a in self.animations:
             a.framedata_from_reader(rdr)
 
-        rdr.c += 2 # 0x34 and 0x12
+        if rdr.c < len(rdr.data): # variables and child images
+            rdr.c += 2
 
-        self.variables = [AniVariable() for _ in range(16)]
-        for x in self.variables: x.label_from_reader(rdr)
-        for i in range(8):
-            for v in self.variables:
-                v.params[i] = rdr.readBytes(2)
+            print(rdr.c, len(rdr.data))
+            self.variables = [AniVariable() for _ in range(16)]
+            for x in self.variables: x.label_from_reader(rdr)
+            for i in range(8):
+                for v in self.variables:
+                    v.params[i] = rdr.readBytes(2)
 
-        for anim in self.animations: anim.child_spr_x_from_reader(rdr)
-        for anim in self.animations: anim.child_spr_y_from_reader(rdr)
-        for anim in self.animations: anim.child_spr_index_from_reader(rdr)
-        self.child_image = rdr.readChars(128)
+            for anim in self.animations: anim.child_spr_x_from_reader(rdr)
+            for anim in self.animations: anim.child_spr_y_from_reader(rdr)
+            for anim in self.animations: anim.child_spr_index_from_reader(rdr)
+            self.child_image = rdr.readChars(128)
 
     def export_data(self):
         wtr = AniWriter(self.colordepth, self.filetype)
@@ -391,15 +394,16 @@ class Ani():
 
         for x in self.variables: x.label_to_writer(wtr)
 
-        for i in range(8):
-            for v in self.variables:
-                wtr.write(v.params[i])
+        if self.variables:
+            for i in range(8):
+                for v in self.variables:
+                    wtr.write(v.params[i])
 
-        for anim in self.animations: anim.child_spr_x_to_writer(wtr)
-        for anim in self.animations: anim.child_spr_y_to_writer(wtr)
-        for anim in self.animations: anim.child_spr_index_to_writer(wtr)
+            for anim in self.animations: anim.child_spr_x_to_writer(wtr)
+            for anim in self.animations: anim.child_spr_y_to_writer(wtr)
+            for anim in self.animations: anim.child_spr_index_to_writer(wtr)
 
-        wtr.writeChars(self.child_image, 128)
+            wtr.writeChars(self.child_image, 128)
 
         compressed = LaytonLib.binary.BinaryWriter()
         compressed.writeU32(self.startbyte)

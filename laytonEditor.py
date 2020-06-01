@@ -2,7 +2,7 @@ import sys
 print(f"Layton Editor running in python version {sys.version}")
 #sys.path.append(".")
 
-DEBUG = 1
+DEBUG = 0
 DEBUG_ROM = "../Base File.nds"
 
 if DEBUG:
