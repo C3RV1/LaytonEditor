@@ -1071,8 +1071,18 @@ class PuzzleBaseDataEditor ( wx.Frame ):
 
 		bSizer42.Add( bSizer53, 0, wx.EXPAND, 5 )
 
+		bSizer51 = wx.BoxSizer( wx.HORIZONTAL )
+
 		self.save_puzzle_button = wx.Button( self.m_panel25, wx.ID_ANY, u"Save Puzzle", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer42.Add( self.save_puzzle_button, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		bSizer51.Add( self.save_puzzle_button, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+
+		self.saved_successfully = wx.CheckBox( self.m_panel25, wx.ID_ANY, u"Saved successfully", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.saved_successfully.Enable( False )
+
+		bSizer51.Add( self.saved_successfully, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+
+		bSizer42.Add( bSizer51, 0, wx.ALIGN_CENTER, 5 )
 
 
 		self.m_panel25.SetSizer( bSizer42 )

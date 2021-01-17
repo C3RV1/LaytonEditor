@@ -935,6 +935,7 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
         self.puzz_display.SetBitmap(wx_img.ConvertToBitmap())
 
         self.puzzle_data = puzzle_data
+        self.saved_successfully.Value = False
 
     def OnButtonSavePuzzle( self, event ):
         self.puzzle_data.puzzle_text = str(self.puzz_txt_input.Value).encode("ascii")
@@ -947,6 +948,8 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
         self.puzzle_data.puzzle_type = self.puzzle_type_choice.Selection
 
         self.puzzle_data.save_to_rom(self.parent.rom)
+
+        self.saved_successfully.Value = True
 
 
 class LaytonEditor(wx.App):
