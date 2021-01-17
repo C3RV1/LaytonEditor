@@ -516,9 +516,13 @@ class MainFrame(gen.MainFrame):
 
     # Puzzles
 
+    def OnMenuBaseDataEdit( self, event ):
+        base_edit = PuzzleBaseDataEditor(self)
+        base_edit.Show(True)
+
     def OnMenuPuzzleMultipleChoice( self, event ):
-        multiple_choice_puzzle = CreatePuzzleMultipleChoice(self)
-        multiple_choice_puzzle.Show(True)
+        multiple_choice = PuzzleMultipleChoice(self)
+        multiple_choice.Show(True)
 
 
 class ImageEdit(generated.ImageEdit):
@@ -900,7 +904,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_previewimage()
 
 
-class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
+class PuzzleBaseDataEditor(generated.PuzzleBaseDataEditor):
     def __init__(self, parent: MainFrame):
         super().__init__(parent)
         self.parent = parent
@@ -950,6 +954,79 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
         self.puzzle_data.save_to_rom(self.parent.rom)
 
         self.saved_successfully.Value = True
+
+
+class PuzzleMultipleChoice(generated.PuzzleMultipleChoice):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.puzzle_bg_original = None
+        self.gds = LaytonLib.gds.GDSScript()
+
+    def OnButtonLoadPuzzleBG(self, event):
+        puzzle_id = str(self.puzzle_bg_input.Value)
+        if puzzle_id.startswith("0x"):
+            puzzle_id = int(puzzle_id[2:], 16)
+        else:
+            puzzle_id = int(puzzle_id)
+
+        puzzle_data = pzd.PuzzleData()
+        puzzle_data.set_internal_id(puzzle_id)
+        if not puzzle_data.load_from_rom(self.parent.rom):
+            print("Error loading puzzle with id {} from rom".format(puzzle_data.puzzle_internal_id))
+            return
+
+        self.puzzle_bg_original = puzzle_data.puzzle_bg.img.copy()
+
+        self.update_puzzle_preview(0)
+
+    def OnButtonGDSLoad(self, event):
+        gds_plz_id = self.parent.rom.filenames.idOf("data_lt2/script/puzzle.plz")
+        gds_plz_file = LaytonLib.filesystem.PlzFile(self.parent.rom, gds_plz_id)
+
+        gds_filename = "q{}_param.gds".format(self.gds_load_input.Value)
+
+        if gds_filename not in gds_plz_file.filenames:
+            print("Can't load gds")
+            return
+
+        gds_file = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
+        self.gds = LaytonLib.gds.GDSScript.from_bytes(gds_file)
+
+        self.update_puzzle_preview(0)
+
+    def update_puzzle_preview(self, anim_num):
+        if self.puzzle_bg_original is None:
+            return
+        puzzle_bg = self.puzzle_bg_original.copy()  # type: imgl.Image
+
+        for element in self.gds.commands:
+            if element.command != 0x14:
+                continue
+            freebutton_txt = str(element.params[2])
+            freebutton_txt = freebutton_txt.replace(".spr", ".arc")
+            freebutton_id = self.parent.rom.filenames.idOf("data_lt2/ani/nazo/freebutton/{}".format(freebutton_txt))
+            freebutton = LaytonLib.images.ani.AniFile(self.parent.rom, freebutton_id)
+            freebutton_pil = freebutton.frame_to_PIL(anim_num)  # type: imgl.Image
+            freebutton_pil.putalpha(255)
+
+            for i in range(freebutton_pil.width):
+                for j in range(freebutton_pil.height):
+                    color = freebutton_pil.getpixel((i, j))
+                    if color[1] == 248:
+                        freebutton_pil.putpixel((i, j), (0, 0, 0, 0))
+
+            freebutton_pil.load()
+
+            puzzle_bg.paste(freebutton_pil, box=(element.params[0], element.params[1]),
+                            mask=freebutton_pil.split()[3])
+
+        self.puzzle_preview.SetBitmap(self.PIL2wx(puzzle_bg))
+
+    def PIL2wx(self, image):
+        width, height = image.size
+        return wx.Bitmap.FromBuffer(width, height, image.tobytes())
 
 
 class LaytonEditor(wx.App):

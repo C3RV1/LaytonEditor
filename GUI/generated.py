@@ -380,6 +380,9 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItem4 = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Edit Base Data", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_menu2.Append( self.m_menuItem4 )
 
+		self.m_menuItem5 = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Create Puzzle Multiple Choice", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu2.Append( self.m_menuItem5 )
+
 		self.m_menubar_windowmenu.Append( self.m_menu2, u"Puzzles" )
 
 		self.SetMenuBar( self.m_menubar_windowmenu )
@@ -413,7 +416,8 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionOpen, id = self.m_menuItem_openfile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSaveAs, id = self.m_menuItem_savefileas.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnMenuPuzzleMultipleChoice, id = self.m_menuItem4.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnMenuBaseDataEdit, id = self.m_menuItem4.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnMenuPuzzleMultipleChoice, id = self.m_menuItem5.GetId() )
 
 	def __del__( self ):
 		pass
@@ -493,6 +497,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnMenuSelectionSaveAs( self, event ):
+		event.Skip()
+
+	def OnMenuBaseDataEdit( self, event ):
 		event.Skip()
 
 	def OnMenuPuzzleMultipleChoice( self, event ):
@@ -1188,4 +1195,196 @@ class PuzzleBaseDataEditor ( wx.Frame ):
 
 	def OnButtonSavePuzzle( self, event ):
 		event.Skip()
+
+###########################################################################
+## Class PuzzleMultipleChoice
+###########################################################################
+
+class PuzzleMultipleChoice ( wx.Frame ):
+
+	def __init__( self, parent ):
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create Puzzle Multiple Choice", pos = wx.DefaultPosition, size = wx.Size( 774,488 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+		self.SetForegroundColour( wx.Colour( 0, 0, 0 ) )
+		self.SetBackgroundColour( wx.Colour( 240, 240, 240 ) )
+
+		bSizer53 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_panel28 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel28.SetForegroundColour( wx.Colour( 0, 0, 0 ) )
+		self.m_panel28.SetBackgroundColour( wx.Colour( 224, 224, 224 ) )
+
+		bSizer54 = wx.BoxSizer( wx.VERTICAL )
+
+		self.puzzle_preview = wx.StaticBitmap( self.m_panel28, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.puzzle_preview.SetMinSize( wx.Size( 256,256 ) )
+
+		bSizer54.Add( self.puzzle_preview, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5 )
+
+		bSizer55 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.puzzle_bg_label = wx.StaticText( self.m_panel28, wx.ID_ANY, u"Puzzle BG (id): ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.puzzle_bg_label.Wrap( -1 )
+
+		bSizer55.Add( self.puzzle_bg_label, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.puzzle_bg_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer55.Add( self.puzzle_bg_input, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.load_bg_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Load Puzzle BG", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer55.Add( self.load_bg_button, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+
+		bSizer54.Add( bSizer55, 0, wx.EXPAND, 5 )
+
+		bSizer561 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.gds_load_label = wx.StaticText( self.m_panel28, wx.ID_ANY, u"Load from puzzle (id):", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.gds_load_label.Wrap( -1 )
+
+		bSizer561.Add( self.gds_load_label, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.gds_load_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer561.Add( self.gds_load_input, 1, wx.ALL, 5 )
+
+		self.gds_load_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Load GDS", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer561.Add( self.gds_load_button, 1, wx.ALL, 5 )
+
+
+		bSizer54.Add( bSizer561, 0, wx.EXPAND, 5 )
+
+		bSizer56 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.gds_save_label = wx.StaticText( self.m_panel28, wx.ID_ANY, u"Save to puzzle (id):", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.gds_save_label.Wrap( -1 )
+
+		bSizer56.Add( self.gds_save_label, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.gds_save_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer56.Add( self.gds_save_input, 1, wx.ALL, 5 )
+
+		self.gds_save_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Save GDS", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer56.Add( self.gds_save_button, 1, wx.ALL, 5 )
+
+
+		bSizer54.Add( bSizer56, 0, wx.EXPAND, 5 )
+
+		self.m_button43 = wx.Button( self.m_panel28, wx.ID_ANY, u"Update Puzzle Preview", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer54.Add( self.m_button43, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+
+
+		self.m_panel28.SetSizer( bSizer54 )
+		self.m_panel28.Layout()
+		bSizer54.Fit( self.m_panel28 )
+		bSizer53.Add( self.m_panel28, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_panel29 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel29.SetBackgroundColour( wx.Colour( 224, 224, 224 ) )
+
+		bSizer57 = wx.BoxSizer( wx.VERTICAL )
+
+		self.buttons_tree = wx.TreeCtrl( self.m_panel29, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
+		bSizer57.Add( self.buttons_tree, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_panel30 = wx.Panel( self.m_panel29, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer58 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer59 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText43 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"X:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText43.Wrap( -1 )
+
+		bSizer59.Add( self.m_staticText43, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.m_textCtrl21 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer59.Add( self.m_textCtrl21, 0, wx.ALL, 5 )
+
+		self.m_staticText44 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"Y:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText44.Wrap( -1 )
+
+		bSizer59.Add( self.m_staticText44, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.m_textCtrl22 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer59.Add( self.m_textCtrl22, 0, wx.ALL, 5 )
+
+
+		bSizer58.Add( bSizer59, 0, wx.ALIGN_CENTER, 5 )
+
+		bSizer60 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText45 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"Freebutton: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText45.Wrap( -1 )
+
+		bSizer60.Add( self.m_staticText45, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.m_textCtrl23 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer60.Add( self.m_textCtrl23, 0, wx.ALL, 5 )
+
+
+		bSizer58.Add( bSizer60, 0, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+		bSizer62 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.is_correct_checkbox = wx.CheckBox( self.m_panel30, wx.ID_ANY, u"Is a solution: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		bSizer62.Add( self.is_correct_checkbox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.m_staticText46 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"SFX: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText46.Wrap( -1 )
+
+		bSizer62.Add( self.m_staticText46, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+		self.m_textCtrl24 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textCtrl24.Enable( False )
+
+		bSizer62.Add( self.m_textCtrl24, 0, wx.ALL, 5 )
+
+
+		bSizer58.Add( bSizer62, 0, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+
+		self.m_panel30.SetSizer( bSizer58 )
+		self.m_panel30.Layout()
+		bSizer58.Fit( self.m_panel30 )
+		bSizer57.Add( self.m_panel30, 0, wx.EXPAND |wx.ALL, 5 )
+
+
+		self.m_panel29.SetSizer( bSizer57 )
+		self.m_panel29.Layout()
+		bSizer57.Fit( self.m_panel29 )
+		bSizer53.Add( self.m_panel29, 1, wx.EXPAND |wx.ALL, 5 )
+
+
+		self.SetSizer( bSizer53 )
+		self.Layout()
+
+		self.Centre( wx.BOTH )
+
+		# Connect Events
+		self.load_bg_button.Bind( wx.EVT_BUTTON, self.OnButtonLoadPuzzleBG )
+		self.gds_load_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSLoad )
+		self.gds_save_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSSave )
+		self.m_button43.Bind( wx.EVT_BUTTON, self.OnButtonUpdatePuzzlePreview )
+		self.buttons_tree.Bind( wx.EVT_TREE_SEL_CHANGED, self.ObjTreeSelChanged )
+
+	def __del__( self ):
+		pass
+
+
+	# Virtual event handlers, overide them in your derived class
+	def OnButtonLoadPuzzleBG( self, event ):
+		event.Skip()
+
+	def OnButtonGDSLoad( self, event ):
+		event.Skip()
+
+	def OnButtonGDSSave( self, event ):
+		event.Skip()
+
+	def OnButtonUpdatePuzzlePreview( self, event ):
+		event.Skip()
+
+	def ObjTreeSelChanged( self, event ):
+		event.Skip()
+
 
