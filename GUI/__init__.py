@@ -8,8 +8,10 @@ import PIL.Image as imgl
 from os.path import join
 import LaytonLib.asm_patching
 import LaytonLib.gds
+from LaytonLib.puzzles import puzzle_data as pzd
 from wx import propgrid as pg
 import codecs
+import struct
 
 hexencoder = codecs.getencoder('hex_codec')
 hexdecoder = codecs.getdecoder('hex_codec')
@@ -512,6 +514,12 @@ class MainFrame(gen.MainFrame):
                 self.rom.files[self.selected_file] = \
                     LaytonLib.gds.GDSScript.from_simplified(self.m_textCtrl8.GetValue()).to_bytes()
 
+    # Puzzles
+
+    def OnMenuPuzzleMultipleChoice( self, event ):
+        multiple_choice_puzzle = CreatePuzzleMultipleChoice(self)
+        multiple_choice_puzzle.Show(True)
+
 
 class ImageEdit(generated.ImageEdit):
     def __init__(self, parent: MainFrame, base_image_file):
@@ -890,6 +898,47 @@ class ImageEdit(generated.ImageEdit):
 
     def m_checkBox_draw_child_imgOnCheckBox( self, event ):
         self.update_animation_previewimage()
+
+
+class CreatePuzzleMultipleChoice(generated.PuzzleMultipleChoice):
+    def __init__(self, parent: MainFrame):
+        super().__init__(parent)
+        self.parent = parent
+        self.puzzle_data = None  # type: pzd.PuzzleData
+
+    def OnButtonLoadPuzzle(self, event):
+        puzzle_id = str(self.puzz_id_text.Value)
+        if puzzle_id.startswith("0x"):
+            puzzle_id = int(puzzle_id[2:], 16)
+        else:
+            puzzle_id = int(puzzle_id)
+
+        puzzle_data = pzd.PuzzleData()
+        puzzle_data.set_internal_id(puzzle_id)
+        if not puzzle_data.load_from_rom(self.parent.rom):
+            print("Error loading puzzle with id {} from rom".format(puzzle_data.puzzle_internal_id))
+            event.Skip()
+            return
+
+        if puzzle_data.puzzle_type != 0x2:
+            print("Error: puzzle with id {} is not of type Multiple Choice (type: {})".format(puzzle_id, puzzle_data.puzzle_type))
+            event.Skip()
+            return
+
+        self.puzz_txt_input.Value = puzzle_data.puzzle_text
+        self.correct_input.Value = puzzle_data.puzzle_correct_answer
+        self.incorrect_input.Value = puzzle_data.puzzle_incorrect_answer
+        self.hint1_input.Value = puzzle_data.puzzle_hint1
+        self.hint2_input.Value = puzzle_data.puzzle_hint2
+        self.hint3_input.Value = puzzle_data.puzzle_hint3
+        self.puzz_title_input.Value = puzzle_data.puzzle_title
+
+        puzzle_data.puzzle_bg.img.save("temp2.bmp")
+        wx_img = wx.Image("temp2.bmp")
+        remove("temp2.bmp")
+        self.puzz_display.SetBitmap(wx_img.ConvertToBitmap())
+
+        self.puzzle_data = puzzle_data
 
 
 class LaytonEditor(wx.App):
