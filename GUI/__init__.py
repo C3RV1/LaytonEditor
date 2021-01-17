@@ -900,7 +900,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_previewimage()
 
 
-class CreatePuzzleMultipleChoice(generated.PuzzleMultipleChoice):
+class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
     def __init__(self, parent: MainFrame):
         super().__init__(parent)
         self.parent = parent
@@ -917,12 +917,6 @@ class CreatePuzzleMultipleChoice(generated.PuzzleMultipleChoice):
         puzzle_data.set_internal_id(puzzle_id)
         if not puzzle_data.load_from_rom(self.parent.rom):
             print("Error loading puzzle with id {} from rom".format(puzzle_data.puzzle_internal_id))
-            event.Skip()
-            return
-
-        if puzzle_data.puzzle_type != 0x2:
-            print("Error: puzzle with id {} is not of type Multiple Choice (type: {})".format(puzzle_id, puzzle_data.puzzle_type))
-            event.Skip()
             return
 
         self.puzz_txt_input.Value = puzzle_data.puzzle_text
@@ -932,6 +926,8 @@ class CreatePuzzleMultipleChoice(generated.PuzzleMultipleChoice):
         self.hint2_input.Value = puzzle_data.puzzle_hint2
         self.hint3_input.Value = puzzle_data.puzzle_hint3
         self.puzz_title_input.Value = puzzle_data.puzzle_title
+        self.puzzle_type_choice.Selection = puzzle_data.puzzle_type
+        self.puzzle_num_display.LabelText = str(puzzle_data.puzzle_number)
 
         puzzle_data.puzzle_bg.img.save("temp2.bmp")
         wx_img = wx.Image("temp2.bmp")

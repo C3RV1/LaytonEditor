@@ -377,7 +377,7 @@ class MainFrame ( wx.Frame ):
 		self.m_menubar_windowmenu.Append( self.m_menu_file, u"File" )
 
 		self.m_menu2 = wx.Menu()
-		self.m_menuItem4 = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Create Multiple Choice", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItem4 = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Edit Base Data", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_menu2.Append( self.m_menuItem4 )
 
 		self.m_menubar_windowmenu.Append( self.m_menu2, u"Puzzles" )
@@ -966,13 +966,13 @@ class ImageEdit ( wx.Frame ):
 		self.m_splitter2.Unbind( wx.EVT_IDLE )
 
 ###########################################################################
-## Class PuzzleMultipleChoice
+## Class PuzzleBaseDataEditor
 ###########################################################################
 
-class PuzzleMultipleChoice ( wx.Frame ):
+class PuzzleBaseDataEditor ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create Multiple Choice Puzzle", pos = wx.DefaultPosition, size = wx.Size( 794,509 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Edit Puzzle Base Data", pos = wx.DefaultPosition, size = wx.Size( 794,509 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
@@ -1012,6 +1012,26 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 		bSizer42.Add( bSizer45, 0, wx.EXPAND, 5 )
 
+		bSizer54 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.puzzle_number_label = wx.StaticText( self.m_panel25, wx.ID_ANY, u"Puzzle Number:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.puzzle_number_label.Wrap( -1 )
+
+		bSizer54.Add( self.puzzle_number_label, 1, wx.ALL, 5 )
+
+		self.puzzle_num_display = wx.StaticText( self.m_panel25, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.puzzle_num_display.Wrap( -1 )
+
+		bSizer54.Add( self.puzzle_num_display, 1, wx.ALL, 5 )
+
+		self.padding_label = wx.StaticText( self.m_panel25, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.padding_label.Wrap( -1 )
+
+		bSizer54.Add( self.padding_label, 1, wx.ALL, 5 )
+
+
+		bSizer42.Add( bSizer54, 0, wx.EXPAND, 5 )
+
 		bSizer50 = wx.BoxSizer( wx.HORIZONTAL )
 
 		self.puzz_title_label = wx.StaticText( self.m_panel25, wx.ID_ANY, u"Puzzle Title:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
@@ -1031,6 +1051,26 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 		bSizer42.Add( bSizer50, 0, wx.EXPAND, 5 )
 
+		bSizer53 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.puzzle_type_label = wx.StaticText( self.m_panel25, wx.ID_ANY, u"Puzzle Type: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.puzzle_type_label.Wrap( -1 )
+
+		bSizer53.Add( self.puzzle_type_label, 1, wx.ALL, 5 )
+
+		puzzle_type_choiceChoices = [ u"unknown0", u"unknown1", u"Multiple Choice", u"Mark Answer", u"unknown4", u"Circle Answer", u"unknown6", u"unknown7", u"unknown8", u"Line Separe", u"Sort", u"unknownB", u"unknownC", u"unknownD", u"unknownE", u"unknownF", u"unknown10", u"unknown11", u"Tile Rotate", u"unknown13", u"unknown14", u"unknown15", u"Input", u"Area", u"unknown18", u"Slide", u"Tile Rotate 2", u"unknown1B", u"unknown1C", u"unknown1D", u"unknown1E", u"unknown1F", u"unknown20", u"unknown21", u"unknown22", u"unknown23", wx.EmptyString ]
+		self.puzzle_type_choice = wx.Choice( self.m_panel25, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, puzzle_type_choiceChoices, 0 )
+		self.puzzle_type_choice.SetSelection( 0 )
+		bSizer53.Add( self.puzzle_type_choice, 1, wx.ALL, 5 )
+
+		self.padding_label2 = wx.StaticText( self.m_panel25, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.padding_label2.Wrap( -1 )
+
+		bSizer53.Add( self.padding_label2, 1, wx.ALL, 5 )
+
+
+		bSizer42.Add( bSizer53, 0, wx.EXPAND, 5 )
+
 		self.save_puzzle_button = wx.Button( self.m_panel25, wx.ID_ANY, u"Save Puzzle", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer42.Add( self.save_puzzle_button, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
@@ -1045,8 +1085,7 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 		bSizer47 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_notebook3 = wx.Notebook( self.m_panel26, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_panel30 = wx.Panel( self.m_notebook3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel30 = wx.Panel( self.m_panel26, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer48 = wx.BoxSizer( wx.VERTICAL )
 
 		self.m_scrolledWindow1 = wx.ScrolledWindow( self.m_panel30, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
@@ -1111,70 +1150,7 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.m_panel30.SetSizer( bSizer48 )
 		self.m_panel30.Layout()
 		bSizer48.Fit( self.m_panel30 )
-		self.m_notebook3.AddPage( self.m_panel30, u"Texts", True )
-		self.m_panel31 = wx.Panel( self.m_notebook3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer51 = wx.BoxSizer( wx.VERTICAL )
-
-		self.m_treeCtrl4 = wx.TreeCtrl( self.m_panel31, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
-		bSizer51.Add( self.m_treeCtrl4, 1, wx.ALL|wx.EXPAND, 5 )
-
-		bSizer52 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.m_staticText41 = wx.StaticText( self.m_panel31, wx.ID_ANY, u"X:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText41.Wrap( -1 )
-
-		bSizer52.Add( self.m_staticText41, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.m_textCtrl20 = wx.TextCtrl( self.m_panel31, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer52.Add( self.m_textCtrl20, 1, wx.ALL, 5 )
-
-		self.m_staticText42 = wx.StaticText( self.m_panel31, wx.ID_ANY, u"Y:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText42.Wrap( -1 )
-
-		bSizer52.Add( self.m_staticText42, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.m_textCtrl21 = wx.TextCtrl( self.m_panel31, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer52.Add( self.m_textCtrl21, 1, wx.ALL, 5 )
-
-
-		bSizer51.Add( bSizer52, 0, wx.ALIGN_CENTER, 5 )
-
-		bSizer53 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.m_staticText43 = wx.StaticText( self.m_panel31, wx.ID_ANY, u"FreeButton Sprite:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText43.Wrap( -1 )
-
-		bSizer53.Add( self.m_staticText43, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.m_textCtrl22 = wx.TextCtrl( self.m_panel31, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer53.Add( self.m_textCtrl22, 0, wx.ALL, 5 )
-
-
-		bSizer51.Add( bSizer53, 0, wx.ALIGN_CENTER, 5 )
-
-		bSizer54 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.m_checkBox2 = wx.CheckBox( self.m_panel31, wx.ID_ANY, u"Is Solution", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		bSizer54.Add( self.m_checkBox2, 0, wx.ALL, 5 )
-
-		self.anim_unknown_label = wx.StaticText( self.m_panel31, wx.ID_ANY, u"Animation unknown field:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.anim_unknown_label.Wrap( -1 )
-
-		bSizer54.Add( self.anim_unknown_label, 0, wx.ALL, 5 )
-
-		self.anim_unknown_input = wx.TextCtrl( self.m_panel31, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer54.Add( self.anim_unknown_input, 0, wx.ALL, 5 )
-
-
-		bSizer51.Add( bSizer54, 0, wx.ALIGN_CENTER, 5 )
-
-
-		self.m_panel31.SetSizer( bSizer51 )
-		self.m_panel31.Layout()
-		bSizer51.Fit( self.m_panel31 )
-		self.m_notebook3.AddPage( self.m_panel31, u"Objects", False )
-
-		bSizer47.Add( self.m_notebook3, 1, wx.EXPAND |wx.ALL, 5 )
+		bSizer47.Add( self.m_panel30, 1, wx.EXPAND |wx.ALL, 5 )
 
 
 		self.m_panel26.SetSizer( bSizer47 )

@@ -9,6 +9,7 @@ import os
 class PuzzleData:
     def __init__(self):
         self.puzzle_type = 0
+        self.puzzle_number = 0
         self.puzzle_internal_id = 0
         self.puzzle_location = 0
         self.puzzle_text = b""
@@ -21,12 +22,16 @@ class PuzzleData:
         self.puzzle_bg = None  # type: LaytonLib.images.bg.BgFile
         self.puzzle_bg_bitmap = None  # type: wx.Bitmap
 
-        self.puzzle_bg_lang_dependant = False
+        self._puzzle_flags = 0
+
+        self.puzzle_original = b""
 
     def set_internal_id(self, internal_id: int):
         self.puzzle_internal_id = internal_id
 
     def load(self, b: bytes):
+        self.puzzle_original = b
+
         self.puzzle_type = b[0x3a]
         puzzle_text_offset = 0x70 + struct.unpack("<i", b[0x40:0x44])[0]
         self.puzzle_text = self.load_str(b, puzzle_text_offset)
@@ -41,8 +46,9 @@ class PuzzleData:
         puzzle_hint3_offset = 0x70 + struct.unpack("<i", b[0x54:0x58])[0]
         self.puzzle_hint3 = self.load_str(b, puzzle_hint3_offset)
         self.puzzle_title = self.load_str(b, 0x4)
+        self.puzzle_number = struct.unpack("<h", b[0x0:0x2])[0]
 
-        self.puzzle_bg_lang_dependant = (b[0x38] & 0x20) > 0
+        self._puzzle_flags = b[0x38]
 
     def load_from_rom(self, rom: ndspy.rom.NintendoDSRom):
         if rom.name == b'LAYTON1' and False:
@@ -70,7 +76,6 @@ class PuzzleData:
             return False
 
         puzzle_file = plz.files[plz.filenames.index("n{}.dat".format(self.puzzle_internal_id))]
-        print(puzzle_file)
 
         self.load(puzzle_file)
 
@@ -92,3 +97,29 @@ class PuzzleData:
             ret += bytes([b[offset]])
             offset += 1
         return ret
+
+    @property
+    def puzzle_bg_lang_dependant(self):
+        return (self._puzzle_flags & 0x20) > 0
+
+    @puzzle_bg_lang_dependant.setter
+    def puzzle_bg_lang_dependant(self, value: bool):
+        if value:
+            self._puzzle_flags |= 0x20
+        else:
+            self._puzzle_flags &= 0xFF - 0x20
+
+    @property
+    def puzzle_answer_bg_lang_dependant(self):
+        return (self._puzzle_flags & 0x40) > 0
+
+    @puzzle_answer_bg_lang_dependant.setter
+    def puzzle_answer_bg_lang_dependant(self, value: bool):
+        if value:
+            self._puzzle_flags |= 0x40
+        else:
+            self._puzzle_flags &= 0xFF - 0x40
+
+    def export_data(self):
+        pass
+
