@@ -936,6 +936,18 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
 
         self.puzzle_data = puzzle_data
 
+    def OnButtonSavePuzzle( self, event ):
+        self.puzzle_data.puzzle_text = str(self.puzz_txt_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_correct_answer = str(self.correct_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_hint1 = str(self.hint1_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_hint2 = str(self.hint2_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_hint3 = str(self.hint3_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_title = str(self.puzz_title_input.Value).encode("ascii")
+        self.puzzle_data.puzzle_type = self.puzzle_type_choice.Selection
+
+        self.puzzle_data.save_to_rom(self.parent.rom)
+
 
 class LaytonEditor(wx.App):
     def __init__(self):

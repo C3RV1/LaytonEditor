@@ -3,7 +3,6 @@ import ndspy.rom
 import LaytonLib.filesystem
 import LaytonLib.images.bg
 import wx
-import os
 
 
 class PuzzleData:
@@ -50,7 +49,7 @@ class PuzzleData:
 
         self._puzzle_flags = b[0x38]
 
-    def load_from_rom(self, rom: ndspy.rom.NintendoDSRom):
+    def get_dat_file(self, rom: ndspy.rom.NintendoDSRom):
         if rom.name == b'LAYTON1' and False:
             folder: str = rom.filenames["data/ani"]
         elif rom.name == b'LAYTON2':
@@ -75,12 +74,13 @@ class PuzzleData:
             print("Nazo dat not found")
             return False
 
-        puzzle_file = plz.files[plz.filenames.index("n{}.dat".format(self.puzzle_internal_id))]
+        return plz, plz.filenames.index("n{}.dat".format(self.puzzle_internal_id))
 
-        self.load(puzzle_file)
-
+    def load_from_rom(self, rom: ndspy.rom.NintendoDSRom):
+        dat_files, index = self.get_dat_file(rom)
+        dat_file = dat_files.files[index]
+        self.load(dat_file)
         self.load_bg_from_rom(rom)
-
         return True
 
     def load_bg_from_rom(self, rom: ndspy.rom.NintendoDSRom):
@@ -121,5 +121,43 @@ class PuzzleData:
             self._puzzle_flags &= 0xFF - 0x40
 
     def export_data(self):
-        pass
+        puzzle_text_section = b""
+        puzzle_text_section += self.puzzle_text + b"\x00"
+        puzzle_correct_offset = len(puzzle_text_section)
+        puzzle_text_section += self.puzzle_correct_answer + b"\x00"
+        puzzle_incorrect_offset = len(puzzle_text_section)
+        puzzle_text_section += self.puzzle_incorrect_answer + b"\x00"
+        puzzle_hint1_offset = len(puzzle_text_section)
+        puzzle_text_section += self.puzzle_hint1 + b"\x00"
+        puzzle_hint2_offset = len(puzzle_text_section)
+        puzzle_text_section += self.puzzle_hint2 + b"\x00"
+        puzzle_hint3_offset = len(puzzle_text_section)
+        puzzle_text_section += self.puzzle_hint3 + b"\x00"
+
+        result = struct.pack("<h", self.puzzle_number)
+        result += struct.pack("<h", 112)
+        result += self.pad_with_0(self.puzzle_title, 0x30)
+        result += self.puzzle_original[0x34:0x38]
+        result += bytes([self._puzzle_flags])
+        result += self.puzzle_original[0x39:0x3a]
+        result += bytes([self.puzzle_type])
+        result += bytes([self.puzzle_internal_id])
+        # TODO: Add puzzle location (0x3e)
+        result += self.puzzle_original[0x3c:0x40]
+        result += struct.pack("<iiiiii", 0, puzzle_correct_offset, puzzle_incorrect_offset, puzzle_hint1_offset,
+                              puzzle_hint2_offset, puzzle_hint3_offset)
+        result += (b"\x00"*4)*6
+        result += puzzle_text_section
+
+        return result
+
+    def save_to_rom(self, rom):
+        dat_files, dat_index = self.get_dat_file(rom)
+        dat_files.files[dat_index] = self.export_data()
+        dat_files.save()
+
+    def pad_with_0(self, b, length):
+        res = b + b"\x00"*(length - len(b))
+        res = res[:-1] + b"\x00"
+        return res
 
