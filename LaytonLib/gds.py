@@ -63,7 +63,7 @@ class GDSScript:
                 data_wtr.writeFloat(p)
             elif type(p) == str:
                 data_wtr.writeU16(3)
-                data_wtr.writeU16(len(p))
+                data_wtr.writeU16(len(p) + 1)  # NULL BYTE
                 data_wtr.write(p)
                 data_wtr.writeU8(0)
         for c in self.commands:
@@ -78,7 +78,7 @@ class GDSScript:
                     data_wtr.writeFloat(p)
                 elif type(p) == str:
                     data_wtr.writeU16(3)
-                    data_wtr.writeU16(len(p))
+                    data_wtr.writeU16(len(p) + 1)  # NULL BYTE
                     data_wtr.write(p)
                     data_wtr.writeU8(0)
 
