@@ -86,6 +86,9 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
         with open(self.save_location, "wb+") as file:
             file.write(self.rom.save())
 
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
+
     # Helper function to update the list of image files
     def updateAniImageList(self):
         self.tree_imagefiles.DeleteAllItems()
@@ -518,11 +521,15 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
 
     # Puzzles
 
-    def OnMenuBaseDataEdit( self, event ):
+    def OnMenuBaseDataEdit(self, event):
+        if self.rom is None:
+            return
         base_edit = PuzzleBaseDataEditor(self)
         base_edit.Show(True)
 
-    def OnMenuPuzzleMultipleChoice( self, event ):
+    def OnMenuPuzzleMultipleChoice(self, event):
+        if self.rom is None:
+            return
         multiple_choice = PuzzleMultipleChoice(self)
         multiple_choice.Show(True)
 
@@ -753,7 +760,8 @@ class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
         wx_image.SetData(pil_image.convert("RGB").tobytes())
         self.main_image = wx.Bitmap(wx_image)
         if not self.child_image_file or len(self.child_image_file.animations[
-                   self.base_image_file.animations[self.animationIndex].child_spr_index].frameIDs) == 0:
+                                                self.base_image_file.animations[
+                                                    self.animationIndex].child_spr_index].frameIDs) == 0:
             self.child_image = wx.Bitmap(0, 0)
         else:
             child_index = self.child_image_file.animations[
@@ -765,7 +773,7 @@ class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
 
         self.m_panel_animation_preview.Refresh()
 
-    def m_panel_animation_previewOnPaint( self, event ):
+    def m_panel_animation_previewOnPaint(self, event):
         dc = wx.PaintDC(self.m_panel_animation_preview)
         w, h = self.m_panel_animation_preview.GetSize()
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -773,9 +781,9 @@ class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
         dc.DrawBitmap(self.main_image, 1, 1)
         if self.m_checkBox_draw_child_img.GetValue():
             anim = self.base_image_file.animations[self.animationIndex]
-            dc.DrawBitmap(self.child_image, anim.child_spr_x+1, anim.child_spr_y+1)
+            dc.DrawBitmap(self.child_image, anim.child_spr_x + 1, anim.child_spr_y + 1)
 
-    def m_panel_animation_previewOnSize( self, event ):
+    def m_panel_animation_previewOnSize(self, event):
         self.m_panel_animation_preview.Refresh()
 
     def update_animation_data(self):
@@ -875,25 +883,25 @@ class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
         if self.m_checkBox_draw_child_img.GetValue():
             self.update_animation_previewimage()
 
-    def m_spin_child_img_xOnSpinCtrl( self, event ):
+    def m_spin_child_img_xOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_x = int(self.m_spin_child_img_x.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.m_panel_animation_preview.Refresh()
 
-    def m_spin_child_img_yOnSpinCtrl( self, event ):
+    def m_spin_child_img_yOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_y = int(self.m_spin_child_img_y.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.m_panel_animation_preview.Refresh()
 
-    def m_spin_child_img_idOnSpinCtrl( self, event ):
+    def m_spin_child_img_idOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_index = int(self.m_spin_child_img_id.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.update_animation_previewimage()
 
-    def m_button_save_child_img_posOnButtonClick( self, event ):
+    def m_button_save_child_img_posOnButtonClick(self, event):
         self.base_image_file.save()
 
     def m_propertyGrid_varsOnPropertyGridChanged(self, event):
@@ -902,7 +910,7 @@ class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
             for part, offset in enumerate(range(0, 32, 4)):
                 self.base_image_file.variables[i].params[part] = hexdecoder(spaceless[offset:offset + 4])[0]
 
-    def m_checkBox_draw_child_imgOnCheckBox( self, event ):
+    def m_checkBox_draw_child_imgOnCheckBox(self, event):
         self.update_animation_previewimage()
 
 
@@ -941,9 +949,8 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
         self.puzz_display.SetBitmap(wx_img.ConvertToBitmap())
 
         self.puzzle_data = puzzle_data
-        self.saved_successfully.Value = False
 
-    def OnButtonSavePuzzle( self, event ):
+    def OnButtonSavePuzzle(self, event):
         self.puzzle_data.puzzle_text = str(self.puzz_txt_input.Value).encode("ascii")
         self.puzzle_data.puzzle_correct_answer = str(self.correct_input.Value).encode("ascii")
         self.puzzle_data.puzzle_incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
@@ -955,7 +962,8 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
 
         self.puzzle_data.save_to_rom(self.parent.rom)
 
-        self.saved_successfully.Value = True
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
 
 
 class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoice):
@@ -993,7 +1001,8 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
         gds_filename = "q{}_param.gds".format(self.gds_load_input.Value)
 
         if gds_filename not in gds_plz_file.filenames:
-            print("Can't load gds")
+            gds_error = wx.MessageDialog(self, "Can't load gds (not found)", style=wx.ICON_ERROR|wx.OK)
+            gds_error.ShowModal()
             return
 
         gds_file = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
@@ -1003,7 +1012,30 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
         self.update_tree()
         self.update_puzzle_preview(0)
 
-    def OnButtonUpdatePuzzlePreview( self, event ):
+    def OnButtonGDSSave(self, event):
+        gds_plz_id = self.parent.rom.filenames.idOf("data_lt2/script/puzzle.plz")
+        gds_plz_file = LaytonLib.filesystem.PlzFile(self.parent.rom, gds_plz_id)
+
+        gds_filename = "q{}_param.gds".format(self.gds_save_input.Value)
+
+        if gds_filename not in gds_plz_file.filenames:
+            gds_error = wx.MessageDialog(self, "Can't save gds (not found)", style=wx.ICON_ERROR|wx.OK)
+            gds_error.ShowModal()
+            return
+
+        print(self.gds)
+        prev = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
+        gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)] = self.gds.to_bytes()
+        print(prev)
+        print(gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)])
+        print(gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)] == prev)
+
+        gds_plz_file.save()
+
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
+
+    def OnButtonUpdatePuzzlePreview(self, event):
         self.update_puzzle_preview(0)
 
     def update_puzzle_preview(self, anim_num):
@@ -1018,6 +1050,8 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
             freebutton_txt = str(element.params[2])
             freebutton_txt = freebutton_txt.replace(".spr", ".arc")
             freebutton_id = self.parent.rom.filenames.idOf("data_lt2/ani/nazo/freebutton/{}".format(freebutton_txt))
+            if not freebutton_id:
+                continue
             freebutton = LaytonLib.images.ani.AniFile(self.parent.rom, freebutton_id)
             freebutton_pil = freebutton.frame_to_PIL(anim_num)  # type: imgl.Image
             freebutton_pil.putalpha(255)
@@ -1047,7 +1081,7 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
             self.buttons_tree.SetItemData(new_item, self.gds.commands.index(element))
             element_count += 1
 
-    def ObjTreeSelChanged( self, event ):
+    def ObjTreeSelChanged(self, event):
         self.save_current_editing_data()
         selected_object = self.buttons_tree.GetItemData(self.buttons_tree.GetSelection())
         self.current_selection = selected_object
@@ -1074,41 +1108,24 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
         selected_object_gds.params[3] = int(self.is_correct_checkbox.Value)
         selected_object_gds.params[4] = int(self.sfx_input.Value)
 
-    def OnButtonNew( self, event ):
-        add_index = self.current_selection + 1
-        self.gds.commands.insert(add_index, LaytonLib.gds.GDSCommand(0x14, [0, 0, "", 0, 0]))
+    def OnButtonNew(self, event):
+        add_index = len(self.gds.commands)
+        self.gds.commands.insert(add_index, LaytonLib.gds.GDSCommand(0x14, [0, 0, "freebutton_m.spr", 0, 0]))
         self.current_selection = -1
         self.update_tree()
 
-    def OnButtonDelete( self, event ):
+    def OnButtonDelete(self, event):
         add_index = self.current_selection
         if add_index == -1:
             return
-        self.gds.commands = self.gds.commands[:add_index] + self.gds.commands[add_index+1:]
-        self.current_selection = -1
-        self.update_tree()
-
-    def OnButtonMoveUp( self, event ):
-        if self.current_selection < 1:
-            return
-        tmp = self.gds.commands[self.current_selection]
-        self.gds.commands[self.current_selection] = self.gds.commands[self.current_selection - 1]
-        self.gds.commands[self.current_selection - 1] = tmp
-        self.current_selection = -1
-        self.update_tree()
-
-    def OnButtonMoveDown( self, event ):
-        if self.current_selection >= len(self.gds.commands) - 1:
-            return
-        tmp = self.gds.commands[self.current_selection]
-        self.gds.commands[self.current_selection] = self.gds.commands[self.current_selection + 1]
-        self.gds.commands[self.current_selection + 1] = tmp
+        self.gds.commands = self.gds.commands[:add_index] + self.gds.commands[add_index + 1:]
         self.current_selection = -1
         self.update_tree()
 
     def PIL2wx(self, image):
         width, height = image.size
         return wx.Bitmap.FromBuffer(width, height, image.tobytes())
+
 
 class LaytonEditor(wx.App):
     def __init__(self):

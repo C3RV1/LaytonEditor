@@ -106,12 +106,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.m_button46 = wx.Button( self.m_panel29, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer63.Add( self.m_button46, 1, wx.ALL, 5 )
 
-		self.m_button47 = wx.Button( self.m_panel29, wx.ID_ANY, u"Move Up", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer63.Add( self.m_button47, 1, wx.ALL, 5 )
-
-		self.m_button48 = wx.Button( self.m_panel29, wx.ID_ANY, u"Move Down", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer63.Add( self.m_button48, 1, wx.ALL, 5 )
-
 
 		bSizer57.Add( bSizer63, 0, wx.EXPAND, 5 )
 
@@ -166,8 +160,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		bSizer62.Add( self.sfx_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 		self.sfx_input = wx.TextCtrl( self.edit_gds_pannel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.sfx_input.Enable( False )
-
 		bSizer62.Add( self.sfx_input, 0, wx.ALL, 5 )
 
 
@@ -198,8 +190,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.m_button43.Bind( wx.EVT_BUTTON, self.OnButtonUpdatePuzzlePreview )
 		self.m_new_button.Bind( wx.EVT_BUTTON, self.OnButtonNew )
 		self.m_button46.Bind( wx.EVT_BUTTON, self.OnButtonDelete )
-		self.m_button47.Bind( wx.EVT_BUTTON, self.OnButtonMoveUp )
-		self.m_button48.Bind( wx.EVT_BUTTON, self.OnButtonMoveDown )
 		self.buttons_tree.Bind( wx.EVT_TREE_SEL_CHANGED, self.ObjTreeSelChanged )
 
 	def __del__( self ):
@@ -223,12 +213,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonDelete( self, event ):
-		event.Skip()
-
-	def OnButtonMoveUp( self, event ):
-		event.Skip()
-
-	def OnButtonMoveDown( self, event ):
 		event.Skip()
 
 	def ObjTreeSelChanged( self, event ):
