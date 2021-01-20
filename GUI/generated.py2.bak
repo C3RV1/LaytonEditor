@@ -1284,69 +1284,86 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 		bSizer57 = wx.BoxSizer( wx.VERTICAL )
 
+		bSizer63 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_new_button = wx.Button( self.m_panel29, wx.ID_ANY, u"New", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+		bSizer63.Add( self.m_new_button, 1, wx.ALL, 5 )
+
+		self.m_button46 = wx.Button( self.m_panel29, wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer63.Add( self.m_button46, 1, wx.ALL, 5 )
+
+		self.m_button47 = wx.Button( self.m_panel29, wx.ID_ANY, u"Move Up", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer63.Add( self.m_button47, 1, wx.ALL, 5 )
+
+		self.m_button48 = wx.Button( self.m_panel29, wx.ID_ANY, u"Move Down", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer63.Add( self.m_button48, 1, wx.ALL, 5 )
+
+
+		bSizer57.Add( bSizer63, 0, wx.EXPAND, 5 )
+
 		self.buttons_tree = wx.TreeCtrl( self.m_panel29, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
 		bSizer57.Add( self.buttons_tree, 1, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_panel30 = wx.Panel( self.m_panel29, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.edit_gds_pannel = wx.Panel( self.m_panel29, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer58 = wx.BoxSizer( wx.VERTICAL )
 
 		bSizer59 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.m_staticText43 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"X:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText43.Wrap( -1 )
+		self.x_label = wx.StaticText( self.edit_gds_pannel, wx.ID_ANY, u"X:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.x_label.Wrap( -1 )
 
-		bSizer59.Add( self.m_staticText43, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer59.Add( self.x_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.m_textCtrl21 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer59.Add( self.m_textCtrl21, 0, wx.ALL, 5 )
+		self.x_input = wx.TextCtrl( self.edit_gds_pannel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer59.Add( self.x_input, 0, wx.ALL, 5 )
 
-		self.m_staticText44 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"Y:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText44.Wrap( -1 )
+		self.y_label = wx.StaticText( self.edit_gds_pannel, wx.ID_ANY, u"Y:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.y_label.Wrap( -1 )
 
-		bSizer59.Add( self.m_staticText44, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer59.Add( self.y_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.m_textCtrl22 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer59.Add( self.m_textCtrl22, 0, wx.ALL, 5 )
+		self.y_input = wx.TextCtrl( self.edit_gds_pannel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer59.Add( self.y_input, 0, wx.ALL, 5 )
 
 
 		bSizer58.Add( bSizer59, 0, wx.ALIGN_CENTER, 5 )
 
 		bSizer60 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.m_staticText45 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"Freebutton: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.m_staticText45.Wrap( -1 )
+		self.freebutton_label = wx.StaticText( self.edit_gds_pannel, wx.ID_ANY, u"Freebutton: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.freebutton_label.Wrap( -1 )
 
-		bSizer60.Add( self.m_staticText45, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer60.Add( self.freebutton_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.m_textCtrl23 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer60.Add( self.m_textCtrl23, 0, wx.ALL, 5 )
+		self.freebutton_input = wx.TextCtrl( self.edit_gds_pannel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer60.Add( self.freebutton_input, 0, wx.ALL, 5 )
 
 
 		bSizer58.Add( bSizer60, 0, wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
 		bSizer62 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.is_correct_checkbox = wx.CheckBox( self.m_panel30, wx.ID_ANY, u"Is a solution: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.is_correct_checkbox = wx.CheckBox( self.edit_gds_pannel, wx.ID_ANY, u"Is a solution: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
 		bSizer62.Add( self.is_correct_checkbox, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.m_staticText46 = wx.StaticText( self.m_panel30, wx.ID_ANY, u"SFX: ", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText46.Wrap( -1 )
+		self.sfx_label = wx.StaticText( self.edit_gds_pannel, wx.ID_ANY, u"SFX: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.sfx_label.Wrap( -1 )
 
-		bSizer62.Add( self.m_staticText46, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer62.Add( self.sfx_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.m_textCtrl24 = wx.TextCtrl( self.m_panel30, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_textCtrl24.Enable( False )
+		self.sfx_input = wx.TextCtrl( self.edit_gds_pannel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.sfx_input.Enable( False )
 
-		bSizer62.Add( self.m_textCtrl24, 0, wx.ALL, 5 )
+		bSizer62.Add( self.sfx_input, 0, wx.ALL, 5 )
 
 
 		bSizer58.Add( bSizer62, 0, wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
 
-		self.m_panel30.SetSizer( bSizer58 )
-		self.m_panel30.Layout()
-		bSizer58.Fit( self.m_panel30 )
-		bSizer57.Add( self.m_panel30, 0, wx.EXPAND |wx.ALL, 5 )
+		self.edit_gds_pannel.SetSizer( bSizer58 )
+		self.edit_gds_pannel.Layout()
+		bSizer58.Fit( self.edit_gds_pannel )
+		bSizer57.Add( self.edit_gds_pannel, 0, wx.EXPAND |wx.ALL, 5 )
 
 
 		self.m_panel29.SetSizer( bSizer57 )
@@ -1365,6 +1382,10 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.gds_load_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSLoad )
 		self.gds_save_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSSave )
 		self.m_button43.Bind( wx.EVT_BUTTON, self.OnButtonUpdatePuzzlePreview )
+		self.m_new_button.Bind( wx.EVT_BUTTON, self.OnButtonNew )
+		self.m_button46.Bind( wx.EVT_BUTTON, self.OnButtonDelete )
+		self.m_button47.Bind( wx.EVT_BUTTON, self.OnButtonMoveUp )
+		self.m_button48.Bind( wx.EVT_BUTTON, self.OnButtonMoveDown )
 		self.buttons_tree.Bind( wx.EVT_TREE_SEL_CHANGED, self.ObjTreeSelChanged )
 
 	def __del__( self ):
@@ -1382,6 +1403,18 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		event.Skip()
 
 	def OnButtonUpdatePuzzlePreview( self, event ):
+		event.Skip()
+
+	def OnButtonNew( self, event ):
+		event.Skip()
+
+	def OnButtonDelete( self, event ):
+		event.Skip()
+
+	def OnButtonMoveUp( self, event ):
+		event.Skip()
+
+	def OnButtonMoveDown( self, event ):
 		event.Skip()
 
 	def ObjTreeSelChanged( self, event ):

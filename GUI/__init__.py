@@ -1,23 +1,25 @@
-import GUI.generated as gen
-import LaytonLib
+from os import remove
+from os.path import join
+import codecs
+import GUI.generated.MainFrame
+import GUI.generated.PuzzleMultipleChoice
+import GUI.generated.PuzzleBaseDataEditor
+import GUI.generated.ImageEdit
 from ndspy.rom import NintendoDSRom
 from ndspy.fnt import Folder
-import wx
-from os import remove
-import PIL.Image as imgl
-from os.path import join
+import LaytonLib
+from LaytonLib.puzzles import puzzle_data as pzd
 import LaytonLib.asm_patching
 import LaytonLib.gds
-from LaytonLib.puzzles import puzzle_data as pzd
+import PIL.Image as imgl
+import wx
 from wx import propgrid as pg
-import codecs
-import struct
 
 hexencoder = codecs.getencoder('hex_codec')
 hexdecoder = codecs.getdecoder('hex_codec')
 
 
-class MainFrame(gen.MainFrame):
+class MainFrame(GUI.generated.MainFrame.MainFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.rom = None
@@ -525,7 +527,7 @@ class MainFrame(gen.MainFrame):
         multiple_choice.Show(True)
 
 
-class ImageEdit(generated.ImageEdit):
+class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
     def __init__(self, parent: MainFrame, base_image_file):
         super().__init__(parent)
         self.base_image_file: LaytonLib.images.ani.AniFile = base_image_file
@@ -904,7 +906,7 @@ class ImageEdit(generated.ImageEdit):
         self.update_animation_previewimage()
 
 
-class PuzzleBaseDataEditor(generated.PuzzleBaseDataEditor):
+class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEditor):
     def __init__(self, parent: MainFrame):
         super().__init__(parent)
         self.parent = parent
@@ -956,13 +958,16 @@ class PuzzleBaseDataEditor(generated.PuzzleBaseDataEditor):
         self.saved_successfully.Value = True
 
 
-class PuzzleMultipleChoice(generated.PuzzleMultipleChoice):
+class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoice):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
 
         self.puzzle_bg_original = None
         self.gds = LaytonLib.gds.GDSScript()
+        # self.edit_gds_pannel.Hide()
+
+        self.current_selection = -1
 
     def OnButtonLoadPuzzleBG(self, event):
         puzzle_id = str(self.puzzle_bg_input.Value)
@@ -993,10 +998,16 @@ class PuzzleMultipleChoice(generated.PuzzleMultipleChoice):
 
         gds_file = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
         self.gds = LaytonLib.gds.GDSScript.from_bytes(gds_file)
+        self.current_selection = -1
 
+        self.update_tree()
+        self.update_puzzle_preview(0)
+
+    def OnButtonUpdatePuzzlePreview( self, event ):
         self.update_puzzle_preview(0)
 
     def update_puzzle_preview(self, anim_num):
+        self.save_current_editing_data()
         if self.puzzle_bg_original is None:
             return
         puzzle_bg = self.puzzle_bg_original.copy()  # type: imgl.Image
@@ -1024,10 +1035,80 @@ class PuzzleMultipleChoice(generated.PuzzleMultipleChoice):
 
         self.puzzle_preview.SetBitmap(self.PIL2wx(puzzle_bg))
 
+    def update_tree(self):
+        self.buttons_tree.DeleteAllItems()
+        root = self.buttons_tree.AddRoot("gds_buttons")
+        element_count = 0
+
+        for element in self.gds.commands:
+            if element.command != 0x14:
+                continue
+            new_item = self.buttons_tree.AppendItem(root, "button{}".format(element_count))
+            self.buttons_tree.SetItemData(new_item, self.gds.commands.index(element))
+            element_count += 1
+
+    def ObjTreeSelChanged( self, event ):
+        self.save_current_editing_data()
+        selected_object = self.buttons_tree.GetItemData(self.buttons_tree.GetSelection())
+        self.current_selection = selected_object
+
+        self.edit_gds_pannel.Show(True)
+        if self.current_selection >= len(self.gds.commands):
+            self.current_selection = -1
+            return
+        selected_object_gds = self.gds.commands[selected_object]
+
+        self.x_input.Value = str(selected_object_gds.params[0])
+        self.y_input.Value = str(selected_object_gds.params[1])
+        self.freebutton_input.Value = str(selected_object_gds.params[2])
+        self.is_correct_checkbox.Value = selected_object_gds.params[3] > 0
+        self.sfx_input.Value = str(selected_object_gds.params[4])
+
+    def save_current_editing_data(self):
+        if self.current_selection == -1:
+            return
+        selected_object_gds = self.gds.commands[self.current_selection]
+        selected_object_gds.params[0] = int(self.x_input.Value)
+        selected_object_gds.params[1] = int(self.y_input.Value)
+        selected_object_gds.params[2] = str(self.freebutton_input.Value)
+        selected_object_gds.params[3] = int(self.is_correct_checkbox.Value)
+        selected_object_gds.params[4] = int(self.sfx_input.Value)
+
+    def OnButtonNew( self, event ):
+        add_index = self.current_selection + 1
+        self.gds.commands.insert(add_index, LaytonLib.gds.GDSCommand(0x14, [0, 0, "", 0, 0]))
+        self.current_selection = -1
+        self.update_tree()
+
+    def OnButtonDelete( self, event ):
+        add_index = self.current_selection
+        if add_index == -1:
+            return
+        self.gds.commands = self.gds.commands[:add_index] + self.gds.commands[add_index+1:]
+        self.current_selection = -1
+        self.update_tree()
+
+    def OnButtonMoveUp( self, event ):
+        if self.current_selection < 1:
+            return
+        tmp = self.gds.commands[self.current_selection]
+        self.gds.commands[self.current_selection] = self.gds.commands[self.current_selection - 1]
+        self.gds.commands[self.current_selection - 1] = tmp
+        self.current_selection = -1
+        self.update_tree()
+
+    def OnButtonMoveDown( self, event ):
+        if self.current_selection >= len(self.gds.commands) - 1:
+            return
+        tmp = self.gds.commands[self.current_selection]
+        self.gds.commands[self.current_selection] = self.gds.commands[self.current_selection + 1]
+        self.gds.commands[self.current_selection + 1] = tmp
+        self.current_selection = -1
+        self.update_tree()
+
     def PIL2wx(self, image):
         width, height = image.size
         return wx.Bitmap.FromBuffer(width, height, image.tobytes())
-
 
 class LaytonEditor(wx.App):
     def __init__(self):
