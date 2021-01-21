@@ -109,6 +109,7 @@ class File:
     def id(self):
         return int(self._id)
 
+
 class PlzFile(Plz, File):
     def __init__(self, romOrArchive, id):
         Plz.__init__(self)

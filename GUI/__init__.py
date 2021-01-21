@@ -1,23 +1,25 @@
-import GUI.generated as gen
-import LaytonLib
+from os import remove
+from os.path import join
+import codecs
+import GUI.generated.MainFrame
+import GUI.generated.PuzzleMultipleChoice
+import GUI.generated.PuzzleBaseDataEditor
+import GUI.generated.ImageEdit
 from ndspy.rom import NintendoDSRom
 from ndspy.fnt import Folder
-import wx
-from os import remove
-import PIL.Image as imgl
-from os.path import join
+import LaytonLib
+from LaytonLib.puzzles import puzzle_data as pzd
 import LaytonLib.asm_patching
 import LaytonLib.gds
-from LaytonLib.puzzles import puzzle_data as pzd
+import PIL.Image as imgl
+import wx
 from wx import propgrid as pg
-import codecs
-import struct
 
 hexencoder = codecs.getencoder('hex_codec')
 hexdecoder = codecs.getdecoder('hex_codec')
 
 
-class MainFrame(gen.MainFrame):
+class MainFrame(GUI.generated.MainFrame.MainFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.rom = None
@@ -83,6 +85,9 @@ class MainFrame(gen.MainFrame):
             return
         with open(self.save_location, "wb+") as file:
             file.write(self.rom.save())
+
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
 
     # Helper function to update the list of image files
     def updateAniImageList(self):
@@ -516,12 +521,20 @@ class MainFrame(gen.MainFrame):
 
     # Puzzles
 
-    def OnMenuPuzzleMultipleChoice( self, event ):
-        multiple_choice_puzzle = CreatePuzzleMultipleChoice(self)
-        multiple_choice_puzzle.Show(True)
+    def OnMenuBaseDataEdit(self, event):
+        if self.rom is None:
+            return
+        base_edit = PuzzleBaseDataEditor(self)
+        base_edit.Show(True)
+
+    def OnMenuPuzzleMultipleChoice(self, event):
+        if self.rom is None:
+            return
+        multiple_choice = PuzzleMultipleChoice(self)
+        multiple_choice.Show(True)
 
 
-class ImageEdit(generated.ImageEdit):
+class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
     def __init__(self, parent: MainFrame, base_image_file):
         super().__init__(parent)
         self.base_image_file: LaytonLib.images.ani.AniFile = base_image_file
@@ -747,7 +760,8 @@ class ImageEdit(generated.ImageEdit):
         wx_image.SetData(pil_image.convert("RGB").tobytes())
         self.main_image = wx.Bitmap(wx_image)
         if not self.child_image_file or len(self.child_image_file.animations[
-                   self.base_image_file.animations[self.animationIndex].child_spr_index].frameIDs) == 0:
+                                                self.base_image_file.animations[
+                                                    self.animationIndex].child_spr_index].frameIDs) == 0:
             self.child_image = wx.Bitmap(0, 0)
         else:
             child_index = self.child_image_file.animations[
@@ -759,7 +773,7 @@ class ImageEdit(generated.ImageEdit):
 
         self.m_panel_animation_preview.Refresh()
 
-    def m_panel_animation_previewOnPaint( self, event ):
+    def m_panel_animation_previewOnPaint(self, event):
         dc = wx.PaintDC(self.m_panel_animation_preview)
         w, h = self.m_panel_animation_preview.GetSize()
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -767,9 +781,9 @@ class ImageEdit(generated.ImageEdit):
         dc.DrawBitmap(self.main_image, 1, 1)
         if self.m_checkBox_draw_child_img.GetValue():
             anim = self.base_image_file.animations[self.animationIndex]
-            dc.DrawBitmap(self.child_image, anim.child_spr_x+1, anim.child_spr_y+1)
+            dc.DrawBitmap(self.child_image, anim.child_spr_x + 1, anim.child_spr_y + 1)
 
-    def m_panel_animation_previewOnSize( self, event ):
+    def m_panel_animation_previewOnSize(self, event):
         self.m_panel_animation_preview.Refresh()
 
     def update_animation_data(self):
@@ -869,25 +883,25 @@ class ImageEdit(generated.ImageEdit):
         if self.m_checkBox_draw_child_img.GetValue():
             self.update_animation_previewimage()
 
-    def m_spin_child_img_xOnSpinCtrl( self, event ):
+    def m_spin_child_img_xOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_x = int(self.m_spin_child_img_x.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.m_panel_animation_preview.Refresh()
 
-    def m_spin_child_img_yOnSpinCtrl( self, event ):
+    def m_spin_child_img_yOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_y = int(self.m_spin_child_img_y.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.m_panel_animation_preview.Refresh()
 
-    def m_spin_child_img_idOnSpinCtrl( self, event ):
+    def m_spin_child_img_idOnSpinCtrl(self, event):
         self.base_image_file.animations[self.animationIndex].child_spr_index = int(self.m_spin_child_img_id.GetValue())
-        #self.base_image_file.save()
+        # self.base_image_file.save()
         if self.m_checkBox_draw_child_img.GetValue():
             self.update_animation_previewimage()
 
-    def m_button_save_child_img_posOnButtonClick( self, event ):
+    def m_button_save_child_img_posOnButtonClick(self, event):
         self.base_image_file.save()
 
     def m_propertyGrid_varsOnPropertyGridChanged(self, event):
@@ -896,11 +910,11 @@ class ImageEdit(generated.ImageEdit):
             for part, offset in enumerate(range(0, 32, 4)):
                 self.base_image_file.variables[i].params[part] = hexdecoder(spaceless[offset:offset + 4])[0]
 
-    def m_checkBox_draw_child_imgOnCheckBox( self, event ):
+    def m_checkBox_draw_child_imgOnCheckBox(self, event):
         self.update_animation_previewimage()
 
 
-class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
+class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEditor):
     def __init__(self, parent: MainFrame):
         super().__init__(parent)
         self.parent = parent
@@ -935,9 +949,8 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
         self.puzz_display.SetBitmap(wx_img.ConvertToBitmap())
 
         self.puzzle_data = puzzle_data
-        self.saved_successfully.Value = False
 
-    def OnButtonSavePuzzle( self, event ):
+    def OnButtonSavePuzzle(self, event):
         self.puzzle_data.puzzle_text = str(self.puzz_txt_input.Value).encode("ascii")
         self.puzzle_data.puzzle_correct_answer = str(self.correct_input.Value).encode("ascii")
         self.puzzle_data.puzzle_incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
@@ -949,7 +962,164 @@ class CreatePuzzleMultipleChoice(generated.PuzzleBaseDataEditor):
 
         self.puzzle_data.save_to_rom(self.parent.rom)
 
-        self.saved_successfully.Value = True
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
+
+
+class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoice):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.puzzle_bg_original = None
+        self.gds = LaytonLib.gds.GDSScript()
+        # self.edit_gds_pannel.Hide()
+
+        self.current_selection = -1
+
+    def OnButtonLoadPuzzleBG(self, event):
+        puzzle_id = str(self.puzzle_bg_input.Value)
+        if puzzle_id.startswith("0x"):
+            puzzle_id = int(puzzle_id[2:], 16)
+        else:
+            puzzle_id = int(puzzle_id)
+
+        puzzle_data = pzd.PuzzleData()
+        puzzle_data.set_internal_id(puzzle_id)
+        if not puzzle_data.load_from_rom(self.parent.rom):
+            print("Error loading puzzle with id {} from rom".format(puzzle_data.puzzle_internal_id))
+            return
+
+        self.puzzle_bg_original = puzzle_data.puzzle_bg.img.copy()
+
+        self.update_puzzle_preview(0)
+
+    def OnButtonGDSLoad(self, event):
+        gds_plz_id = self.parent.rom.filenames.idOf("data_lt2/script/puzzle.plz")
+        gds_plz_file = LaytonLib.filesystem.PlzFile(self.parent.rom, gds_plz_id)
+
+        gds_filename = "q{}_param.gds".format(self.gds_load_input.Value)
+
+        if gds_filename not in gds_plz_file.filenames:
+            gds_error = wx.MessageDialog(self, "Can't load gds (not found)", style=wx.ICON_ERROR|wx.OK)
+            gds_error.ShowModal()
+            return
+
+        gds_file = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
+        self.gds = LaytonLib.gds.GDSScript.from_bytes(gds_file)
+        self.current_selection = -1
+
+        self.update_tree()
+        self.update_puzzle_preview(0)
+
+    def OnButtonGDSSave(self, event):
+        gds_plz_id = self.parent.rom.filenames.idOf("data_lt2/script/puzzle.plz")
+        gds_plz_file = LaytonLib.filesystem.PlzFile(self.parent.rom, gds_plz_id)
+
+        gds_filename = "q{}_param.gds".format(self.gds_save_input.Value)
+
+        if gds_filename not in gds_plz_file.filenames:
+            gds_error = wx.MessageDialog(self, "Can't save gds (not found)", style=wx.ICON_ERROR|wx.OK)
+            gds_error.ShowModal()
+            return
+
+        gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)] = self.gds.to_bytes()
+
+        gds_plz_file.save()
+
+        successful = wx.MessageDialog(self, "Saved successfully")
+        successful.ShowModal()
+
+    def OnButtonUpdatePuzzlePreview(self, event):
+        self.update_puzzle_preview(0)
+
+    def update_puzzle_preview(self, anim_num):
+        self.save_current_editing_data()
+        if self.puzzle_bg_original is None:
+            return
+        puzzle_bg = self.puzzle_bg_original.copy()  # type: imgl.Image
+
+        for element in self.gds.commands:
+            if element.command != 0x14:
+                continue
+            freebutton_txt = str(element.params[2])
+            freebutton_txt = freebutton_txt.replace(".spr", ".arc")
+            freebutton_id = self.parent.rom.filenames.idOf("data_lt2/ani/nazo/freebutton/{}".format(freebutton_txt))
+            if not freebutton_id:
+                continue
+            freebutton = LaytonLib.images.ani.AniFile(self.parent.rom, freebutton_id)
+            freebutton_pil = freebutton.frame_to_PIL(anim_num)  # type: imgl.Image
+            freebutton_pil.putalpha(255)
+
+            for i in range(freebutton_pil.width):
+                for j in range(freebutton_pil.height):
+                    color = freebutton_pil.getpixel((i, j))
+                    if color[1] == 248:
+                        freebutton_pil.putpixel((i, j), (0, 0, 0, 0))
+
+            freebutton_pil.load()
+
+            puzzle_bg.paste(freebutton_pil, box=(element.params[0], element.params[1]),
+                            mask=freebutton_pil.split()[3])
+
+        self.puzzle_preview.SetBitmap(self.PIL2wx(puzzle_bg))
+
+    def update_tree(self):
+        self.buttons_tree.DeleteAllItems()
+        root = self.buttons_tree.AddRoot("gds_buttons")
+        element_count = 0
+
+        for element in self.gds.commands:
+            if element.command != 0x14:
+                continue
+            new_item = self.buttons_tree.AppendItem(root, "button{}".format(element_count))
+            self.buttons_tree.SetItemData(new_item, self.gds.commands.index(element))
+            element_count += 1
+
+    def ObjTreeSelChanged(self, event):
+        self.save_current_editing_data()
+        selected_object = self.buttons_tree.GetItemData(self.buttons_tree.GetSelection())
+        self.current_selection = selected_object
+
+        self.edit_gds_pannel.Show(True)
+        if self.current_selection >= len(self.gds.commands):
+            self.current_selection = -1
+            return
+        selected_object_gds = self.gds.commands[selected_object]
+
+        self.x_input.Value = str(selected_object_gds.params[0])
+        self.y_input.Value = str(selected_object_gds.params[1])
+        self.freebutton_input.Value = str(selected_object_gds.params[2])
+        self.is_correct_checkbox.Value = selected_object_gds.params[3] > 0
+        self.sfx_input.Value = str(selected_object_gds.params[4])
+
+    def save_current_editing_data(self):
+        if self.current_selection == -1:
+            return
+        selected_object_gds = self.gds.commands[self.current_selection]
+        selected_object_gds.params[0] = int(self.x_input.Value)
+        selected_object_gds.params[1] = int(self.y_input.Value)
+        selected_object_gds.params[2] = str(self.freebutton_input.Value)
+        selected_object_gds.params[3] = int(self.is_correct_checkbox.Value)
+        selected_object_gds.params[4] = int(self.sfx_input.Value)
+
+    def OnButtonNew(self, event):
+        add_index = len(self.gds.commands)
+        self.gds.commands.insert(add_index, LaytonLib.gds.GDSCommand(0x14, [0, 0, "freebutton_m.spr", 0, 0]))
+        self.current_selection = -1
+        self.update_tree()
+
+    def OnButtonDelete(self, event):
+        add_index = self.current_selection
+        if add_index == -1:
+            return
+        self.gds.commands = self.gds.commands[:add_index] + self.gds.commands[add_index + 1:]
+        self.current_selection = -1
+        self.update_tree()
+
+    def PIL2wx(self, image):
+        width, height = image.size
+        return wx.Bitmap.FromBuffer(width, height, image.tobytes())
 
 
 class LaytonEditor(wx.App):
