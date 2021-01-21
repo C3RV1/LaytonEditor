@@ -1023,12 +1023,7 @@ class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoi
             gds_error.ShowModal()
             return
 
-        print(self.gds)
-        prev = gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)]
         gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)] = self.gds.to_bytes()
-        print(prev)
-        print(gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)])
-        print(gds_plz_file.files[gds_plz_file.filenames.index(gds_filename)] == prev)
 
         gds_plz_file.save()
 
