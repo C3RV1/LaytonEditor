@@ -957,6 +957,14 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
         self.puzz_display.SetBitmap(wx_img.ConvertToBitmap())
 
     def OnButtonSavePuzzle(self, event):
+        puzzle_id = str(self.puzz_id_text.Value)
+        if puzzle_id.startswith("0x"):
+            puzzle_id = int(puzzle_id[2:], 16)
+        else:
+            puzzle_id = int(puzzle_id)
+
+        self.puzzle_data.set_internal_id(puzzle_id)
+        
         self.puzzle_data.text = str(self.puzz_txt_input.Value).encode("ascii")
         self.puzzle_data.correct_answer = str(self.correct_input.Value).encode("ascii")
         self.puzzle_data.incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
