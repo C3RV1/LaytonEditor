@@ -103,10 +103,10 @@ class PuzzleBaseDataEditor ( wx.Frame ):
 
 		bSizer53.Add( self.puzzle_type_label, 1, wx.ALL, 5 )
 
-		puzzle_type_choiceChoices = [ u"unknown0", u"unknown1", u"Multiple Choice", u"Mark Answer", u"unknown4", u"Circle Answer", u"unknown6", u"unknown7", u"unknown8", u"Line Separe", u"Sort", u"unknownB", u"unknownC", u"unknownD", u"unknownE", u"unknownF", u"unknown10", u"unknown11", u"Tile Rotate", u"unknown13", u"unknown14", u"unknown15", u"Input", u"Area", u"unknown18", u"Slide", u"Tile Rotate 2", u"unknown1B", u"unknown1C", u"unknown1D", u"unknown1E", u"unknown1F", u"unknown20", u"unknown21", u"unknown22", u"unknown23", wx.EmptyString ]
+		puzzle_type_choiceChoices = [ u"unused0", u"unused1", u"Multiple Choice", u"Mark Answer", u"unused4", u"Circle Answer", u"Draw Line Plaza", u"unused7", u"unused8", u"Line Divide", u"Sort", u"Weather", u"unusedC", u"Piles Of Pancakes", u"unusedE", u"Line Divide Limited", u"Input Chars", u"Knight Tour", u"Tile Rotate", u"unused13", u"unused14", u"unaccessible_172_202_15", u"Input Numeric", u"Area", u"Roses", u"Slide", u"Tile Rotate 2", u"Slippery Crossings", u"Input Alt", u"Disappearing Act", u"Jars and Cans", u"Light The Way", u"unaccessible173_0x20", u"Rickety Bridge", u"Find Shape", u"Input Date" ]
 		self.puzzle_type_choice = wx.Choice( self.m_panel25, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, puzzle_type_choiceChoices, 0 )
 		self.puzzle_type_choice.SetSelection( 0 )
-		bSizer53.Add( self.puzzle_type_choice, 1, wx.ALL, 5 )
+		bSizer53.Add( self.puzzle_type_choice, 0, wx.ALL, 5 )
 
 		self.padding_label2 = wx.StaticText( self.m_panel25, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.padding_label2.Wrap( -1 )
@@ -120,11 +120,6 @@ class PuzzleBaseDataEditor ( wx.Frame ):
 
 		self.save_puzzle_button = wx.Button( self.m_panel25, wx.ID_ANY, u"Save Puzzle", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer51.Add( self.save_puzzle_button, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
-
-		self.saved_successfully = wx.CheckBox( self.m_panel25, wx.ID_ANY, u"Saved successfully", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.saved_successfully.Enable( False )
-
-		bSizer51.Add( self.saved_successfully, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 
 		bSizer42.Add( bSizer51, 0, wx.ALIGN_CENTER, 5 )

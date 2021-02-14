@@ -36,22 +36,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 		bSizer54.Add( self.puzzle_preview, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5 )
 
-		bSizer55 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.puzzle_bg_label = wx.StaticText( self.m_panel28, wx.ID_ANY, u"Puzzle BG (id): ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.puzzle_bg_label.Wrap( -1 )
-
-		bSizer55.Add( self.puzzle_bg_label, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.puzzle_bg_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer55.Add( self.puzzle_bg_input, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.load_bg_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Load Puzzle BG", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer55.Add( self.load_bg_button, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-
-		bSizer54.Add( bSizer55, 0, wx.EXPAND, 5 )
-
 		bSizer561 = wx.BoxSizer( wx.HORIZONTAL )
 
 		self.gds_load_label = wx.StaticText( self.m_panel28, wx.ID_ANY, u"Load from puzzle (id):", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
@@ -62,7 +46,7 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.gds_load_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer561.Add( self.gds_load_input, 1, wx.ALL, 5 )
 
-		self.gds_load_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Load GDS", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.gds_load_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Load", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer561.Add( self.gds_load_button, 1, wx.ALL, 5 )
 
 
@@ -78,7 +62,7 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.gds_save_input = wx.TextCtrl( self.m_panel28, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer56.Add( self.gds_save_input, 1, wx.ALL, 5 )
 
-		self.gds_save_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Save GDS", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.gds_save_button = wx.Button( self.m_panel28, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer56.Add( self.gds_save_button, 1, wx.ALL, 5 )
 
 
@@ -184,7 +168,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
-		self.load_bg_button.Bind( wx.EVT_BUTTON, self.OnButtonLoadPuzzleBG )
 		self.gds_load_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSLoad )
 		self.gds_save_button.Bind( wx.EVT_BUTTON, self.OnButtonGDSSave )
 		self.m_button43.Bind( wx.EVT_BUTTON, self.OnButtonUpdatePuzzlePreview )
@@ -197,9 +180,6 @@ class PuzzleMultipleChoice ( wx.Frame ):
 
 
 	# Virtual event handlers, overide them in your derived class
-	def OnButtonLoadPuzzleBG( self, event ):
-		event.Skip()
-
 	def OnButtonGDSLoad( self, event ):
 		event.Skip()
 
