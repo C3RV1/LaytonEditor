@@ -1150,6 +1150,12 @@ class PuzzleInputEditor(GUI.generated.PuzzleInputEditor.PuzzleInputEditor):
                 cmd.params[1] = self.answer_inp.Value
             elif cmd.command == 0x41:
                 cmd.params[3] = int(self.type_of_input_inp.Value)
+        if not any(cmd.command == 0x43 for cmd in self.puzzle_data.gds.commands):
+            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [self.input_bg_inp.Value]))
+        if not any(cmd.command == 0x42 for cmd in self.puzzle_data.gds.commands):
+            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, self.answer_inp.Value]))
+        if not any(cmd.command == 0x41 for cmd in self.puzzle_data.gds.commands):
+            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, 0, 0, self.input_bg_inp.Value]))
 
     def OnButtonGDSLoad(self, event):
         puzzle_id = int(self.gds_load_input.Value)
