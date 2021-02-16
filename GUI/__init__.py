@@ -20,6 +20,28 @@ hexencoder = codecs.getencoder('hex_codec')
 hexdecoder = codecs.getdecoder('hex_codec')
 
 
+def auto_newline(text: str, max_line_length: int):
+    def wrap_line_helper(line: str):
+        words = line.split(" ")
+        wrapped_line = []
+        current_line = ""
+        for word in words:
+            current_line += word
+            if len(current_line) > max_line_length:
+                current_line = " ".join(current_line.split(" ")[:-1])
+                wrapped_line.append(current_line)
+                current_line = word
+            current_line += " "
+        wrapped_line.append(current_line[:-1])
+        return "\n".join(wrapped_line)
+    lines = text.split("\n")
+    wrapped_lines = []
+    for line1 in lines:
+        wrapped_lines.append(wrap_line_helper(line1))
+    return "\n".join(wrapped_lines)
+
+
+
 class MainFrame(GUI.generated.MainFrame.MainFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -964,15 +986,21 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
             puzzle_id = int(puzzle_id)
 
         self.puzzle_data.set_internal_id(puzzle_id)
-        
-        self.puzzle_data.text = str(self.puzz_txt_input.Value).encode("ascii")
-        self.puzzle_data.correct_answer = str(self.correct_input.Value).encode("ascii")
-        self.puzzle_data.incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
-        self.puzzle_data.hint1 = str(self.hint1_input.Value).encode("ascii")
-        self.puzzle_data.hint2 = str(self.hint2_input.Value).encode("ascii")
-        self.puzzle_data.hint3 = str(self.hint3_input.Value).encode("ascii")
-        self.puzzle_data.title = str(self.puzz_title_input.Value).encode("ascii")
-        self.puzzle_data.type = self.puzzle_type_choice.Selection
+
+        try:
+            self.puzzle_data.text = auto_newline(str(self.puzz_txt_input.Value), 42).encode("ascii")
+            self.puzzle_data.correct_answer = auto_newline(str(self.correct_input.Value), 38).encode("ascii")
+            self.puzzle_data.incorrect_answer = auto_newline(str(self.incorrect_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint1 = auto_newline(str(self.hint1_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint2 = auto_newline(str(self.hint2_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint3 = auto_newline(str(self.hint3_input.Value), 38).encode("ascii")
+            self.puzzle_data.title = auto_newline(str(self.puzz_title_input.Value), 38).encode("ascii")
+            self.puzzle_data.type = self.puzzle_type_choice.Selection
+        except UnicodeEncodeError:
+            error_unicode = wx.MessageDialog(self, "There can't be unicode characters in the texts",
+                                             style = wx.ICON_ERROR | wx.OK)
+            error_unicode.ShowModal()
+            return
 
         self.puzzle_data.save_to_rom()
 
@@ -1151,19 +1179,11 @@ class PuzzleInputEditor(GUI.generated.PuzzleInputEditor.PuzzleInputEditor):
 
     def save_values(self):
         # TODO: Add and reverse engineer the other parameters
-        for cmd in self.puzzle_data.gds.commands:  # type: LaytonLib.gds.GDSCommand
-            if cmd.command == 0x43:
-                cmd.params[0] = self.input_bg_inp.Value
-            elif cmd.command == 0x42:
-                cmd.params[1] = self.answer_inp.Value
-            elif cmd.command == 0x41:
-                cmd.params[3] = int(self.type_of_input_inp.Value)
-        if not any(cmd.command == 0x43 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [self.input_bg_inp.Value]))
-        if not any(cmd.command == 0x42 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, self.answer_inp.Value]))
-        if not any(cmd.command == 0x41 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, 0, 0, self.input_bg_inp.Value]))
+        self.puzzle_data.gds = LaytonLib.gds.GDSScript()
+        self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [str(self.input_bg_inp.Value)]))
+        self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x41, [0, 0, 0,
+                                                                             int(self.type_of_input_inp.Value)]))
+        self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x42, [0, str(self.answer_inp.Value)]))
 
     def OnButtonGDSLoad(self, event):
         puzzle_id = int(self.gds_load_input.Value)
