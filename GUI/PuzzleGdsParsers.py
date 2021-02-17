@@ -1,4 +1,5 @@
 import LaytonLib.gds
+from GUI.utils import to_int
 
 
 class PuzzleGDSParser:
@@ -23,7 +24,7 @@ class PuzzleGDSParser:
         if s == "str":
             return str(x)
         elif s == "int":
-            return int(x)
+            return to_int(x)
         elif s == "float":
             return float(x)
         else:
