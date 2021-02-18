@@ -1,20 +1,23 @@
+import codecs
 from os import remove
 from os.path import join
-import codecs
-import GUI.generated.MainFrame
-import GUI.generated.PuzzleMultipleChoice
-import GUI.generated.PuzzleBaseDataEditor
-import GUI.generated.ImageEdit
-import GUI.generated.PuzzleInputEditor
-from ndspy.rom import NintendoDSRom
-from ndspy.fnt import Folder
-import LaytonLib
-from LaytonLib.puzzles import puzzle_data as pzd
-import LaytonLib.asm_patching
-import LaytonLib.gds
+
 import PIL.Image as imgl
 import wx
+from ndspy.fnt import Folder
+from ndspy.rom import NintendoDSRom
 from wx import propgrid as pg
+
+import GUI.PuzzleGdsParsers as PuzzleGdsParsers
+import GUI.generated.ImageEdit
+import GUI.generated.MainFrame
+import GUI.generated.PuzzleBaseDataEditor
+import GUI.generated.PuzzleGeneralEditor
+import LaytonLib
+import LaytonLib.asm_patching
+import LaytonLib.gds
+from GUI.utils import auto_newline, to_int
+from LaytonLib.puzzles import puzzle_data as pzd
 
 hexencoder = codecs.getencoder('hex_codec')
 hexdecoder = codecs.getdecoder('hex_codec')
@@ -304,6 +307,8 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
             folder: Folder = self.rom.filenames["data/bg"]
         elif self.rom.name == b'LAYTON2':
             folder: Folder = self.rom.filenames["data_lt2/bg"]
+        else:
+            return
         root = self.tree_imagefiles1.AddRoot("bg")
         for img in folder.files:
             i = self.tree_imagefiles1.AppendItem(root, img)
@@ -403,14 +408,14 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
         event_text_root = self.m_tree_scripts_text.AppendItem(root, "event text")
         pack = None
         for f in str(self.rom.filenames).split("\n"):
-            id, filename = [x for x in f.split(" ") if x]
-            id: int = int(id)
+            id_, filename = [x for x in f.split(" ") if x]
+            id_: int = int(id_)
             filename: str
             if filename.endswith(".gds") or filename.endswith(".txt"):
-                self.m_tree_scripts_text.AppendItem(root, filename, data=[id, 0])  # TODO: ADD Data
+                self.m_tree_scripts_text.AppendItem(root, filename, data=[id_, 0])  # TODO: ADD Data
             if filename.endswith(".plz"):
                 has_script_or_text = False
-                plz = LaytonLib.filesystem.PlzFile(self.rom, id)
+                plz = LaytonLib.filesystem.PlzFile(self.rom, id_)
                 for f2 in plz.filenames:
                     if f2.endswith(".gds") or f2.endswith(".txt"):
                         if not has_script_or_text:
@@ -421,7 +426,7 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
                                 pack = self.m_tree_scripts_text.AppendItem(event_text_root, filename)
                             else:
                                 pack = self.m_tree_scripts_text.AppendItem(root, filename)
-                        self.m_tree_scripts_text.AppendItem(pack, f2, data=[plz.idOf(f2), id])
+                        self.m_tree_scripts_text.AppendItem(pack, f2, data=[plz.idOf(f2), id_])
 
     def m_tree_scripts_textOnTreeSelChanged(self, event):
         data = self.m_tree_scripts_text.GetItemData(self.m_tree_scripts_text.GetSelection())
@@ -525,20 +530,12 @@ class MainFrame(GUI.generated.MainFrame.MainFrame):
     def OnMenuBaseDataEdit(self, event):
         if self.rom is None:
             return
-        base_edit = PuzzleBaseDataEditor(self)
-        base_edit.Show(True)
+        PuzzleBaseDataEditor(self).Show(True)
 
-    def OnMenuPuzzleMultipleChoice(self, event):
+    def OnMenuPuzzleGDS(self, event):
         if self.rom is None:
             return
-        multiple_choice = PuzzleMultipleChoice(self)
-        multiple_choice.Show(True)
-
-    def OnMenuPuzzleInput(self, event):
-        if self.rom is None:
-            return
-        input_editor = PuzzleInputEditor(self)
-        input_editor.Show(True)
+        PuzzleGeneralEditor(self).Show(True)
 
 
 class ImageEdit(GUI.generated.ImageEdit.ImageEdit):
@@ -927,12 +924,8 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
         self.parent = parent
         self.puzzle_data = pzd.PuzzleData(rom=self.parent.rom)
 
-    def OnButtonLoadPuzzle(self, event):
-        puzzle_id = str(self.puzz_id_text.Value)
-        if puzzle_id.startswith("0x"):
-            puzzle_id = int(puzzle_id[2:], 16)
-        else:
-            puzzle_id = int(puzzle_id)
+    def OnButtonLoadPuzzle(self, event):  # Load puzzle from id
+        puzzle_id = to_int(self.puzz_id_text.Value)
 
         self.puzzle_data.set_internal_id(puzzle_id)
         if not self.puzzle_data.load_from_rom():
@@ -964,15 +957,21 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
             puzzle_id = int(puzzle_id)
 
         self.puzzle_data.set_internal_id(puzzle_id)
-        
-        self.puzzle_data.text = str(self.puzz_txt_input.Value).encode("ascii")
-        self.puzzle_data.correct_answer = str(self.correct_input.Value).encode("ascii")
-        self.puzzle_data.incorrect_answer = str(self.incorrect_input.Value).encode("ascii")
-        self.puzzle_data.hint1 = str(self.hint1_input.Value).encode("ascii")
-        self.puzzle_data.hint2 = str(self.hint2_input.Value).encode("ascii")
-        self.puzzle_data.hint3 = str(self.hint3_input.Value).encode("ascii")
-        self.puzzle_data.title = str(self.puzz_title_input.Value).encode("ascii")
-        self.puzzle_data.type = self.puzzle_type_choice.Selection
+
+        try:
+            self.puzzle_data.text = auto_newline(str(self.puzz_txt_input.Value), 42).encode("ascii")
+            self.puzzle_data.correct_answer = auto_newline(str(self.correct_input.Value), 38).encode("ascii")
+            self.puzzle_data.incorrect_answer = auto_newline(str(self.incorrect_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint1 = auto_newline(str(self.hint1_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint2 = auto_newline(str(self.hint2_input.Value), 38).encode("ascii")
+            self.puzzle_data.hint3 = auto_newline(str(self.hint3_input.Value), 38).encode("ascii")
+            self.puzzle_data.title = auto_newline(str(self.puzz_title_input.Value), 38).encode("ascii")
+            self.puzzle_data.type = self.puzzle_type_choice.Selection
+        except UnicodeEncodeError:
+            error_unicode = wx.MessageDialog(self, "There can't be unicode characters in the texts",
+                                             style=wx.ICON_ERROR | wx.OK)
+            error_unicode.ShowModal()
+            return
 
         self.puzzle_data.save_to_rom()
 
@@ -980,193 +979,25 @@ class PuzzleBaseDataEditor(GUI.generated.PuzzleBaseDataEditor.PuzzleBaseDataEdit
         successful.ShowModal()
 
 
-class PuzzleMultipleChoice(GUI.generated.PuzzleMultipleChoice.PuzzleMultipleChoice):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.parent = parent
+class PuzzleGeneralEditor(GUI.generated.PuzzleGeneralEditor.PuzzleGeneralEditor):
+    def __init__(self, parent: MainFrame):
+        super(PuzzleGeneralEditor, self).__init__(parent)
 
-        self.puzzle_bg_original = None
         self.puzzle_data = pzd.PuzzleData(rom=parent.rom)
 
-        self.current_selection = -1
+        self.puzzle_gds_parser = None
 
-    def load_puzzle_bg(self):
-        self.puzzle_bg_original = self.puzzle_data.bg.img.copy()
-
-        self.update_puzzle_preview(0)
-
-    def OnButtonGDSLoad(self, event):
-        puzzle_id = int(self.gds_load_input.Value)
-        self.puzzle_data.set_internal_id(puzzle_id)
-        if not self.puzzle_data.load_from_rom():
-            gds_error = wx.MessageDialog(self, "Can't load puzzle (not found)", style=wx.ICON_ERROR|wx.OK)
-            gds_error.ShowModal()
-            return
-        if not self.puzzle_data.load_gds():
-            gds_error = wx.MessageDialog(self, "Can't load gds (not found)", style=wx.ICON_ERROR|wx.OK)
-            gds_error.ShowModal()
-            return
-        if self.puzzle_data.type != pzd.PuzzleData.MULTIPLE_CHOICE:
-            gds_warning = wx.MessageDialog(self, "Warning: loading puzzle which is not of type multiple choice",
-                                           style=wx.ICON_WARNING | wx.OK)
-            gds_warning.ShowModal()
-
-        self.current_selection = -1
-
-        self.load_puzzle_bg()
-        self.update_tree()
-        self.update_puzzle_preview(0)
-
-    def OnButtonGDSSave(self, event):
-        self.save_current_editing_data()
-        self.puzzle_data.set_internal_id(int(self.gds_save_input.Value))
-        if not self.puzzle_data.save_gds():
-            gds_error = wx.MessageDialog(self, "Can't save gds (not found)", style=wx.ICON_ERROR|wx.OK)
-            gds_error.ShowModal()
-            return
-
-        successful = wx.MessageDialog(self, "Saved successfully")
-        successful.ShowModal()
-
-    def OnButtonUpdatePuzzlePreview(self, event):
-        self.update_puzzle_preview(0)
-
-    def update_puzzle_preview(self, anim_num):
-        self.save_current_editing_data()
-        if self.puzzle_bg_original is None:
-            return
-        puzzle_bg = self.puzzle_bg_original.copy()  # type: imgl.Image
-
-        for element in self.puzzle_data.gds.commands:
-            if element.command != 0x14:
-                continue
-            freebutton_txt = str(element.params[2])
-            freebutton_txt = freebutton_txt.replace(".spr", ".arc")
-            freebutton_id = self.parent.rom.filenames.idOf("data_lt2/ani/nazo/freebutton/{}".format(freebutton_txt))
-            if not freebutton_id:
-                continue
-            freebutton = LaytonLib.images.ani.AniFile(self.parent.rom, freebutton_id)
-            freebutton_pil = freebutton.frame_to_PIL(anim_num)  # type: imgl.Image
-            freebutton_pil.putalpha(255)
-
-            for i in range(freebutton_pil.width):
-                for j in range(freebutton_pil.height):
-                    color = freebutton_pil.getpixel((i, j))
-                    if color[1] == 248:
-                        freebutton_pil.putpixel((i, j), (0, 0, 0, 0))
-
-            freebutton_pil.load()
-
-            puzzle_bg.paste(freebutton_pil, box=(element.params[0], element.params[1]),
-                            mask=freebutton_pil.split()[3])
-
-        self.puzzle_preview.SetBitmap(self.PIL2wx(puzzle_bg))
-
-    def update_tree(self):
-        self.buttons_tree.DeleteAllItems()
-        root = self.buttons_tree.AddRoot("gds_buttons")
-        element_count = 0
-
-        for element in self.puzzle_data.gds.commands:
-            if element.command != 0x14:
-                continue
-            new_item = self.buttons_tree.AppendItem(root, "button{}".format(element_count))
-            self.buttons_tree.SetItemData(new_item, self.puzzle_data.gds.commands.index(element))
-            element_count += 1
-
-    def ObjTreeSelChanged(self, event):
-        self.save_current_editing_data()
-        selected_object = self.buttons_tree.GetItemData(self.buttons_tree.GetSelection())
-        self.current_selection = selected_object
-
-        self.edit_gds_pannel.Show(True)
-        if self.current_selection >= len(self.puzzle_data.gds.commands):
-            self.current_selection = -1
-            return
-        selected_object_gds = self.puzzle_data.gds.commands[selected_object]
-
-        self.x_input.Value = str(selected_object_gds.params[0])
-        self.y_input.Value = str(selected_object_gds.params[1])
-        self.freebutton_input.Value = str(selected_object_gds.params[2])
-        self.is_correct_checkbox.Value = selected_object_gds.params[3] > 0
-        self.sfx_input.Value = str(selected_object_gds.params[4])
-
-    def save_current_editing_data(self):
-        if self.current_selection == -1:
-            return
-        selected_object_gds = self.puzzle_data.gds.commands[self.current_selection]
-        selected_object_gds.params[0] = int(self.x_input.Value)
-        selected_object_gds.params[1] = int(self.y_input.Value)
-        selected_object_gds.params[2] = str(self.freebutton_input.Value)
-        selected_object_gds.params[3] = int(self.is_correct_checkbox.Value)
-        selected_object_gds.params[4] = int(self.sfx_input.Value)
-
-    def OnButtonNew(self, event):
-        add_index = len(self.puzzle_data.gds.commands)
-        self.puzzle_data.gds.commands.insert(add_index,
-                                             LaytonLib.gds.GDSCommand(0x14, [0, 0, "freebutton_m.spr", 0, 0]))
-        self.current_selection = -1
-        self.update_tree()
-
-    def OnButtonDelete(self, event):
-        add_index = self.current_selection
-        if add_index == -1:
-            return
-        self.puzzle_data.gds.commands = self.puzzle_data.gds.commands[:add_index] +\
-                                        self.puzzle_data.gds.commands[add_index + 1:]
-        self.current_selection = -1
-        self.update_tree()
-
-    def PIL2wx(self, image):
-        width, height = image.size
-        return wx.Bitmap.FromBuffer(width, height, image.tobytes())
-
-
-class PuzzleInputEditor(GUI.generated.PuzzleInputEditor.PuzzleInputEditor):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.puzzle_data = pzd.PuzzleData(rom=parent.rom)
+        self.current_selected = -1
+        self.current_params = []
+        self.current_param_labels = []
+        self.current_param_inputs = []
+        self.current_param_types = []
 
     def update_puzzle_preview(self):
         self.puzzle_preview.SetBitmap(self.PIL2wx(self.puzzle_data.bg.img))
-        input_bg_path: str = self.input_bg_inp.Value
-        input_bg_path = input_bg_path.replace("?", "en")
-        input_bg_path = input_bg_path.replace("bgx", "arc")
-        bg_id = self.puzzle_data.rom.filenames.idOf("data_lt2/bg/nazo/drawinput/{}".format(input_bg_path))
-        if bg_id is None:
-            input_bg = LaytonLib.images.bg.Bg()
-            print(f"Warning: input bg {input_bg_path} not found")
-        else:
-            input_bg = LaytonLib.images.bg.BgFile(self.puzzle_data.rom, bg_id)
-        self.input_bg_preview.SetBitmap(self.PIL2wx(input_bg.img))
-
-    def load_values(self):
-        for cmd in self.puzzle_data.gds.commands:  # type: LaytonLib.gds.GDSCommand
-            if cmd.command == 0x43:
-                self.input_bg_inp.Value = cmd.params[0]
-            elif cmd.command == 0x42:
-                self.answer_inp.Value = cmd.params[1]
-            elif cmd.command == 0x41:
-                self.type_of_input_inp.Value = str(cmd.params[3])
-
-    def save_values(self):
-        # TODO: Add and reverse engineer the other parameters
-        for cmd in self.puzzle_data.gds.commands:  # type: LaytonLib.gds.GDSCommand
-            if cmd.command == 0x43:
-                cmd.params[0] = self.input_bg_inp.Value
-            elif cmd.command == 0x42:
-                cmd.params[1] = self.answer_inp.Value
-            elif cmd.command == 0x41:
-                cmd.params[3] = int(self.type_of_input_inp.Value)
-        if not any(cmd.command == 0x43 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [self.input_bg_inp.Value]))
-        if not any(cmd.command == 0x42 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, self.answer_inp.Value]))
-        if not any(cmd.command == 0x41 for cmd in self.puzzle_data.gds.commands):
-            self.puzzle_data.gds.commands.append(LaytonLib.gds.GDSCommand(0x43, [0, 0, 0, self.input_bg_inp.Value]))
 
     def OnButtonGDSLoad(self, event):
-        puzzle_id = int(self.gds_load_input.Value)
+        puzzle_id = to_int(self.gds_load_input.Value)
         self.puzzle_data.set_internal_id(puzzle_id)
         if not self.puzzle_data.load_from_rom():
             gds_error = wx.MessageDialog(self, "Can't load puzzle (not found)", style=wx.ICON_ERROR | wx.OK)
@@ -1176,20 +1007,16 @@ class PuzzleInputEditor(GUI.generated.PuzzleInputEditor.PuzzleInputEditor):
             gds_error = wx.MessageDialog(self, "Can't load gds (not found)", style=wx.ICON_ERROR | wx.OK)
             gds_error.ShowModal()
             return
-        if self.puzzle_data.type not in pzd.PuzzleData.INPUTS:
-            gds_warning = wx.MessageDialog(self, "Warning: loading puzzle which is not of type input",
-                                           style=wx.ICON_WARNING | wx.OK)
-            gds_warning.ShowModal()
 
-        self.input_bg_inp.Value = ""
-        self.answer_inp.Value = ""
-        self.type_of_input_inp.Value = ""
-        self.load_values()
+        self.current_selected = -1
+        self.destroy_current()
+        self.load_gds_parser()
+        self.update_gds_list()
         self.update_puzzle_preview()
 
     def OnButtonGDSSave(self, event):
-        self.save_values()
-        self.puzzle_data.set_internal_id(int(self.gds_save_input.Value))
+        self.save_current()
+        self.puzzle_data.set_internal_id(to_int(self.gds_save_input.Value))
         if not self.puzzle_data.save_gds():
             gds_error = wx.MessageDialog(self, "Can't save gds (not found)", style=wx.ICON_ERROR | wx.OK)
             gds_error.ShowModal()
@@ -1201,17 +1028,148 @@ class PuzzleInputEditor(GUI.generated.PuzzleInputEditor.PuzzleInputEditor):
     def OnButtonUpdatePuzzlePreview(self, event):
         self.update_puzzle_preview()
 
+    def OnCommandListSelected(self, event: wx.ListEvent):
+        self.save_current()
+        self.current_selected = event.Index
+        self.generate_params()
+        self.update_gds_list()
+
+    def load_gds_parser(self):
+        if self.puzzle_data.type in pzd.PuzzleData.INPUTS:
+            self.puzzle_gds_parser = PuzzleGdsParsers.InputGDSParser()
+        elif self.puzzle_data.type == pzd.PuzzleData.MULTIPLE_CHOICE:
+            self.puzzle_gds_parser = PuzzleGdsParsers.MultipleChoiceGDSParser()
+        else:
+            self.puzzle_gds_parser = PuzzleGdsParsers.PuzzleGDSParser()
+
+    def destroy_current(self):
+        master_sizer: wx.Sizer = self.parameter_lbl.GetContainingSizer()
+
+        for param in self.current_params:  # type: wx.Sizer
+            count = param.ItemCount
+            for _ in range(count):
+                param.Children[0].GetWindow().Destroy()
+            master_sizer.Remove(param)
+        self.current_params = []
+        self.current_param_labels = []
+        self.current_param_inputs = []
+        self.current_param_types = []
+
+    def generate_params(self):
+        self.destroy_current()
+        master_sizer: wx.Sizer = self.parameter_lbl.GetContainingSizer()
+        command: LaytonLib.gds.GDSCommand = self.puzzle_data.gds.commands[self.current_selected]
+
+        def helper_add_param(param_lbl, param_value):
+            param_sizer = wx.BoxSizer()
+            param_lbl = wx.StaticText(self.m_panel36, label=param_lbl)
+            param_sizer.Add(param_lbl, 1, wx.ALL, 5)
+            param_inp = wx.TextCtrl(self.m_panel36, value=str(param_value))
+            param_sizer.Add(param_inp, 1, wx.ALL, 5)
+            param_type = wx.TextCtrl(self.m_panel36, value=self.puzzle_gds_parser.parse_type(param_value))
+            param_sizer.Add(param_type, 1, wx.ALL, 5)
+            master_sizer.Add(param_sizer, 0, wx.EXPAND, 5)
+
+            self.current_params.append(param_sizer)
+            self.current_param_labels.append(param_lbl)
+            self.current_param_inputs.append(param_inp)
+            self.current_param_types.append(param_type)
+
+        helper_add_param("Command", command.command)
+
+        params_parsed = self.puzzle_gds_parser.parse_command_params(command)
+        for param in range(len(command.params)):
+            helper_add_param(params_parsed[param], command.params[param])
+
+        self.Layout()
+
+    def save_current(self):
+        if self.current_selected == -1:
+            return
+        self.puzzle_data.gds.commands[self.current_selected] = LaytonLib.gds.GDSCommand(
+            int(self.current_param_inputs[0].Value)
+        )
+        params = self.current_param_inputs[1:]
+        types = self.current_param_types[1:]
+        for i in range(len(params)):
+            value = self.puzzle_gds_parser.from_parsed_type(types[i].Value, params[i].Value)
+            self.puzzle_data.gds.commands[self.current_selected].params.append(value)
+
+    def update_gds_list(self):
+        self.command_list.DeleteAllItems()
+
+        for command in self.puzzle_data.gds.commands:
+            command_name = self.puzzle_gds_parser.parse_command_name(command)
+            self.command_list.Append((command_name,))
+
     def PIL2wx(self, image):
         width, height = image.size
         return wx.Bitmap.FromBuffer(width, height, image.tobytes())
+
+    def OnCmdNew(self, event):
+        if self.current_selected == -1:
+            self.current_selected = len(self.puzzle_data.gds.commands) - 1
+        self.current_selected += 1
+        self.puzzle_data.gds.commands.insert(self.current_selected, LaytonLib.gds.GDSCommand(0))
+        self.update_gds_list()
+        self.generate_params()
+
+    def OnCmdDel(self, event):
+        if self.current_selected == -1:
+            return
+        self.puzzle_data.gds.commands.pop(self.current_selected)
+        self.current_selected -= 1
+        if self.current_selected < 0:
+            self.current_selected = -1
+        self.update_gds_list()
+        self.generate_params()
+
+    def OnCmdUp(self, event):
+        if self.current_selected <= 0:
+            return
+        previous_element = self.puzzle_data.gds.commands[self.current_selected - 1]
+        current_element = self.puzzle_data.gds.commands[self.current_selected]
+        self.puzzle_data.gds.commands[self.current_selected] = previous_element
+        self.puzzle_data.gds.commands[self.current_selected - 1] = current_element
+        self.current_selected -= 1
+        self.update_gds_list()
+        self.generate_params()
+
+    def OnCmdDown(self, event):
+        if self.current_selected == -1 or self.current_selected >= len(self.puzzle_data.gds.commands) - 1:
+            return
+        next_element = self.puzzle_data.gds.commands[self.current_selected + 1]
+        current_element = self.puzzle_data.gds.commands[self.current_selected]
+        self.puzzle_data.gds.commands[self.current_selected] = next_element
+        self.puzzle_data.gds.commands[self.current_selected + 1] = current_element
+        self.current_selected += 1
+        self.update_gds_list()
+        self.generate_params()
+
+    def OnParamSetNum(self, event):
+        if self.current_selected == -1:
+            return
+        number_of_params = str(self.param_num_inp.Value)
+        try:
+            if number_of_params.startswith("0x"):
+                number_of_params = int(number_of_params[2:], 16)
+            else:
+                number_of_params = int(number_of_params)
+        except:
+            print("Error param num not a number")
+            return
+
+        current_command: LaytonLib.gds.GDSCommand = self.puzzle_data.gds.commands[self.current_selected]
+        current_command.params = [0] * number_of_params
+        self.generate_params()
 
 
 class LaytonEditor(wx.App):
     def __init__(self):
         super().__init__()
-        self.mainFrame: MainFrame
+        self.mainFrame = None
 
     def OnInit(self):
-        self.mainFrame = MainFrame(None)
+        self.mainFrame: MainFrame = MainFrame(None)
         self.mainFrame.Show(True)
         return True

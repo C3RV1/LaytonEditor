@@ -379,11 +379,8 @@ class MainFrame ( wx.Frame ):
 		self.m_menuitem_base_data = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Edit Base Data", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_menu2.Append( self.m_menuitem_base_data )
 
-		self.m_menuitem_multiple_choice = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Create Multiple Choice", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_menu2.Append( self.m_menuitem_multiple_choice )
-
-		self.m_menuitem_input = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Create Input", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_menu2.Append( self.m_menuitem_input )
+		self.m_menuitem_pzgds = wx.MenuItem( self.m_menu2, wx.ID_ANY, u"Puzzle GDS Editor", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu2.Append( self.m_menuitem_pzgds )
 
 		self.m_menubar_windowmenu.Append( self.m_menu2, u"Puzzles" )
 
@@ -419,8 +416,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSave, id = self.m_menuItem_savefile.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelectionSaveAs, id = self.m_menuItem_savefileas.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMenuBaseDataEdit, id = self.m_menuitem_base_data.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnMenuPuzzleMultipleChoice, id = self.m_menuitem_multiple_choice.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnMenuPuzzleInput, id = self.m_menuitem_input.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnMenuPuzzleGDS, id = self.m_menuitem_pzgds.GetId() )
 
 	def __del__( self ):
 		pass
@@ -505,10 +501,7 @@ class MainFrame ( wx.Frame ):
 	def OnMenuBaseDataEdit( self, event ):
 		event.Skip()
 
-	def OnMenuPuzzleMultipleChoice( self, event ):
-		event.Skip()
-
-	def OnMenuPuzzleInput( self, event ):
+	def OnMenuPuzzleGDS( self, event ):
 		event.Skip()
 
 	def m_splitter1OnIdle( self, event ):
