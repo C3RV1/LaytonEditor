@@ -1,21 +1,24 @@
 import sys
+
+import wx
+
+from gui import MainEditor
+
 print(f"Layton Editor running in python version {sys.version}")
-#sys.path.append(".")
 
-DEBUG = 0
-DEBUG_ROM = "../Base File.nds"
 
-if DEBUG:
-    import ndspy.rom
+class LaytonEditor(wx.App):
+    editor: MainEditor
 
-import GUI
+    def OnInit(self):
+        self.editor = MainEditor(None)
+        self.editor.Show(True)
+        return True
+
 
 def main():
-    app = GUI.LaytonEditor()
-    if DEBUG:
-        with open(DEBUG_ROM, "rb") as file:
-            app.mainFrame.rom = ndspy.rom.NintendoDSRom(file.read())
-        app.mainFrame.setupAfterOpen()
+    app = LaytonEditor(None)
+    app.editor.open_rom("../Base File.nds")
     app.MainLoop()
 
 
