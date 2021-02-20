@@ -7,9 +7,10 @@ import wx.stc
 from formats.filesystem import NintendoDSRom
 from gui import generated
 from gui.filesystem_editor import FilesystemEditor
-from gui.sprite_editor import SpriteEditor
-from gui.puzzle_general_editor import PuzzleGeneralEditor
 from gui.puzzle_base_data_editor import PuzzleBaseDataEditor
+from gui.puzzle_general_editor import PuzzleGeneralEditor
+from gui.sprite_editor import SpriteEditor
+
 
 class MainEditor(generated.MainEditor):
     rom: NintendoDSRom = None
@@ -109,7 +110,7 @@ class MainEditor(generated.MainEditor):
             return
         PuzzleGeneralEditor(self).Show(True)
 
-    def le_menu_puzzles_edit_base_data_clicked( self, _event):
+    def le_menu_puzzles_edit_base_data_clicked(self, _event):
         if self.rom is None:
             return
         PuzzleBaseDataEditor(self).Show(True)

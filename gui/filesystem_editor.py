@@ -152,6 +152,9 @@ class FilesystemEditor(generated.FilesystemEditor):
         pass
 
     def refresh_preview(self):
+        if not self.ft_filetree.GetSelections():
+            return
+
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         for menu_title in self.fp_menus_loaded:
             self.GetGrandParent().remove_menu(menu_title)

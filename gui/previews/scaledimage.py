@@ -4,12 +4,10 @@ from formats.graphics.bg import BGImage
 import time
 
 
-def scale_wx_bitmap(bitmap, width, height, nearest=False):
-    # TODO: Optimize usage to store Image instead of bitmap
-    image = wx.ImageFromBitmap(bitmap)
+def scale_wx_bitmap(bitmap: wx.Bitmap, width, height, nearest=False):
+    image: wx.Image = bitmap.ConvertToImage()
     image = image.Scale(width, height, wx.IMAGE_QUALITY_NEAREST if nearest else wx.IMAGE_QUALITY_HIGH)
-    result = wx.BitmapFromImage(image)
-    return result
+    return image.ConvertToBitmap()
 
 
 class ScaledImage(wx.Panel):

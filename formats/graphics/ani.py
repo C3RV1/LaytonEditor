@@ -9,8 +9,8 @@ import numpy as np
 import wx
 from PIL import Image
 
-from formats.filesystem import NintendoDSRom, CompressedIOWrapper, FileFormat
 from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
+from formats.filesystem import FileFormat
 
 
 # Calculate and write the sections
@@ -302,6 +302,8 @@ class AniSprite(FileFormat):
     def insert_image_pil(self, image_index, image: Image.Image):
         self.images.insert(image_index, np.ndarray((0,), np.uint8))
         self.replace_image_pil(image_index, image)
+
+    # TODO: Function to recreate the palette and change colordepth
 
     def __bytes__(self):
         return self.tobytes()

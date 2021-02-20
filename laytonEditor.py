@@ -16,11 +16,6 @@ class LaytonEditor(wx.App):
         return True
 
 
-def main():
-    app = LaytonEditor(None)
-    app.editor.open_rom("../Base File.nds")
-    app.MainLoop()
-
-
 if __name__ == '__main__':
-    main()
+    app = LaytonEditor(None)
+    app.MainLoop()

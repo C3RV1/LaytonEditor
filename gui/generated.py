@@ -361,9 +361,8 @@ class SpriteEditor ( wx.Panel ):
 		self.ase_page_animations = wx.Panel( self.ase_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		ase_animations_layout = wx.BoxSizer( wx.VERTICAL )
 
-		ase_animations_listChoices = []
-		self.ase_animations_list = wx.ListBox( self.ase_page_animations, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, ase_animations_listChoices, 0 )
-		ase_animations_layout.Add( self.ase_animations_list, 1, wx.EXPAND, 5 )
+		self.ase_animations_list = wx.ListCtrl( self.ase_page_animations, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_EDIT_LABELS|wx.LC_HRULES|wx.LC_LIST|wx.LC_SINGLE_SEL )
+		ase_animations_layout.Add( self.ase_animations_list, 1, wx.ALL|wx.EXPAND, 5 )
 
 		self.ase_frame_slider = wx.Slider( self.ase_page_animations, wx.ID_ANY, 50, 0, 5, wx.DefaultPosition, wx.DefaultSize, wx.SL_AUTOTICKS|wx.SL_HORIZONTAL|wx.SL_MIN_MAX_LABELS )
 		ase_animations_layout.Add( self.ase_frame_slider, 0, wx.ALL|wx.EXPAND, 5 )
@@ -456,7 +455,7 @@ class SpriteEditor ( wx.Panel ):
 		self.ase_page_variables.SetSizer( ase_variables_layout )
 		self.ase_page_variables.Layout()
 		ase_variables_layout.Fit( self.ase_page_variables )
-		self.ase_other_pages.AddPage( self.ase_page_variables, u"Variables", False )
+		self.ase_other_pages.AddPage( self.ase_page_variables, u"Variables", True )
 
 		ase_other_layout.Add( self.ase_other_pages, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -472,7 +471,8 @@ class SpriteEditor ( wx.Panel ):
 		self.Layout()
 
 		# Connect Events
-		self.ase_animations_list.Bind( wx.EVT_LISTBOX, self.ase_animations_list_selected )
+		self.ase_animations_list.Bind( wx.EVT_LIST_END_LABEL_EDIT, self.ase_animations_list_label_edit )
+		self.ase_animations_list.Bind( wx.EVT_LIST_ITEM_SELECTED, self.ase_animations_list_selected )
 		self.ase_frame_slider.Bind( wx.EVT_SLIDER, self.ase_frame_slider_changed )
 		self.ase_prop_frame_index_spin.Bind( wx.EVT_SPINCTRL, self.ase_prop_frame_index_spin_changed )
 		self.ase_prop_frame_duration_spin.Bind( wx.EVT_SPINCTRL, self.ase_prop_frame_duration_spin_changed )
@@ -490,12 +490,16 @@ class SpriteEditor ( wx.Panel ):
 		self.ase_images_panel.Bind( wx.EVT_RIGHT_DCLICK, self.ase_images_mouse_event )
 		self.ase_images_panel.Bind( wx.EVT_RIGHT_DOWN, self.ase_images_mouse_event )
 		self.ase_images_slider.Bind( wx.EVT_SLIDER, self.ase_images_slider_changed )
+		self.ase_variables_dataview.Bind( wx.dataview.EVT_DATAVIEW_ITEM_EDITING_DONE, self.ase_variables_dataview_edited, id = wx.ID_ANY )
 
 	def __del__( self ):
 		pass
 
 
 	# Virtual event handlers, overide them in your derived class
+	def ase_animations_list_label_edit( self, event ):
+		event.Skip()
+
 	def ase_animations_list_selected( self, event ):
 		event.Skip()
 
@@ -528,6 +532,9 @@ class SpriteEditor ( wx.Panel ):
 
 
 	def ase_images_slider_changed( self, event ):
+		event.Skip()
+
+	def ase_variables_dataview_edited( self, event ):
 		event.Skip()
 
 	def ase_splitOnIdle( self, event ):
