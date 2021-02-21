@@ -346,13 +346,7 @@ class PlzArchive(Archive, FileFormat):
             wtr = BinaryWriter(stream)
 
         wtr.write_uint32(16)
-        filesize = 16  # header
-        for i in range(len(self.files)):
-            filesize += 16 + len(self.filenames[i]) + 1
-            filesize += 4 - filesize % 4 if filesize % 4 else 0
-            filesize += len(self.files)
-            filesize += 4 - filesize % 4 if filesize % 4 else 0
-        wtr.write_uint32(filesize)
+        wtr.write_uint32(0)  # placeholder filesize
         wtr.write(b"PCK2")
         wtr.write_uint32(0)
 
@@ -373,6 +367,10 @@ class PlzArchive(Archive, FileFormat):
             wtr.align(4)
             wtr.write(self.files[i])
             wtr.align(4)
+
+        filesize = len(wtr)
+        wtr.seek(4)
+        wtr.write_uint32(filesize)
 
     def open(self, file: Union[AnyStr, int], mode: str = "rb") -> Union[io.BytesIO, io.TextIOWrapper]:
         match = re.findall(r"^([rwa])(b?)(\+?)$", mode)
