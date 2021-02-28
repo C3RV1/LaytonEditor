@@ -10,6 +10,7 @@ from gui.filesystem_editor import FilesystemEditor
 from gui.puzzle_base_data_editor import PuzzleBaseDataEditor
 from gui.puzzle_general_editor import PuzzleGeneralEditor
 from gui.sprite_editor import SpriteEditor
+from gui.event_editor import EventEditor2
 
 
 class MainEditor(generated.MainEditor):
@@ -114,3 +115,8 @@ class MainEditor(generated.MainEditor):
         if self.rom is None:
             return
         PuzzleBaseDataEditor(self).Show(True)
+
+    def event_editor_clicked(self, event):
+        if self.rom is None:
+            return
+        EventEditor2(self, self.rom).Show(True)

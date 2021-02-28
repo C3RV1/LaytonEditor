@@ -14,7 +14,6 @@
         <property name="file">gui\generated</property>
         <property name="first_id">1000</property>
         <property name="help_provider">none</property>
-        <property name="image_path_wrapper_function_name"></property>
         <property name="indent_with_spaces"></property>
         <property name="internationalize">0</property>
         <property name="name">LaytonEditor</property>
@@ -26,7 +25,6 @@
         <property name="skip_php_events">1</property>
         <property name="skip_python_events">1</property>
         <property name="ui_table">UI</property>
-        <property name="use_array_enum">0</property>
         <property name="use_enum">0</property>
         <property name="use_microsoft_bom">0</property>
         <object class="Frame" expanded="1">
@@ -65,6 +63,7 @@
                 <property name="font"></property>
                 <property name="hidden">0</property>
                 <property name="id">wxID_ANY</property>
+                <property name="label">MyMenuBar</property>
                 <property name="maximum_size"></property>
                 <property name="minimum_size"></property>
                 <property name="name">le_menu</property>
@@ -157,17 +156,36 @@
                         <event name="OnMenuSelection">le_menu_puzzles_edit_gds_clicked</event>
                     </object>
                 </object>
+                <object class="wxMenu" expanded="1">
+                    <property name="label">Events</property>
+                    <property name="name">event_menu</property>
+                    <property name="permission">protected</property>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help"></property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Event Editor</property>
+                        <property name="name">event_editor</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">event_editor_clicked</event>
+                    </object>
+                </object>
             </object>
-            <object class="wxBoxSizer" expanded="0">
+            <object class="wxBoxSizer" expanded="1">
                 <property name="minimum_size"></property>
                 <property name="name">le_layout</property>
                 <property name="orient">wxVERTICAL</property>
                 <property name="permission">none</property>
-                <object class="sizeritem" expanded="0">
+                <object class="sizeritem" expanded="1">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
                     <property name="proportion">1</property>
-                    <object class="wxAuiNotebook" expanded="0">
+                    <object class="wxAuiNotebook" expanded="1">
                         <property name="BottomDockable">1</property>
                         <property name="LeftDockable">1</property>
                         <property name="RightDockable">1</property>
@@ -224,11 +242,11 @@
                         <event name="OnAuiNotebookPageChanged">le_page_changed</event>
                         <event name="OnAuiNotebookPageChanging">le_page_changing</event>
                         <event name="OnAuiNotebookPageClose">le_page_close</event>
-                        <object class="auinotebookpage" expanded="0">
+                        <object class="auinotebookpage" expanded="1">
                             <property name="bitmap"></property>
                             <property name="label">No open rom</property>
                             <property name="select">0</property>
-                            <object class="wxPanel" expanded="0">
+                            <object class="wxPanel" expanded="1">
                                 <property name="BottomDockable">1</property>
                                 <property name="LeftDockable">1</property>
                                 <property name="RightDockable">1</property>
@@ -279,7 +297,7 @@
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
                                 <property name="window_style">wxTAB_TRAVERSAL</property>
-                                <object class="wxBoxSizer" expanded="0">
+                                <object class="wxBoxSizer" expanded="1">
                                     <property name="minimum_size"></property>
                                     <property name="name">nfo_layout</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -966,7 +984,6 @@
                                                                 <property name="permission">protected</property>
                                                                 <property name="pin_button">1</property>
                                                                 <property name="pos"></property>
-                                                                <property name="read_only">0</property>
                                                                 <property name="resize">Resizable</property>
                                                                 <property name="show">1</property>
                                                                 <property name="size"></property>
@@ -1859,7 +1876,7 @@
                 </object>
             </object>
         </object>
-        <object class="Panel" expanded="1">
+        <object class="Panel" expanded="0">
             <property name="aui_managed">0</property>
             <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
             <property name="bg"></property>
@@ -1881,16 +1898,16 @@
             <property name="window_extra_style"></property>
             <property name="window_name"></property>
             <property name="window_style">wxTAB_TRAVERSAL</property>
-            <object class="wxBoxSizer" expanded="1">
+            <object class="wxBoxSizer" expanded="0">
                 <property name="minimum_size"></property>
                 <property name="name">ase_layout</property>
                 <property name="orient">wxVERTICAL</property>
                 <property name="permission">none</property>
-                <object class="sizeritem" expanded="1">
+                <object class="sizeritem" expanded="0">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
                     <property name="proportion">1</property>
-                    <object class="wxSplitterWindow" expanded="1">
+                    <object class="wxSplitterWindow" expanded="0">
                         <property name="BottomDockable">1</property>
                         <property name="LeftDockable">1</property>
                         <property name="RightDockable">1</property>
@@ -2004,11 +2021,11 @@
                                     <property name="name">ase_animations_layout</property>
                                     <property name="orient">wxVERTICAL</property>
                                     <property name="permission">none</property>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
                                         <property name="flag">wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxListCtrl" expanded="1">
+                                        <object class="wxListCtrl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2613,8 +2630,8 @@
                                 </object>
                             </object>
                         </object>
-                        <object class="splitteritem" expanded="1">
-                            <object class="wxPanel" expanded="1">
+                        <object class="splitteritem" expanded="0">
+                            <object class="wxPanel" expanded="0">
                                 <property name="BottomDockable">1</property>
                                 <property name="LeftDockable">1</property>
                                 <property name="RightDockable">1</property>
@@ -2671,16 +2688,16 @@
                                 <event name="OnMiddleDown">ase_other_mouse_event</event>
                                 <event name="OnRightDClick">ase_other_mouse_event</event>
                                 <event name="OnRightDown">ase_other_mouse_event</event>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">ase_other_layout</property>
                                     <property name="orient">wxVERTICAL</property>
                                     <property name="permission">none</property>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
                                         <property name="flag">wxEXPAND | wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxNotebook" expanded="1">
+                                        <object class="wxNotebook" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2925,11 +2942,11 @@
                                                     </object>
                                                 </object>
                                             </object>
-                                            <object class="notebookpage" expanded="1">
+                                            <object class="notebookpage" expanded="0">
                                                 <property name="bitmap"></property>
                                                 <property name="label">Variables</property>
                                                 <property name="select">1</property>
-                                                <object class="wxPanel" expanded="1">
+                                                <object class="wxPanel" expanded="0">
                                                     <property name="BottomDockable">1</property>
                                                     <property name="LeftDockable">1</property>
                                                     <property name="RightDockable">1</property>
@@ -2980,7 +2997,7 @@
                                                     <property name="window_extra_style"></property>
                                                     <property name="window_name"></property>
                                                     <property name="window_style">wxTAB_TRAVERSAL</property>
-                                                    <object class="wxBoxSizer" expanded="1">
+                                                    <object class="wxBoxSizer" expanded="0">
                                                         <property name="minimum_size"></property>
                                                         <property name="name">ase_variables_layout</property>
                                                         <property name="orient">wxVERTICAL</property>
@@ -3619,7 +3636,6 @@
                                         <property name="aui_name"></property>
                                         <property name="aui_position"></property>
                                         <property name="aui_row"></property>
-                                        <property name="auth_needed">0</property>
                                         <property name="best_size"></property>
                                         <property name="bg"></property>
                                         <property name="bitmap"></property>
@@ -3692,7 +3708,6 @@
                                         <property name="aui_name"></property>
                                         <property name="aui_position"></property>
                                         <property name="aui_row"></property>
-                                        <property name="auth_needed">0</property>
                                         <property name="best_size"></property>
                                         <property name="bg"></property>
                                         <property name="bitmap"></property>
@@ -4451,7 +4466,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -5124,7 +5138,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -6430,7 +6443,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -6640,7 +6652,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -6716,7 +6727,6 @@
                                     <property name="aui_name"></property>
                                     <property name="aui_position"></property>
                                     <property name="aui_row"></property>
-                                    <property name="auth_needed">0</property>
                                     <property name="best_size"></property>
                                     <property name="bg"></property>
                                     <property name="bitmap"></property>
@@ -6862,7 +6872,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -6936,7 +6945,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -8020,7 +8028,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -8230,7 +8237,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -8306,7 +8312,6 @@
                                     <property name="aui_name"></property>
                                     <property name="aui_position"></property>
                                     <property name="aui_row"></property>
-                                    <property name="auth_needed">0</property>
                                     <property name="best_size"></property>
                                     <property name="bg"></property>
                                     <property name="bitmap"></property>
@@ -9198,7 +9203,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -9408,7 +9412,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -9484,7 +9487,6 @@
                                     <property name="aui_name"></property>
                                     <property name="aui_position"></property>
                                     <property name="aui_row"></property>
-                                    <property name="auth_needed">0</property>
                                     <property name="best_size"></property>
                                     <property name="bg"></property>
                                     <property name="bitmap"></property>
@@ -9691,7 +9693,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -9765,7 +9766,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -9839,7 +9839,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -9913,7 +9912,6 @@
                                             <property name="aui_name"></property>
                                             <property name="aui_position"></property>
                                             <property name="aui_row"></property>
-                                            <property name="auth_needed">0</property>
                                             <property name="best_size"></property>
                                             <property name="bg"></property>
                                             <property name="bitmap"></property>
@@ -10195,7 +10193,6 @@
                                                     <property name="aui_name"></property>
                                                     <property name="aui_position"></property>
                                                     <property name="aui_row"></property>
-                                                    <property name="auth_needed">0</property>
                                                     <property name="best_size"></property>
                                                     <property name="bg"></property>
                                                     <property name="bitmap"></property>
@@ -10259,6 +10256,251 @@
                                         </object>
                                     </object>
                                 </object>
+                            </object>
+                        </object>
+                    </object>
+                </object>
+            </object>
+        </object>
+        <object class="Frame" expanded="1">
+            <property name="aui_managed">0</property>
+            <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
+            <property name="bg">224,224,224</property>
+            <property name="center">wxBOTH</property>
+            <property name="context_help"></property>
+            <property name="context_menu">1</property>
+            <property name="enabled">1</property>
+            <property name="event_handler">impl_virtual</property>
+            <property name="extra_style"></property>
+            <property name="fg"></property>
+            <property name="font"></property>
+            <property name="hidden">0</property>
+            <property name="id">wxID_ANY</property>
+            <property name="maximum_size"></property>
+            <property name="minimum_size"></property>
+            <property name="name">EventEditor</property>
+            <property name="pos"></property>
+            <property name="size">405,449</property>
+            <property name="style">wxDEFAULT_FRAME_STYLE</property>
+            <property name="subclass">; ; forward_declare</property>
+            <property name="title"></property>
+            <property name="tooltip"></property>
+            <property name="window_extra_style"></property>
+            <property name="window_name"></property>
+            <property name="window_style">wxTAB_TRAVERSAL</property>
+            <property name="xrc_skip_sizer">1</property>
+            <event name="OnClose">EndPreviewer</event>
+            <event name="OnShow">StartPreviewer</event>
+            <object class="wxBoxSizer" expanded="1">
+                <property name="minimum_size"></property>
+                <property name="name">bSizer64</property>
+                <property name="orient">wxVERTICAL</property>
+                <property name="permission">none</property>
+                <object class="sizeritem" expanded="1">
+                    <property name="border">5</property>
+                    <property name="flag">wxEXPAND</property>
+                    <property name="proportion">0</property>
+                    <object class="wxBoxSizer" expanded="1">
+                        <property name="minimum_size"></property>
+                        <property name="name">bSizer65</property>
+                        <property name="orient">wxHORIZONTAL</property>
+                        <property name="permission">none</property>
+                        <object class="sizeritem" expanded="1">
+                            <property name="border">5</property>
+                            <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                            <property name="proportion">1</property>
+                            <object class="wxStaticText" expanded="1">
+                                <property name="BottomDockable">1</property>
+                                <property name="LeftDockable">1</property>
+                                <property name="RightDockable">1</property>
+                                <property name="TopDockable">1</property>
+                                <property name="aui_layer"></property>
+                                <property name="aui_name"></property>
+                                <property name="aui_position"></property>
+                                <property name="aui_row"></property>
+                                <property name="best_size"></property>
+                                <property name="bg"></property>
+                                <property name="caption"></property>
+                                <property name="caption_visible">1</property>
+                                <property name="center_pane">0</property>
+                                <property name="close_button">1</property>
+                                <property name="context_help"></property>
+                                <property name="context_menu">1</property>
+                                <property name="default_pane">0</property>
+                                <property name="dock">Dock</property>
+                                <property name="dock_fixed">0</property>
+                                <property name="docking">Left</property>
+                                <property name="enabled">1</property>
+                                <property name="fg"></property>
+                                <property name="floatable">1</property>
+                                <property name="font"></property>
+                                <property name="gripper">0</property>
+                                <property name="hidden">0</property>
+                                <property name="id">wxID_ANY</property>
+                                <property name="label">Event ID:</property>
+                                <property name="markup">0</property>
+                                <property name="max_size"></property>
+                                <property name="maximize_button">0</property>
+                                <property name="maximum_size"></property>
+                                <property name="min_size"></property>
+                                <property name="minimize_button">0</property>
+                                <property name="minimum_size"></property>
+                                <property name="moveable">1</property>
+                                <property name="name">event_id_lbl</property>
+                                <property name="pane_border">1</property>
+                                <property name="pane_position"></property>
+                                <property name="pane_size"></property>
+                                <property name="permission">protected</property>
+                                <property name="pin_button">1</property>
+                                <property name="pos"></property>
+                                <property name="resize">Resizable</property>
+                                <property name="show">1</property>
+                                <property name="size"></property>
+                                <property name="style">wxALIGN_RIGHT</property>
+                                <property name="subclass">; ; forward_declare</property>
+                                <property name="toolbar_pane">0</property>
+                                <property name="tooltip"></property>
+                                <property name="window_extra_style"></property>
+                                <property name="window_name"></property>
+                                <property name="window_style"></property>
+                                <property name="wrap">-1</property>
+                            </object>
+                        </object>
+                        <object class="sizeritem" expanded="1">
+                            <property name="border">5</property>
+                            <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                            <property name="proportion">1</property>
+                            <object class="wxTextCtrl" expanded="1">
+                                <property name="BottomDockable">1</property>
+                                <property name="LeftDockable">1</property>
+                                <property name="RightDockable">1</property>
+                                <property name="TopDockable">1</property>
+                                <property name="aui_layer"></property>
+                                <property name="aui_name"></property>
+                                <property name="aui_position"></property>
+                                <property name="aui_row"></property>
+                                <property name="best_size"></property>
+                                <property name="bg"></property>
+                                <property name="caption"></property>
+                                <property name="caption_visible">1</property>
+                                <property name="center_pane">0</property>
+                                <property name="close_button">1</property>
+                                <property name="context_help"></property>
+                                <property name="context_menu">1</property>
+                                <property name="default_pane">0</property>
+                                <property name="dock">Dock</property>
+                                <property name="dock_fixed">0</property>
+                                <property name="docking">Left</property>
+                                <property name="enabled">1</property>
+                                <property name="fg"></property>
+                                <property name="floatable">1</property>
+                                <property name="font"></property>
+                                <property name="gripper">0</property>
+                                <property name="hidden">0</property>
+                                <property name="id">wxID_ANY</property>
+                                <property name="max_size"></property>
+                                <property name="maximize_button">0</property>
+                                <property name="maximum_size"></property>
+                                <property name="maxlength"></property>
+                                <property name="min_size"></property>
+                                <property name="minimize_button">0</property>
+                                <property name="minimum_size"></property>
+                                <property name="moveable">1</property>
+                                <property name="name">event_id_inp</property>
+                                <property name="pane_border">1</property>
+                                <property name="pane_position"></property>
+                                <property name="pane_size"></property>
+                                <property name="permission">protected</property>
+                                <property name="pin_button">1</property>
+                                <property name="pos"></property>
+                                <property name="resize">Resizable</property>
+                                <property name="show">1</property>
+                                <property name="size"></property>
+                                <property name="style"></property>
+                                <property name="subclass">; ; forward_declare</property>
+                                <property name="toolbar_pane">0</property>
+                                <property name="tooltip"></property>
+                                <property name="validator_data_type"></property>
+                                <property name="validator_style">wxFILTER_NONE</property>
+                                <property name="validator_type">wxDefaultValidator</property>
+                                <property name="validator_variable"></property>
+                                <property name="value"></property>
+                                <property name="window_extra_style"></property>
+                                <property name="window_name"></property>
+                                <property name="window_style"></property>
+                            </object>
+                        </object>
+                        <object class="sizeritem" expanded="1">
+                            <property name="border">5</property>
+                            <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                            <property name="proportion">1</property>
+                            <object class="wxButton" expanded="1">
+                                <property name="BottomDockable">1</property>
+                                <property name="LeftDockable">1</property>
+                                <property name="RightDockable">1</property>
+                                <property name="TopDockable">1</property>
+                                <property name="aui_layer"></property>
+                                <property name="aui_name"></property>
+                                <property name="aui_position"></property>
+                                <property name="aui_row"></property>
+                                <property name="best_size"></property>
+                                <property name="bg"></property>
+                                <property name="bitmap"></property>
+                                <property name="caption"></property>
+                                <property name="caption_visible">1</property>
+                                <property name="center_pane">0</property>
+                                <property name="close_button">1</property>
+                                <property name="context_help"></property>
+                                <property name="context_menu">1</property>
+                                <property name="current"></property>
+                                <property name="default">0</property>
+                                <property name="default_pane">0</property>
+                                <property name="disabled"></property>
+                                <property name="dock">Dock</property>
+                                <property name="dock_fixed">0</property>
+                                <property name="docking">Left</property>
+                                <property name="enabled">1</property>
+                                <property name="fg"></property>
+                                <property name="floatable">1</property>
+                                <property name="focus"></property>
+                                <property name="font"></property>
+                                <property name="gripper">0</property>
+                                <property name="hidden">0</property>
+                                <property name="id">wxID_ANY</property>
+                                <property name="label">Load</property>
+                                <property name="margins"></property>
+                                <property name="markup">0</property>
+                                <property name="max_size"></property>
+                                <property name="maximize_button">0</property>
+                                <property name="maximum_size"></property>
+                                <property name="min_size"></property>
+                                <property name="minimize_button">0</property>
+                                <property name="minimum_size"></property>
+                                <property name="moveable">1</property>
+                                <property name="name">load_event_btn</property>
+                                <property name="pane_border">1</property>
+                                <property name="pane_position"></property>
+                                <property name="pane_size"></property>
+                                <property name="permission">protected</property>
+                                <property name="pin_button">1</property>
+                                <property name="pos"></property>
+                                <property name="position"></property>
+                                <property name="pressed"></property>
+                                <property name="resize">Resizable</property>
+                                <property name="show">1</property>
+                                <property name="size"></property>
+                                <property name="style"></property>
+                                <property name="subclass">; ; forward_declare</property>
+                                <property name="toolbar_pane">0</property>
+                                <property name="tooltip"></property>
+                                <property name="validator_data_type"></property>
+                                <property name="validator_style">wxFILTER_NONE</property>
+                                <property name="validator_type">wxDefaultValidator</property>
+                                <property name="validator_variable"></property>
+                                <property name="window_extra_style"></property>
+                                <property name="window_name"></property>
+                                <property name="window_style"></property>
+                                <event name="OnButtonClick">OnBtnLoadEvent</event>
                             </object>
                         </object>
                     </object>

@@ -1,0 +1,136 @@
+import formats.event_data as evdat
+import PygameEngine.GameManager
+import PygameEngine.Input
+import PygameEngine.Sprite
+import PygameEngine.UI.UIManager
+import pygame_utils.SADLStreamPlayer
+from .EventCharacter import EventCharacter
+from .EventDialogue import EventDialogue
+from pygame_utils import TwoScreenRenderer
+from pygame_utils.rom import RomSingleton
+from pygame_utils.rom.rom_extract import load_animation, LANG
+from .EventBG import EventBG
+from .abstracts.EventCommands import *
+from .EventSound import EventSound
+from .EventWaiter import EventWaiter
+
+
+class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
+    def __init__(self, event_id):
+        super(EventPlayer, self).__init__()
+        self.event_id = event_id
+
+        self.inp = PygameEngine.Input.Input()
+
+        self.event_data = evdat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+
+        self.top_bg = EventBG(self.top_screen_group, "top")
+        self.btm_bg = EventBG(self.bottom_screen_group, "bottom")
+
+        self.characters = []
+
+        self.current_gds_command = 0
+        self.waiter = EventWaiter()
+
+        self.sound_player = EventSound()
+        self.voice_player = pygame_utils.SADLStreamPlayer.SoundPlayer()
+        self.next_voice = -1
+
+        self.ui_manager = PygameEngine.UI.UIManager.UIManager()
+
+        self.dialogue: EventDialogue = EventDialogue(self.bottom_screen_group, self.voice_player)
+        self.dialogue.layer = 100
+        self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_BOTTOM
+        self.dialogue.world_rect.y += 192 // 2
+        self.ui_manager.add(self.dialogue)
+
+        self.commands = []
+
+        self.run_events = False
+
+    def reset(self):
+        self.event_data.set_event_id(self.event_id)
+        self.event_data.load_from_rom()
+
+        self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
+                                          bg_top=self.top_bg, character_obj=self.characters,
+                                          sfx_player=self.sound_player, waiter=self.waiter,
+                                          dialogue=self.dialogue)
+
+        self.sound_player.stop()
+        self.voice_player.stop()
+        self.waiter.stop()
+        self.dialogue.end_dialogue()
+
+        self.current_gds_command = 0
+
+    def load(self):
+        for character in self.characters:
+            character.kill()
+        for _ in range(6):
+            self.characters.append(EventCharacter(self.bottom_screen_group))
+        load_animation(f"data_lt2/ani/event/twindow.arc", self.dialogue)
+        self.dialogue.init_position()
+        self.reset()
+
+    def update(self):
+        super().update()
+        if self.inp.quit:
+            self.running = False
+
+        # Update character animations
+        for character in self.characters:
+            if character.char_id == 0:
+                continue
+            character.update_animation(self.gm.delta_time)
+            if character.character_mouth is not None:
+                character.character_mouth.update_animation(self.gm.delta_time)
+
+        # Update faders and shakers
+        self.top_bg.update_()
+        self.btm_bg.update_()
+
+        # Update sounds
+        self.sound_player.update_()
+        self.voice_player.update_()
+
+        # Update wait
+        self.waiter.update_()
+
+        # Update UI Elements
+        self.ui_manager.update()
+
+        if not self.is_busy() and self.run_events:
+            self.run_gds_command()
+
+    def run_gds_command(self, run_until_command=-1):
+        self.run_events = run_until_command == -1  # Should we play commands
+        if not self.run_events:
+            Debug.log_debug(f"Running until command {run_until_command}", self)
+        while True:
+            if self.current_gds_command >= len(self.commands):
+                self.run_events = False
+                break
+            next_command: EventCMD = self.commands[self.current_gds_command]
+
+            # If we have completed run_until_command and we are auto_progressing to next command
+            if self.current_gds_command > run_until_command and not self.run_events:
+                return
+            self.current_gds_command += 1
+
+            # Have we completed run_until_command?
+            editing = not self.run_events
+            instant = (self.current_gds_command <= run_until_command)
+
+            next_command.execute(editing, instant)
+
+            # If we should return and we are auto_progressing to next command
+            if self.is_busy() and not instant:
+                return
+        Debug.log("Event execution finished", self)
+
+    def is_busy(self):
+        return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy()
+
+    def exit(self):
+        super().exit()

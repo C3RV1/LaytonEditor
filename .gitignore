@@ -13,3 +13,9 @@ tests/
 *.map
 *.elf
 *.sym
+*.plz
+*.dat
+*.gds
+test*
+data_extracted/*
+data_permanent/*
