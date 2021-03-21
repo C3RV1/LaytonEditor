@@ -4,13 +4,13 @@ import PygameEngine.Input
 import PygameEngine.Sprite
 import PygameEngine.UI.UIManager
 import pygame_utils.SADLStreamPlayer
-from .EventCharacter import EventCharacter
-from .EventDialogue import EventDialogue
+from previewers.event_preview.EventCharacter import EventCharacter
+from previewers.event_preview.EventDialogue import EventDialogue
 from pygame_utils import TwoScreenRenderer
 from pygame_utils.rom import RomSingleton
 from pygame_utils.rom.rom_extract import load_animation, LANG
 from .EventBG import EventBG
-from .abstracts.EventCommands import *
+from previewers.event_preview.abstracts.EventCommands import *
 from .EventSound import EventSound
 from .EventWaiter import EventWaiter
 
@@ -23,6 +23,8 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.inp = PygameEngine.Input.Input()
 
         self.event_data = evdat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+        self.event_data.set_event_id(self.event_id)
+        self.event_data.load_from_rom()
 
         self.top_bg = EventBG(self.top_screen_group, "top")
         self.btm_bg = EventBG(self.bottom_screen_group, "bottom")
@@ -49,14 +51,6 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.run_events = False
 
     def reset(self):
-        self.event_data.set_event_id(self.event_id)
-        self.event_data.load_from_rom()
-
-        self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
-                                          bg_top=self.top_bg, character_obj=self.characters,
-                                          sfx_player=self.sound_player, waiter=self.waiter,
-                                          dialogue=self.dialogue)
-
         self.sound_player.stop()
         self.voice_player.stop()
         self.waiter.stop()
@@ -64,14 +58,21 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.current_gds_command = 0
 
-    def load(self):
-        for character in self.characters:
-            character.kill()
-        for _ in range(6):
+    def set_event_id(self, ev_id):
+        self.event_id = ev_id
+        self.event_data.set_event_id(ev_id)
+        self.event_data.load_from_rom()
+
+    def load(self, skip_fade_in=False):
+        while len(self.characters) < 6:
             self.characters.append(EventCharacter(self.bottom_screen_group))
+
+        self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
+                                          bg_top=self.top_bg, character_obj=self.characters,
+                                          sfx_player=self.sound_player, waiter=self.waiter,
+                                          dialogue=self.dialogue)
         load_animation(f"data_lt2/ani/event/twindow.arc", self.dialogue)
         self.dialogue.init_position()
-        self.reset()
 
     def update(self):
         super().update()

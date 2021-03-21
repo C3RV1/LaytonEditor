@@ -15,9 +15,8 @@ class EventBG(EventBGAbstract):
         self.fader.layer = 1000
         self.translucent = PygameEngine.Sprite.Sprite([])
         self.translucent.layer = -100
-        self.translucent.image = pg.Surface([256, 192])
-        self.translucent.image.fill(pg.Color(0, 0, 0))
-        self.translucent.reset_world_rect()
+        self.translucent.original_image = pg.Surface([256, 192])
+        self.translucent.original_image.fill(pg.Color(0, 0, 0))
 
         self.bg.add(groups)
         self.fader.add(groups)
@@ -49,8 +48,7 @@ class EventBG(EventBGAbstract):
         return self.fader.fading
 
     def set_opacity(self, opacity):
-        self.translucent.image.set_alpha(opacity)
-        self.translucent.dirty = 1
+        self.translucent.set_alpha(opacity)
 
     def set_fade_max_opacity(self, opacity):
         self.fader.max_fade = opacity

@@ -1,4 +1,4 @@
-from PygameEngine.UI.UIElement import UIElement
+from .UIElement import UIElement
 
 
 class UIManager:

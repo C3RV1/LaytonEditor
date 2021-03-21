@@ -1,56 +1,112 @@
-import PygameEngine.Sprite
-import PygameEngine.UI.FontMap
+from ..Sprite import Sprite
+from .FontMap import FontMap
 import pygame as pg
 import os
 
-import PygameEngine.Screen
 
-
-class Text(PygameEngine.Sprite.Sprite):
+class Text(Sprite):
     FONTS = {}
 
     def __init__(self, groups):
         super(Text, self).__init__(groups)
-        self.font = None
-        self.current_text = None
+        self.__font = None
+        self.__current_text = None
+        self.__color = pg.Color(255, 255, 255)
+        self.__bg_color = pg.Color(240, 240, 240)
+        self.__mask_color = pg.Color(0, 0, 0)
+        self.__antialiasing = False
 
-    def set_font(self, font_path, size, is_font_map=False, letter_spacing=1):
+    def set_font(self, font_path, size, is_font_map=False, letter_spacing=1, line_spacing=1):
         if not is_font_map:
             if not isinstance(size, int):
                 raise Exception("Size is not int on non font map")
             if font_path is None or not os.path.isfile(font_path):
-                self.font = pg.font.SysFont("arial", size)
-                self.set_text("")
+                self.__font = pg.font.SysFont("arial", size)
+                self.text = ""
                 return
             font_id = f"{font_path}-{size}"
             if font_id in Text.FONTS.keys():
-                self.font = Text.FONTS[font_id]
+                self.__font = Text.FONTS[font_id]
             else:
-                self.font = pg.font.Font(font_path, size)
-                Text.FONTS[font_id] = self.font
+                self.__font = pg.font.Font(font_path, size)
+                Text.FONTS[font_id] = self.__font
         else:
-            if PygameEngine.UI.FontMap.FontMap.exists_font_map(font_path):
-                self.font = PygameEngine.UI.FontMap.FontMap(font_path, size[0], size[1], letter_spacing=letter_spacing)
+            if FontMap.exists_font_map(font_path):
+                self.__font = FontMap(font_path, size[0], size[1], letter_spacing=letter_spacing,
+                                      line_spacing=line_spacing)
             else:
-                self.font = pg.font.Font(None, 16)
-        self.set_text("")
+                self.__font = pg.font.Font(None, 16)
+        self.text = ""
 
-    def set_text(self, text, color=(255, 255, 255), antialias=False, bg_color=(0, 0, 0), mask_color=(0, 0, 0)):
-        if self.font is None:
+    def __render_text(self):
+        if self.__font is None:
             return
-        if self.current_text == text:
-            return
-        self.current_text = text
-        if isinstance(self.font, pg.font.Font):
-            self.font: pg.font.Font
-            self.image = self.font.render(text, antialias, color, bg_color)
-        elif isinstance(self.font, PygameEngine.UI.FontMap.FontMap):
-            self.font: PygameEngine.UI.FontMap.FontMap
-            self.image = self.font.render(text, bg_color=bg_color)
-        rect_wh = self.image.get_rect()
-        self.world_rect.w = rect_wh.w
-        self.world_rect.h = rect_wh.h
-        self.reset_world_rect()
-        self.set_color_key(mask_color)
-        self.dirty = 1
+        self.set_color_key(self.__mask_color)
+        if isinstance(self.__font, pg.font.Font):
+            self.__font: pg.font.Font
+            self.original_image = self.__font.render(self.__current_text, self.__antialiasing, self.__color,
+                                                     self.__bg_color)
+        elif isinstance(self.__font, FontMap):
+            self.__font: FontMap
+            self.original_image = self.__font.render(self.__current_text, color=self.__color, bg_color=self.__bg_color)
 
+    def update_transformations(self):
+        if not self.should_transform:
+            return
+        self.__render_text()
+        super().update_transformations()
+
+    @property
+    def color(self):
+        return self.__color
+
+    @color.setter
+    def color(self, value):
+        if self.__color == value:
+            return
+        self.__color = value
+        self.render_again()
+
+    @property
+    def antialiasing(self):
+        return self.__antialiasing
+
+    @antialiasing.setter
+    def antialiasing(self, value):
+        if self.__antialiasing == value:
+            return
+        self.__antialiasing = value
+        self.render_again()
+
+    @property
+    def bg_color(self):
+        return self.__bg_color
+
+    @bg_color.setter
+    def bg_color(self, value):
+        if self.__bg_color == value:
+            return
+        self.__bg_color = value
+        self.render_again()
+
+    @property
+    def mask_color(self):
+        return self.__mask_color
+
+    @mask_color.setter
+    def mask_color(self, value):
+        if self.__mask_color == value:
+            return
+        self.__mask_color = value
+        self.render_again()
+
+    @property
+    def text(self):
+        return self.__current_text
+
+    @text.setter
+    def text(self, value):
+        if self.__current_text == value:
+            return
+        self.__current_text = value
+        self.render_again()

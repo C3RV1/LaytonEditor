@@ -75,15 +75,12 @@ class Serialize:
         self.__unpacked = []
         while len(self.__current) > 0:
             self.__unpacked.append(self.__unpack_1())
-            print(self.__current)
 
         return self.__unpacked
 
     def __unpack_1(self):
         identifier = self.__current[:1]
         self.__current = self.__current[1:]
-
-        print(identifier)
 
         if identifier == b"i":
             return self.__unpack_int()

@@ -1,20 +1,17 @@
-import PygameEngine.GameManager
 import pygame as pg
-import PygameEngine.Sprite
-import PygameEngine.Camera
-import PygameEngine.Input
-import PygameEngine.Screen
-import PygameEngine.Animation
+from .GameManager import GameManager
+from .Input import Input
+from .Screen import Screen
 
 
 class Renderer:
     def __init__(self):
-        self.gm = PygameEngine.GameManager.GameManager()
-        self.screen = PygameEngine.Screen.Screen.screen()
-        self.screen_size = PygameEngine.Screen.Screen.screen_size()
-        self.inp = PygameEngine.Input.Input()
+        self.gm = GameManager()
+        self.screen = Screen.screen()
+        self.screen_size = Screen.screen_size()
+        self.inp = Input()
 
-        self.blank_surface = pg.Surface(PygameEngine.Screen.Screen.screen_size())
+        self.blank_surface = pg.Surface(Screen.screen_size())
         self.blank_surface.fill(pg.Color(40, 40, 40))
 
         self.running = True
@@ -38,7 +35,7 @@ class Renderer:
         pass
 
     def update(self):
-        return []
+        pass
 
     def draw(self):
         return []

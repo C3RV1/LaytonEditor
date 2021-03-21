@@ -97,15 +97,20 @@ class BGLoadCMD(EventCMD):
     TOP = 0
     BTM = 1
 
-    def __init__(self, bg, load_path):
+    def __init__(self, bg, bg_top, bg_btm, load_path):
         super().__init__()
-        self.bg: EventBGAbstract = bg
+        self.bg = bg
+        self.bg_top: EventBGAbstract = bg_top
+        self.bg_btm: EventBGAbstract = bg_btm
         self.load_path = load_path
 
     def execute(self, editing, instant):
         Debug.log(f"Executing bg load bg={self.bg} "
                   f"load_path={self.load_path}", self)
-        self.bg.set_bg("data_lt2/bg/" + self.load_path)
+        if self.bg == self.TOP:
+            self.bg_top.set_bg("data_lt2/bg/" + self.load_path)
+        else:
+            self.bg_btm.set_bg("data_lt2/bg/" + self.load_path)
 
 
 class BGOpacityCMD(EventCMD):
@@ -203,7 +208,10 @@ class DialogueCMD(EventCMD):
         self.dialogue: EventDialogueAbstract = dialogue
         self.character: EventCharacterAbstract = character
         self.text = text
-        self.anim = anim
+        if anim == "NONE":
+            self.anim = None
+        else:
+            self.anim = anim
         self.voice = voice
 
     def execute(self, editing, instant):
@@ -258,11 +266,11 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
             next_voice = -1
         elif event_gds_cmd.command == 0x21:
             commands.append(
-                BGLoadCMD(bg_btm, event_gds_cmd.params[0])
+                BGLoadCMD(BGLoadCMD.BTM, bg_top, bg_btm, event_gds_cmd.params[0])
             )
         elif event_gds_cmd.command == 0x22:
             commands.append(
-                BGLoadCMD(bg_top, event_gds_cmd.params[0])
+                BGLoadCMD(BGLoadCMD.TOP, bg_top, bg_btm, event_gds_cmd.params[0])
             )
         elif event_gds_cmd.command == 0x2a:
             commands.append(

@@ -1,9 +1,9 @@
 import pygame
 import random
 import time
-from PygameEngine.Debug import Debug
-from PygameEngine.Screen import Screen
-from PygameEngine.Input import Input
+from .Debug import Debug
+from .Screen import Screen
+from .Input import Input
 
 
 class GameManager(object):
@@ -20,7 +20,7 @@ class GameManager(object):
         self.exit()
 
     def __init__(self, screen_size=None, full_screen=True, log_fps=False, fps_limit=60, name="Default Name"):
-        if not GameManager.__inited:
+        if not GameManager.__inited or not self.running:
             pygame.init()
             pygame.mixer.init()
 
@@ -28,7 +28,7 @@ class GameManager(object):
 
             if not screen_size:
                 Debug.log_error("Screen size not specified", "GameManager")
-                self.running = False
+                self.exit()
                 return
 
             GameManager.__inited = True

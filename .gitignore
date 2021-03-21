@@ -17,5 +17,5 @@ tests/
 *.dat
 *.gds
 test*
-data_extracted/*
-data_permanent/*
+data_extracted
+data_permanent

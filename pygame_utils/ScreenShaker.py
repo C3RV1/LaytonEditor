@@ -1,6 +1,8 @@
 import PygameEngine.Sprite
 import PygameEngine.GameManager
 
+from PygameEngine.Debug import Debug
+
 
 class ScreenShaker(PygameEngine.Sprite.Sprite):
     def __init__(self, groups):

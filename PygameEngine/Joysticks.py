@@ -42,7 +42,7 @@ class Joysticks(object):
     def set_joy_id_order(self, joy_id_order):
         if len(joy_id_order) != len(self.joy_order):
             return
-        if not all(joy_id in joy_id_order for joy_id in self.joy_order):
+        if any(joy_id not in joy_id_order for joy_id in self.joy_order):
             return
         self.joy_order = list(joy_id_order)
 

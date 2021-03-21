@@ -1,4 +1,3 @@
-import PygameEngine.Sprite
 
 
 class UIElement:

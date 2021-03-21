@@ -6,11 +6,10 @@ class Screen:
     __screen_size = None  # type: tuple
 
     @staticmethod
-    def new_screen(size, flags, name="Default name"):
-        if not Screen.__screen:
-            pygame.display.set_caption(name)
-            Screen.__screen = pygame.display.set_mode(size, flags=flags)
-            Screen.__screen_size = size
+    def new_screen(size, flags, name="Default Name"):
+        pygame.display.set_caption(name)
+        Screen.__screen = pygame.display.set_mode(size, flags=flags)
+        Screen.__screen_size = size
 
     @staticmethod
     def screen():  # type: () -> pygame.Surface

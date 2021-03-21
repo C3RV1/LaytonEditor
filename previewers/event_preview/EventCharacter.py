@@ -4,6 +4,7 @@ import PygameEngine.UI.UIElement
 import PygameEngine.Input
 from .abstracts.EventCharacterAbstract import EventCharacterAbstract
 from pygame_utils.rom.rom_extract import load_animation
+import PygameEngine.Debug
 
 
 class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):

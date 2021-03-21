@@ -119,4 +119,6 @@ class MainEditor(generated.MainEditor):
     def event_editor_clicked(self, event):
         if self.rom is None:
             return
+        print("Still not fully implemented.")
+        return 
         EventEditor2(self, self.rom).Show(True)

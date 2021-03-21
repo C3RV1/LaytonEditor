@@ -15,7 +15,7 @@ LANG = "en"
 
 
 def set_extension(path, ext):
-    return ".".join(path.split(".")[:-1]) + ".arc"
+    return ".".join(path.split(".")[:-1]) + ext
 
 
 def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
@@ -57,21 +57,20 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
             anim_anim: ani.Animation = anim.animations[i]
             new_tag_info = {
                 "name": anim_anim.name,
-                "frames": list(map(lambda x: x.image_index, anim_anim.frames)),
+                "frames": [anim_anim.frames[i].image_index for i in range(len(anim_anim.frames))],
                 "child_x": anim_anim.child_image_x,
                 "child_y": anim_anim.child_image_y,
                 "child_index": anim_anim.child_image_animation_index
             }
-            durations = list(map(lambda x: x.duration, anim_anim.frames))
             for frame_num in range(len(anim_anim.frames)):
                 frame = anim_anim.frames[frame_num].image_index
-                duration = int(durations[frame_num] * 1000) // ORIGINAL_FPS  # Frames to ms
+                duration = int(anim_anim.frames[frame_num].duration * 1000) // ORIGINAL_FPS  # Frames to ms
                 sprite_info["frames"][frame]["duration"] = duration
             sprite_info["meta"]["frameTags"].append(new_tag_info)
 
-        with open(export_path + ".json", "w") as anim_file:
+        with open(export_path + ".png.json", "w") as anim_file:
             anim_file.write(json.dumps(sprite_info, indent=4))
-    sprite.load_sprite_sheet(export_path)
+    sprite.load_sprite_sheet(export_path + ".png")
     sprite.set_color_key(pg.color.Color(0, 255, 0))
     sprite.dirty = 1
 

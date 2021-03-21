@@ -28,7 +28,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.post_interact = self.end_dialogue
 
         self.interact = self._interact
-        self.inner_text = []
+        self.inner_text = None
 
         self.char_name = PygameEngine.Sprite.Sprite([])
         self.char_name.layer = 101
@@ -57,9 +57,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
     def show(self):
         if not self.alive():
             self.add(self.groups_perseverance)
-        for line in self.inner_text:
-            if not line.alive():
-                line.add(self.groups_perseverance)
+        if not self.inner_text.alive():
+            self.inner_text.add(self.groups_perseverance)
         if not self.char_name.alive():
             self.char_name.add(self.groups_perseverance)
         self.dirty = 1
@@ -69,8 +68,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             if len(self.groups()) > 0:
                 self.current_camera.draw(self.groups()[0], dirty_all=True)
         self.kill()
-        for line in self.inner_text:
-            line.kill()
+        if self.inner_text is not None:
+            self.inner_text.kill()
         self.char_name.kill()
 
     def start_dialogue(self, character, chr_anim, text, voice):
@@ -79,6 +78,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         if chr_anim is not None and self.character_talking is not None:
             self.character_talking.set_anim(chr_anim)
         self.text_left_to_do = text
+        # self.text_left_to_do = "I can change the #rcolor@B Also continue next line#x."
         self.replace_substitutions()
         self.voice_line = voice
         self.on_dialogue = True
@@ -105,15 +105,13 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def init_position(self):
         # Init dialogue positions
-        for line in range(self.NUMBER_OF_LINES):
-            new_text = PygameEngine.UI.Text.Text([])
-            new_text.layer = 120
-            size = 16
-            new_text.set_font("data_permanent/fonts/font_event", [9, 12], is_font_map=True)
-            new_text.world_rect.x = (- 256 // 2) + 10
-            new_text.world_rect.y = self.world_rect.y - self.world_rect.h + 19 + line * size
-            new_text.draw_alignment = [new_text.ALIGNMENT_RIGHT, new_text.ALIGNMENT_TOP]
-            self.inner_text.append(new_text)
+        self.inner_text = PygameEngine.UI.Text.Text([])
+        self.inner_text.layer = 120
+        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True, line_spacing=2,
+                                 letter_spacing=1)
+        self.inner_text.world_rect.x = (- 256 // 2) + 10
+        self.inner_text.world_rect.y = self.world_rect.y - self.world_rect.h + 20
+        self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_TOP]
         self.char_name.world_rect.y = self.world_rect.y - self.world_rect.h
         self.char_name.world_rect.x = - 256 // 2
 
@@ -156,12 +154,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def progress_text(self):
         # TODO: commands starting with & (event 10060) and @s
-        if self.text_left_to_do.startswith("@B"):  # Next line
-            self.current_line += 1
-            self.current_text = ""
-            self.text_left_to_do = self.text_left_to_do[2:]
-            return
-        elif self.text_left_to_do.startswith("@p"):  # Pause
+        if self.text_left_to_do.startswith("@p"):  # Pause
             self.current_pause += 1
             self.pause()
             self.text_left_to_do = self.text_left_to_do[2:]
@@ -176,8 +169,10 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.text_left_to_do = self.text_left_to_do[1:]
 
         # Update current text object
-        self.inner_text[self.current_line].set_text(self.current_text, color=pg.Color(0, 0, 0), bg_color=[0, 255, 0],
-                                                    mask_color=[0, 255, 0])
+        self.inner_text.color = pg.Color(0, 0, 0)
+        self.inner_text.bg_color = pg.Color(0, 255, 0)
+        self.inner_text.mask_color = pg.Color(0, 255, 0)
+        self.inner_text.text = self.current_text
 
         # If we have finished we pause
         if self.finished:
@@ -192,8 +187,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
     def reset_texts(self):
         self.current_line = 0
         self.current_text = ""
-        for inner_txt in self.inner_text:
-            inner_txt.set_text("")
+        self.inner_text.text = ""
 
     # Reset all (texts, paused, and current_pause)
     def reset_all(self):
@@ -227,7 +221,9 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
                      "<'o>": "ó",
                      "<'i>": "í",
                      "<'u>": "ú",
-                     "<^!>": "¡"}
+                     "<^!>": "¡",
+                     "<-n>": "ñ",
+                     "@B": "\n"}
         for key, sub in subs_dict.items():
             self.text_left_to_do = self.text_left_to_do.replace(key, sub)
 

@@ -90,7 +90,8 @@ class FilesystemViewer(Renderer.Renderer):
         new_button.draw_alignment[0] = new_button.ALIGNMENT_RIGHT
         new_button.draw_alignment[1] = new_button.ALIGNMENT_TOP
         new_button.set_font(None, 22)
-        new_button.set_text(name, color=(255, 0, 255))
+        new_button.text = name
+        new_button.color = pg.Color(255, 0, 255)
         new_button.world_rect.y += self.button_y
         self.button_y += 22
 
@@ -104,7 +105,8 @@ class FilesystemViewer(Renderer.Renderer):
         new_button.draw_alignment[0] = new_button.ALIGNMENT_RIGHT
         new_button.draw_alignment[1] = new_button.ALIGNMENT_TOP
         new_button.set_font(None, 22)
-        new_button.set_text(name, color=(255, 255, 0))
+        new_button.color = pg.Color(255, 255, 0)
+        new_button.text = name
         new_button.world_rect.y += self.button_y
         self.button_y += 22
 

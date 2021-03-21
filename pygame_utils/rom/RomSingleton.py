@@ -1,4 +1,4 @@
-import ndspy.rom
+import formats.filesystem
 
 
 class RomSingleton:
@@ -16,7 +16,7 @@ class RomSingleton:
             if rom is not None:
                 self.rom = rom
             elif rom_path is not None:
-                self.rom = ndspy.rom.NintendoDSRom.fromFile(rom_path)
+                self.rom = formats.filesystem.NintendoDSRom.fromFile(rom_path)
             else:
                 raise Exception("Rom can't be none")
             RomSingleton.__inited = True

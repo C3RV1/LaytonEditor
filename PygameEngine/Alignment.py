@@ -1,0 +1,8 @@
+
+
+class Alignment:
+    ALIGNMENT_TOP = 0
+    ALIGNMENT_CENTER = 1
+    ALIGNMENT_BOTTOM = 2
+    ALIGNMENT_RIGHT = 0
+    ALIGNMENT_LEFT = 2

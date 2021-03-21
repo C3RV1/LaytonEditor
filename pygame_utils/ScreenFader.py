@@ -12,10 +12,9 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
         self.layer = 1000
         self.add(groups)
         self.gm = PygameEngine.GameManager.GameManager()
-        self.image = pg.Surface([256, 192])
-        self.image.fill(pg.Color(0, 0, 0))
-        self.image.set_alpha(0)
-        self.reset_world_rect()
+        self.original_image = pg.Surface([256, 192])
+        self.original_image.fill(pg.Color(0, 0, 0))
+        self.alpha = 0
         self.fade = self.FADING_OUT
         self.fading = False
         self.current_time = 0
@@ -64,15 +63,15 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
     def update_fade(self):
         percentage = 1 - min(max(self.current_time / self.fade_time, 0), 1)  # Clamp between 0 and 1
         if self.fade == self.FADING_OUT:
-            self.image.set_alpha(int(self.max_fade * percentage))
+            self.alpha = int(self.max_fade * percentage)
             if self.current_time <= 0:
-                self.image.set_alpha(self.max_fade)
+                self.alpha = self.max_fade
                 self.fading = False
                 self.finish_fade()
         elif self.fade == self.FADING_IN:
-            self.image.set_alpha(self.max_fade - int(self.max_fade * percentage))
+            self.alpha = self.max_fade - int(self.max_fade * percentage)
             if self.current_time <= 0:
-                self.image.set_alpha(0)
+                self.alpha = 0
                 self.fading = False
                 self.finish_fade()
         else:
