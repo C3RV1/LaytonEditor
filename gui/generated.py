@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Oct 26 2018)
+## Python code generated with wxFormBuilder (version 3.9.0 Mar 23 2021)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -10,9 +10,11 @@
 from gui.previews.gds_stc import GdsSTC
 from gui.previews.scaledimage import ScaledImage
 from gui.previews.placeviewer import PlaceViewer
+from gui.previews.puzzleviewer import PuzzleViewer
 import wx
 import wx.xrc
 import wx.aui
+import wx.stc
 import wx.dataview
 import wx.propgrid as pg
 
@@ -172,8 +174,42 @@ class FilesystemEditor ( wx.Panel ):
 		self.fp_gds = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		fp_gds_layout = wx.BoxSizer( wx.VERTICAL )
 
-		# WARNING: wxPython code generation isn't supported for this widget yet.
-		self.fp_gds_stc = wx.Window( self.fp_gds )
+		self.fp_gds_stc = GdsSTC( self.fp_gds, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+		self.fp_gds_stc.SetUseTabs ( True )
+		self.fp_gds_stc.SetTabWidth ( 4 )
+		self.fp_gds_stc.SetIndent ( 4 )
+		self.fp_gds_stc.SetTabIndents( True )
+		self.fp_gds_stc.SetBackSpaceUnIndents( True )
+		self.fp_gds_stc.SetViewEOL( False )
+		self.fp_gds_stc.SetViewWhiteSpace( False )
+		self.fp_gds_stc.SetMarginWidth( 2, 0 )
+		self.fp_gds_stc.SetIndentationGuides( True )
+		self.fp_gds_stc.SetReadOnly( False );
+		self.fp_gds_stc.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
+		self.fp_gds_stc.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
+		self.fp_gds_stc.SetMarginWidth ( 1, 16)
+		self.fp_gds_stc.SetMarginSensitive( 1, True )
+		self.fp_gds_stc.SetProperty ( "fold", "1" )
+		self.fp_gds_stc.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED );
+		self.fp_gds_stc.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER );
+		self.fp_gds_stc.SetMarginWidth( 0, self.fp_gds_stc.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
+		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
+		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDER, wx.WHITE)
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.stc.STC_MARK_BOXMINUS )
+		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.BLACK )
+		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.WHITE )
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERSUB, wx.stc.STC_MARK_EMPTY )
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEREND, wx.stc.STC_MARK_BOXPLUS )
+		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEREND, wx.BLACK )
+		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEREND, wx.WHITE )
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUS )
+		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.BLACK)
+		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.WHITE)
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_EMPTY )
+		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERTAIL, wx.stc.STC_MARK_EMPTY )
+		self.fp_gds_stc.SetSelBackground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT ) )
+		self.fp_gds_stc.SetSelForeground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT ) )
 		fp_gds_layout.Add( self.fp_gds_stc, 1, wx.EXPAND, 5 )
 
 		fp_gds_cmd_layout = wx.BoxSizer( wx.HORIZONTAL )
@@ -415,15 +451,15 @@ class SpriteEditor ( wx.Panel ):
 		ase_variables_layout = wx.BoxSizer( wx.VERTICAL )
 
 		self.ase_variables_dataview = wx.dataview.DataViewListCtrl( self.ase_page_variables, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
 		ase_variables_layout.Add( self.ase_variables_dataview, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -634,6 +670,47 @@ class PlaceEditor ( wx.Panel ):
 	def plc_splitOnIdle( self, event ):
 		self.plc_split.SetSashPosition( 0 )
 		self.plc_split.Unbind( wx.EVT_IDLE )
+
+
+###########################################################################
+## Class PuzzleEditor
+###########################################################################
+
+class PuzzleEditor ( wx.Panel ):
+
+	def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 900,600 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
+		wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
+
+		pz_layout = wx.BoxSizer( wx.VERTICAL )
+
+		self.pz_split = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.pz_split.Bind( wx.EVT_IDLE, self.pz_splitOnIdle )
+
+		self.pz_preview = PuzzleViewer( self.pz_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.pz_data = wx.Panel( self.pz_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		pz_data_layout = wx.BoxSizer( wx.VERTICAL )
+
+		self.pz_data_grid = pg.PropertyGrid(self.pz_data, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PG_DEFAULT_STYLE)
+		self.m_propertyGridItem2 = self.pz_data_grid.Append( pg.StringProperty( u"Name", u"Name" ) )
+		pz_data_layout.Add( self.pz_data_grid, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.pz_data.SetSizer( pz_data_layout )
+		self.pz_data.Layout()
+		pz_data_layout.Fit( self.pz_data )
+		self.pz_split.SplitVertically( self.pz_preview, self.pz_data, 0 )
+		pz_layout.Add( self.pz_split, 1, wx.EXPAND, 5 )
+
+
+		self.SetSizer( pz_layout )
+		self.Layout()
+
+	def __del__( self ):
+		pass
+
+	def pz_splitOnIdle( self, event ):
+		self.pz_split.SetSashPosition( 0 )
+		self.pz_split.Unbind( wx.EVT_IDLE )
 
 
 ###########################################################################
@@ -1392,6 +1469,23 @@ class EventEditor ( wx.Frame ):
 
 
 		bSizer64.Add( bSizer65, 0, wx.EXPAND, 5 )
+
+		bSizer66 = wx.BoxSizer( wx.HORIZONTAL )
+
+		m_listBox2Choices = []
+		self.m_listBox2 = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), m_listBox2Choices, 0 )
+		bSizer66.Add( self.m_listBox2, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer64.Add( bSizer66, 1, wx.EXPAND, 5 )
+
+		bSizer67 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_button22 = wx.Button( self, wx.ID_ANY, u"Play", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer67.Add( self.m_button22, 0, wx.ALL, 5 )
+
+
+		bSizer64.Add( bSizer67, 1, wx.EXPAND, 5 )
 
 
 		self.SetSizer( bSizer64 )

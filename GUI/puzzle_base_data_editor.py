@@ -1,8 +1,33 @@
 import wx
+import wx.propgrid
 
 import formats.puzzles.puzzle_data as pzd
 import gui.generated
 from utility.auto_newline import auto_newline
+
+
+class PuzzleEditor(gui.generated.PuzzleEditor):
+    puzzle_data: pzd.PuzzleData
+
+    def load_puzzle(self, rom, puzzle_index):
+        self.puzzle_data = pzd.PuzzleData(rom)
+        self.puzzle_data.set_internal_id(puzzle_index)
+        if not self.puzzle_data.load_from_rom():
+            return
+
+        def create_property(name, value):
+            if isinstance(value, int):
+                return wx.propgrid.IntProperty(name, name, value)
+            elif isinstance(value, str):
+                return wx.propgrid.StringProperty(name, name, value)
+            elif isinstance(value, float):
+                return wx.propgrid.FloatProperty(name, name, value)
+            return None
+
+        self.pz_data_grid.Append(create_property("Puzzle Title", self.puzzle_data.title))
+
+    def enter(self):
+        pass
 
 
 class PuzzleBaseDataEditor(gui.generated.PuzzleBaseDataEditor):

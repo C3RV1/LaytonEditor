@@ -120,5 +120,5 @@ class MainEditor(generated.MainEditor):
         if self.rom is None:
             return
         print("Still not fully implemented.")
-        return 
+        return
         EventEditor2(self, self.rom).Show(True)

@@ -5,6 +5,7 @@ from typing import Optional
 import formats.filesystem
 import formats.gds
 import formats.graphics.bg
+import formats.dlz
 
 
 class PuzzleData:
@@ -115,6 +116,7 @@ class PuzzleData:
         dat_file = dat_files.files[index]
         self.load(dat_file)
         self.load_bg_from_rom()
+
         return True
 
     def load_bg_from_rom(self):
@@ -194,6 +196,14 @@ class PuzzleData:
         dat_files, dat_index = self.get_dat_file(self.rom)
         dat_files.files[dat_index] = self.export_data()
         dat_files.save()
+
+        nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/en/nz_lst.dlz", rom=self.rom)
+        nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
+        for item in nazo_list:
+            if item[0] == self.internal_id:
+                item[2] = self.pad_with_0(self.title, 0x30)
+        nz_lst_dlz.pack("<hh48sh", nazo_list)
+        nz_lst_dlz.save()
 
     @staticmethod
     def pad_with_0(b, length):

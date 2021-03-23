@@ -12,6 +12,7 @@ from formats.place import Place
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
 from gui import generated
 from gui.place_editor import PlaceEditor
+from gui.puzzle_base_data_editor import PuzzleEditor
 
 
 class ClipBoardFile:
@@ -465,6 +466,18 @@ class FilesystemEditor(generated.FilesystemEditor):
         page = PlaceEditor(editor_window.le_editor_pages, name=f"Place {index}")
         page.load_place(self.rom, index)
         editor_window.le_editor_pages.AddPage(page, f"Place {index}")
+        self.exit()
+        editor_window.le_editor_pages.ChangeSelection(editor_window.le_editor_pages.GetPageIndex(page))
+        page.enter()
+
+    def fp_puzzle_edit_clicked(self, event):
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        finds = re.findall("n([0-9]+).dat", path)
+        index = finds[0][0]
+        editor_window = self.GetGrandParent()
+        page = PuzzleEditor(editor_window.le_editor_pages, name=f"Puzzle {index}")
+        page.load_puzzle(self.rom, index)
+        editor_window.le_editor_pages.AddPage(page, f"Puzzle {index}")
         self.exit()
         editor_window.le_editor_pages.ChangeSelection(editor_window.le_editor_pages.GetPageIndex(page))
         page.enter()

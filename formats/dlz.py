@@ -6,7 +6,7 @@ from formats.filesystem import FileFormat
 
 
 class Dlz(FileFormat):
-    entries = List[bytes]
+    _entries = list[bytes]
 
     _compressed_default = True
 
@@ -20,6 +20,8 @@ class Dlz(FileFormat):
         header_lenght = rdr.read_uint16()
         entry_lenght = rdr.read_uint16()
         rdr.seek(header_lenght)
+
+        self._entries = []
 
         for i in range(n_entries):
             self._entries.append(rdr.read(entry_lenght))
@@ -42,4 +44,4 @@ class Dlz(FileFormat):
         return [struct.unpack(__format, entry) for entry in self._entries]
 
     def pack(self, fmt, data: list):
-        self._entries = [struct.pack(fmt, entry_dat) for entry_dat in data]
+        self._entries = [struct.pack(fmt, *entry_dat) for entry_dat in data]
