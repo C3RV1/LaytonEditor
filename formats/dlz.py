@@ -1,5 +1,5 @@
 import struct
-from typing import BinaryIO, List
+from typing import BinaryIO
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.filesystem import FileFormat
@@ -17,14 +17,14 @@ class Dlz(FileFormat):
             rdr = BinaryReader(stream)
 
         n_entries = rdr.read_uint16()
-        header_lenght = rdr.read_uint16()
-        entry_lenght = rdr.read_uint16()
-        rdr.seek(header_lenght)
+        header_length = rdr.read_uint16()
+        entry_length = rdr.read_uint16()
+        rdr.seek(header_length)
 
         self._entries = []
 
         for i in range(n_entries):
-            self._entries.append(rdr.read(entry_lenght))
+            self._entries.append(rdr.read(entry_length))
 
     def write_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryWriter):

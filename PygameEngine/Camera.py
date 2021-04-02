@@ -56,7 +56,7 @@ class Camera:
             sprite.rect.x -= sprite.rect.w
         if sprite.draw_alignment[1] == self.ALIGNMENT_CENTER:
             sprite.rect.y -= sprite.rect.h // 2
-        elif sprite.draw_alignment[1] == self.ALIGNMENT_BOTTOM:
+        elif sprite.draw_alignment[1] == self.ALIGNMENT_TOP:
             sprite.rect.y -= sprite.rect.h
 
         sprite.rect = self.world_to_screen_rect(sprite.rect, is_world=sprite.is_world, clip=False)
@@ -143,8 +143,8 @@ class Camera:
     # Convert a point in world space to screen space
     def world_to_screen(self, x1, y1, is_world=True):
         if is_world:
-            x1 += self.position[0]
-            y1 += self.position[1]
+            x1 -= self.position[0]
+            y1 -= self.position[1]
         x1 *= self.scale
         y1 *= self.scale
 
@@ -166,8 +166,8 @@ class Camera:
     def world_to_screen_rect(self, rect: pg.Rect, is_world=True, clip=True):
         rect = rect.copy()
         if is_world:
-            rect.x += self.position[0]
-            rect.y += self.position[1]
+            rect.x -= self.position[0]
+            rect.y -= self.position[1]
         rect.x *= self.scale
         rect.y *= self.scale
         rect.w *= self.scale
@@ -226,7 +226,7 @@ class Camera:
         y1 /= self.scale
 
         if is_world:
-            x1 -= self.position[0]
-            y1 -= self.position[1]
+            x1 += self.position[0]
+            y1 += self.position[1]
 
         return x1, y1

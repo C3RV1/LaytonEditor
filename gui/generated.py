@@ -10,7 +10,6 @@
 from gui.previews.gds_stc import GdsSTC
 from gui.previews.scaledimage import ScaledImage
 from gui.previews.placeviewer import PlaceViewer
-from gui.previews.puzzleviewer import PuzzleViewer
 import wx
 import wx.xrc
 import wx.aui
@@ -51,12 +50,6 @@ class MainEditor ( wx.Frame ):
 
 		self.le_menu.Append( self.le_menu_puzzles, u"Puzzles" )
 
-		self.event_menu = wx.Menu()
-		self.event_editor = wx.MenuItem( self.event_menu, wx.ID_ANY, u"Event Editor", wx.EmptyString, wx.ITEM_NORMAL )
-		self.event_menu.Append( self.event_editor )
-
-		self.le_menu.Append( self.event_menu, u"Events" )
-
 		self.SetMenuBar( self.le_menu )
 
 		le_layout = wx.BoxSizer( wx.VERTICAL )
@@ -85,12 +78,12 @@ class MainEditor ( wx.Frame ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.close_window )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_open_OnMenuSelection, id = self.le_menu_file_open.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_save_OnMenuSelection, id = self.le_menu_file_save.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_saveas_OnMenuSelection, id = self.le_menu_file_saveas.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_puzzles_edit_base_data_clicked, id = self.le_menu_puzzles_edit_base_data.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_puzzles_edit_gds_clicked, id = self.le_menu_puzzles_edit_gds.GetId() )
-		self.Bind( wx.EVT_MENU, self.event_editor_clicked, id = self.event_editor.GetId() )
 		self.le_editor_pages.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.le_page_changed )
 		self.le_editor_pages.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGING, self.le_page_changing )
 		self.le_editor_pages.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.le_page_close )
@@ -100,6 +93,9 @@ class MainEditor ( wx.Frame ):
 
 
 	# Virtual event handlers, overide them in your derived class
+	def close_window( self, event ):
+		event.Skip()
+
 	def le_menu_file_open_OnMenuSelection( self, event ):
 		event.Skip()
 
@@ -113,9 +109,6 @@ class MainEditor ( wx.Frame ):
 		event.Skip()
 
 	def le_menu_puzzles_edit_gds_clicked( self, event ):
-		event.Skip()
-
-	def event_editor_clicked( self, event ):
 		event.Skip()
 
 	def le_page_changed( self, event ):
@@ -299,8 +292,52 @@ class FilesystemEditor ( wx.Panel ):
 		self.fp_info.Layout()
 		fp_info_layout.Fit( self.fp_info )
 		self.fp_formats_book.AddPage( self.fp_info, u"a page", False )
-		self.m_panel26 = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.fp_formats_book.AddPage( self.m_panel26, u"a page", False )
+		self.fp_puzzle = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		fp_puzzle_layout = wx.BoxSizer( wx.VERTICAL )
+
+		self.puzzle_scintilla = wx.stc.StyledTextCtrl( self.fp_puzzle, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+		self.puzzle_scintilla.SetUseTabs ( True )
+		self.puzzle_scintilla.SetTabWidth ( 4 )
+		self.puzzle_scintilla.SetIndent ( 4 )
+		self.puzzle_scintilla.SetTabIndents( True )
+		self.puzzle_scintilla.SetBackSpaceUnIndents( True )
+		self.puzzle_scintilla.SetViewEOL( False )
+		self.puzzle_scintilla.SetViewWhiteSpace( False )
+		self.puzzle_scintilla.SetMarginWidth( 2, 0 )
+		self.puzzle_scintilla.SetIndentationGuides( True )
+		self.puzzle_scintilla.SetReadOnly( False );
+		self.puzzle_scintilla.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
+		self.puzzle_scintilla.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
+		self.puzzle_scintilla.SetMarginWidth ( 1, 16)
+		self.puzzle_scintilla.SetMarginSensitive( 1, True )
+		self.puzzle_scintilla.SetProperty ( "fold", "1" )
+		self.puzzle_scintilla.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED );
+		self.puzzle_scintilla.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER );
+		self.puzzle_scintilla.SetMarginWidth( 0, self.puzzle_scintilla.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDER, wx.WHITE)
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.stc.STC_MARK_BOXMINUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.BLACK )
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.WHITE )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERSUB, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEREND, wx.stc.STC_MARK_BOXPLUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEREND, wx.BLACK )
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEREND, wx.WHITE )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.BLACK)
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.WHITE)
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERTAIL, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.SetSelBackground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT ) )
+		self.puzzle_scintilla.SetSelForeground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT ) )
+		fp_puzzle_layout.Add( self.puzzle_scintilla, 1, wx.EXPAND |wx.ALL, 0 )
+
+
+		self.fp_puzzle.SetSizer( fp_puzzle_layout )
+		self.fp_puzzle.Layout()
+		fp_puzzle_layout.Fit( self.fp_puzzle )
+		self.fp_formats_book.AddPage( self.fp_puzzle, u"a page", False )
 
 		fp_layout.Add( self.fp_formats_book, 1, wx.EXPAND, 5 )
 
@@ -670,47 +707,6 @@ class PlaceEditor ( wx.Panel ):
 	def plc_splitOnIdle( self, event ):
 		self.plc_split.SetSashPosition( 0 )
 		self.plc_split.Unbind( wx.EVT_IDLE )
-
-
-###########################################################################
-## Class PuzzleEditor
-###########################################################################
-
-class PuzzleEditor ( wx.Panel ):
-
-	def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 900,600 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
-		wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
-
-		pz_layout = wx.BoxSizer( wx.VERTICAL )
-
-		self.pz_split = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
-		self.pz_split.Bind( wx.EVT_IDLE, self.pz_splitOnIdle )
-
-		self.pz_preview = PuzzleViewer( self.pz_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.pz_data = wx.Panel( self.pz_split, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		pz_data_layout = wx.BoxSizer( wx.VERTICAL )
-
-		self.pz_data_grid = pg.PropertyGrid(self.pz_data, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PG_DEFAULT_STYLE)
-		self.m_propertyGridItem2 = self.pz_data_grid.Append( pg.StringProperty( u"Name", u"Name" ) )
-		pz_data_layout.Add( self.pz_data_grid, 1, wx.ALL|wx.EXPAND, 5 )
-
-
-		self.pz_data.SetSizer( pz_data_layout )
-		self.pz_data.Layout()
-		pz_data_layout.Fit( self.pz_data )
-		self.pz_split.SplitVertically( self.pz_preview, self.pz_data, 0 )
-		pz_layout.Add( self.pz_split, 1, wx.EXPAND, 5 )
-
-
-		self.SetSizer( pz_layout )
-		self.Layout()
-
-	def __del__( self ):
-		pass
-
-	def pz_splitOnIdle( self, event ):
-		self.pz_split.SetSashPosition( 0 )
-		self.pz_split.Unbind( wx.EVT_IDLE )
 
 
 ###########################################################################
@@ -1437,79 +1433,6 @@ class PuzzleGeneralEditor ( wx.Frame ):
 		event.Skip()
 
 	def OnParamSetNum( self, event ):
-		event.Skip()
-
-
-###########################################################################
-## Class EventEditor
-###########################################################################
-
-class EventEditor ( wx.Frame ):
-
-	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 405,449 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
-
-		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
-		self.SetBackgroundColour( wx.Colour( 224, 224, 224 ) )
-
-		bSizer64 = wx.BoxSizer( wx.VERTICAL )
-
-		bSizer65 = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.event_id_lbl = wx.StaticText( self, wx.ID_ANY, u"Event ID:", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
-		self.event_id_lbl.Wrap( -1 )
-
-		bSizer65.Add( self.event_id_lbl, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.event_id_inp = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer65.Add( self.event_id_inp, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-		self.load_event_btn = wx.Button( self, wx.ID_ANY, u"Load", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer65.Add( self.load_event_btn, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-
-
-		bSizer64.Add( bSizer65, 0, wx.EXPAND, 5 )
-
-		bSizer66 = wx.BoxSizer( wx.HORIZONTAL )
-
-		m_listBox2Choices = []
-		self.m_listBox2 = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), m_listBox2Choices, 0 )
-		bSizer66.Add( self.m_listBox2, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-		bSizer64.Add( bSizer66, 1, wx.EXPAND, 5 )
-
-		bSizer67 = wx.BoxSizer( wx.VERTICAL )
-
-		self.m_button22 = wx.Button( self, wx.ID_ANY, u"Play", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer67.Add( self.m_button22, 0, wx.ALL, 5 )
-
-
-		bSizer64.Add( bSizer67, 1, wx.EXPAND, 5 )
-
-
-		self.SetSizer( bSizer64 )
-		self.Layout()
-
-		self.Centre( wx.BOTH )
-
-		# Connect Events
-		self.Bind( wx.EVT_CLOSE, self.EndPreviewer )
-		self.Bind( wx.EVT_SHOW, self.StartPreviewer )
-		self.load_event_btn.Bind( wx.EVT_BUTTON, self.OnBtnLoadEvent )
-
-	def __del__( self ):
-		pass
-
-
-	# Virtual event handlers, overide them in your derived class
-	def EndPreviewer( self, event ):
-		event.Skip()
-
-	def StartPreviewer( self, event ):
-		event.Skip()
-
-	def OnBtnLoadEvent( self, event ):
 		event.Skip()
 
 

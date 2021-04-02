@@ -11,6 +11,7 @@ import pygame_utils.SADLStreamPlayer
 from pygame_utils.rom.rom_extract import load_effect
 
 from .abstracts.EventDialogueAbstract import EventDialogueAbstract
+from utility.replace_substitutions import replace_substitutions
 
 
 class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Sprite,
@@ -19,7 +20,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SoundPlayer):
         PygameEngine.UI.UIElement.UIElement.__init__(self)
-        PygameEngine.Sprite.Sprite.__init__(self, [])
+        PygameEngine.Sprite.Sprite.__init__(self, ())
         EventDialogueAbstract.__init__(self)
         self.gm = PygameEngine.GameManager.GameManager()
 
@@ -30,9 +31,9 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.interact = self._interact
         self.inner_text = None
 
-        self.char_name = PygameEngine.Sprite.Sprite([])
+        self.char_name = PygameEngine.Sprite.Sprite(())
         self.char_name.layer = 101
-        self.char_name.draw_alignment = [self.ALIGNMENT_RIGHT, self.ALIGNMENT_TOP]
+        self.char_name.draw_alignment = [self.ALIGNMENT_RIGHT, self.ALIGNMENT_BOTTOM]
 
         self.inp = PygameEngine.Input.Input()
 
@@ -79,7 +80,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             self.character_talking.set_anim(chr_anim)
         self.text_left_to_do = text
         # self.text_left_to_do = "I can change the #rcolor@B Also continue next line#x."
-        self.replace_substitutions()
+        self.text_left_to_do = replace_substitutions(self.text_left_to_do)
         self.voice_line = voice
         self.on_dialogue = True
         self.show()
@@ -105,13 +106,13 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def init_position(self):
         # Init dialogue positions
-        self.inner_text = PygameEngine.UI.Text.Text([])
+        self.inner_text = PygameEngine.UI.Text.Text(())
         self.inner_text.layer = 120
         self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True, line_spacing=2,
                                  letter_spacing=1)
         self.inner_text.world_rect.x = (- 256 // 2) + 10
         self.inner_text.world_rect.y = self.world_rect.y - self.world_rect.h + 20
-        self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_TOP]
+        self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_BOTTOM]
         self.char_name.world_rect.y = self.world_rect.y - self.world_rect.h
         self.char_name.world_rect.x = - 256 // 2
 
@@ -209,23 +210,6 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.paused = False
         if not self.finished:
             self.set_talking()
-
-    # The game uses some substitutions to represent certain characters
-    # For example: <''> corresponds to a "
-    # This function 'fixes' this substitutions
-    def replace_substitutions(self):
-        subs_dict = {"<''>": "\"",
-                     "<^?>": "¿",
-                     "<'e>": "é",
-                     "<'a>": "á",
-                     "<'o>": "ó",
-                     "<'i>": "í",
-                     "<'u>": "ú",
-                     "<^!>": "¡",
-                     "<-n>": "ñ",
-                     "@B": "\n"}
-        for key, sub in subs_dict.items():
-            self.text_left_to_do = self.text_left_to_do.replace(key, sub)
 
     @property
     def finished(self):

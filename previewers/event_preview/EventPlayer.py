@@ -16,15 +16,13 @@ from .EventWaiter import EventWaiter
 
 
 class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
-    def __init__(self, event_id):
+    def __init__(self, event_id=None):
         super(EventPlayer, self).__init__()
         self.event_id = event_id
 
         self.inp = PygameEngine.Input.Input()
 
         self.event_data = evdat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
-        self.event_data.set_event_id(self.event_id)
-        self.event_data.load_from_rom()
 
         self.top_bg = EventBG(self.top_screen_group, "top")
         self.btm_bg = EventBG(self.bottom_screen_group, "bottom")
@@ -42,7 +40,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.dialogue: EventDialogue = EventDialogue(self.bottom_screen_group, self.voice_player)
         self.dialogue.layer = 100
-        self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_BOTTOM
+        self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_TOP
         self.dialogue.world_rect.y += 192 // 2
         self.ui_manager.add(self.dialogue)
 
@@ -64,6 +62,22 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.event_data.load_from_rom()
 
     def load(self, skip_fade_in=False):
+        super().load()
+        self.reset()
+
+        self.top_bg.add(self.top_screen_group)
+        self.top_bg.load()
+        self.btm_bg.add(self.bottom_screen_group)
+        self.btm_bg.load()
+        self.top_screen_group.add([])
+        for character in self.characters:
+            self.bottom_screen_group.add(character)
+
+        if self.event_id is None:
+            raise ValueError("event_id can't be none")
+        self.event_data.set_event_id(self.event_id)
+        self.event_data.load_from_rom()
+
         while len(self.characters) < 6:
             self.characters.append(EventCharacter(self.bottom_screen_group))
 
@@ -73,6 +87,15 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
                                           dialogue=self.dialogue)
         load_animation(f"data_lt2/ani/event/twindow.arc", self.dialogue)
         self.dialogue.init_position()
+        self.run_gds_command()
+
+    def unload(self):
+        super(EventPlayer, self).unload()
+        self.top_bg.unload()
+        self.btm_bg.unload()
+        for character in self.characters:
+            character.unload()
+        self.dialogue.unload()
 
     def update(self):
         super().update()

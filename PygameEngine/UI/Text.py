@@ -1,5 +1,6 @@
 from ..Sprite import Sprite
 from .FontMap import FontMap
+from ..Debug import Debug
 import pygame as pg
 import os
 
@@ -12,7 +13,7 @@ class Text(Sprite):
         self.__font = None
         self.__current_text = None
         self.__color = pg.Color(255, 255, 255)
-        self.__bg_color = pg.Color(240, 240, 240)
+        self.__bg_color = pg.Color(0, 0, 0)
         self.__mask_color = pg.Color(0, 0, 0)
         self.__antialiasing = False
 
@@ -35,6 +36,7 @@ class Text(Sprite):
                 self.__font = FontMap(font_path, size[0], size[1], letter_spacing=letter_spacing,
                                       line_spacing=line_spacing)
             else:
+                Debug.log_warning(f"FontMap {font_path} not found", self)
                 self.__font = pg.font.Font(None, 16)
         self.text = ""
 

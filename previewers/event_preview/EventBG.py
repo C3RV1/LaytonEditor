@@ -9,14 +9,12 @@ import pygame as pg
 class EventBG(EventBGAbstract):
     def __init__(self, groups, name="unnamed"):
         super().__init__()
-        self.bg = ScreenShaker([])
+        self.bg = ScreenShaker(())
         self.bg.layer = -1000
-        self.fader = ScreenFader([])
+        self.fader = ScreenFader(())
         self.fader.layer = 1000
-        self.translucent = PygameEngine.Sprite.Sprite([])
+        self.translucent = PygameEngine.Sprite.Sprite(())
         self.translucent.layer = -100
-        self.translucent.original_image = pg.Surface([256, 192])
-        self.translucent.original_image.fill(pg.Color(0, 0, 0))
 
         self.bg.add(groups)
         self.fader.add(groups)
@@ -25,7 +23,7 @@ class EventBG(EventBGAbstract):
         self.name = name
 
     def fade(self, fade_type, fade_time, instant):
-        self.fader.set_fade(fade_type, False)
+        self.fader.set_fade(fade_type, False, instant_time=instant)
         if fade_time is not None:
             self.fader.current_time = fade_time / ORIGINAL_FPS
         if instant:
@@ -62,6 +60,16 @@ class EventBG(EventBGAbstract):
         self.bg.kill()
         self.fader.kill()
         self.translucent.kill()
+
+    def load(self):
+        self.fader.load_fader()
+        self.translucent.original_image = pg.Surface([256, 192])
+        self.translucent.original_image.fill(pg.Color(0, 0, 0))
+
+    def unload(self):
+        self.bg.unload()
+        self.fader.unload()
+        self.translucent.unload()
 
     def update_(self):
         self.fader.update_()

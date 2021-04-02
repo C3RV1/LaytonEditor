@@ -15,7 +15,8 @@ class Renderer:
         self.blank_surface.fill(pg.Color(40, 40, 40))
 
         self.running = True
-        self.first_clear = False
+        self.just_loaded = False
+        self.loaded = False
 
     def run(self):
         dirties = []
@@ -44,7 +45,8 @@ class Renderer:
         return []
 
     def load(self):
-        pass
+        self.loaded = True
+        self.just_loaded = True
 
     def unload(self):
-        pass
+        self.loaded = False

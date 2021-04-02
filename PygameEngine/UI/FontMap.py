@@ -48,16 +48,17 @@ class FontMap:
             }
 
     def get_str_size(self, text):
-        width = 0
+        width = [0]
         height = self.tile_height
         for letter in text:
             if letter == "\n".encode(self.encoding)[0]:
                 height += self.tile_height + self.line_spacing
+                width.append(0)
                 continue
             if letter not in self.char_dict:
                 continue
-            width += self.char_dict[letter]["width"] + self.letter_spacing
-        return width, height
+            width[-1] += self.char_dict[letter]["width"] + self.letter_spacing
+        return max(width), height
 
     def render(self, text, color=pg.Color(255, 255, 255), bg_color=pg.Color(0, 0, 0)):
         text_encoded = list(text.encode(self.encoding))

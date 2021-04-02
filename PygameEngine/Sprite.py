@@ -137,11 +137,11 @@ class Sprite(pg.sprite.DirtySprite):
             if scale_axis == 0:
                 scale_ratio = size[scale_axis] / self.world_rect.w
                 self.world_rect.w = size[scale_axis]
-                self.world_rect.h = int(round(scale_ratio) * self.world_rect.h)
+                self.world_rect.h = int(scale_ratio * self.world_rect.h)
             else:
                 scale_ratio = size[scale_axis] / self.world_rect.h
                 self.world_rect.h = size[scale_axis]
-                self.world_rect.w = int(round(scale_ratio) * self.world_rect.w)
+                self.world_rect.w = int(scale_ratio * self.world_rect.w)
         else:
             self.world_rect.w = size[0]
             self.world_rect.h = size[1]
@@ -233,8 +233,9 @@ class Sprite(pg.sprite.DirtySprite):
         self.world_rect.w = self.image.get_rect().w / self.cam_scale
         self.world_rect.h = self.image.get_rect().h / self.cam_scale
 
-        self.image.set_colorkey(self.__color_key)
-        self.image.set_alpha(self.__alpha)
+        if not self.image.get_flags() & pg.SRCALPHA:
+            self.image.set_colorkey(self.__color_key)
+            self.image.set_alpha(self.__alpha)
 
         self.dirty = 1
 

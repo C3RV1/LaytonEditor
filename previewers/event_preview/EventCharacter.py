@@ -23,7 +23,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         PygameEngine.Animation.Animation.__init__(self, groups)
         EventCharacterAbstract.__init__(self)
         self.orientation = EventCharacter.FACING_RIGHT
-        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_BOTTOM
+        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
         self.world_rect.y += 192 // 2
         self.slot = 0
         self.character_mouth = PygameEngine.Animation.Animation([])
@@ -74,7 +74,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
 
             self.character_mouth.world_rect.x = self.world_rect.x + mouth_offset[0]
             self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h + mouth_offset[1]
-            self.character_mouth.draw_alignment[1] = self.ALIGNMENT_TOP
+            self.character_mouth.draw_alignment[1] = self.ALIGNMENT_BOTTOM
             self.character_mouth.set_tag_by_num(self.current_tag["child_index"])
             if self.current_tag["child_index"] == 0:
                 self.character_mouth.kill()

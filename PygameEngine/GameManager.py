@@ -4,6 +4,7 @@ import time
 from .Debug import Debug
 from .Screen import Screen
 from .Input import Input
+import os
 
 
 class GameManager(object):
@@ -19,8 +20,11 @@ class GameManager(object):
     def __del__(self):
         self.exit()
 
-    def __init__(self, screen_size=None, full_screen=True, log_fps=False, fps_limit=60, name="Default Name"):
+    def __init__(self, screen_size=None, full_screen=True, log_fps=False, fps_limit=60, name="Default Name",
+                 screen_pos=None):
         if not GameManager.__inited or not self.running:
+            if screen_pos is not None:
+                os.environ["SDL_VIDEO_WINDOW_POS"] = f"{screen_pos[0]},{screen_pos[1]}"
             pygame.init()
             pygame.mixer.init()
 

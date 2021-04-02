@@ -8,12 +8,10 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
     FADING_IN = 2
 
     def __init__(self, groups):
-        super().__init__([])
+        super().__init__(())
         self.layer = 1000
         self.add(groups)
         self.gm = PygameEngine.GameManager.GameManager()
-        self.original_image = pg.Surface([256, 192])
-        self.original_image.fill(pg.Color(0, 0, 0))
         self.alpha = 0
         self.fade = self.FADING_OUT
         self.fading = False
@@ -23,6 +21,10 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
         self.run_on_finish_fade = True
 
         self.max_fade = 255
+
+    def load_fader(self):
+        self.original_image = pg.Surface([256, 192])
+        self.original_image.fill(pg.Color(0, 0, 0))
 
     def update_(self):
         if self.fading:
@@ -34,7 +36,8 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
             self.on_finish_fade(self.fade)
 
     def fade_in(self, run_fade_finish, instant_time=False):
-        if self.fade == self.FADING_IN or instant_time:
+        # if self.fade == self.FADING_IN or instant_time:
+        if instant_time:
             self.current_time = 0
         else:
             self.current_time = self.fade_time
@@ -43,7 +46,8 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
         self.run_on_finish_fade = run_fade_finish
 
     def fade_out(self, run_fade_finish, instant_time=False):
-        if self.fade == self.FADING_OUT or instant_time:
+        # if self.fade == self.FADING_OUT or instant_time:
+        if instant_time:
             self.current_time = 0
         else:
             self.current_time = self.fade_time
@@ -51,8 +55,8 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
         self.fading = True
         self.run_on_finish_fade = run_fade_finish
 
-    def set_fade(self, fade, run_fade_finish):
-        if self.fade == fade:
+    def set_fade(self, fade, run_fade_finish, instant_time=False):
+        if instant_time:
             self.current_time = 0
         else:
             self.current_time = self.fade_time

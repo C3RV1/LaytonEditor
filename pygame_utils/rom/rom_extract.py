@@ -23,6 +23,10 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
     path = path.replace("?", LANG)
     path = set_extension(path, ".arc")
     export_path = EXPORT_PATH + "/" + path
+    if not rom.filenames.idOf(path):
+        print(f"Warning: could not load {path}")
+        sprite.original_image = pg.Surface((10, 10))
+        return
     if not os.path.isfile(export_path + ".png"):
         os.makedirs(os.path.dirname(export_path), exist_ok=True)
         anim = ani.AniSprite(filename=path, rom=rom)
@@ -51,7 +55,7 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
                 "duration": None
             }
             sprite_info["frames"].append(new_frame_info)
-            x_pos += pil_images[0].size[0]
+            x_pos += pil_images[i].size[0]
 
         for i in range(len(anim.animations)):
             anim_anim: ani.Animation = anim.animations[i]
@@ -80,6 +84,10 @@ def load_bg(path: str, sprite: PygameEngine.Sprite.Sprite):
     path = path.replace("?", LANG)
     path = set_extension(path, ".arc")
     export_path = EXPORT_PATH + "/" + path + ".png"
+    if not rom.filenames.idOf(path):
+        print(f"Warning: could not load {path}")
+        sprite.original_image = pg.Surface((10, 10))
+        return
     if not os.path.isfile(export_path):
         os.makedirs(os.path.dirname(export_path), exist_ok=True)
         bg_img = bg.BGImage(filename=path, rom=rom)
