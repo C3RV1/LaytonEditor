@@ -1,4 +1,4 @@
-import formats.event_data as evdat
+import formats.event_data as ev_dat
 import PygameEngine.GameManager
 import PygameEngine.Input
 import PygameEngine.Sprite
@@ -22,7 +22,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.inp = PygameEngine.Input.Input()
 
-        self.event_data = evdat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+        self.event_data = ev_dat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
 
         self.top_bg = EventBG(self.top_screen_group, "top")
         self.btm_bg = EventBG(self.bottom_screen_group, "bottom")
@@ -35,8 +35,6 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.sound_player = EventSound()
         self.voice_player = pygame_utils.SADLStreamPlayer.SoundPlayer()
         self.next_voice = -1
-
-        self.ui_manager = PygameEngine.UI.UIManager.UIManager()
 
         self.dialogue: EventDialogue = EventDialogue(self.bottom_screen_group, self.voice_player)
         self.dialogue.layer = 100

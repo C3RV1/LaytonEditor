@@ -2,6 +2,7 @@ import pygame as pg
 from .GameManager import GameManager
 from .Input import Input
 from .Screen import Screen
+from .UI.UIManager import UIManager
 
 
 class Renderer:
@@ -10,6 +11,8 @@ class Renderer:
         self.screen = Screen.screen()
         self.screen_size = Screen.screen_size()
         self.inp = Input()
+
+        self.ui_manager = UIManager()
 
         self.blank_surface = pg.Surface(Screen.screen_size())
         self.blank_surface.fill(pg.Color(40, 40, 40))
