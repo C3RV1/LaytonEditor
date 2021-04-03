@@ -22,6 +22,7 @@ class PreviewerDefaultRenderer(TwoScreenRenderer):
         self.tth_logo.scale([128, 128], conserve_aspect_ratio=True)
         self.previewer_text.set_font("data_permanent/fonts/fontq.png", [7, 10], is_font_map=True)
         self.previewer_text.text = "Game Previewer"
+        self.previewer_text.color = (240, 240, 240)
 
     def unload(self):
         super(PreviewerDefaultRenderer, self).unload()

@@ -7,6 +7,7 @@ import os
 
 class Text(Sprite):
     FONTS = {}
+    DEFAULT_FONTMAP = ["data_permanent/font_default.png", [7, 10], 1, 2]
 
     def __init__(self, groups):
         super(Text, self).__init__(groups)
@@ -35,8 +36,12 @@ class Text(Sprite):
             if FontMap.exists_font_map(font_path):
                 self.__font = FontMap(font_path, size[0], size[1], letter_spacing=letter_spacing,
                                       line_spacing=line_spacing)
+            elif FontMap.exists_font_map(Text.DEFAULT_FONTMAP[0]):
+                Debug.log_warning(f"Font {font_path} not found, loading default font {Text.DEFAULT_FONTMAP[0]}", self)
+                self.__font = FontMap(Text.DEFAULT_FONTMAP[0], Text.DEFAULT_FONTMAP[1][0], Text.DEFAULT_FONTMAP[1][1],
+                                      letter_spacing=Text.DEFAULT_FONTMAP[2], line_spacing=Text.DEFAULT_FONTMAP[3])
             else:
-                Debug.log_warning(f"FontMap {font_path} not found", self)
+                Debug.log_warning(f"FontMap {font_path} not found, loading system default", self)
                 self.__font = pg.font.Font(None, 16)
         self.text = ""
 
