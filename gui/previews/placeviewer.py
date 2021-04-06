@@ -5,10 +5,10 @@ from formats.graphics.bg import BGImage
 from formats.graphics.ani import AniSprite
 
 
-def scale_wx_bitmap(bitmap, width, height):
+def scale_wx_bitmap(bitmap, width, height, scale_mode=wx.IMAGE_QUALITY_HIGH):
     # TODO: Optimize usage to store Image instead of bitmap
     image = wx.ImageFromBitmap(bitmap)
-    image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
+    image = image.Scale(width, height, scale_mode)
     result = wx.BitmapFromImage(image)
     return result
 

@@ -1,4 +1,5 @@
 import wx
+import wx.propgrid
 
 import formats.puzzles.puzzle_data as pzd
 import gui.generated

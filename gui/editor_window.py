@@ -10,6 +10,8 @@ from gui.filesystem_editor import FilesystemEditor
 from gui.puzzle_base_data_editor import PuzzleBaseDataEditor
 from gui.puzzle_general_editor import PuzzleGeneralEditor
 from gui.sprite_editor import SpriteEditor
+from gui.PygamePreviewer import PygamePreviewer
+from pygame_utils.rom.RomSingleton import RomSingleton
 
 
 class MainEditor(generated.MainEditor):
@@ -17,6 +19,8 @@ class MainEditor(generated.MainEditor):
     rom_last_filename: str = ""
 
     def __init__(self, *args, **kwargs):
+        self.pygame_previewer = PygamePreviewer()
+        self.pygame_previewer.start()
         super().__init__(*args, **kwargs)
 
     # Helper functions
@@ -32,6 +36,8 @@ class MainEditor(generated.MainEditor):
             self.rom = NintendoDSRom(rom.save())
         elif isinstance(rom, NintendoDSRom):
             self.rom = rom
+
+        RomSingleton(rom=self.rom)
 
         # Only open the main filesystem page.
         self.le_editor_pages.DeleteAllPages()
@@ -114,3 +120,9 @@ class MainEditor(generated.MainEditor):
         if self.rom is None:
             return
         PuzzleBaseDataEditor(self).Show(True)
+
+    def close_window(self, event):
+        self.pygame_previewer.loop_lock.acquire()
+        self.pygame_previewer.gm.exit()
+        self.pygame_previewer.loop_lock.release()
+        self.Destroy()

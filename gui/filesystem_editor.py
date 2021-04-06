@@ -13,6 +13,10 @@ from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
 from gui import generated
 from gui.place_editor import PlaceEditor
 
+from gui.PygamePreviewer import PygamePreviewer
+from previewers.event_preview.EventPlayer import EventPlayer
+from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
+
 
 class ClipBoardFile:
     def __init__(self, name: str, raw: bytes):
@@ -132,6 +136,10 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_soundbank_menu, "Play Selected", self.fp_samplebank_play_clicked)
 
+        self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
+        self.event_previewer = EventPlayer()
+        self.puzzle_previewer = PuzzlePlayer()
+
     def set_folder_and_rom(self, folder: Folder, rom: NintendoDSRom):
         self.base_folder = folder
         self.rom = rom
@@ -154,6 +162,7 @@ class FilesystemEditor(generated.FilesystemEditor):
     def refresh_preview(self):
         if not self.ft_filetree.GetSelections():
             return
+        self.pygame_previewer.stop_renderer()
 
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         for menu_title in self.fp_menus_loaded:
@@ -215,10 +224,18 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.preview_data = (name, archive)
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
+        elif res := re.search("^n([0-9]+).dat", name):
+            print(f"Loading Puzzle {res.group(1)}")
+            self.puzzle_previewer.puzzle_id = int(res.group(1))
+            self.pygame_previewer.start_renderer(self.puzzle_previewer)
+            self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
+            self.fp_formats_book.SetSelection(8)
         elif name.endswith(".gds"):
             gds = GDS(name, rom=archive)
             if name.startswith("e"):
                 index = int(name[1:7])
+                self.event_previewer.set_event_id(index)
+                self.pygame_previewer.start_renderer(self.event_previewer)
                 self.fp_gds_stc.load_gds(gds, index, self.rom)
             else:
                 self.fp_gds_stc.load_gds(gds)

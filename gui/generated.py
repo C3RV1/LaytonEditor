@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version 3.9.0 Jan 11 2021)
+## Python code generated with wxFormBuilder (version 3.9.0 Mar 23 2021)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -78,6 +78,7 @@ class MainEditor ( wx.Frame ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.close_window )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_open_OnMenuSelection, id = self.le_menu_file_open.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_save_OnMenuSelection, id = self.le_menu_file_save.GetId() )
 		self.Bind( wx.EVT_MENU, self.le_menu_file_saveas_OnMenuSelection, id = self.le_menu_file_saveas.GetId() )
@@ -92,6 +93,9 @@ class MainEditor ( wx.Frame ):
 
 
 	# Virtual event handlers, overide them in your derived class
+	def close_window( self, event ):
+		event.Skip()
+
 	def le_menu_file_open_OnMenuSelection( self, event ):
 		event.Skip()
 
@@ -288,8 +292,52 @@ class FilesystemEditor ( wx.Panel ):
 		self.fp_info.Layout()
 		fp_info_layout.Fit( self.fp_info )
 		self.fp_formats_book.AddPage( self.fp_info, u"a page", False )
-		self.m_panel26 = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.fp_formats_book.AddPage( self.m_panel26, u"a page", False )
+		self.fp_puzzle = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		fp_puzzle_layout = wx.BoxSizer( wx.VERTICAL )
+
+		self.puzzle_scintilla = wx.stc.StyledTextCtrl( self.fp_puzzle, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+		self.puzzle_scintilla.SetUseTabs ( True )
+		self.puzzle_scintilla.SetTabWidth ( 4 )
+		self.puzzle_scintilla.SetIndent ( 4 )
+		self.puzzle_scintilla.SetTabIndents( True )
+		self.puzzle_scintilla.SetBackSpaceUnIndents( True )
+		self.puzzle_scintilla.SetViewEOL( False )
+		self.puzzle_scintilla.SetViewWhiteSpace( False )
+		self.puzzle_scintilla.SetMarginWidth( 2, 0 )
+		self.puzzle_scintilla.SetIndentationGuides( True )
+		self.puzzle_scintilla.SetReadOnly( False );
+		self.puzzle_scintilla.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
+		self.puzzle_scintilla.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
+		self.puzzle_scintilla.SetMarginWidth ( 1, 16)
+		self.puzzle_scintilla.SetMarginSensitive( 1, True )
+		self.puzzle_scintilla.SetProperty ( "fold", "1" )
+		self.puzzle_scintilla.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED );
+		self.puzzle_scintilla.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER );
+		self.puzzle_scintilla.SetMarginWidth( 0, self.puzzle_scintilla.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDER, wx.WHITE)
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.stc.STC_MARK_BOXMINUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.BLACK )
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.WHITE )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERSUB, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEREND, wx.stc.STC_MARK_BOXPLUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEREND, wx.BLACK )
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEREND, wx.WHITE )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUS )
+		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.BLACK)
+		self.puzzle_scintilla.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.WHITE)
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERTAIL, wx.stc.STC_MARK_EMPTY )
+		self.puzzle_scintilla.SetSelBackground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT ) )
+		self.puzzle_scintilla.SetSelForeground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT ) )
+		fp_puzzle_layout.Add( self.puzzle_scintilla, 1, wx.EXPAND |wx.ALL, 0 )
+
+
+		self.fp_puzzle.SetSizer( fp_puzzle_layout )
+		self.fp_puzzle.Layout()
+		fp_puzzle_layout.Fit( self.fp_puzzle )
+		self.fp_formats_book.AddPage( self.fp_puzzle, u"a page", False )
 
 		fp_layout.Add( self.fp_formats_book, 1, wx.EXPAND, 5 )
 
@@ -440,15 +488,15 @@ class SpriteEditor ( wx.Panel ):
 		ase_variables_layout = wx.BoxSizer( wx.VERTICAL )
 
 		self.ase_variables_dataview = wx.dataview.DataViewListCtrl( self.ase_page_variables, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
 		ase_variables_layout.Add( self.ase_variables_dataview, 1, wx.ALL|wx.EXPAND, 5 )
 
 

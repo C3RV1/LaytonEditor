@@ -135,11 +135,11 @@ class AniSprite(FileFormat):
         self.variables = {variable_labels[i]: variable_data[i] for i in range(16)}
 
         for anim in self.animations:
-            anim.child_image_x = rdr.read_int16()
+            anim.child_image_x = rdr.read_uint16()
         for anim in self.animations:
-            anim.child_image_y = rdr.read_int16()
+            anim.child_image_y = rdr.read_uint16()
         for anim in self.animations:
-            anim.child_spr_index = rdr.read_uint8()
+            anim.child_image_animation_index = rdr.read_uint8()
 
         self.child_image = rdr.read_string(128)
 
@@ -227,9 +227,9 @@ class AniSprite(FileFormat):
                 wtr.write_uint16(self.variables[var_l][dat_i])
 
         for anim in self.animations:
-            wtr.write_int16(anim.child_image_x)
+            wtr.write_uint16(anim.child_image_x)
         for anim in self.animations:
-            wtr.write_int16(anim.child_image_y)
+            wtr.write_uint16(anim.child_image_y)
         for anim in self.animations:
             wtr.write_uint8(anim.child_image_animation_index)
 
