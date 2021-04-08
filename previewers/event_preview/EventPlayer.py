@@ -24,8 +24,8 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.event_data = ev_dat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
 
-        self.top_bg = EventBG(self.top_screen_group, "top")
-        self.btm_bg = EventBG(self.bottom_screen_group, "bottom")
+        self.top_bg = EventBG(self.top_group, "top")
+        self.btm_bg = EventBG(self.btm_group, "bottom")
 
         self.characters = []
 
@@ -36,7 +36,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.voice_player = pygame_utils.SADLStreamPlayer.SoundPlayer()
         self.next_voice = -1
 
-        self.dialogue: EventDialogue = EventDialogue(self.bottom_screen_group, self.voice_player)
+        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player)
         self.dialogue.layer = 100
         self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_TOP
         self.dialogue.world_rect.y += 192 // 2
@@ -63,13 +63,13 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         super().load()
         self.reset()
 
-        self.top_bg.add(self.top_screen_group)
+        self.top_bg.add(self.top_group)
         self.top_bg.load()
-        self.btm_bg.add(self.bottom_screen_group)
+        self.btm_bg.add(self.btm_group)
         self.btm_bg.load()
-        self.top_screen_group.add([])
+        self.top_group.add([])
         for character in self.characters:
-            self.bottom_screen_group.add(character)
+            self.btm_group.add(character)
 
         if self.event_id is None:
             raise ValueError("event_id can't be none")
@@ -77,7 +77,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.event_data.load_from_rom()
 
         while len(self.characters) < 6:
-            self.characters.append(EventCharacter(self.bottom_screen_group))
+            self.characters.append(EventCharacter(self.btm_group))
 
         self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
                                           bg_top=self.top_bg, character_obj=self.characters,

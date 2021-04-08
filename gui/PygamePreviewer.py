@@ -6,6 +6,7 @@ from PygameEngine.UI.Text import Text
 from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
 from typing import Optional
 import pygame as pg
+from pygame_utils.rom.rom_extract import clear_extracted
 
 
 class PreviewerDefaultRenderer(TwoScreenRenderer):
@@ -15,8 +16,8 @@ class PreviewerDefaultRenderer(TwoScreenRenderer):
         self.previewer_text = Text(())
 
     def load(self):
-        self.bottom_screen_group.add([self.tth_logo])
-        self.top_screen_group.add([self.previewer_text])
+        self.btm_group.add([self.tth_logo])
+        self.top_group.add([self.previewer_text])
         super(PreviewerDefaultRenderer, self).load()
         self.tth_logo.load("data_permanent/sprites/team_top_hat_logo.png")
         self.tth_logo.scale([128, 128], conserve_aspect_ratio=True)
@@ -35,6 +36,7 @@ class PygamePreviewer(threading.Thread):
 
     def __init__(self):
         super(PygamePreviewer, self).__init__()
+        clear_extracted()
         self.gm = GameManager(screen_size=[256*TwoScreenRenderer.SCALE, 192*2*TwoScreenRenderer.SCALE],
                               full_screen=False, name="Layton Editor Previewer",
                               screen_pos=[100, 100])

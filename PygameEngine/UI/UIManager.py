@@ -10,14 +10,16 @@ class UIManager:
             for ele in element:
                 self.add(ele)
             return
-        self.current_ui_elements.append(element)
+        if element not in self.current_ui_elements:
+            self.current_ui_elements.append(element)
 
     def remove(self, element):
         if isinstance(element, list):
             for ele in element:
                 self.remove(ele)
             return
-        self.current_ui_elements.remove(element)
+        if element in self.current_ui_elements:
+            self.current_ui_elements.remove(element)
 
     def clear(self):
         self.current_ui_elements = []
@@ -27,12 +29,13 @@ class UIManager:
         for element in self.current_ui_elements:
             if not isinstance(element, UIElement):
                 continue
-            if element.check_interacting is None:
+            if not callable(element.check_interacting):
                 continue
 
             if already_interacted:
+                pre_interact = element.interact
                 element.interacting = False
-                if element.post_interact is not None:
+                if callable(element.post_interact) and pre_interact:
                     element.post_interact()
                 continue
 
@@ -40,13 +43,13 @@ class UIManager:
 
             element.check_interacting()
 
-            if pre_interact and not element.interacting and element.post_interact is not None:
+            if pre_interact and not element.interacting and callable(element.post_interact):
                 element.post_interact()
 
-            if not pre_interact and element.interacting and element.pre_interact is not None:
+            if not pre_interact and element.interacting and callable(element.pre_interact):
                 element.pre_interact()
 
-            if element.interacting and element.interact is not None:
+            if element.interacting and callable(element.interact):
                 already_interacted = True
                 element.interact()
         return already_interacted

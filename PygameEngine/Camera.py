@@ -5,13 +5,13 @@ from .Alignment import Alignment
 
 
 class Camera:
-    ALIGNMENT_TOP = Alignment.ALIGNMENT_TOP
-    ALIGNMENT_CENTER = Alignment.ALIGNMENT_CENTER
-    ALIGNMENT_BOTTOM = Alignment.ALIGNMENT_BOTTOM
-    ALIGNMENT_RIGHT = Alignment.ALIGNMENT_RIGHT
-    ALIGNMENT_LEFT = Alignment.ALIGNMENT_LEFT
+    ALIGNMENT_TOP = Alignment.TOP
+    ALIGNMENT_CENTER = Alignment.CENTER
+    ALIGNMENT_BOTTOM = Alignment.BOTTOM
+    ALIGNMENT_RIGHT = Alignment.RIGHT
+    ALIGNMENT_LEFT = Alignment.LEFT
 
-    def __init__(self, position=(0, 0), cam_alignment=(Alignment.ALIGNMENT_CENTER, Alignment.ALIGNMENT_CENTER),
+    def __init__(self, position=(0, 0), cam_alignment=(Alignment.CENTER, Alignment.CENTER),
                  display_port=None, scale=1):
         self.position = list(position)
         self.cam_alignment = list(cam_alignment)

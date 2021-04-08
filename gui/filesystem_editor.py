@@ -225,7 +225,6 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := re.search("^n([0-9]+).dat", name):
-            print(f"Loading Puzzle {res.group(1)}")
             self.puzzle_previewer.puzzle_id = int(res.group(1))
             self.pygame_previewer.start_renderer(self.puzzle_previewer)
             self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())

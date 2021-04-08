@@ -1,8 +1,8 @@
 
 
 class Alignment:
-    ALIGNMENT_TOP = 0
-    ALIGNMENT_CENTER = 1
-    ALIGNMENT_BOTTOM = 2
-    ALIGNMENT_RIGHT = 0
-    ALIGNMENT_LEFT = 2
+    TOP = 0
+    CENTER = 1
+    BOTTOM = 2
+    RIGHT = 0
+    LEFT = 2
