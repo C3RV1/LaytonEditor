@@ -65,7 +65,7 @@ class PuzzleMain:
         self.correct_ok.world_rect.y = 15
         self.correct_ok.layer = 11
         self.correct_ok.pre_interact = lambda: self.btn_pre_anim(self.correct_ok)
-        self.correct_ok.post_interact = lambda: self.btn_post_anim(self.correct_ok, None)
+        self.correct_ok.post_interact = lambda: self.btn_post_anim(self.correct_ok, self.correct_answer)
         self.correct_ok.time_interact_command = 0.1
 
         self.incorrect_ok = Button(())
@@ -73,7 +73,7 @@ class PuzzleMain:
         self.incorrect_ok.world_rect.y = self.correct_ok.world_rect.y
         self.incorrect_ok.layer = 11
         self.incorrect_ok.pre_interact = lambda: self.btn_pre_anim(self.incorrect_ok)
-        self.incorrect_ok.post_interact = lambda: self.btn_post_anim(self.incorrect_ok, None)
+        self.incorrect_ok.post_interact = lambda: self.btn_post_anim(self.incorrect_ok, self.incorrect_answer)
         self.incorrect_ok.time_interact_command = 0.1
 
         self.back_prize = Button(())
@@ -162,6 +162,7 @@ class PuzzleMain:
     def show_end_dialogue(self):
         self.btm_group.add([self.prize_window, self.correct_ok, self.incorrect_ok, self.back_prize,
                             self.prize_window_text])
+        self.ui_manager.clear()
         self.ui_manager.add([self.correct_ok, self.incorrect_ok, self.back_prize])
         self.correct_ok.set_tag("off")
         self.incorrect_ok.set_tag("off")
@@ -170,7 +171,8 @@ class PuzzleMain:
     def hide_end_dialogue(self):
         self.btm_group.remove([self.prize_window, self.correct_ok, self.incorrect_ok, self.back_prize,
                                self.prize_window_text])
-        self.ui_manager.remove([self.correct_ok, self.incorrect_ok, self.back_prize])
+        self.ui_manager.clear()
+        self.ui_manager.add([self.hints_btn, self.quit_btn, self.memo_btn, self.submit_btn, self.puzzle_elements])
 
     def incorrect_answer(self):
         print("Incorrect")
