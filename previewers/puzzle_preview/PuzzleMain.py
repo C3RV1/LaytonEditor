@@ -4,7 +4,7 @@ from PygameEngine.UI.Text import Text
 from PygameEngine.Sprite import Sprite
 from PygameEngine.UI.UIManager import UIManager
 from pygame_utils.rom.rom_extract import load_animation, load_bg
-from formats.puzzles.puzzle_data import PuzzleData as pzd
+import formats.puzzles.puzzle_data as pzd
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -87,7 +87,7 @@ class PuzzleMain:
         self.puzzle_elements = []
 
     def enter_puzzle(self):
-        load_bg(self.pz_player.puzzle_data.bg_path, self.pz_player.btm_bg)
+        load_bg(self.pz_player.puzzle_data.btm_path, self.pz_player.btm_bg)
         self.pz_player.remove_all_btm()
         self.btm_group.add([self.memo_btn, self.quit_btn, self.hints_btn, self.submit_btn, self.puzzle_elements])
         self.ui_manager.add([self.hints_btn, self.quit_btn, self.memo_btn, self.submit_btn, self.puzzle_elements])
@@ -141,7 +141,7 @@ class PuzzleMain:
 
     def load_gds(self):
         for command in self.pz_player.puzzle_data.gds.commands:
-            if self.pz_player.puzzle_data.type == pzd.MULTIPLE_CHOICE:
+            if self.pz_player.puzzle_data.type == pzd.PuzzleData.MULTIPLE_CHOICE:
                 if command.command == 0x14:
                     new_btn = Button(())
                     new_btn.draw_alignment = [Alignment.RIGHT, Alignment.BOTTOM]

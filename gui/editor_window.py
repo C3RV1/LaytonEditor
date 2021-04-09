@@ -7,8 +7,6 @@ import wx.stc
 from formats.filesystem import NintendoDSRom
 from gui import generated
 from gui.filesystem_editor import FilesystemEditor
-from gui.puzzle_base_data_editor import PuzzleBaseDataEditor
-from gui.puzzle_general_editor import PuzzleGeneralEditor
 from gui.sprite_editor import SpriteEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pygame_utils.rom.RomSingleton import RomSingleton
@@ -110,16 +108,6 @@ class MainEditor(generated.MainEditor):
     def le_page_close(self, event: wx.aui.AuiNotebookEvent):
         page = self.le_editor_pages.GetPage(event.GetOldSelection())
         page.exit()
-
-    def le_menu_puzzles_edit_gds_clicked(self, _event):
-        if self.rom is None:
-            return
-        PuzzleGeneralEditor(self).Show(True)
-
-    def le_menu_puzzles_edit_base_data_clicked(self, _event):
-        if self.rom is None:
-            return
-        PuzzleBaseDataEditor(self).Show(True)
 
     def close_window(self, event):
         self.pygame_previewer.loop_lock.acquire()

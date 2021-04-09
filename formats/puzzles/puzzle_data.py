@@ -11,6 +11,7 @@ import formats.puzzles.puzzle_gds_parser as pz_gds
 
 
 class PuzzleData:
+    coding = "ascii"
     UNUSED_0 = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
@@ -32,7 +33,7 @@ class PuzzleData:
     TILE_ROTATE = 0x12
     UNUSED_13 = 0x13
     UNUSED_14 = 0x14
-    UNACCESSIBLE_172_202 = 0x15
+    PUZZLES_172_202 = 0x15
     INPUT_NUMERIC = 0x16
     AREA = 0x17
     ROSES = 0x18
@@ -43,7 +44,7 @@ class PuzzleData:
     DISAPPEARING_ACT = 0x1D
     JARS_AND_CANS = 0x1E
     LIGHT_THE_WAY = 0x1F
-    UNACCESSIBLE_173 = 0x20
+    PUZZLE_173 = 0x20
     RICKETY_BRIDGE = 0x21
     FIND_SHAPE = 0x22
     INPUT_DATE = 0x23
@@ -63,7 +64,10 @@ class PuzzleData:
         self.type = 0
         self.number = 0
         self.internal_id = 0
-        self.location = 0
+        self.tutorial_id = 0
+        self.location_id = 0
+        self.picarat_decay = [0, 0, 0]
+        self.reward_id = 0
         self.text = b""
         self.correct_answer = b""
         self.incorrect_answer = b""
@@ -71,7 +75,9 @@ class PuzzleData:
         self.hint2 = b""
         self.hint3 = b""
         self.title = b""
-        self.bg = None  # type: Optional[formats.graphics.bg.BGImage]
+
+        self.bg_btm_id = 0
+        self.bg_top_id = 0
 
         self.gds = None  # type: Optional[formats.gds.GDS]
 
@@ -85,7 +91,18 @@ class PuzzleData:
     def load(self, b: bytes):
         self.original = b
 
+        self.number = struct.unpack("<h", b[0x0:0x2])[0]
+        self.title = self.load_str(b, 0x4)
+        self.tutorial_id = b[0x34]
+        for i in range(3):
+            self.picarat_decay[i] = b[0x35 + i]
+        self._flags = b[0x38]
+        self.location_id = b[0x39]
         self.type = b[0x3a]
+        self.bg_btm_id = b[0x3B]
+        self.bg_top_id = b[0x3E]
+        self.reward_id = b[0x3F]
+
         puzzle_text_offset = 0x70 + struct.unpack("<i", b[0x40:0x44])[0]
         self.text = self.load_str(b, puzzle_text_offset)
         puzzle_correct_answer_offset = 0x70 + struct.unpack("<i", b[0x44:0x48])[0]
@@ -98,11 +115,40 @@ class PuzzleData:
         self.hint2 = self.load_str(b, puzzle_hint2_offset)
         puzzle_hint3_offset = 0x70 + struct.unpack("<i", b[0x54:0x58])[0]
         self.hint3 = self.load_str(b, puzzle_hint3_offset)
-        self.title = self.load_str(b, 0x4)
-        self.number = struct.unpack("<h", b[0x0:0x2])[0]
-        self.location = b[0x3e]
 
-        self._flags = b[0x38]
+    def export_data(self):
+        puzzle_text_section = b""
+        puzzle_text_section += self.text + b"\x00"
+        puzzle_correct_offset = len(puzzle_text_section)
+        puzzle_text_section += self.correct_answer + b"\x00"
+        puzzle_incorrect_offset = len(puzzle_text_section)
+        puzzle_text_section += self.incorrect_answer + b"\x00"
+        puzzle_hint1_offset = len(puzzle_text_section)
+        puzzle_text_section += self.hint1 + b"\x00"
+        puzzle_hint2_offset = len(puzzle_text_section)
+        puzzle_text_section += self.hint2 + b"\x00"
+        puzzle_hint3_offset = len(puzzle_text_section)
+        puzzle_text_section += self.hint3 + b"\x00"
+
+        result = struct.pack("<h", self.number)
+        result += struct.pack("<h", 112)
+        result += self.pad_with_0(self.title, 0x30)
+        result += bytes([self.tutorial_id])
+        for picarat in self.picarat_decay:
+            result += bytes([picarat])
+        result += bytes([self._flags])
+        result += bytes([self.location_id])
+        result += bytes([self.type])
+        result += bytes([self.bg_btm_id])
+        result += self.original[0x3c:0x3e]  # UnkSoundId
+        result += bytes([self.bg_top_id])
+        result += bytes([self.reward_id])
+        result += struct.pack("<iiiiii", 0, puzzle_correct_offset, puzzle_incorrect_offset, puzzle_hint1_offset,
+                              puzzle_hint2_offset, puzzle_hint3_offset)
+        result += (b"\x00" * 4) * 6
+        result += puzzle_text_section
+
+        return result
 
     def get_dat_file(self, rom: formats.filesystem.NintendoDSRom):
         if rom.name == b'LAYTON1' and False:
@@ -130,24 +176,15 @@ class PuzzleData:
             return False
         dat_file = dat_files.files[index]
         self.load(dat_file)
-        self.load_bg_from_rom()
         self.load_gds()
         return True
 
-    def load_bg_from_rom(self):
-        bg_id = self.rom.filenames.idOf(self.bg_path)
-        if bg_id is None:
-            print(f"Warning: bg for puzzle {self.internal_id} not found")
-            self.bg = None
-            return
-        self.bg = formats.graphics.bg.BGImage(self.bg_path, rom=self.rom)
-
     @property
-    def bg_path(self):
+    def btm_path(self):
         if not self.bg_lang_dependant:
-            file_name = "q{}.arc".format(self.internal_id)
+            file_name = "q{}.arc".format(self.bg_btm_id)
         else:
-            file_name = "en/q{}.arc".format(self.internal_id)
+            file_name = "en/q{}.arc".format(self.bg_btm_id)
         return f"data_lt2/bg/nazo/{file_name}"
 
     @staticmethod
@@ -157,59 +194,6 @@ class PuzzleData:
             ret += bytes([b[offset]])
             offset += 1
         return ret
-
-    @property
-    def bg_lang_dependant(self):
-        return (self._flags & 0x20) > 0
-
-    @bg_lang_dependant.setter
-    def bg_lang_dependant(self, value: bool):
-        if value:
-            self._flags |= 0x20
-        else:
-            self._flags &= 0xFF - 0x20
-
-    @property
-    def ans_bg_lang_dependant(self):
-        return (self._flags & 0x40) > 0
-
-    @ans_bg_lang_dependant.setter
-    def ans_bg_lang_dependant(self, value: bool):
-        if value:
-            self._flags |= 0x40
-        else:
-            self._flags &= 0xFF - 0x40
-
-    def export_data(self):
-        puzzle_text_section = b""
-        puzzle_text_section += self.text + b"\x00"
-        puzzle_correct_offset = len(puzzle_text_section)
-        puzzle_text_section += self.correct_answer + b"\x00"
-        puzzle_incorrect_offset = len(puzzle_text_section)
-        puzzle_text_section += self.incorrect_answer + b"\x00"
-        puzzle_hint1_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint1 + b"\x00"
-        puzzle_hint2_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint2 + b"\x00"
-        puzzle_hint3_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint3 + b"\x00"
-
-        result = struct.pack("<h", self.number)
-        result += struct.pack("<h", 112)
-        result += self.pad_with_0(self.title, 0x30)
-        result += self.original[0x34:0x38]
-        result += bytes([self._flags])
-        result += self.original[0x39:0x3a]
-        result += bytes([self.type])
-        result += bytes([self.internal_id])
-        # TODO: Add puzzle location (0x3e)
-        result += self.original[0x3c:0x40]
-        result += struct.pack("<iiiiii", 0, puzzle_correct_offset, puzzle_incorrect_offset, puzzle_hint1_offset,
-                              puzzle_hint2_offset, puzzle_hint3_offset)
-        result += (b"\x00" * 4) * 6
-        result += puzzle_text_section
-
-        return result
 
     def save_to_rom(self):
         dat_files, dat_index = self.get_dat_file(self.rom)
@@ -259,18 +243,29 @@ class PuzzleData:
         parser = formats.dcc_parser.Parser()
         parser.reset()
         parser.get_path("puzzle_data", create=True)
-        parser.set_named("puzzle_data.title", self.title.decode("ascii"))
+        parser.set_named("puzzle_data.title", self.title.decode(self.coding))
         parser.set_named("puzzle_data.type", self.type)
         parser.set_named("puzzle_data.number", self.number)
-        parser.set_named("puzzle_data.location", self.location)
+        parser.set_named("puzzle_data.location_id", self.location_id)
+        parser.set_named("puzzle_data.tutorial_id", self.tutorial_id)
+        parser.set_named("puzzle_data.reward_id", self.reward_id)
+        parser.set_named("puzzle_data.bg_btm_id", self.bg_btm_id)
+        parser.set_named("puzzle_data.bg_top_id", self.bg_top_id)
+        parser.set_named("puzzle_data.judge_char", self.judge_char)
+        parser.set_named("puzzle_data.flag_bit2", self.flag_bit2)
+        parser.set_named("puzzle_data.flag_bit5", self.flag_bit5)
         parser.set_named("puzzle_data.bg_lang_dependant", self.bg_lang_dependant)
         parser.set_named("puzzle_data.ans_lang_dependant", self.ans_bg_lang_dependant)
-        parser.set_named("puzzle_data.text", self.text.decode("ascii"))
-        parser.set_named("puzzle_data.correct_answer", self.correct_answer.decode("ascii"))
-        parser.set_named("puzzle_data.incorrect_answer", self.incorrect_answer.decode("ascii"))
-        parser.set_named("puzzle_data.hint1", self.hint1.decode("ascii"))
-        parser.set_named("puzzle_data.hint2", self.hint2.decode("ascii"))
-        parser.set_named("puzzle_data.hint3", self.hint3.decode("ascii"))
+        parser.get_path("puzzle_data.picarat_decay", create=True)
+        for picarat in self.picarat_decay:
+            parser["puzzle_data.picarat_decay::unnamed"].append(picarat)
+        parser.set_named("puzzle_data.text", self.text.decode(self.coding))
+        parser.set_named("puzzle_data.correct_answer", self.correct_answer.decode(self.coding))
+        parser.set_named("puzzle_data.incorrect_answer", self.incorrect_answer.decode(self.coding))
+        parser.set_named("puzzle_data.hint1", self.hint1.decode(self.coding))
+        parser.set_named("puzzle_data.hint2", self.hint2.decode(self.coding))
+        parser.set_named("puzzle_data.hint3", self.hint3.decode(self.coding))
+
         parser.get_path("puzzle_gds", create=True)
         gds_parser = self.get_gds_parser()
         for command in self.gds.commands:
@@ -283,16 +278,28 @@ class PuzzleData:
     def from_readable(self, readable):
         parser = formats.dcc_parser.Parser()
         parser.parse(readable)
-        self.title = parser["puzzle_data.title"]
+        self.title = parser["puzzle_data.title"].encode(self.coding)
         self.type = parser["puzzle_data.type"]
         self.number = parser["puzzle_data.number"]
-        self.location = parser["puzzle_data.location"]
-        self.text = parser["puzzle_data.text"]
-        self.correct_answer = parser["puzzle_data.correct_answer"]
-        self.incorrect_answer = parser["puzzle_data.incorrect_answer"]
-        self.hint1 = parser["puzzle_data.hint1"]
-        self.hint2 = parser["puzzle_data.hint2"]
-        self.hint3 = parser["puzzle_data.hint3"]
+        self.text = parser["puzzle_data.text"].encode(self.coding)
+        self.correct_answer = parser["puzzle_data.correct_answer"].encode(self.coding)
+        self.incorrect_answer = parser["puzzle_data.incorrect_answer"].encode(self.coding)
+        self.hint1 = parser["puzzle_data.hint1"].encode(self.coding)
+        self.hint2 = parser["puzzle_data.hint2"].encode(self.coding)
+        self.hint3 = parser["puzzle_data.hint3"].encode(self.coding)
+
+        self.tutorial_id = parser["puzzle_data.tutorial_id"]
+        self.reward_id = parser["puzzle_data.reward_id"]
+        self.bg_btm_id = parser["puzzle_data.bg_btm_id"]
+        self.bg_top_id = parser["puzzle_data.bg_top_id"]
+        self.judge_char = parser["puzzle_data.judge_char"]
+        self.flag_bit2 = parser["puzzle_data.flag_bit2"]
+        self.flag_bit5 = parser["puzzle_data.flag_bit5"]
+        self.location_id = parser["puzzle_data.location_id"]
+        self.picarat_decay = []
+        for picarat in parser["puzzle_data.picarat_decay::unnamed"]:
+            self.picarat_decay.append(picarat)
+
         self.bg_lang_dependant = parser["puzzle_data.bg_land_dependant"]
         self.ans_bg_lang_dependant = parser["puzzle_data.ans_bg_lang_dependant"]
         self.gds.commands = []
@@ -300,6 +307,62 @@ class PuzzleData:
         for command_call in parser["puzzle_gds::calls"]:
             self.gds.commands.append(formats.gds.GDSCommand(
                 command=gds_parser.reverse_command_name(command_call["func"]),
-                params=command_call["params"]
+                params=command_call["parameters"]
             ))
-        pass
+
+    # FLAG PROPERTIES
+
+    @property
+    def bg_lang_dependant(self):
+        return (self._flags & 0x20) > 0
+
+    @bg_lang_dependant.setter
+    def bg_lang_dependant(self, value: bool):
+        if value:
+            self._flags |= 0x20
+        else:
+            self._flags &= 0xFF - 0x20
+
+    @property
+    def ans_bg_lang_dependant(self):
+        return (self._flags & 0x40) > 0
+
+    @ans_bg_lang_dependant.setter
+    def ans_bg_lang_dependant(self, value: bool):
+        if value:
+            self._flags |= 0x40
+        else:
+            self._flags &= 0xFF - 0x40
+
+    @property
+    def judge_char(self):
+        return self._flags & 0x1
+
+    @judge_char.setter
+    def judge_char(self, value):
+        if value > 0:
+            self._flags |= 0x1
+        else:
+            self._flags &= 0xFF - 0x1
+
+    @property
+    def flag_bit2(self):
+        return (self._flags & 0x2) > 0
+
+    @flag_bit2.setter
+    def flag_bit2(self, value):
+        if value:
+            self._flags |= 0x2
+        else:
+            self._flags &= 0xFF - 0x2
+
+    @property
+    def flag_bit5(self):
+        return (self._flags & 0x10) > 0
+
+    @flag_bit5.setter
+    def flag_bit5(self, value):
+        if value:
+            self._flags |= 0x10
+        else:
+            self._flags &= 0xFF - 0x10

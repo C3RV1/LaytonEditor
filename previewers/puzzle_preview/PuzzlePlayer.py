@@ -65,8 +65,8 @@ class PuzzlePlayer(pygame_utils.TwoScreenRenderer.TwoScreenRenderer):
 
     def load_puzzle_top(self):
         self.top_group.add([self.text_bg, self.puzzle_text, self.header_top_left])
-        load_bg(self.puzzle_data.bg_path, self.btm_bg)
-        load_bg(f"data_lt2/bg/nazo/system/nazo_text{self.puzzle_data.location}.arc", self.text_bg)
+        load_bg(self.puzzle_data.btm_path, self.btm_bg)
+        load_bg(f"data_lt2/bg/nazo/system/nazo_text{self.puzzle_data.bg_top_id}.arc", self.text_bg)
         for header_top_left in self.header_top_left:
             load_animation(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_top_left)
             header_top_left.draw_alignment = [header_top_left.ALIGNMENT_RIGHT, header_top_left.ALIGNMENT_BOTTOM]
