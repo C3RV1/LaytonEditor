@@ -6,11 +6,11 @@ from typing import Optional
 
 
 class Sprite(pg.sprite.DirtySprite):
-    ALIGNMENT_TOP = Alignment.ALIGNMENT_TOP
-    ALIGNMENT_CENTER = Alignment.ALIGNMENT_CENTER
-    ALIGNMENT_BOTTOM = Alignment.ALIGNMENT_BOTTOM
-    ALIGNMENT_RIGHT = Alignment.ALIGNMENT_RIGHT
-    ALIGNMENT_LEFT = Alignment.ALIGNMENT_LEFT
+    ALIGNMENT_TOP = Alignment.TOP
+    ALIGNMENT_CENTER = Alignment.CENTER
+    ALIGNMENT_BOTTOM = Alignment.BOTTOM
+    ALIGNMENT_RIGHT = Alignment.RIGHT
+    ALIGNMENT_LEFT = Alignment.LEFT
 
     ASPECT_RATIO_MAX = 0
     ASPECT_RATIO_MIN = 1
@@ -18,7 +18,7 @@ class Sprite(pg.sprite.DirtySprite):
     sprite_cache = {}
 
     def __init__(self, groups, world_rect=pg.Rect(0, 0, 0, 0),
-                 draw_alignment=(Alignment.ALIGNMENT_CENTER, Alignment.ALIGNMENT_CENTER), is_world=True):
+                 draw_alignment=(Alignment.CENTER, Alignment.CENTER), is_world=True):
         pg.sprite.DirtySprite.__init__(self, groups)
         self.__path: Optional[str] = None
         self.__original_image: Optional[pg.Surface] = None

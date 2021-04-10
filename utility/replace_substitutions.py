@@ -12,7 +12,8 @@ def replace_substitutions(text):
                  "<^!>": "¡",
                  "<-n>": "ñ",
                  "@B": "\n",
-                 "<po>": "£"}
+                 "<po>": "£",
+                 "<->": "•"}
     for key, sub in subs_dict.items():
         text = text.replace(key, sub)
     return text

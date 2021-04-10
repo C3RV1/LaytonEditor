@@ -329,6 +329,11 @@ class Parser:
         path_obj = self.get_path(path, index=-1, create=True)
         path_obj['named'][path.split(".")[-1]] = value
 
+    def exists(self, path):
+        if self.get_path(path) is not None:
+            return True
+        return False
+
 
 """if __name__ == "__main__":
     file = open("../event/event_example.dcc")

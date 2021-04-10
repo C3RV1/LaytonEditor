@@ -7,8 +7,6 @@ import wx.stc
 from formats.filesystem import NintendoDSRom
 from gui import generated
 from gui.filesystem_editor import FilesystemEditor
-from gui.puzzle_base_data_editor import PuzzleBaseDataEditor
-from gui.puzzle_general_editor import PuzzleGeneralEditor
 from gui.sprite_editor import SpriteEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pygame_utils.rom.RomSingleton import RomSingleton
@@ -17,6 +15,7 @@ from pygame_utils.rom.RomSingleton import RomSingleton
 class MainEditor(generated.MainEditor):
     rom: NintendoDSRom = None
     rom_last_filename: str = ""
+    last_page: int = -1
 
     def __init__(self, *args, **kwargs):
         self.pygame_previewer = PygamePreviewer()
@@ -41,6 +40,12 @@ class MainEditor(generated.MainEditor):
 
         # Only open the main filesystem page.
         self.le_editor_pages.DeleteAllPages()
+        menus_to_remove = []
+        for menu in self.le_menu.Menus:
+            if menu[1] != "File":
+                menus_to_remove.append(menu[1])
+        for menu_to_remove in menus_to_remove:
+            self.remove_menu(menu_to_remove)
         self.open_filesystem_page("Rom FS")
 
     def save_rom(self, filename):
@@ -98,28 +103,19 @@ class MainEditor(generated.MainEditor):
                 self.save_rom(pathname)
 
     def le_page_changed(self, event):
+        if self.last_page != -1:
+            page = self.le_editor_pages.GetPage(self.last_page)
+            page.exit()
         page = self.le_editor_pages.GetPage(self.le_editor_pages.GetSelection())
         page.enter()
 
     def le_page_changing(self, event: wx.aui.AuiNotebookEvent):
-        if (selection := self.le_editor_pages.GetSelection()) != -1:
-            page = self.le_editor_pages.GetPage(selection)
-            page.exit()
+        self.last_page = self.le_editor_pages.GetSelection()
         event.Skip(1)  # Do this so the event doesn't get vetoed.
 
     def le_page_close(self, event: wx.aui.AuiNotebookEvent):
         page = self.le_editor_pages.GetPage(event.GetOldSelection())
         page.exit()
-
-    def le_menu_puzzles_edit_gds_clicked(self, _event):
-        if self.rom is None:
-            return
-        PuzzleGeneralEditor(self).Show(True)
-
-    def le_menu_puzzles_edit_base_data_clicked(self, _event):
-        if self.rom is None:
-            return
-        PuzzleBaseDataEditor(self).Show(True)
 
     def close_window(self, event):
         self.pygame_previewer.loop_lock.acquire()

@@ -107,6 +107,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_ani_menu = wx.Menu()
         self.fp_place_menu = wx.Menu()
         self.fp_soundbank_menu = wx.Menu()
+        self.fp_puzzle_menu = wx.Menu()
 
         def add_menu_item(menu, title, handler):
             fs_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
@@ -136,6 +137,9 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_soundbank_menu, "Play Selected", self.fp_samplebank_play_clicked)
 
+        add_menu_item(self.fp_puzzle_menu, "Apply changes", self.fp_puzzle_apply_mods)
+        add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
+
         self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.event_previewer = EventPlayer()
         self.puzzle_previewer = PuzzlePlayer()
@@ -160,7 +164,11 @@ class FilesystemEditor(generated.FilesystemEditor):
         pass
 
     def refresh_preview(self):
-        if not self.ft_filetree.GetSelections():
+        try:
+            if not self.ft_filetree.GetSelections():
+                return
+        except RuntimeError:
+            # wrapped c/c++ object of type TreeCtrl has been deleted
             return
         self.pygame_previewer.stop_renderer()
 
@@ -225,11 +233,12 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := re.search("^n([0-9]+).dat", name):
-            print(f"Loading Puzzle {res.group(1)}")
-            self.puzzle_previewer.puzzle_id = int(res.group(1))
+            self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
             self.pygame_previewer.start_renderer(self.puzzle_previewer)
             self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
             self.fp_formats_book.SetSelection(8)
+            self.fp_menus_loaded.append("Puzzle")
+            self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
         elif name.endswith(".gds"):
             gds = GDS(name, rom=archive)
             if name.startswith("e"):
@@ -488,3 +497,19 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_text_edit_changed(self, _event):
         self.preview_save = True
+
+    def fp_puzzle_apply_mods(self, event):
+        successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        if not successful:
+            error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+        else:
+            self.pygame_previewer.start_renderer(self.puzzle_previewer)
+
+    def fp_puzzle_save(self, event):
+        successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        if not successful:
+            error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+        else:
+            self.puzzle_previewer.puzzle_data.save_to_rom()
