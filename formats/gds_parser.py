@@ -1,7 +1,7 @@
 import formats.gds
 
 
-class PuzzleGDSParser:
+class GDSParser:
     def __init__(self):
         self.command_name_table = {}
 
@@ -16,10 +16,10 @@ class PuzzleGDSParser:
         for key in self.command_name_table.keys():
             if self.command_name_table[key] == command:
                 return key
-        return 0
+        raise ValueError(f"{command} is not a valid command")
 
 
-class InputGDSParser(PuzzleGDSParser):
+class InputGDSParser(GDSParser):
     def __init__(self):
         super(InputGDSParser, self).__init__()
         self.command_name_table = {
@@ -29,7 +29,7 @@ class InputGDSParser(PuzzleGDSParser):
         }
 
 
-class MultipleChoiceGDSParser(PuzzleGDSParser):
+class MultipleChoiceGDSParser(GDSParser):
     def __init__(self):
         super(MultipleChoiceGDSParser, self).__init__()
         self.command_name_table = {

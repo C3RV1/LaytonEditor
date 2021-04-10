@@ -7,11 +7,11 @@ import formats.gds
 import formats.graphics.bg
 import formats.dlz
 import formats.dcc_parser
-import formats.puzzles.puzzle_gds_parser as pz_gds
+import formats.gds_parser as pz_gds
 
 
 class PuzzleData:
-    coding = "ascii"
+    encoding = "ascii"
     UNUSED_0 = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
@@ -181,7 +181,7 @@ class PuzzleData:
 
     @property
     def btm_path(self):
-        if not self.bg_lang_dependant:
+        if not self.bg_lang:
             file_name = "q{}.arc".format(self.bg_btm_id)
         else:
             file_name = "en/q{}.arc".format(self.bg_btm_id)
@@ -208,6 +208,8 @@ class PuzzleData:
                 item[2] = self.pad_with_0(self.title, 0x30)
         nz_lst_dlz.pack("<hh48sh", nazo_list)
         nz_lst_dlz.save()
+
+        self.save_gds()
 
     @staticmethod
     def pad_with_0(b, length):
@@ -237,39 +239,39 @@ class PuzzleData:
     def get_gds_parser(self):
         if self.type in self.TYPE_TO_GDS_PARSER:
             return self.TYPE_TO_GDS_PARSER[self.type]()
-        return pz_gds.PuzzleGDSParser()
+        return pz_gds.GDSParser()
 
     def to_readable(self):
         parser = formats.dcc_parser.Parser()
         parser.reset()
-        parser.get_path("puzzle_data", create=True)
-        parser.set_named("puzzle_data.title", self.title.decode(self.coding))
-        parser.set_named("puzzle_data.type", self.type)
-        parser.set_named("puzzle_data.number", self.number)
-        parser.set_named("puzzle_data.location_id", self.location_id)
-        parser.set_named("puzzle_data.tutorial_id", self.tutorial_id)
-        parser.set_named("puzzle_data.reward_id", self.reward_id)
-        parser.set_named("puzzle_data.bg_btm_id", self.bg_btm_id)
-        parser.set_named("puzzle_data.bg_top_id", self.bg_top_id)
-        parser.set_named("puzzle_data.judge_char", self.judge_char)
-        parser.set_named("puzzle_data.flag_bit2", self.flag_bit2)
-        parser.set_named("puzzle_data.flag_bit5", self.flag_bit5)
-        parser.set_named("puzzle_data.bg_lang_dependant", self.bg_lang_dependant)
-        parser.set_named("puzzle_data.ans_lang_dependant", self.ans_bg_lang_dependant)
-        parser.get_path("puzzle_data.picarat_decay", create=True)
+        parser.get_path("pzd", create=True)
+        parser.set_named("pzd.title", self.title.decode(self.encoding))
+        parser.set_named("pzd.type", self.type)
+        parser.set_named("pzd.number", self.number)
+        parser.set_named("pzd.location_id", self.location_id)
+        parser.set_named("pzd.tutorial_id", self.tutorial_id)
+        parser.set_named("pzd.reward_id", self.reward_id)
+        parser.set_named("pzd.bg_btm_id", self.bg_btm_id)
+        parser.set_named("pzd.bg_top_id", self.bg_top_id)
+        parser.set_named("pzd.judge_char", self.judge_char)
+        parser.set_named("pzd.flag_bit2", self.flag_bit2)
+        parser.set_named("pzd.flag_bit5", self.flag_bit5)
+        parser.set_named("pzd.bg_lang", self.bg_lang)
+        parser.set_named("pzd.ans_bg_lang", self.ans_bg_lang)
+        parser.get_path("pzd.picarat_decay", create=True)
         for picarat in self.picarat_decay:
-            parser["puzzle_data.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("puzzle_data.text", self.text.decode(self.coding))
-        parser.set_named("puzzle_data.correct_answer", self.correct_answer.decode(self.coding))
-        parser.set_named("puzzle_data.incorrect_answer", self.incorrect_answer.decode(self.coding))
-        parser.set_named("puzzle_data.hint1", self.hint1.decode(self.coding))
-        parser.set_named("puzzle_data.hint2", self.hint2.decode(self.coding))
-        parser.set_named("puzzle_data.hint3", self.hint3.decode(self.coding))
+            parser["pzd.picarat_decay::unnamed"].append(picarat)
+        parser.set_named("pzd.text", self.text.decode(self.encoding))
+        parser.set_named("pzd.correct_answer", self.correct_answer.decode(self.encoding))
+        parser.set_named("pzd.incorrect_answer", self.incorrect_answer.decode(self.encoding))
+        parser.set_named("pzd.hint1", self.hint1.decode(self.encoding))
+        parser.set_named("pzd.hint2", self.hint2.decode(self.encoding))
+        parser.set_named("pzd.hint3", self.hint3.decode(self.encoding))
 
-        parser.get_path("puzzle_gds", create=True)
+        parser.get_path("pzs", create=True)
         gds_parser = self.get_gds_parser()
         for command in self.gds.commands:
-            parser["puzzle_gds::calls"].append({
+            parser["pzs::calls"].append({
                 "func": gds_parser.parse_command_name(command),
                 "parameters": command.params
             })
@@ -277,58 +279,76 @@ class PuzzleData:
 
     def from_readable(self, readable):
         parser = formats.dcc_parser.Parser()
-        parser.parse(readable)
-        self.title = parser["puzzle_data.title"].encode(self.coding)
-        self.type = parser["puzzle_data.type"]
-        self.number = parser["puzzle_data.number"]
-        self.text = parser["puzzle_data.text"].encode(self.coding)
-        self.correct_answer = parser["puzzle_data.correct_answer"].encode(self.coding)
-        self.incorrect_answer = parser["puzzle_data.incorrect_answer"].encode(self.coding)
-        self.hint1 = parser["puzzle_data.hint1"].encode(self.coding)
-        self.hint2 = parser["puzzle_data.hint2"].encode(self.coding)
-        self.hint3 = parser["puzzle_data.hint3"].encode(self.coding)
+        try:
+            parser.parse(readable)
+        except Exception as e:
+            return False, str(e)
 
-        self.tutorial_id = parser["puzzle_data.tutorial_id"]
-        self.reward_id = parser["puzzle_data.reward_id"]
-        self.bg_btm_id = parser["puzzle_data.bg_btm_id"]
-        self.bg_top_id = parser["puzzle_data.bg_top_id"]
-        self.judge_char = parser["puzzle_data.judge_char"]
-        self.flag_bit2 = parser["puzzle_data.flag_bit2"]
-        self.flag_bit5 = parser["puzzle_data.flag_bit5"]
-        self.location_id = parser["puzzle_data.location_id"]
+        required_paths = ["pzd.title", "pzd.type", "pzd.number", "pzd.text",  "pzd.correct_answer",
+                          "pzd.incorrect_answer", "pzd.hint1", "pzd.hint2", "pzd.hint3", "pzd.tutorial_id",
+                          "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_top_id", "pzd.judge_char", "pzd.flag_bit2",
+                          "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang",
+                          "pzs"]
+
+        for req_path in required_paths:
+            if not parser.exists(req_path):
+                return False, f"Missing {req_path}"
+
+        self.title = parser["pzd.title"].encode(self.encoding)
+        self.type = parser["pzd.type"]
+        self.number = parser["pzd.number"]
+        self.text = parser["pzd.text"].encode(self.encoding)
+        self.correct_answer = parser["pzd.correct_answer"].encode(self.encoding)
+        self.incorrect_answer = parser["pzd.incorrect_answer"].encode(self.encoding)
+        self.hint1 = parser["pzd.hint1"].encode(self.encoding)
+        self.hint2 = parser["pzd.hint2"].encode(self.encoding)
+        self.hint3 = parser["pzd.hint3"].encode(self.encoding)
+
+        self.tutorial_id = parser["pzd.tutorial_id"]
+        self.reward_id = parser["pzd.reward_id"]
+        self.bg_btm_id = parser["pzd.bg_btm_id"]
+        self.bg_top_id = parser["pzd.bg_top_id"]
+        self.judge_char = parser["pzd.judge_char"]
+        self.flag_bit2 = parser["pzd.flag_bit2"]
+        self.flag_bit5 = parser["pzd.flag_bit5"]
+        self.location_id = parser["pzd.location_id"]
         self.picarat_decay = []
-        for picarat in parser["puzzle_data.picarat_decay::unnamed"]:
+        for picarat in parser["pzd.picarat_decay::unnamed"]:
             self.picarat_decay.append(picarat)
 
-        self.bg_lang_dependant = parser["puzzle_data.bg_land_dependant"]
-        self.ans_bg_lang_dependant = parser["puzzle_data.ans_bg_lang_dependant"]
+        self.bg_lang = parser["pzd.bg_lang"]
+        self.ans_bg_lang = parser["pzd.ans_bg_lang"]
         self.gds.commands = []
         gds_parser = self.get_gds_parser()
-        for command_call in parser["puzzle_gds::calls"]:
-            self.gds.commands.append(formats.gds.GDSCommand(
-                command=gds_parser.reverse_command_name(command_call["func"]),
-                params=command_call["parameters"]
-            ))
+        for command_call in parser["pzs::calls"]:
+            try:
+                self.gds.commands.append(formats.gds.GDSCommand(
+                    command=gds_parser.reverse_command_name(command_call["func"]),
+                    params=command_call["parameters"]
+                ))
+            except Exception as e:
+                return False, str(e)
+        return True, ""
 
     # FLAG PROPERTIES
 
     @property
-    def bg_lang_dependant(self):
+    def bg_lang(self):
         return (self._flags & 0x20) > 0
 
-    @bg_lang_dependant.setter
-    def bg_lang_dependant(self, value: bool):
+    @bg_lang.setter
+    def bg_lang(self, value: bool):
         if value:
             self._flags |= 0x20
         else:
             self._flags &= 0xFF - 0x20
 
     @property
-    def ans_bg_lang_dependant(self):
+    def ans_bg_lang(self):
         return (self._flags & 0x40) > 0
 
-    @ans_bg_lang_dependant.setter
-    def ans_bg_lang_dependant(self, value: bool):
+    @ans_bg_lang.setter
+    def ans_bg_lang(self, value: bool):
         if value:
             self._flags |= 0x40
         else:

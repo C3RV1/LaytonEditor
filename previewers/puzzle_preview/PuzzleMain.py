@@ -4,7 +4,7 @@ from PygameEngine.UI.Text import Text
 from PygameEngine.Sprite import Sprite
 from PygameEngine.UI.UIManager import UIManager
 from pygame_utils.rom.rom_extract import load_animation, load_bg
-import formats.puzzles.puzzle_data as pzd
+import formats.puzzle_data as pzd
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

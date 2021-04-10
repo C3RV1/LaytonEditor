@@ -3,7 +3,7 @@ from pygame_utils.rom import RomSingleton
 from PygameEngine.Sprite import Sprite
 from PygameEngine.Animation import Animation
 from PygameEngine.Alignment import Alignment
-import formats.puzzles.puzzle_data as pzd
+import formats.puzzle_data as pzd
 from pygame_utils.rom.rom_extract import load_bg, load_animation
 from PygameEngine.UI.Text import Text
 from utility.replace_substitutions import replace_substitutions
@@ -48,14 +48,16 @@ class PuzzlePlayer(pygame_utils.TwoScreenRenderer.TwoScreenRenderer):
     def open_hints(self):
         self.pz_hints.enter_hints()
 
+    def set_puzzle_id(self, puzzle_id):
+        self.puzzle_id = puzzle_id
+        self.puzzle_data.set_internal_id(self.puzzle_id)
+        self.puzzle_data.load_from_rom()
+
     def load(self):
         super(PuzzlePlayer, self).load()
         self.btm_group.add(self.btm_bg)
         self.ui_manager.clear()
         self.hints_used = 0
-
-        self.puzzle_data.set_internal_id(self.puzzle_id)
-        self.puzzle_data.load_from_rom()
 
         self.load_puzzle_top()
         self.pz_hints.load()
