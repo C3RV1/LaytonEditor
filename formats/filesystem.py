@@ -327,9 +327,6 @@ class PlzArchive(Archive, FileFormat):
             rdr.seek(4, io.SEEK_CUR)
             file_size = rdr.read_uint32()
 
-            c = rdr.c
-
-            rdr.c = c
             filename = rdr.read_string(encoding="shift-jis")
 
             rdr.seek(start_pos + fileheader_size)
@@ -352,21 +349,22 @@ class PlzArchive(Archive, FileFormat):
 
         for i in range(len(self.files)):
             headersize = 16 + len(self.filenames[i]) + 1
-            if headersize % 4 != 0:
-                headersize += 4 - headersize % 4
-            wtr.write_uint32(headersize)
+            headersize += 4 - headersize % 4
 
             totalsize = headersize + len(self.files[i])
-            if totalsize % 4 != 0:
-                totalsize += 4 - totalsize % 4
+            totalsize += 4 - totalsize % 4
+            c = wtr.c
+            wtr.write_uint32(headersize)
             wtr.write_uint32(totalsize)
             wtr.write_uint32(0)
             wtr.write_uint32(len(self.files[i]))
 
             wtr.write_string(self.filenames[i])
-            wtr.align(4)
+            wtr.seek(c + headersize)
             wtr.write(self.files[i])
-            wtr.align(4)
+            # Seek while adding bytes
+            while wtr.c != c + totalsize:
+                wtr.write_uint8(0)
 
         filesize = len(wtr)
         wtr.seek(4)
