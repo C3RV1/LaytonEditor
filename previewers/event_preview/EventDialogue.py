@@ -44,7 +44,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.paused = False
 
         self.current_time_between_progress = 0
-        self.time_to_progress = .02
+        self.time_to_progress = 1/60
 
         self.character_talking: Optional[EventCharacter] = None
 

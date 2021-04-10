@@ -26,29 +26,42 @@ class Animation(Sprite):
             self.update_anim_duration()
         self.update_anim_frame()
 
+    def _update_anim_frame_count(self):
+        if len(self.current_tag["frames"]) == 0:
+            return False
+        self.anim_frame %= len(self.current_tag["frames"])
+        return True
+
     def update_anim_frame(self, new_anim_frame=None):
         if self.current_tag is None:
             return
-        if len(self.current_tag["frames"]) == 0:
-            return
         if isinstance(new_anim_frame, int):
             self.anim_frame = new_anim_frame
-        self.anim_frame %= len(self.current_tag["frames"])
+        if not self._update_anim_frame_count():
+            return
         pre_frame = self.frame_num
         self.frame_num = self.current_tag["frames"][self.anim_frame]
+
+        self.update_anim_duration()
 
         if pre_frame != self.frame_num:
             self._update_frame_info()
 
-        self.update_anim_duration()
-
     def update_anim_duration(self):
-        if "duration" in self.sprite_sheet_info["frames"][self.frame_num].keys():
-            self.duration = self.sprite_sheet_info["frames"][self.frame_num]["duration"]
+        if not self._update_anim_frame_count():
+            return
+        frame_num = self.current_tag["frames"][self.anim_frame]
+        if "duration" in self.sprite_sheet_info["frames"][frame_num].keys():
+            self.duration = self.sprite_sheet_info["frames"][frame_num]["duration"]
             if self.duration is not None:
                 self.duration /= 1000
             else:
                 self.duration = self.default_duration
+        elif "frame_durations" in self.current_tag:
+            if self.anim_frame < len(self.current_tag["frame_durations"]):
+                self.duration = self.current_tag["frame_durations"][self.anim_frame]
+                if self.duration is not None:
+                    self.duration /= 1000
 
     def set_tag(self, tag_name):
         for tag in self.sprite_sheet_info["meta"]["frameTags"]:
@@ -58,6 +71,7 @@ class Animation(Sprite):
         else:
             Debug.log_warning(f"Trying to set animation {tag_name} which doesn't exist, skipping.", self)
         self.anim_frame = 0
+        self._current_time = 0
         self.update_anim_frame()
         self.update_frame()
 

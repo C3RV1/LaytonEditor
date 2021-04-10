@@ -203,7 +203,6 @@ class PuzzleData:
         nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/en/nz_lst.dlz", rom=self.rom)
         nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
         for item in nazo_list:
-            print(item)
             if item[0] == self.internal_id:
                 item[2] = self.pad_with_0(self.title, 0x30)
         nz_lst_dlz.pack("<hh48sh", nazo_list)
@@ -233,7 +232,9 @@ class PuzzleData:
 
         gds_filename = "q{}_param.gds".format(self.internal_id)
 
-        self.gds.save(gds_filename, rom=gds_plz_file)
+        gds_file = gds_plz_file.open(gds_filename, "wb+")
+        self.gds.write_stream(gds_file)
+        gds_file.close()
         return True
 
     def get_gds_parser(self):

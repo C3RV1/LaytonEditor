@@ -32,12 +32,10 @@ class LoadCMD(EventCMD):
         self.bg_btm: EventBGAbstract = bg_btm
 
     def execute(self, editing, instant):
-        Debug.log(f"Executing load characters={self.characters}", self)
+        Debug.log(f"Executing load characters={self.characters} anims={self.characters_anim}", self)
         self.setup_characters()
         self.bg_top.set_bg(f"data_lt2/bg/event/sub{self.top_id}.arc")
         self.bg_btm.set_bg(f"data_lt2/bg/map/main{self.btm_id}.arc")
-        self.bg_top.fade(self.bg_top.FADE_OUT, None, instant)
-        self.bg_btm.fade(self.bg_btm.FADE_OUT, None, instant)
         self.bg_top.set_opacity(0)
         self.bg_btm.set_opacity(120)
         if editing:
@@ -163,7 +161,8 @@ class ChrVisibilityCMD(EventCMD):
     def execute(self, editing, instant):
         Debug.log(f"Executing chr visibility character={self.character} "
                   f"visibility={self.visibility}", self)
-        self.character.set_visibility(self.visibility)
+        if self.character:
+            self.character.set_visibility(self.visibility)
 
 
 class ChrSlotCMD(EventCMD):
@@ -281,13 +280,26 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
                 ChrHideCMD(character_obj[event_gds_cmd.params[0]])
             )
         elif event_gds_cmd.command == 0x2c:
+            # WTF WHY DOES THIS WORK LIKE THIS
+            if event_gds_cmd.params[0] >= len(character_obj):
+                character = None
+                for char in character_obj:
+                    if char.get_char_id() == event_gds_cmd.params[0] and char.get_char_id() != 0:
+                        character = char
+                        break
+            else:
+                character = character_obj[event_gds_cmd.params[0]]
             commands.append(
-                ChrVisibilityCMD(character_obj[event_gds_cmd.params[0]],
-                                 event_gds_cmd.params[1] > 0)
+                ChrVisibilityCMD(character, event_gds_cmd.params[1] > 0)
             )
         elif event_gds_cmd.command == 0x30:
+            character = None
+            for char in character_obj:
+                if char.get_char_id() == event_gds_cmd.params[0] and char.get_char_id() != 0:
+                    character = char
+                    break
             commands.append(
-                ChrSlotCMD(character_obj[event_gds_cmd.params[0]],
+                ChrSlotCMD(character,
                            event_gds_cmd.params[1])
             )
         elif event_gds_cmd.command == 0x32:
@@ -307,8 +319,13 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
                 BGOpacityCMD(bg_btm, event_gds_cmd.params[3])
             )
         elif event_gds_cmd.command == 0x3f:
+            character = None
+            for char in character_obj:
+                if char.get_char_id() == event_gds_cmd.params[0] and char.get_char_id() != 0:
+                    character = char
+                    break
             commands.append(
-                ChrAnimCMD(character_obj[event_gds_cmd.params[0]], event_gds_cmd.params[1])
+                ChrAnimCMD(character, event_gds_cmd.params[1])
             )
         elif event_gds_cmd.command == 0x5c:
             next_voice = event_gds_cmd.params[0]

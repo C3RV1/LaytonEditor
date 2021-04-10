@@ -26,7 +26,7 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
     if not rom.filenames.idOf(path):
         print(f"Warning: could not load {path}")
         sprite.original_image = pg.Surface((10, 10))
-        return
+        return False
     if not os.path.isfile(export_path + ".png"):
         os.makedirs(os.path.dirname(export_path), exist_ok=True)
         anim = ani.AniSprite(filename=path, rom=rom)
@@ -52,7 +52,6 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
                           "y": 0,
                           "w": pil_images[i].size[0],
                           "h": pil_images[i].size[1]},
-                "duration": None
             }
             sprite_info["frames"].append(new_frame_info)
             x_pos += pil_images[i].size[0]
@@ -64,12 +63,9 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
                 "frames": [anim_anim.frames[i].image_index for i in range(len(anim_anim.frames))],
                 "child_x": anim_anim.child_image_x,
                 "child_y": anim_anim.child_image_y,
-                "child_index": anim_anim.child_image_animation_index
+                "child_index": anim_anim.child_image_animation_index,
+                "frame_durations": [int(anim_anim.frames[i].duration * 1000) // ORIGINAL_FPS for i in range(len(anim_anim.frames))]
             }
-            for frame_num in range(len(anim_anim.frames)):
-                frame = anim_anim.frames[frame_num].image_index
-                duration = int(anim_anim.frames[frame_num].duration * 1000) // ORIGINAL_FPS  # Frames to ms
-                sprite_info["frames"][frame]["duration"] = duration
             sprite_info["meta"]["frameTags"].append(new_tag_info)
 
         with open(export_path + ".png.json", "w") as anim_file:
@@ -77,6 +73,7 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
     sprite.load_sprite_sheet(export_path + ".png")
     sprite.set_color_key(pg.color.Color(0, 255, 0))
     sprite.dirty = 1
+    return True
 
 
 def load_bg(path: str, sprite: PygameEngine.Sprite.Sprite):
