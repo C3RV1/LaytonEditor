@@ -164,7 +164,11 @@ class FilesystemEditor(generated.FilesystemEditor):
         pass
 
     def refresh_preview(self):
-        if not self.ft_filetree.GetSelections():
+        try:
+            if not self.ft_filetree.GetSelections():
+                return
+        except RuntimeError:
+            # wrapped c/c++ object of type TreeCtrl has been deleted
             return
         self.pygame_previewer.stop_renderer()
 
