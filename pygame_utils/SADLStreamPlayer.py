@@ -33,6 +33,7 @@ class SoundPlayer:
             self.sound_obj.stop()
         sadl.channels = 2
         self.sound_obj = pg.sndarray.make_sound(np.zeros((sadl.alloc_size, sadl.channels), dtype=np.int16))
+        self.sound_obj.set_volume(0.5)
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)
         self.loading = True
         self.buffer_offset = 0

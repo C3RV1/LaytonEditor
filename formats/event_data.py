@@ -81,4 +81,6 @@ class EventData:
 
     def get_text(self, text_num):
         prefix, postfix, complete = self.resolve_event_id()
+        if f"t{prefix}_{postfix}_{text_num}.gds" not in self.event_texts.filenames:
+            return formats.gds.GDS()
         return formats.gds.GDS(f"t{prefix}_{postfix}_{text_num}.gds", rom=self.event_texts)

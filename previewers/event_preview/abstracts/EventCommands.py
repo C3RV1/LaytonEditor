@@ -76,7 +76,7 @@ class FadeCMD(EventCMD):
 
     def execute(self, editing, instant):
         Debug.log(f"Executing fade screen={self.fade_screen} "
-                  f"type={self.fade_type}", self)
+                  f"type={self.fade_type} time={self.fade_frames}", self)
         if self.fade_screen & self.FADE_TOP:
             self.bg_top.fade(self.fade_type, self.fade_frames, instant)
             if editing:
@@ -338,6 +338,14 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
         elif event_gds_cmd.command == 0x6a:
             commands.append(
                 BGShakeCMD(bg_btm)
+            )
+        elif event_gds_cmd.command == 0x72:
+            commands.append(
+                FadeCMD(FadeCMD.FADE_OUT, FadeCMD.FADE_BOTH, bg_top, bg_btm, event_gds_cmd.params[0])
+            )
+        elif event_gds_cmd.command == 0x80:
+            commands.append(
+                FadeCMD(FadeCMD.FADE_IN, FadeCMD.FADE_BOTH, bg_top, bg_btm, event_gds_cmd.params[0])
             )
         elif event_gds_cmd.command == 0x87:
             commands.append(

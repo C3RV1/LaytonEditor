@@ -18,11 +18,13 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
                     EventDialogueAbstract):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SoundPlayer):
+    def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SoundPlayer, event_player):
         PygameEngine.UI.UIElement.UIElement.__init__(self)
         PygameEngine.Sprite.Sprite.__init__(self, ())
         EventDialogueAbstract.__init__(self)
         self.gm = PygameEngine.GameManager.GameManager()
+
+        self.event_player = event_player
 
         self.check_interacting = self._check_interacting
         self.pre_interact = self.pre_interact_
@@ -163,6 +165,16 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         elif self.text_left_to_do.startswith("@c"):  # Next page
             self.reset_texts()
             self.text_left_to_do = self.text_left_to_do[2:]
+            return
+        elif self.text_left_to_do.startswith("&"):
+            command = ""
+            self.text_left_to_do = self.text_left_to_do[1:]
+            while not self.text_left_to_do.startswith("&") and len(self.text_left_to_do) > 0:
+                command += self.text_left_to_do[0]
+                self.text_left_to_do = self.text_left_to_do[1:]
+            self.text_left_to_do = self.text_left_to_do[1:]
+            if self.character_talking is not None:
+                self.event_player.execute_command(command)
             return
 
         # Move one character from self.text_left_to_do to current_text

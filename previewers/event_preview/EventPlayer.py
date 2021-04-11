@@ -36,7 +36,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.voice_player = pygame_utils.SADLStreamPlayer.SoundPlayer()
         self.next_voice = -1
 
-        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player)
+        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player, self)
         self.dialogue.layer = 100
         self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_TOP
         self.dialogue.world_rect.y += 192 // 2
@@ -156,3 +156,20 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
     def exit(self):
         super().exit()
+
+    def execute_command(self, command):
+        command_split = command.split(" ")
+        if command_split[0] == "setani":
+            try:
+                int(command_split[1])
+            except:
+                return
+            character = None
+            for char in self.characters:
+                char: EventCharacter
+                if char.get_char_id() == int(command_split[1]):
+                    character = char
+                    break
+            if character:
+                character.set_anim(command_split[2].replace("_", " "))
+                Debug.log(f"Command setani: Setting {character} to {command_split[2].replace('_', ' ')}", self)

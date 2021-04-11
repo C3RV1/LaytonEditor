@@ -32,6 +32,8 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
 
         self.char_id = 0
 
+        self.talking = False
+
     def check_orientation(self):
         if self.slot in EventCharacter.SLOT_ON_LEFT:
             self.orientation = EventCharacter.FACING_RIGHT
@@ -112,6 +114,10 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
     def set_anim(self, anim: str):
         anim = anim.replace("surprise", "suprise")
         self.set_tag(anim)
+        if self.talking:
+            self.set_talking()
+        else:
+            self.set_not_talking()
         self.update_()
 
     def set_character(self, character):
@@ -133,6 +139,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         return list(map(lambda tag: tag["name"], self.sprite_sheet_info["meta"]["frameTags"]))
 
     def set_talking(self):
+        self.talking = True
         current_tag = self.current_tag["name"]
         if not current_tag.startswith("*"):
             self.set_tag("*" + current_tag)
@@ -141,6 +148,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
             self.update_()
 
     def set_not_talking(self):
+        self.talking = False
         current_tag = self.current_tag["name"]
         if current_tag.endswith(" "):
             current_tag = current_tag[:-1]
