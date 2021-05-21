@@ -238,7 +238,7 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
     commands = list()
     commands.append(
         LoadCMD(character_obj, event.characters, list(map(lambda x: x != 0, event.characters_shown)),
-                event.characters_pos, event.characters_anim_index,
+                event.characters_pos, event.characters_anim_index.copy(),
                 event.map_top_id, event.map_bottom_id, bg_top, bg_btm)
     )
     commands[-1].setup_characters()
@@ -254,6 +254,8 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
             )
         elif event_gds_cmd.command == 0x4:
             dialogue_gds = event.get_text(event_gds_cmd.params[0])
+            if len(dialogue_gds.params) != 5:
+                continue
             character = None
             for char in character_obj:
                 if char.get_char_id() == dialogue_gds.params[0] and char.get_char_id() != 0:
@@ -333,8 +335,6 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
             commands.append(
                 SadSfxCMD(sfx_player, event_gds_cmd.params[0])
             )
-        elif event_gds_cmd.command == 0x5e and False:
-            pass
         elif event_gds_cmd.command == 0x6a:
             commands.append(
                 BGShakeCMD(bg_btm)

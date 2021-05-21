@@ -1,4 +1,5 @@
 import pygame as pg
+from ..Debug import Debug
 import json
 import os
 
@@ -90,7 +91,7 @@ class FontMap:
                 current_x = 0
                 continue
             if letter not in self.char_dict.keys():
-                print(f"Letter {letter} not found. Text: {text}")
+                Debug.log_warning(f"Letter {letter} not found. Text: {repr(text)}", self)
                 continue
             index_x = self.char_dict[letter]["index"] % 16
             index_y = self.char_dict[letter]["index"] // 16

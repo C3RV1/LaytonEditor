@@ -6,12 +6,12 @@ from pygame_utils.rom.rom_extract import load_animation, load_bg
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
+    from previewers.puzzle_preview.PuzzleMain import PuzzleMain
 
 
 class PuzzleHints:
     def __init__(self, puzzle_player, ui_manager, btm_group, top_group):
-        self.pz_player = puzzle_player  # type: PuzzlePlayer
+        self.pz_main = puzzle_player  # type: PuzzleMain
         self.ui_manager = ui_manager  # type: UIManager
         self.btm_group = btm_group
         self.top_group = top_group
@@ -61,6 +61,9 @@ class PuzzleHints:
 
         self.hints_used = 0
 
+        self.hints_elements = [self.hint_text, self.hint_back, self.hint_no_unlock, self.hint_unlock,
+                               self.hint_select_btn]
+
     def load(self):
         self.hints_used = 0
         self.update_hint_select(sprites=True)
@@ -95,7 +98,6 @@ class PuzzleHints:
             self.hint_select_btn[i].set_tag("off")
 
     def enter_hints(self):
-        self.pz_player.remove_all_btm()
         self.btm_group.add([self.hint_back, self.hint_select_btn])
         self.ui_manager.add([self.hint_back])
         self.view_hint(0)
@@ -103,19 +105,19 @@ class PuzzleHints:
     def view_hint(self, hint_num):
         self.update_hint_select()
         if self.hints_used > hint_num:
-            load_bg(f"data_lt2/bg/nazo/system/?/hint_{hint_num + 1}.arc", self.pz_player.btm_bg)
+            load_bg(f"data_lt2/bg/nazo/system/?/hint_{hint_num + 1}.arc", self.pz_main.btm_bg)
             self.btm_group.remove([self.hint_unlock, self.hint_no_unlock])
             self.btm_group.add([self.hint_text])
-            self.pz_player.ui_manager.remove([self.hint_unlock, self.hint_no_unlock])
+            self.pz_main.ui_manager.remove([self.hint_unlock, self.hint_no_unlock])
             if hint_num == 0:
-                self.hint_text.text = self.pz_player.puzzle_data.hint1.decode("ascii")
+                self.hint_text.text = self.pz_main.puzzle_player.puzzle_data.hint1.decode("ascii")
             elif hint_num == 1:
-                self.hint_text.text = self.pz_player.puzzle_data.hint2.decode("ascii")
+                self.hint_text.text = self.pz_main.puzzle_player.puzzle_data.hint2.decode("ascii")
             elif hint_num == 2:
-                self.hint_text.text = self.pz_player.puzzle_data.hint3.decode("ascii")
+                self.hint_text.text = self.pz_main.puzzle_player.puzzle_data.hint3.decode("ascii")
         else:
-            load_bg(f"data_lt2/bg/nazo/system/?/jitenhint_{hint_num + 1}.arc", self.pz_player.btm_bg)
-            self.pz_player.ui_manager.add([self.hint_unlock, self.hint_no_unlock])
+            load_bg(f"data_lt2/bg/nazo/system/?/jitenhint_{hint_num + 1}.arc", self.pz_main.btm_bg)
+            self.pz_main.ui_manager.add([self.hint_unlock, self.hint_no_unlock])
             self.btm_group.add([self.hint_unlock, self.hint_no_unlock])
             self.btm_group.remove([self.hint_text])
 
@@ -127,9 +129,9 @@ class PuzzleHints:
         self.hints_used += 1
         self.update_hint_select(sprites=True)
         if self.hints_used < 3:
-            self.pz_player.btm_group.add(self.hint_select_btn[self.hints_used])
+            self.pz_main.btm_group.add(self.hint_select_btn[self.hints_used])
         self.view_hint(self.hints_used - 1)
-        self.pz_player.pz_main.hints_btn.set_tag(f"{self.hints_used}_off")
+        self.pz_main.hints_btn.set_tag(f"{self.hints_used}_off")
 
     def hint_back_post(self):
         self.hint_back.set_tag("off")
@@ -140,4 +142,4 @@ class PuzzleHints:
         self.return_puzzle()
 
     def return_puzzle(self):
-        self.pz_player.open_puzzle()
+        self.pz_main.return_from_hints()

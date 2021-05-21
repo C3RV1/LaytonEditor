@@ -16,6 +16,7 @@ tests/
 *.plz
 *.dat
 *.gds
+*.nds
 test*
 data_extracted
 data_permanent/fonts

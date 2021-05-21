@@ -2,6 +2,7 @@ import PIL.Image
 import numpy as np
 import sounddevice as sd
 import wx
+import wx.stc
 
 import utility.gdstextscript
 from formats.filesystem import *
@@ -108,6 +109,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_place_menu = wx.Menu()
         self.fp_soundbank_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
+        self.fp_event_menu = wx.Menu()
 
         def add_menu_item(menu, title, handler):
             fs_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
@@ -140,9 +142,13 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_puzzle_menu, "Apply changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
+        add_menu_item(self.fp_event_menu, "Apply changes and Save", self.fp_event_apply_and_save)
+
         self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.event_previewer = EventPlayer()
         self.puzzle_previewer = PuzzlePlayer()
+
+        self.puzzle_scintilla.SetEOLMode(wx.stc.STC_EOL_LF)
 
     def set_folder_and_rom(self, folder: Folder, rom: NintendoDSRom):
         self.base_folder = folder
@@ -234,8 +240,9 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := re.search("^n([0-9]+).dat", name):
             self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
-            self.pygame_previewer.start_renderer(self.puzzle_previewer)
+            self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
             self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
+            self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
             self.fp_formats_book.SetSelection(8)
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
@@ -245,10 +252,14 @@ class FilesystemEditor(generated.FilesystemEditor):
                 index = int(name[1:7])
                 self.event_previewer.set_event_id(index)
                 self.pygame_previewer.start_renderer(self.event_previewer)
-                self.fp_gds_stc.load_gds(gds, index, self.rom)
+                self.puzzle_scintilla.SetText(self.event_previewer.event_data.to_readable())
+                self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
+                self.fp_formats_book.SetSelection(8)
+                self.fp_menus_loaded.append("Event")
+                self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:
                 self.fp_gds_stc.load_gds(gds)
-            self.fp_formats_book.SetSelection(2)  # GDS page
+                self.fp_formats_book.SetSelection(2)  # GDS page
         elif name.endswith(".plz"):
             if name not in self.opened_archives:
                 self.opened_archives.append(name)
@@ -504,7 +515,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.pygame_previewer.start_renderer(self.puzzle_previewer)
+            self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
 
     def fp_puzzle_save(self, event):
         successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
@@ -513,3 +524,12 @@ class FilesystemEditor(generated.FilesystemEditor):
             error_dialog.ShowModal()
         else:
             self.puzzle_previewer.puzzle_data.save_to_rom()
+
+    def fp_event_apply_and_save(self, event):
+        successful, error_msg = self.event_previewer.event_data.from_readable(self.puzzle_scintilla.GetText())
+        if not successful:
+            error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+        else:
+            self.event_previewer.event_data.save_to_rom()
+            self.pygame_previewer.start_renderer(self.event_previewer)
