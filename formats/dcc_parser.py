@@ -1,5 +1,6 @@
+# Data and Code Container (DCC) format by Cervi
+
 import typing
-import copy
 
 
 def is_int(var):
@@ -35,6 +36,7 @@ class Parser:
     def parse(self, code_=None):
         if code_:
             self.code = code_
+        self.converted_paths = []
         self.split_by_tokens()
         self.create_structure()
         self.convert_variables()
@@ -44,6 +46,7 @@ class Parser:
             imported = []
         if code_:
             self.code = code_
+        self.converted_paths = []
         self.revert_variables()
         self.remove_structure(imported)
         self.join_by_tokens()
@@ -67,6 +70,12 @@ class Parser:
                         while self.code[code_index] != "\n" and code_index < len(self.code):
                             code_index += 1
                     continue
+            elif self.code[code_index] == "(" and not in_string:
+                tokens.append(current_token + "(")
+                current_token = ""
+            elif self.code[code_index] == ")" and not in_string:
+                tokens.append(current_token)
+                current_token = ")"
             elif self.code[code_index] == "\"":
                 in_string = not in_string
                 current_token += self.code[code_index]
@@ -93,23 +102,17 @@ class Parser:
                 while token[0] != "\"":
                     token_parsed += token[0]
                     token = token[1:]
-                token_parsed += token[0]
+                token_parsed += "\""
                 token = token[1:]
-                if "\\n" in token:
-                    token_parsed += "\n"
                 while len(token) > 0:
                     if token[:2] == "\\n" and add_string_newline:
                         token_parsed += "\\n\n"
                         token = token[2:]
                         continue
-                    if token[0] == "\"" and len(token) > 1:
-                        token_parsed += "\\\""
-                        token = token[1:]
-                        continue
                     token_parsed += token[0]
                     token = token[1:]
                 token = token_parsed
-            if token[-1] == "]" or token[-1] == ")":
+            if token[-1] == "]" or token == ")":
                 indent -= 1
             if token[-1] == "(":
                 token = token[:-1] + " ("
@@ -132,6 +135,33 @@ class Parser:
                 if "=" == token[0]:
                     token_value = token[1:]
                     current_group['unnamed'].append(token_value)
+                elif is_call:  # "," in token and
+                    params = []
+                    token_copy = token
+                    current_token = ""
+                    while len(token_copy) > 0:
+                        if token_copy[0] == "\"":
+                            current_token += "\""
+                            token_copy = token_copy[1:]
+                            while len(token_copy) > 0 and token_copy[0] != "\"":
+                                if token_copy[:2] == "\"":
+                                    current_token += "\""
+                                    token_copy = token_copy[1:]
+                                current_token += token_copy[0]
+                                token_copy = token_copy[1:]
+                            current_token += "\""
+                            token_copy = token_copy[1:]
+                        elif token_copy[0] == ",":
+                            params.append(current_token)
+                            current_token = ""
+                            token_copy = token_copy[1:]
+                        else:
+                            current_token += token_copy[0]
+                            token_copy = token_copy[1:]
+                    params.append(current_token)
+                    for par_i in range(len(params)):
+                        params[par_i] = params[par_i].strip()
+                    current_group["unnamed"].extend(params)
                 elif "$" == token[0]:
                     token_value = token[1:]
                     if token_value not in self.imported:
@@ -142,8 +172,6 @@ class Parser:
                         self.imported[token_value] = new_parser
                     else:
                         new_parser = self.imported[token_value]
-                    # current_group["unnamed"].extend(new_parser.code["unnamed"])
-                    # current_group["calls"].extend(new_parser.code["calls"])
                     current_group["named"].update(new_parser.code["named"])
                     self.converted_paths.extend(new_parser.converted_paths[1:])
                 elif ":" in token:
@@ -185,10 +213,7 @@ class Parser:
                     pre_group.extend(revert_group(group["named"][element]))
                     pre_group.append("]")
             for element in group["calls"]:
-                pre_group.append(f"{element['func']}(")
-                for parameter in element['parameters']:
-                    pre_group.append(f"={parameter}")
-                pre_group.append(")")
+                pre_group.append(f"{element['func']}(" + ", ".join(element['parameters']) + ")")
             return pre_group
 
         for imported_file in imported:
@@ -202,7 +227,6 @@ class Parser:
             for named in new_parser.code["named"].keys():
                 if named in self.code["named"].keys():
                     self.code["named"].pop(named)
-            # raise NotImplementedError("Imported still not finished")
             # TODO: Finish remove imported
         self.code = revert_group(self.code)
         for imported_file in imported:
@@ -225,6 +249,8 @@ class Parser:
                 return True
             elif value == "false":
                 return False
+            elif value == "null":
+                return None
             elif self.get_path(value) is not None:
                 if value not in self.converted_paths:
                     convert_path(".".join(value.split(".")[:-1]))
@@ -258,11 +284,14 @@ class Parser:
     def revert_variables(self):
         def revert_variable(value):
             if isinstance(value, str):
-                return f"\"{bytes(value, 'unicode_escape').decode('utf-8')}\""
+                value = bytes(value, 'unicode_escape').decode('utf-8').replace('\"', '\\\"')
+                return f"\"{value}\""
             elif value is True:
                 return "true"
             elif value is False:
                 return "false"
+            elif value is None:
+                return "null"
             elif isinstance(value, int):
                 return str(value)
             elif isinstance(value, float):
@@ -336,11 +365,11 @@ class Parser:
 
 
 """if __name__ == "__main__":
-    file = open("../event/event_example.dcc")
+    file = open("event_example.dcc")
     code = file.read()
     file.close()
     parser = Parser()
     parser.parse(code)
-    parser.serialize(imported=("event/event_base.dcc",))
+    # parser.serialize()
     # parser.parse()
     print(parser.code)"""

@@ -9,6 +9,8 @@ import formats.dlz
 import formats.dcc_parser
 import formats.gds_parser as pz_gds
 
+import utility.replace_substitutions as subs
+
 
 class PuzzleData:
     encoding = "ascii"
@@ -203,7 +205,6 @@ class PuzzleData:
         nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/en/nz_lst.dlz", rom=self.rom)
         nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
         for item in nazo_list:
-            print(item)
             if item[0] == self.internal_id:
                 item[2] = self.pad_with_0(self.title, 0x30)
         nz_lst_dlz.pack("<hh48sh", nazo_list)
@@ -233,7 +234,9 @@ class PuzzleData:
 
         gds_filename = "q{}_param.gds".format(self.internal_id)
 
-        self.gds.save(gds_filename, rom=gds_plz_file)
+        gds_file = gds_plz_file.open(gds_filename, "wb+")
+        self.gds.write_stream(gds_file)
+        gds_file.close()
         return True
 
     def get_gds_parser(self):
@@ -261,12 +264,13 @@ class PuzzleData:
         parser.get_path("pzd.picarat_decay", create=True)
         for picarat in self.picarat_decay:
             parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", self.text.decode(self.encoding))
-        parser.set_named("pzd.correct_answer", self.correct_answer.decode(self.encoding))
-        parser.set_named("pzd.incorrect_answer", self.incorrect_answer.decode(self.encoding))
-        parser.set_named("pzd.hint1", self.hint1.decode(self.encoding))
-        parser.set_named("pzd.hint2", self.hint2.decode(self.encoding))
-        parser.set_named("pzd.hint3", self.hint3.decode(self.encoding))
+        parser.set_named("pzd.text", subs.replace_substitutions(self.text.decode(self.encoding)))
+        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer.decode(self.encoding)))
+        parser.set_named("pzd.incorrect_answer",
+                         subs.replace_substitutions(self.incorrect_answer.decode(self.encoding)))
+        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1.decode(self.encoding)))
+        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2.decode(self.encoding)))
+        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3.decode(self.encoding)))
 
         parser.get_path("pzs", create=True)
         gds_parser = self.get_gds_parser()
@@ -297,12 +301,12 @@ class PuzzleData:
         self.title = parser["pzd.title"].encode(self.encoding)
         self.type = parser["pzd.type"]
         self.number = parser["pzd.number"]
-        self.text = parser["pzd.text"].encode(self.encoding)
-        self.correct_answer = parser["pzd.correct_answer"].encode(self.encoding)
-        self.incorrect_answer = parser["pzd.incorrect_answer"].encode(self.encoding)
-        self.hint1 = parser["pzd.hint1"].encode(self.encoding)
-        self.hint2 = parser["pzd.hint2"].encode(self.encoding)
-        self.hint3 = parser["pzd.hint3"].encode(self.encoding)
+        self.text = subs.convert_substitutions(parser["pzd.text"]).encode(self.encoding)
+        self.correct_answer = subs.convert_substitutions(parser["pzd.correct_answer"]).encode(self.encoding)
+        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"]).encode(self.encoding)
+        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"]).encode(self.encoding)
+        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"]).encode(self.encoding)
+        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"]).encode(self.encoding)
 
         self.tutorial_id = parser["pzd.tutorial_id"]
         self.reward_id = parser["pzd.reward_id"]

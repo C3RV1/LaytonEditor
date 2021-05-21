@@ -26,9 +26,9 @@ class GDS(FileFormat):
 
         self.commands = []
         self.params = []
-        file_lenght = rdr.read_uint32()
+        file_length = rdr.read_uint32()
 
-        while rdr.c < file_lenght:
+        while rdr.c < file_length:
             datatype = rdr.read_uint16()
             if datatype == 0:
                 break
@@ -40,9 +40,9 @@ class GDS(FileFormat):
                 self.params.append(rdr.read_string(rdr.read_uint16()))
             elif datatype == 0xc:
                 return
-        while rdr.c < file_lenght:
+        while rdr.c < file_length:
             self.commands.append(command := GDSCommand(rdr.read_uint16()))
-            while rdr.c < file_lenght:
+            while rdr.c < file_length:
                 datatype = rdr.read_uint16()
                 if datatype == 0:
                     break
@@ -60,7 +60,7 @@ class GDS(FileFormat):
             wtr = stream
         else:
             wtr = BinaryWriter(stream)
-        wtr.write_uint32(0)  # placeholder for filelenght
+        wtr.write_uint32(0)  # placeholder for file length
         for p in self.params:
             if isinstance(p, int):
                 wtr.write_uint16(1)

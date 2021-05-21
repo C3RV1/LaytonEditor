@@ -385,7 +385,10 @@ class PlzArchive(Archive, FileFormat):
         if isinstance(file, int):
             fileid = file
         else:
-            fileid = self.filenames.index(file)
+            try:
+                fileid = self.filenames.index(file)
+            except:
+                fileid = None
             if fileid is None and create:
                 fileid = self.add_file(file)
                 if not fileid:

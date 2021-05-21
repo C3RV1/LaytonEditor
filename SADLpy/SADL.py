@@ -35,7 +35,6 @@ class SADL(SoundBase):
         self.sadl = SADLStruct()
         self._ignore_loop = True
         self._print_info = print_info
-        start_offset = I32(0x100)
 
         self.buffer = []
         self.hist = []
@@ -44,7 +43,7 @@ class SADL(SoundBase):
         self._sample_extend = 0
         self._current_extend = 0
 
-        self.samples_written = I32(0)
+        self.samples_written = 0
 
         self._force_channels = 1
 
@@ -100,7 +99,7 @@ class SADL(SoundBase):
 
         for i in range(0, self._channels):
             self.offset.append(start_offset + self._block_size * i)
-            self.length.append(I32(0))
+            self.length.append(0)
             self.hist.append([I32(0), I32(0)])
 
         self.encoded = buffer.copy()
@@ -164,7 +163,7 @@ class SADL(SoundBase):
             sample_steps = self.number_samples
 
         while self.samples_written < sample_steps:
-            samples_to_do = I32(30)
+            samples_to_do = 30
             if self.samples_written + samples_to_do > sample_steps:
                 samples_to_do = sample_steps - self.samples_written
 

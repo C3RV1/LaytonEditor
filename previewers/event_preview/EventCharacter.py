@@ -23,16 +23,16 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         PygameEngine.Animation.Animation.__init__(self, groups)
         EventCharacterAbstract.__init__(self)
         self.orientation = EventCharacter.FACING_RIGHT
-        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
-        self.world_rect.y += 192 // 2
+        # self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
+        # self.world_rect.y += 192 // 2
         self.slot = 0
-        self.character_mouth = PygameEngine.Animation.Animation([])
-        self.character_mouth.layer = 10
-        self.character_mouth.add(groups)
+        self.character_mouth = None
 
         self.groups_perseverance = groups
 
         self.char_id = 0
+
+        self.talking = False
 
     def check_orientation(self):
         if self.slot in EventCharacter.SLOT_ON_LEFT:
@@ -73,7 +73,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
                 self.character_mouth.flip(False, False)
 
             self.character_mouth.world_rect.x = self.world_rect.x + mouth_offset[0]
-            self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h + mouth_offset[1]
+            self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h // 2 + mouth_offset[1]
             self.character_mouth.draw_alignment[1] = self.ALIGNMENT_BOTTOM
             self.character_mouth.set_tag_by_num(self.current_tag["child_index"])
             if self.current_tag["child_index"] == 0:
@@ -111,8 +111,13 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         self.slot = slot
         self.update_()
 
-    def set_anim(self, anim):
+    def set_anim(self, anim: str):
+        anim = anim.replace("surprise", "suprise")
         self.set_tag(anim)
+        if self.talking:
+            self.set_talking()
+        else:
+            self.set_not_talking()
         self.update_()
 
     def set_character(self, character):
@@ -121,10 +126,11 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
             self.hide()
             return
         load_animation(f"data_lt2/ani/eventchr/chr{character}.arc", self)
-        try:
-            load_animation(f"data_lt2/ani/sub/chr{character}_face.arc", self.character_mouth)
-        except:
+        if self.character_mouth is None:
+            self.create_mouth()
+        if not load_animation(f"data_lt2/ani/sub/chr{character}_face.arc", self.character_mouth):
             self.character_mouth.kill()
+            self.character_mouth = None
         self.set_tag_by_num(1)
         self.update_()
         self.show()
@@ -133,6 +139,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         return list(map(lambda tag: tag["name"], self.sprite_sheet_info["meta"]["frameTags"]))
 
     def set_talking(self):
+        self.talking = True
         current_tag = self.current_tag["name"]
         if not current_tag.startswith("*"):
             self.set_tag("*" + current_tag)
@@ -141,6 +148,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
             self.update_()
 
     def set_not_talking(self):
+        self.talking = False
         current_tag = self.current_tag["name"]
         if current_tag.endswith(" "):
             current_tag = current_tag[:-1]
@@ -153,3 +161,11 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
 
     def __str__(self):
         return f"<Character {self.char_id}>"
+
+    def __repr__(self):
+        return f"<Character {self.char_id}>"
+
+    def create_mouth(self):
+        self.character_mouth = PygameEngine.Animation.Animation(())
+        self.character_mouth.layer = 10
+        self.character_mouth.add(self.groups_perseverance)

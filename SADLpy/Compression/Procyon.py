@@ -1,8 +1,9 @@
 # Ported from: https://github.com/pleonex/tinke by Cervi for Team Top Hat
 
-from cint.cint import I16, I32, I8, U8, U16
+from cint.cint import I32, I8, U8, U16
 from ..Helper import Helper
 from .PCM import BitConverter
+import numpy as np
 
 
 def binary_log2(n: int):
@@ -20,20 +21,6 @@ def binary_log2_bytes(b: bytearray):
     return binary_log2(int(sum(c)/len(c)))
 
 
-def get_coef(d: bytearray):
-    best_coef = 0
-    coef_rating = 1000000000
-    for coef in range(1, 5):
-        tcoef = 0
-        for v in range(len(d)):
-            e = (v // BitConverter.from_bytes_short(Procyon.PROC_COEF[coef])) * BitConverter.from_bytes_short(Procyon.PROC_COEF[coef])
-            tcoef += abs(v - e)
-        if tcoef < coef_rating:
-            best_coef = coef
-            coef_rating = tcoef
-    return best_coef
-
-
 class Procyon:
     PROC_COEF = [bytearray(b"\x00\x00"),
                  bytearray(b"\x3c\x00"),
@@ -42,57 +29,55 @@ class Procyon:
                  bytearray(b"\x7a\xc4")]
 
     @staticmethod
-    def decode(encoded: bytearray, offset: int, samples_to_do: int, hist: list) -> bytearray:
-        buffer = []
+    def decode(encoded: bytearray, offset: int, samples_to_do: int, hist: list) -> np.ndarray:
+        buffer = np.zeros(shape=(samples_to_do,))
 
         pos = offset + 15
-        header = I32(encoded[pos])
+        header = encoded[pos]
         header = header ^ 0x80
         scale = 12 - (header & 0xf)
         coef_index = (header >> 4) & 0xf
 
         if coef_index > 4:
             coef_index = 0
-        coef1 = I8(Procyon.PROC_COEF[coef_index][0])
-        coef2 = I8(Procyon.PROC_COEF[coef_index][1])
+        coef1 = ((Procyon.PROC_COEF[coef_index][0] + 128) % 256) - 128
+        coef2 = ((Procyon.PROC_COEF[coef_index][1] + 128) % 256) - 128
 
         for i in range(samples_to_do):
-            pos = I32(offset + i // 2)
-            sample_byte = I8(encoded[int(pos)] ^ 0x80)
+            pos = offset + i // 2
+            sample_byte = encoded[int(pos)] ^ 0x80
+            sample_byte = ((sample_byte + 128) % 256) - 128
 
             if i & 1 != 0:
-                sample = I32(Helper.get_high_nibble_signed(int(sample_byte))) << 12
+                sample = Helper.get_high_nibble_signed(int(sample_byte))
             else:
-                sample = I32(Helper.get_low_nibble_signed(int(sample_byte))) << 12
+                sample = Helper.get_low_nibble_signed(int(sample_byte))
+
+            sample <<= 12
+            sample = ((sample + 65536) % (1 << 32)) - 65536
 
             if scale < 0:
                 sample <<= -scale
             else:
                 sample >>= scale
 
-            sample = I32((((hist[0] * coef1 + hist[1] * coef2) + 32) >> 6) + (sample << 6))
+            sample = (((hist[0] * coef1 + hist[1] * coef2) + 32) >> 6) + (sample << 6)
+            sample = ((sample + 65536) % (1 << 32)) - 65536
+
             hist[1] = hist[0]
             hist[0] = sample
-            # print("{} {}".format(hist[0], hist[1]))
 
-            # clamp = I16(Helper.clamp16((sample + 32) >> 6) >> 6 << 6)
-            clamp = I16(Helper.clamp16((sample + 32) >> 6) >> 6 << 6)
+            clamp = Helper.clamp16((sample + 32) >> 6) >> 6 << 6
 
-            # buffer.append(BitConverter.get_bytes_short(clamp))
-            buffer.append(int(clamp))
+            buffer[i] = clamp
 
         return buffer
 
     @staticmethod
-    def encode(decoded: bytearray, offset: int, hist: list, samples_to_do: int = 30,
-               coef_index: int = 0, scale: int = 0):
+    def encode(decoded: bytearray, offset: int, hist: list, samples_to_do: int = 30):
 
-        pos = offset
         buffer = bytearray()
         scale = 7
-        # print(scale)
-        # scale = 4
-        # coef_index = sum(I8(BitConverter.from_bytes_short(decoded[n:n+2])) for n in range(pos, pos + samples_to_do, 2)) % 5
         coef_index = 0
 
         coef1 = I8(Procyon.PROC_COEF[coef_index][0])
