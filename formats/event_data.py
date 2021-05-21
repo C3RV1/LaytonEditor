@@ -299,7 +299,7 @@ class EventData:
                 command.command = int(func[4:], 16)
                 command.params = params
             else:
-                return False, f"Function {func} not found"
+                return False, f"Function {repr(func)} not found"
             self.event_gds.commands.append(command)
 
         return True, ""
