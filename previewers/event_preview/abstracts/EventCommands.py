@@ -283,27 +283,21 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
             )
         elif event_gds_cmd.command == 0x2c:
             # WTF WHY DOES THIS WORK LIKE THIS
-            if event_gds_cmd.params[0] >= len(character_obj):
-                character = None
-                for char in character_obj:
-                    if char.get_char_id() == event_gds_cmd.params[0] and char.get_char_id() != 0:
-                        character = char
-                        break
-            else:
-                character = character_obj[event_gds_cmd.params[0]]
-            commands.append(
-                ChrVisibilityCMD(character, event_gds_cmd.params[1] > 0)
-            )
+            if event_gds_cmd.params[0] < len(character_obj):
+                commands.append(
+                    ChrVisibilityCMD(character_obj[event_gds_cmd.params[0]], event_gds_cmd.params[1] > 0)
+                )
         elif event_gds_cmd.command == 0x30:
             character = None
             for char in character_obj:
                 if char.get_char_id() == event_gds_cmd.params[0] and char.get_char_id() != 0:
                     character = char
                     break
-            commands.append(
-                ChrSlotCMD(character,
-                           event_gds_cmd.params[1])
-            )
+            if character is not None or True:
+                commands.append(
+                    ChrSlotCMD(character_obj[event_gds_cmd.params[0]],
+                               event_gds_cmd.params[1])
+                )
         elif event_gds_cmd.command == 0x32:
             commands.append(
                 FadeCMD(FadeCMD.FADE_IN, FadeCMD.FADE_BTM, bg_top, bg_btm, None)
@@ -356,6 +350,5 @@ def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top
                 FadeCMD(FadeCMD.FADE_IN, FadeCMD.FADE_TOP, bg_top, bg_btm, event_gds_cmd.params[0])
             )
         else:
-            Debug.log_warning(f"Command {hex(event_gds_cmd.command)} not recognised (skipped). "
-                              f"Event shouldn't be saved.", "GDS to Commands")
+            Debug.log_warning(f"Command {hex(event_gds_cmd.command)} not recognised (skipped). ", "GDS to Commands")
     return commands

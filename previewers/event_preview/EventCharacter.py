@@ -169,3 +169,6 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         self.character_mouth = PygameEngine.Animation.Animation(())
         self.character_mouth.layer = 10
         self.character_mouth.add(self.groups_perseverance)
+
+    def get_visibility(self):
+        return self.alive()
