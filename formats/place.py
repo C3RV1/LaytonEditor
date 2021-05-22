@@ -4,6 +4,7 @@ from typing import *
 from formats.binary import *
 from formats.filesystem import FileFormat
 
+
 @dataclass
 class PlaceHintcoin:
     x: int = 0
@@ -64,7 +65,7 @@ class Place(FileFormat):
     map_image_index: int = 0
     background_music_index: int = 0
     hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
-    sprites: List[PlaceSprite] = [PlaceSprite() or _ in range(12)]
+    sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
     objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
     comments: List[PlaceComment] = [PlaceComment() for _ in range(16)]
     exits: List[PlaceExit] = [PlaceExit() for _ in range(12)]
