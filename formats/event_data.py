@@ -163,12 +163,22 @@ class EventData:
                 func = "bg_load"
                 params = [params[0], 0]
                 params[1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
+            elif cmd.command == 0x6:
+                func = "set_mode"
+            elif cmd.command == 0x7:
+                func = "set_next_mode"
+            elif cmd.command == 0x8:
+                func = "play_movie"
+            elif cmd.command == 0x9:
+                func = "goto"
             elif cmd.command == 0x2a:
                 func = "chr_show"
             elif cmd.command == 0x2b:
                 func = "chr_hide"
             elif cmd.command == 0x2c:
                 func = "chr_visibility"
+            elif cmd.command == 0x2d:
+                func = "show_chapter"
             elif cmd.command == 0x30:
                 func = "chr_slot"
             elif cmd.command == 0x31:
@@ -250,6 +260,18 @@ class EventData:
                         command.command = 0x87
                 if command.command in [0x72, 0x80, 0x87, 0x88]:
                     command.params = params[:1]
+            elif func == "set_mode":
+                command.command = 0x6
+                command.params = params
+            elif func == "set_next_mode":
+                command.command = 0x7
+                command.params = params
+            elif func == "play_movie":
+                command.command = 0x8
+                command.params = params
+            elif func == "goto":
+                command.command = 0x9
+                command.params = params
             elif func == "bg_load":
                 command.command = 0x21 if params[1] == 0 else 0x22
                 command.params = params[:1]
@@ -261,6 +283,9 @@ class EventData:
                 command.params = params
             elif func == "chr_visibility":
                 command.command = 0x2c
+                command.params = params
+            elif func == "show_chapter":
+                command.command = 0x2d
                 command.params = params
             elif func == "chr_slot":
                 command.command = 0x30
