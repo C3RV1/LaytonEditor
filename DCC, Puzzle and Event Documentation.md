@@ -1,15 +1,3 @@
-<style>
-table th:first-of-type {
-    width: 10%;
-}
-table th:nth-of-type(2) {
-    width: 40%;
-}
-table th:nth-of-type(3) {
-    width: 50%;
-}
-</style>
-
 # DCC, Puzzle and Event Documentation
 
 This documentation explains how to write code in the DCC language for puzzles and events in the Layton Editor.
@@ -651,5 +639,5 @@ Slots with offset: 4, 5, 1 (double offset)
 
 ## Note on Character Animations
 
-The name of the animations can be found using the sprite editing window. The animations preceeded with "*" are for when the character is talking, and so cannot be used on events.
+The name of the animations can be found using the sprite editing window. The animations preceeded with "\*" are for when the character is talking, and so cannot be used on events.
 
