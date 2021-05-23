@@ -156,13 +156,13 @@ class Event:
                     params_1[1] = 0  # btm screen
                 elif cmd.command in [0x87, 0x88]:
                     params_1[1] = 1  # top screen
-                if cmd.params in [0x72, 0x80, 0x87, 0x88]:
+                if cmd.command in [0x72, 0x80, 0x87, 0x88]:
                     params_1[2] = params[0]  # timed
                 params = params_1
             elif cmd.command in [0x21, 0x22]:
                 func = "bg_load"
                 params = [params[0], 0]
-                params[1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
+                params[-1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
             elif cmd.command == 0x5:
                 func = "set_room"
             elif cmd.command == 0x6:
@@ -196,6 +196,8 @@ class Event:
                 func = "set_voice"
             elif cmd.command == 0x5d:
                 func = "sfx_sad"
+            elif cmd.command == 0x62:
+                func = "bg_music"
             elif cmd.command == 0x6a:
                 func = "bg_shake"
             elif cmd.command == 0x4:
@@ -237,14 +239,15 @@ class Event:
             self.characters_anim_index[i] = parser[f"evdat.char{i}.anim"]
 
         dial_files = self.event_texts.filenames
+        prefix, postfix, complete = self.resolve_event_id()
         for filename in dial_files:
-            self.event_texts.remove_file(filename)
+            if filename.startswith(f"e{prefix}_{postfix}"):
+                self.event_texts.remove_file(filename)
 
         self.event_gds.commands = []
         for call in parser["evs::calls"]:
             func = call["func"]
             params = call["parameters"]
-            print(func, params)
             command = formats.gds.GDSCommand(0)
             if func == "fade":
                 if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
@@ -253,9 +256,9 @@ class Event:
                             command.command = 0x2
                         else:  # [0x80]
                             command.command = 0x80
-                    elif params[1] == 1:  # [0x32]
+                    elif params[1] == 0:  # [0x32]
                         command.command = 0x32
-                    elif params[1] == 0:  # [0x88]
+                    elif params[1] == 1:  # [0x88]
                         command.command = 0x88
                 else:  # [0x3, 0x33, 0x72, 0x87]
                     if params[1] == 2:  # [0x3, 0x72]
@@ -263,12 +266,12 @@ class Event:
                             command.command = 0x3
                         else:  # [0x72]
                             command.command = 0x72
-                    elif params[1] == 1:  # [0x33]
+                    elif params[1] == 0:  # [0x33]
                         command.command = 0x33
-                    elif params[1] == 0:  # [0x87]
+                    elif params[1] == 1:  # [0x87]
                         command.command = 0x87
                 if command.command in [0x72, 0x80, 0x87, 0x88]:
-                    command.params = params[:1]
+                    command.params = params[2:]
             elif func == "set_room":
                 command.command = 0x5
                 command.params = params
@@ -288,8 +291,8 @@ class Event:
                 command.command = 0xb
                 command.params = params
             elif func == "bg_load":
-                command.command = 0x21 if params[1] == 0 else 0x22
-                command.params = params[:1]
+                command.command = 0x21 if params[-1] == 0 else 0x22
+                command.params = [params[0], 3]
             elif func == "chr_show":
                 command.command = 0x2a
                 command.params = params
@@ -321,6 +324,9 @@ class Event:
             elif func == "sfx_sad":
                 command.command = 0x5d
                 command.params = params
+            elif func == "bg_music":
+                command.command = 0x62
+                command.params = params
             elif func == "bg_shake":
                 command.command = 0x6a
                 command.params = params
@@ -342,5 +348,4 @@ class Event:
             else:
                 return False, f"Function {repr(func)} not found"
             self.event_gds.commands.append(command)
-
         return True, ""
