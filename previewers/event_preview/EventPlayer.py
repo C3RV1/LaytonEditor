@@ -1,4 +1,4 @@
-import formats.event_data as ev_dat
+import formats.event as ev_dat
 import PygameEngine.GameManager
 import PygameEngine.Input
 import PygameEngine.Sprite
@@ -22,7 +22,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.inp = PygameEngine.Input.Input()
 
-        self.event_data = ev_dat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+        self.event_data = ev_dat.Event(rom=RomSingleton.RomSingleton().rom, lang=LANG)
 
         self.top_bg = EventBG(self.top_group, "top")
         self.btm_bg = EventBG(self.btm_group, "bottom")
@@ -67,6 +67,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.top_bg.load()
         self.btm_bg.add(self.btm_group)
         self.btm_bg.load()
+        self.btm_bg.fade(self.btm_bg.FADE_IN, 0, True)
         self.top_group.add([])
         for character in self.characters:
             self.btm_group.add(character)
@@ -163,6 +164,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
             try:
                 int(command_split[1])
             except:
+                Debug.log_warning(f"Command setani 1: Cannot set for character {command_split[1]}", self)
                 return
             character = None
             for char in self.characters:
@@ -173,3 +175,5 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
             if character:
                 character.set_anim(command_split[2].replace("_", " "))
                 Debug.log(f"Command setani: Setting {character} to {command_split[2].replace('_', ' ')}", self)
+            else:
+                Debug.log_warning(f"Command setani 2: Cannot set for character {command_split[1]}", self)

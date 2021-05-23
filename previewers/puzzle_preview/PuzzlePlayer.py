@@ -1,5 +1,5 @@
 from pygame_utils.rom import RomSingleton
-import formats.puzzle_data as pzd
+import formats.puzzle as pzd
 from previewers.puzzle_preview.PuzzleMain import PuzzleMain
 
 
@@ -9,7 +9,7 @@ class PuzzlePlayer:
 
         self.puzzle_id = 0
         self.hints_used = 0
-        self.puzzle_data = pzd.PuzzleData(rom=RomSingleton.RomSingleton().rom)
+        self.puzzle_data = pzd.Puzzle(rom=RomSingleton.RomSingleton().rom)
 
         self.pz_main = PuzzleMain(self)
 

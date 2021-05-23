@@ -33,3 +33,6 @@ class EventCharacterAbstract:
 
     def get_char_id(self):
         pass
+
+    def get_visibility(self):
+        pass

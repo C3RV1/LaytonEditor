@@ -7,7 +7,7 @@ import utility.replace_substitutions as subs
 from typing import Optional
 
 
-class EventData:
+class Event:
     def __init__(self, rom: fs.NintendoDSRom = None, lang="en"):
         self.rom = rom
         self.event_id = 0
@@ -156,31 +156,48 @@ class EventData:
                     params_1[1] = 0  # btm screen
                 elif cmd.command in [0x87, 0x88]:
                     params_1[1] = 1  # top screen
-                if cmd.params in [0x72, 0x80, 0x87, 0x88]:
+                if cmd.command in [0x72, 0x80, 0x87, 0x88]:
                     params_1[2] = params[0]  # timed
                 params = params_1
             elif cmd.command in [0x21, 0x22]:
                 func = "bg_load"
                 params = [params[0], 0]
-                params[1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
+                params[-1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
+            elif cmd.command == 0x5:
+                func = "set_room"
+            elif cmd.command == 0x6:
+                func = "set_mode"
+            elif cmd.command == 0x7:
+                func = "set_next_mode"
+            elif cmd.command == 0x8:
+                func = "set_movie"
+            elif cmd.command == 0x9:
+                func = "set_event"
+            elif cmd.command == 0xb:
+                func = "set_puzzle"
             elif cmd.command == 0x2a:
                 func = "chr_show"
             elif cmd.command == 0x2b:
                 func = "chr_hide"
             elif cmd.command == 0x2c:
                 func = "chr_visibility"
+                params[1] = True if params[1] > 0 else False
+            elif cmd.command == 0x2d:
+                func = "show_chapter"
             elif cmd.command == 0x30:
                 func = "chr_slot"
             elif cmd.command == 0x31:
                 func = "wait"
             elif cmd.command == 0x37:
-                func = "bg_opacity?"
+                func = "bg_opacity"
             elif cmd.command == 0x3f:
                 func = "chr_anim"
             elif cmd.command == 0x5c:
                 func = "set_voice"
             elif cmd.command == 0x5d:
                 func = "sfx_sad"
+            elif cmd.command == 0x62:
+                func = "bg_music"
             elif cmd.command == 0x6a:
                 func = "bg_shake"
             elif cmd.command == 0x4:
@@ -221,11 +238,16 @@ class EventData:
             self.characters_shown[i] = parser[f"evdat.char{i}.shown"]
             self.characters_anim_index[i] = parser[f"evdat.char{i}.anim"]
 
+        dial_files = self.event_texts.filenames
+        prefix, postfix, complete = self.resolve_event_id()
+        for filename in dial_files:
+            if filename.startswith(f"e{prefix}_{postfix}"):
+                self.event_texts.remove_file(filename)
+
         self.event_gds.commands = []
         for call in parser["evs::calls"]:
             func = call["func"]
             params = call["parameters"]
-            print(func, params)
             command = formats.gds.GDSCommand(0)
             if func == "fade":
                 if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
@@ -234,9 +256,9 @@ class EventData:
                             command.command = 0x2
                         else:  # [0x80]
                             command.command = 0x80
-                    elif params[1] == 1:  # [0x32]
+                    elif params[1] == 0:  # [0x32]
                         command.command = 0x32
-                    elif params[1] == 0:  # [0x88]
+                    elif params[1] == 1:  # [0x88]
                         command.command = 0x88
                 else:  # [0x3, 0x33, 0x72, 0x87]
                     if params[1] == 2:  # [0x3, 0x72]
@@ -244,15 +266,33 @@ class EventData:
                             command.command = 0x3
                         else:  # [0x72]
                             command.command = 0x72
-                    elif params[1] == 1:  # [0x33]
+                    elif params[1] == 0:  # [0x33]
                         command.command = 0x33
-                    elif params[1] == 0:  # [0x87]
+                    elif params[1] == 1:  # [0x87]
                         command.command = 0x87
                 if command.command in [0x72, 0x80, 0x87, 0x88]:
-                    command.params = params[:1]
+                    command.params = params[2:]
+            elif func == "set_room":
+                command.command = 0x5
+                command.params = params
+            elif func == "set_mode":
+                command.command = 0x6
+                command.params = params
+            elif func == "set_next_mode":
+                command.command = 0x7
+                command.params = params
+            elif func == "set_movie":
+                command.command = 0x8
+                command.params = params
+            elif func == "set_event":
+                command.command = 0x9
+                command.params = params
+            elif func == "set_puzzle":
+                command.command = 0xb
+                command.params = params
             elif func == "bg_load":
-                command.command = 0x21 if params[1] == 0 else 0x22
-                command.params = params[:1]
+                command.command = 0x21 if params[-1] == 0 else 0x22
+                command.params = [params[0], 3]
             elif func == "chr_show":
                 command.command = 0x2a
                 command.params = params
@@ -261,6 +301,10 @@ class EventData:
                 command.params = params
             elif func == "chr_visibility":
                 command.command = 0x2c
+                params[1] = 2.0 if params[1] else -2.0
+                command.params = params
+            elif func == "show_chapter":
+                command.command = 0x2d
                 command.params = params
             elif func == "chr_slot":
                 command.command = 0x30
@@ -268,7 +312,7 @@ class EventData:
             elif func == "wait":
                 command.command = 0x31
                 command.params = params
-            elif func == "bg_opacity?":
+            elif func == "bg_opacity":
                 command.command = 0x37
                 command.params = params
             elif func == "chr_anim":
@@ -279,6 +323,9 @@ class EventData:
                 command.params = params
             elif func == "sfx_sad":
                 command.command = 0x5d
+                command.params = params
+            elif func == "bg_music":
+                command.command = 0x62
                 command.params = params
             elif func == "bg_shake":
                 command.command = 0x6a
@@ -301,5 +348,4 @@ class EventData:
             else:
                 return False, f"Function {repr(func)} not found"
             self.event_gds.commands.append(command)
-
         return True, ""

@@ -175,6 +175,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             self.text_left_to_do = self.text_left_to_do[1:]
             if self.character_talking is not None:
                 self.event_player.execute_command(command)
+            if self.finished:
+                self.pause()
             return
 
         # Move one character from self.text_left_to_do to current_text

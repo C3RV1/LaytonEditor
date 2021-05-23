@@ -43,11 +43,20 @@ def replace_extension(filename, extension):
     return ".".join(filename.split(".")[:-1]) + extension
 
 
+def skip_event_dat(archive: str, filename: str):
+    if re.match(r"^ev_d([0-9]{1,2})[abc]?\.plz$", archive.split("/")[-1]):
+        if filename[0] != "e":
+            return True
+    return False
+
+
 # Trees
 def treenode_import_from_plz_file(tree: wx.TreeCtrl, treenode: wx.TreeItemId,
                                   archive: str, rom: NintendoDSRom) -> wx.TreeItemId:
     tree.DeleteChildren(treenode)
     for name in rom.get_archive(archive).filenames:
+        if skip_event_dat(archive, name):  # Skip dat files for events
+            continue
         node = tree.AppendItem(treenode, name, data=(name, rom.get_archive(archive)))
     return treenode
 
@@ -223,7 +232,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_info_text.Clear()
             text = "using samples: " + ", ".join([str(x) for x in presetbank.samples_info.keys()])
             self.fp_info_text.WriteText(text)
-            self.fp_formats_book.SetSelection(8)  # Info page
+            self.fp_formats_book.SetSelection(7)  # Info page
         elif name.startswith("n_place"):
             place = Place(name, rom=archive)
             self.fp_place_viewer.load_place(place, self.rom)
@@ -243,7 +252,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
             self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
             self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
-            self.fp_formats_book.SetSelection(8)
+            self.fp_formats_book.SetSelection(8) # DCC Page
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
         elif name.endswith(".gds"):
@@ -254,7 +263,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.pygame_previewer.start_renderer(self.event_previewer)
                 self.puzzle_scintilla.SetText(self.event_previewer.event_data.to_readable())
                 self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
-                self.fp_formats_book.SetSelection(8)
+                self.fp_formats_book.SetSelection(8) # DCC Page
                 self.fp_menus_loaded.append("Event")
                 self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:

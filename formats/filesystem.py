@@ -401,9 +401,16 @@ class PlzArchive(Archive, FileFormat):
             return io.TextIOWrapper(romfile)
         return romfile
 
-    def add_file(self, file: str):
+    def add_file(self, filename: str):
         new_file_id = len(self.files)
         self.files.append(b"")
-        self.filenames.append(file)
+        self.filenames.append(filename)
 
         return new_file_id
+
+    def remove_file(self, filename: str):
+        if filename not in self.filenames:
+            return
+        index = self.filenames.index(filename)
+        self.files.pop(index)
+        self.filenames.pop(index)

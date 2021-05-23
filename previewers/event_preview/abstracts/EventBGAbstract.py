@@ -1,8 +1,8 @@
 
 
 class EventBGAbstract:
-    FADE_IN = 1
-    FADE_OUT = 2
+    FADE_OUT = 1
+    FADE_IN = 2
 
     def __init__(self):
         pass

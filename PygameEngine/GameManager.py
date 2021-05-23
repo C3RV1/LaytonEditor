@@ -25,8 +25,10 @@ class GameManager(object):
         if not GameManager.__inited or not self.running:
             if screen_pos is not None:
                 os.environ["SDL_VIDEO_WINDOW_POS"] = f"{screen_pos[0]},{screen_pos[1]}"
+            pygame.mixer.init(channels=2, allowedchanges=0)
             pygame.init()
-            pygame.mixer.init()
+            if pygame.mixer.get_init()[2] != 2:
+                raise ValueError(f"Cannot set channels on pygame. Channels {pygame.mixer.get_init()[2]}")
 
             self.running = True
 
