@@ -134,7 +134,6 @@ class Event:
         parser.get_path("evdat", create=True)
         parser.set_named("evdat.map_top_id", self.map_top_id)
         parser.set_named("evdat.map_btm_id", self.map_bottom_id)
-        parser.get_path(f"evdat.characters", create=True)
         for i in range(len(self.characters)):
             parser.get_path(f"evdat.char{i}", create=True)
             parser.set_named(f"evdat.char{i}.char", self.characters[i])
