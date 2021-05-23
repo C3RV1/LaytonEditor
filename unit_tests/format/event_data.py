@@ -1,4 +1,4 @@
-import formats.event_data as evdat
+import formats.event as evdat
 from formats.filesystem import NintendoDSRom
 import unittest
 import os
@@ -11,7 +11,7 @@ class TestEventData(unittest.TestCase):
         cls.rom = NintendoDSRom.fromFile(rom_path + "/../../test_rom.nds")
 
     def get_ev(self):
-        ev = evdat.EventData(rom=self.rom)
+        ev = evdat.Event(rom=self.rom)
         ev.set_event_id(14230)
         ev.load_from_rom()
         return ev

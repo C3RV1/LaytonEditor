@@ -4,7 +4,7 @@ from .EventSoundAbstract import EventSoundAbstract
 from .EventWaiterAbstract import EventWaiterAbstract
 from .EventDialogueAbstract import EventDialogueAbstract
 import formats.gds
-import formats.event_data
+import formats.event
 from PygameEngine.Debug import Debug
 
 
@@ -233,7 +233,7 @@ class WaitCMD(EventCMD):
             self.waiter.wait(self.wait_frames)
 
 
-def event_to_commands(event: formats.event_data.EventData, character_obj, bg_top, bg_btm, waiter, sfx_player,
+def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm, waiter, sfx_player,
                       dialogue):
     commands = list()
     commands.append(

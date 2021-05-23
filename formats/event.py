@@ -7,7 +7,7 @@ import utility.replace_substitutions as subs
 from typing import Optional
 
 
-class EventData:
+class Event:
     def __init__(self, rom: fs.NintendoDSRom = None, lang="en"):
         self.rom = rom
         self.event_id = 0

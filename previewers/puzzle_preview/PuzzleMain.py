@@ -5,7 +5,7 @@ from PygameEngine.Sprite import Sprite
 from PygameEngine.Animation import Animation
 from PygameEngine.UI.UIManager import UIManager
 from pygame_utils.rom.rom_extract import load_animation, load_bg
-import formats.puzzle_data as pzd
+import formats.puzzle as pzd
 from typing import TYPE_CHECKING
 from pygame_utils import TwoScreenRenderer
 from previewers.puzzle_preview.PuzzleHints import PuzzleHints

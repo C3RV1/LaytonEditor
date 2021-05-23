@@ -1,4 +1,4 @@
-import formats.puzzle_data as pzd
+import formats.puzzle as pzd
 from formats.filesystem import NintendoDSRom
 import unittest
 import os
@@ -11,7 +11,7 @@ class TestPuzzleData(unittest.TestCase):
         cls.rom = NintendoDSRom.fromFile(rom_path + "/../../test_rom.nds")
 
     def get_pzd(self):
-        pz_data = pzd.PuzzleData(rom=self.rom)
+        pz_data = pzd.Puzzle(rom=self.rom)
         pz_data.set_internal_id(1)
         pz_data.load_from_rom()
         return pz_data

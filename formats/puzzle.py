@@ -12,7 +12,7 @@ import formats.gds_parser as pz_gds
 import utility.replace_substitutions as subs
 
 
-class PuzzleData:
+class Puzzle:
     encoding = "ascii"
     UNUSED_0 = 0
     UNUSED_1 = 1

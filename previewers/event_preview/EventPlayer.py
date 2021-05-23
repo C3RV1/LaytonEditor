@@ -1,4 +1,4 @@
-import formats.event_data as ev_dat
+import formats.event as ev_dat
 import PygameEngine.GameManager
 import PygameEngine.Input
 import PygameEngine.Sprite
@@ -22,7 +22,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.inp = PygameEngine.Input.Input()
 
-        self.event_data = ev_dat.EventData(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+        self.event_data = ev_dat.Event(rom=RomSingleton.RomSingleton().rom, lang=LANG)
 
         self.top_bg = EventBG(self.top_group, "top")
         self.btm_bg = EventBG(self.btm_group, "bottom")
