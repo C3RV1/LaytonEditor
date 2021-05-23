@@ -12,19 +12,19 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
     FACING_RIGHT = 2
 
     SLOT_MAX = 6
-    SLOT_OFFSET = {0: 0, 1: 0,
+    SLOT_OFFSET = {0: 0, 1: 52*2 - 30,
                    2: 0, 3: 0,
                    4: 52, 5: 52,
                    6: 0}
     SLOT_ON_LEFT = [0, 3, 4]  # Verified against game binary
-    SLOT_ON_RIGHT = [2, 5, 6]
+    SLOT_ON_RIGHT = [1, 2, 5, 6]
 
     def __init__(self, groups):
         PygameEngine.Animation.Animation.__init__(self, groups)
         EventCharacterAbstract.__init__(self)
         self.orientation = EventCharacter.FACING_RIGHT
-        # self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
-        # self.world_rect.y += 192 // 2
+        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
+        self.world_rect.y = 192 // 2
         self.slot = 0
         self.character_mouth = None
 
@@ -73,7 +73,7 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
                 self.character_mouth.flip(False, False)
 
             self.character_mouth.world_rect.x = self.world_rect.x + mouth_offset[0]
-            self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h // 2 + mouth_offset[1]
+            self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h + mouth_offset[1]
             self.character_mouth.draw_alignment[1] = self.ALIGNMENT_BOTTOM
             self.character_mouth.set_tag_by_num(self.current_tag["child_index"])
             if self.current_tag["child_index"] == 0:
@@ -122,10 +122,15 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
 
     def set_character(self, character):
         self.char_id = character
+        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
+        self.world_rect.y = 192 // 2
         if character == 0:
             self.hide()
             return
         load_animation(f"data_lt2/ani/eventchr/chr{character}.arc", self)
+        if self.sprite_sheet_info["meta"]["drawoff"] is not None:
+            self.world_rect.x += self.sprite_sheet_info["meta"]["drawoff"][0]
+            self.world_rect.y += self.sprite_sheet_info["meta"]["drawoff"][1]
         if self.character_mouth is None:
             self.create_mouth()
         if not load_animation(f"data_lt2/ani/sub/chr{character}_face.arc", self.character_mouth):

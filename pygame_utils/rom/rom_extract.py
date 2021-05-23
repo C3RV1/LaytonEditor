@@ -44,7 +44,9 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
             x_pos += pil_images[image].size[0]
         pil_sprite_sheet.save(export_path + ".png")
 
-        sprite_info = {"frames": [], "meta": {"frameTags": []}}
+        sprite_info = {"frames": [], "meta": {"frameTags": [], "drawoff": None}}
+        if "drawoff" in anim.variables.keys():
+            sprite_info["meta"]["drawoff"] = anim.variables["drawoff"]
         x_pos = 0
         for i in range(len(anim.images)):
             new_frame_info = {

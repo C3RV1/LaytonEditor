@@ -43,11 +43,20 @@ def replace_extension(filename, extension):
     return ".".join(filename.split(".")[:-1]) + extension
 
 
+def skip_event_dat(archive: str, filename: str):
+    if re.match(r"^ev_d([0-9]{1,2})[abc]?\.plz$", archive.split("/")[-1]):
+        if filename[0] != "e":
+            return True
+    return False
+
+
 # Trees
 def treenode_import_from_plz_file(tree: wx.TreeCtrl, treenode: wx.TreeItemId,
                                   archive: str, rom: NintendoDSRom) -> wx.TreeItemId:
     tree.DeleteChildren(treenode)
     for name in rom.get_archive(archive).filenames:
+        if skip_event_dat(archive, name):  # Skip dat files for events
+            continue
         node = tree.AppendItem(treenode, name, data=(name, rom.get_archive(archive)))
     return treenode
 
