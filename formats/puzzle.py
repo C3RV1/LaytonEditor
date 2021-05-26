@@ -13,7 +13,7 @@ import utility.replace_substitutions as subs
 
 
 class Puzzle:
-    encoding = "ascii"
+    encoding = "cp1252"
     UNUSED_0 = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
@@ -264,13 +264,14 @@ class Puzzle:
         parser.get_path("pzd.picarat_decay", create=True)
         for picarat in self.picarat_decay:
             parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", subs.replace_substitutions(self.text.decode(self.encoding)))
-        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer.decode(self.encoding)))
+        parser.set_named("pzd.text", subs.replace_substitutions(self.text.decode(self.encoding), puzzle=True))
+        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer.decode(self.encoding),
+                                                                          puzzle=True))
         parser.set_named("pzd.incorrect_answer",
-                         subs.replace_substitutions(self.incorrect_answer.decode(self.encoding)))
-        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1.decode(self.encoding)))
-        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2.decode(self.encoding)))
-        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3.decode(self.encoding)))
+                         subs.replace_substitutions(self.incorrect_answer.decode(self.encoding), puzzle=True))
+        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1.decode(self.encoding), puzzle=True))
+        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2.decode(self.encoding), puzzle=True))
+        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3.decode(self.encoding), puzzle=True))
 
         parser.get_path("pzs", create=True)
         gds_parser = self.get_gds_parser()
@@ -301,12 +302,14 @@ class Puzzle:
         self.title = parser["pzd.title"].encode(self.encoding)
         self.type = parser["pzd.type"]
         self.number = parser["pzd.number"]
-        self.text = subs.convert_substitutions(parser["pzd.text"]).encode(self.encoding)
-        self.correct_answer = subs.convert_substitutions(parser["pzd.correct_answer"]).encode(self.encoding)
-        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"]).encode(self.encoding)
-        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"]).encode(self.encoding)
-        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"]).encode(self.encoding)
-        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"]).encode(self.encoding)
+        self.text = subs.convert_substitutions(parser["pzd.text"], puzzle=True).encode(self.encoding)
+        self.correct_answer = subs.convert_substitutions(parser["pzd.correct_answer"],
+                                                         puzzle=True).encode(self.encoding)
+        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"],
+                                                           puzzle=True).encode(self.encoding)
+        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"], puzzle=True).encode(self.encoding)
+        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"], puzzle=True).encode(self.encoding)
+        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"], puzzle=True).encode(self.encoding)
 
         self.tutorial_id = parser["pzd.tutorial_id"]
         self.reward_id = parser["pzd.reward_id"]

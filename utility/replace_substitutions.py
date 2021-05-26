@@ -15,13 +15,17 @@ subs_dict = {"<''>": "\"",
              "<->": "•"}
 
 
-def replace_substitutions(text):
+def replace_substitutions(text, puzzle=False):
     for key, sub in subs_dict.items():
+        if puzzle and key == "@B":
+            continue
         text = text.replace(key, sub)
     return text
 
 
-def convert_substitutions(text):
+def convert_substitutions(text, puzzle=False):
     for key, sub in subs_dict.items():
+        if puzzle and key == "@B":
+            continue
         text = text.replace(sub, key)
     return text
