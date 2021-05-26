@@ -224,7 +224,7 @@ class AniSprite(FileFormat):
         wtr.write_string_array(variable_labels, 16)
         for dat_i in range(8):
             for var_l in variable_labels:
-                wtr.write_uint16(self.variables[var_l][dat_i])
+                wtr.write_int16(self.variables[var_l][dat_i])
 
         for anim in self.animations:
             wtr.write_uint16(anim.child_image_x)
