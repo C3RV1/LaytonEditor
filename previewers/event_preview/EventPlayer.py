@@ -145,7 +145,10 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
             editing = not self.run_events
             instant = (self.current_gds_command <= run_until_command)
 
-            next_command.execute(editing, instant)
+            try:
+                next_command.execute(editing, instant)
+            except Exception as e:
+                Debug.log_error(f"Error while executing command. Error {e}", self)
 
             # If we should return and we are auto_progressing to next command
             if self.is_busy() and not instant:

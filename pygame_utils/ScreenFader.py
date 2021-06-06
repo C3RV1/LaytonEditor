@@ -6,6 +6,7 @@ import pygame as pg
 class ScreenFader(PygameEngine.Sprite.Sprite):
     FADING_OUT = 1
     FADING_IN = 2
+    DEFAULT_FADE_TIME = .7
 
     def __init__(self, groups):
         super().__init__(())
@@ -16,7 +17,7 @@ class ScreenFader(PygameEngine.Sprite.Sprite):
         self.fade = self.FADING_OUT
         self.fading = False
         self.current_time = 0
-        self.fade_time = .7
+        self.fade_time = self.DEFAULT_FADE_TIME
         self.on_finish_fade = lambda fade_type: None
         self.run_on_finish_fade = True
 
