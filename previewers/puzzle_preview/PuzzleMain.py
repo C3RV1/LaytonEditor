@@ -97,7 +97,8 @@ class PuzzleMain(TwoScreenRenderer.TwoScreenRenderer):
         self.top_group.add([self.text_bg, self.puzzle_text])
         load_bg(self.puzzle_player.puzzle_data.btm_path, self.btm_bg)
         load_bg(f"data_lt2/bg/nazo/system/nazo_text{self.puzzle_player.puzzle_data.bg_top_id}.arc", self.text_bg)
-        self.puzzle_text.text = replace_substitutions(self.puzzle_player.puzzle_data.text.decode("ascii"))
+        self.puzzle_text.text = replace_substitutions(self.puzzle_player.puzzle_data.text.decode(
+            self.puzzle_player.puzzle_data.encoding), puzzle=True)
 
         self.load_header()
 
