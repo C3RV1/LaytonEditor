@@ -13,10 +13,10 @@ ARM9_START = 0x02000800
 
 def _make_and_load(patch_dir, bootstrap_location, patch_location, rebuild=True):
     if rebuild:
-        process = subprocess.Popen(f"make clean", cwd=patch_dir)
+        process = subprocess.Popen(f"make clean", cwd=patch_dir, shell=True)
         process.wait()
     process = subprocess.Popen(f"make CODEADDR=0x{patch_location:x} "
-                               f"STRAPADDR=0x{bootstrap_location:x}", cwd=patch_dir)
+                               f"STRAPADDR=0x{bootstrap_location:x}", cwd=patch_dir, shell=True)
     process.wait()
     with open(os.path.join(patch_dir, "output/patch.bin"), "rb") as f:
         patch_bin = f.read()

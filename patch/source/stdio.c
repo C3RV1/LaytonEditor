@@ -1,4 +1,4 @@
-#include "proflayton.h"
+#include <lt2.h>
 #include <string.h>
 
 #define PRINTF_BUFFER_SIZE 0x100
@@ -68,6 +68,18 @@ void sprintf(char *buffer, const char *format, ...)
         }
     }
     *buffer++ = 0x0;
+
+}
+
+void putc(char c)
+{
+    char text[2] = {c, 0};
+    nocashMessage(text);
+}
+
+void puts(const char *text)
+{
+    nocashMessage(text);
 }
 
 void printf(const char *format, ...)
@@ -141,20 +153,5 @@ void printf(const char *format, ...)
         }
     }
     *bufferptr++ = 0;
-    nocashMessage(buffer);
+    puts(buffer);
 }
-
-//void *operator new(std::size_t size)
-//{
-//    return AllocBytes(size);
-//}
-//
-//void operator delete(void *ptr)
-//{
-//    FreeBytes(ptr);
-//}
-//
-//void operator delete(void *ptr, std::size_t size)
-//{
-//    FreeBytes(ptr);
-//}

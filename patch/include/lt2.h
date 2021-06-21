@@ -1,91 +1,68 @@
-#include <nds.h>
+#ifndef _LT2_H
+#define _LT2_H
 
-#ifndef _NSMB_H
-#define _NSMB_H
+#include <stdint.h>
+#include <nds.h>
+#include <util.h>
+#include <hooks.h>
+
+typedef uint8_t undefined;
+typedef uint8_t undefined1;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+typedef unsigned int uint;
 
 typedef u8 FSFile[0x48];
 typedef u8 OSThread[0xC0];
-typedef unsigned char undefined;
-typedef unsigned char undefined1;
-typedef unsigned short undefined2;
-typedef unsigned int undefined4;
-
-struct sprite_t
+typedef struct
 {
-	int field_0x0;
-	int field_0x4;
-	int field_0x8;
-	undefined field_0xc;
-	undefined field_0xd;
-	undefined field_0xe;
-	undefined field_0xf;
-	undefined field_0x10;
-	undefined field_0x11;
-	undefined field_0x12;
-	undefined field_0x13;
+    int sprite_image;
+    int animation_index;
+    int animation_frame;
+	undefined field_0x08_0x13[8];
 	short x;
 	short y;
-	undefined field_0x18;
-	undefined field_0x19;
-	undefined field_0x1a;
-	undefined field_0x1b;
-	undefined field_0x1c;
-	undefined field_0x1d;
-	undefined field_0x1e;
-	undefined field_0x1f;
-};
+	undefined field_0x18_0x1f[8];
+} sprite_t;
 
-struct button_t
+typedef struct
 {
 	int x;
 	int y;
 	int width;
 	int height;
 	int sfx;
-	undefined field_0x14;
-	undefined field_0x15;
-	undefined field_0x16;
-	undefined field_0x17;
-	undefined field_0x18;
-	undefined field_0x19;
-	undefined field_0x1a;
-	undefined field_0x1b;
-	struct sprite_t *sprite;
-	undefined field_0x20;
-	undefined field_0x21;
-	undefined field_0x22;
-	undefined field_0x23;
-	undefined field_0x24;
-	undefined field_0x25;
-	undefined field_0x26;
-	undefined field_0x27;
-	int animation_off; /* Created by retype action */
-	int animation_on;  /* Created by retype action */
-	undefined field_0x30;
-	undefined field_0x31;
-	undefined field_0x32;
-	undefined field_0x33;
-	undefined field_0x34;
-	undefined field_0x35;
-	undefined field_0x36;
-	undefined field_0x37;
-};
+	undefined field_0x14_0x1b[8];
+	sprite_t *sprite;
+	undefined field_0x20_0x27[8];
+	int animation_off;
+	int animation_on;
+	undefined field_0x30_0x37[8];
+} button_t;
 
-typedef struct
-{
-	u8 unk[0x30];
-} sprite_sub_t;
+typedef u8 sprite_sub_t[0x30];
+
+// Functions in LT2
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-	// Allocating and freeing
-	void FreeSomething(void *ptr);
-	void *AllocSomething(u32 size);
+    // Heap management
+	void *OS_Malloc(u32 size);
+	void OS_Free(void *ptr);
 
-	void *AllocBytes(u32 size);
-	void FreeBytes(void *ptr);
+	void *OS_Malloc2(u32 size);
+	void OS_Free2(void *ptr);
+
 
 	// Files
 	void FS_InitFile(FSFile *p_file);
@@ -95,17 +72,19 @@ extern "C"
 	bool FS_SeekFile(FSFile *p_file, s32 offset, int origin);
 	bool FS_OpenFileFast(FSFile *p_file, u32 archivePtr, int file_id);
 
-	//Threading funcs
+	//Threading functions, timers and IRQ
 	void OS_CreateThread(OSThread *thread, void (*func)(void *), void *arg, void *stack, u32 stackSize, u32 prio);
 	void OS_WakeupThreadDirect(OSThread *thread);
+
+	// Timers and IRQ
+	void OS_EnableIRQ(u32 irq);
+    void OS_SetTimer(int param_1, undefined4 param_2, undefined4 param_3);
+    void OS_SetIRQFunction(uint param_1, undefined4 param_2);
 
 	// Sound
 	void setupsound(void *ptr_sounddata, u32 p2unki, u32 stream_n, s32 p4ni, u32 p5ni);
 	void stopsound(void *ptr_sounddata, u32 p2unki);
 	void startsound(void *ptr_sounddata, u32 p2unki);
-
-	// Irq
-	void enableIRQ(u32 irq);
 
 	// Buttons
 	void button_init(button_t *button_data, u32 x, u32 y, const char *imagename, int soundfx, const char *variable);
@@ -181,20 +160,7 @@ extern "C"
 #define TOUCH 0x2000
 #define HINGE 0x8000
 
-//Custom key reading funcs.
-void myScanKeys();
-int myKeysHeld();
-int myKeysDown();
-void waitForUserInput(u32 input);
-void waitForUserPress(u32 keys);
-void waitForVBlankIrqLess();
-
-// Usefull things:
-// String Formatting
-void sprintf(char *buffer, const char *format, ...);
-void printf(const char *format, ...);
-
-
+// Pointers used in the LT2 engine
 #define TEXT_DATA 0x02088b44
 #define SQM_DATA 0x02088ca8
 #define BIG_DATA 0x02088a60
@@ -203,9 +169,5 @@ void printf(const char *format, ...);
 #define SAVE_DATA *(u32 *)(0x020889f4)
 #define TOUCH_DATA 0x02088ad4
 #define BG_DATA 0x02088c14
-
-// Video functions
-void FadeIn(s8 screen, s8 start);
-void FadeOut(s8 screen, s8 start);
 
 #endif

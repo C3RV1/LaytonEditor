@@ -19,6 +19,7 @@ SECTIONS {
 		*(COMMON)
 		*(.data)
 		__text_end  = . ;
+		. = ALIGN(4);
 		__ovpt_start = .;
 		*(.ovpt) /* overlay patches table */
 		__ovpt_end = .;
