@@ -30,7 +30,7 @@ class Procyon:
 
     @staticmethod
     def decode(encoded: bytearray, offset: int, samples_to_do: int, hist: list) -> np.ndarray:
-        buffer = np.zeros(shape=(samples_to_do,))
+        buffer = np.zeros(shape=(samples_to_do,), dtype=np.int32)
 
         pos = offset + 15
         header = encoded[pos]

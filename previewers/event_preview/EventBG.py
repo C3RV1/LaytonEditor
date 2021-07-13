@@ -26,8 +26,13 @@ class EventBG(EventBGAbstract):
         self.fader.set_fade(fade_type, False, instant_time=instant)
         if fade_time is not None:
             self.fader.current_time = fade_time / ORIGINAL_FPS
+            self.fader.fade_time = fade_time / ORIGINAL_FPS
+        else:
+            self.fader.current_time = self.fader.DEFAULT_FADE_TIME
+            self.fader.fade_time = self.fader.DEFAULT_FADE_TIME
         if instant:
             self.fader.current_time = 0
+            self.fader.fade_time = self.fader.DEFAULT_FADE_TIME
         self.fader.update_fade()
 
     def shake(self):
