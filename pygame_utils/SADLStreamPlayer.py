@@ -18,7 +18,7 @@ class SoundPlayer:
     def add_samples(self, first_init=False):
         sample_steps = 15
         if first_init:
-            sample_steps *= 2  # Load twice on start up to make sure we have enough for playback
+            sample_steps *= 2  # If the sound gets cut increase this number (slower load, better playback)
         new_samples = np.array(self.sadl.decode_procyon(sample_steps))
         if new_samples.shape[0] == 0:
             self.loading = False

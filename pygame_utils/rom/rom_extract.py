@@ -106,7 +106,7 @@ def load_effect(path: str) -> SADLpy.SADL.SADL:
         with open(sad_export_path, "wb") as sad_export_file:
             sad_export_file.write(sound_data)
 
-    sadl = SADLpy.SADL.SADL(sad_export_path, 0, True)
+    sadl = SADLpy.SADL.SADL(sad_export_path, 0)
     sadl.read_file()
     return sadl
 

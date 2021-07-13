@@ -38,7 +38,7 @@ class DataChunk:
     def __init__(self):
         self.chunk_id = bytes()
         self.chunk_size = 0
-        self.data = bytearray()
+        self.data = list()
 
     def copy(self):
         new_data_chunk = DataChunk()

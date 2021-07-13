@@ -10,8 +10,8 @@ def clamp_nibble(n: int):
 
 class Helper:
     @staticmethod
-    def merge_channels(left: list, right: list, loop_sample: int = 0) -> list:
-        result = []
+    def merge_channels(left: bytearray, right: bytearray, loop_sample: int = 0) -> bytearray:
+        result = bytearray()
         for i in range(loop_sample, len(left), 2):
             result.append(left[i])
             if i + 1 < len(left):
@@ -27,11 +27,11 @@ class Helper:
         left = bytearray()
         right = bytearray()
 
-        for i in range(0, int(len(data) / 4), 4):
+        for i in range(0, len(data), 4):
             left.append(data[i])
             left.append(data[i+1])
-            right.append(data[i])
-            right.append(data[i+1])
+            right.append(data[i+2])
+            right.append(data[i+3])
 
         return [left, right]
 
@@ -41,9 +41,22 @@ class Helper:
 
         for i in range(0, len(data)):
             bit4.append(data[i] & 0x0f)
-            bit4.append((data[i] & 0xf) >> 4)
+            bit4.append((data[i] & 0xf0) >> 4)
 
         return bit4
+
+    @staticmethod
+    def bit4_to_bit8(bytes_: bytearray) -> bytearray:
+        bit8 = bytearray()
+
+        for i in range(0, len(bytes_), 2):
+            byte1 = bytes_[i]
+            byte2 = 0
+            if i + 1 < len(bytes_):
+                byte2 = bytes_[i + 1] << 4
+            bit8.append(byte1 + byte2)
+
+        return bit8
 
     NIBBLE_TO_INT = [0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1]
 
@@ -70,3 +83,7 @@ class Helper:
         if val < -32768:
             return -32768
         return val
+
+    @staticmethod
+    def convert_channels_to_samples(channels, sample_rate):
+        pass

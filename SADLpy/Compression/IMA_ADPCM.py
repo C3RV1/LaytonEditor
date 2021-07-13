@@ -1,108 +1,70 @@
 # Ported from: https://github.com/pleonex/tinke by Cervi for Team Top Hat
 
 from .PCM import BitConverter
+from ..Helper import Helper
+import numpy as np
 
 
 class ImaAdpcm:
-    @staticmethod
-    def decompress(data: bytearray) -> bytearray:
-        result = bytearray()
+    def __init__(self):
+        self.index = 0
+        self.step_size = 7
+        self.new_sample = 0
 
-        index = 0
-        step_size = 7
+        self.predicted_sample = 0
 
-        data = ImaAdpcm.bit8_to_bit4(data)
+    def reset(self):
+        self.index = 0
+        self.step_size = 7
+        self.new_sample = 0
 
-        new_sample = 0
+        self.predicted_sample = 0
+
+    def decompress(self, data: bytearray) -> np.ndarray:
+        data = Helper.bit8_to_bit4(data)
+        result = np.zeros((len(data),))
+
         for i in range(0, len(data)):
-            difference = 0
-
-            if data[i] & 4 != 0:
-                difference += step_size
-            if data[i] & 2 != 0:
-                difference += step_size >> 1
-            if data[i] & 1 != 0:
-                difference += step_size >> 2
-            difference += step_size >> 3
+            step = ImaAdpcm.STEPSIZE_TABLE[self.index]
+            difference = step >> 3
+            if data[i] & 4:
+                difference += step
+            if data[i] & 2:
+                difference += step >> 1
+            if data[i] & 1:
+                difference += step >> 2
 
             if data[i] & 8 != 0:
                 difference = -difference
-            new_sample += difference
+            self.new_sample += difference
 
-            if new_sample > 32767:
-                new_sample = 32767
-            elif new_sample < -32768:
-                new_sample = -32768
+            if self.new_sample > 32767:
+                self.new_sample = 32767
+            elif self.new_sample < -32768:
+                self.new_sample = -32768
 
-            result.extend(BitConverter.get_bytes_short(new_sample))
-            index += ImaAdpcm.INDEX_TABLE[data[i]]
-            if index < 0:
-                index = 0
-            elif index > 88:
-                index = 88
-            step_size = ImaAdpcm.STEPSIZE_TABLE[index]
+            # print(BitConverter.get_bytes_short(self.new_sample))
+            result[i] = self.new_sample
+            # result += BitConverter.get_bytes_short(self.new_sample)
+
+            # result += BitConverter.get_bytes_short(self.new_sample)
+            self.index += ImaAdpcm.INDEX_TABLE[data[i]]
+            if self.index < 0:
+                self.index = 0
+            elif self.index > 88:
+                self.index = 88
 
         return result
 
-    @staticmethod
-    def decompress2(data: bytearray, sample: int, step_index: int) -> bytearray:
-        if len(data) < 4:
-            return data
-
+    def compress(self, data: list) -> bytearray:
         result = bytearray()
 
-        index = step_index
-        if index < 0:
-            index = 0
-        elif index > 88:
-            index = 88
-        step_size = ImaAdpcm.STEPSIZE_TABLE[index]
-
-        data = data[4:]
-        data = ImaAdpcm.bit8_to_bit4(data)
-
-        new_sample = sample
+        # for i in range(0, len(data), 2):
         for i in range(0, len(data)):
-            difference = 0
-
-            if data[i] & 4 != 0:
-                difference += step_size
-            if data[i] & 2 != 0:
-                difference += step_size >> 1
-            if data[i] & 1 != 0:
-                difference += step_size >> 2
-            difference += step_size >> 3
-
-            if data[i] & 8 != 0:
-                difference = -difference
-            new_sample += difference
-
-            if new_sample > 32767:
-                new_sample = 32767
-            elif new_sample < -32768:
-                new_sample = -32768
-
-            result.extend(BitConverter.get_bytes_short(new_sample))
-            index += ImaAdpcm.INDEX_TABLE[data[i]]
-            if index < 0:
-                index = 0
-            elif index > 88:
-                index = 88
-            step_size = ImaAdpcm.STEPSIZE_TABLE[index]
-
-        return result
-
-    @staticmethod
-    def compress(data: bytearray) -> bytearray:
-        result = bytearray()
-
-        predicted_sample = 0
-        index = 0
-        step_size = ImaAdpcm.STEPSIZE_TABLE[index]
-
-        for i in range(0, len(data), 2):
-            original_sample = BitConverter.to_int_16(data, i)
-            different = original_sample - predicted_sample
+            step = ImaAdpcm.STEPSIZE_TABLE[self.index]
+            # original_sample = BitConverter.to_int_16(data, i)
+            original_sample = int(data[i])
+            different = original_sample - self.predicted_sample
 
             if different >= 0:
                 new_sample = 0
@@ -111,7 +73,7 @@ class ImaAdpcm:
                 different = -different
 
             mask = 4
-            temp_step_size = step_size
+            temp_step_size = step
             for j in range(0, 3):
                 if different >= temp_step_size:
                     new_sample |= mask
@@ -119,132 +81,34 @@ class ImaAdpcm:
                 temp_step_size >>= 1
                 mask >>= 1
 
-            result.append(new_sample)
+            different = step >> 3
+            if new_sample & 4:
+                different += step
+            if new_sample & 2:
+                different += step >> 1
+            if new_sample & 1:
+                different += step >> 2
 
-            different = 0
-            if new_sample & 4 != 0:
-                different += step_size
-            if new_sample & 2 != 0:
-                different += step_size >> 1
-            if new_sample & 1 != 0:
-                different += step_size >> 3
-            different += step_size >> 8
-
-            if new_sample & 8 != 0:
+            if new_sample & 8:
                 different = -different
-            predicted_sample += different
+            self.predicted_sample += different
 
-            if predicted_sample > 32767:
-                predicted_sample = 32767
-            elif predicted_sample < -32768:
-                predicted_sample = -32768
+            if self.predicted_sample > 32767:
+                self.predicted_sample = 32767
+            elif self.predicted_sample < -32768:
+                self.predicted_sample = -32768
 
-            index += ImaAdpcm.INDEX_TABLE[new_sample]
-            if index < 0:
-                index = 0
-            elif index > 88:
-                index = 88
-            step_size = ImaAdpcm.STEPSIZE_TABLE[index]
+            result.append(new_sample & 0xF)
 
-        return ImaAdpcm.bit4_to_bit8(result)
+            self.index += ImaAdpcm.INDEX_TABLE[new_sample]
+            if self.index < 0:
+                self.index = 0
+            elif self.index > 88:
+                self.index = 88
 
-    @staticmethod
-    def compress_block(data: bytearray, block_size: int) -> list:
-        result = []
-        block = bytearray()
-
-        predicted_sample = 0
-        index = 0
-        step_size = ImaAdpcm.STEPSIZE_TABLE[index]
-
-        for i in range(0, len(data), 2):
-            if i % block_size == 0:
-                if i != 0:
-                    block_data = ImaAdpcm.bit4_to_bit8(block[4:len(block) - 4])
-                    new_block = bytearray()
-                    new_block.extend(block[0:4])
-                    new_block.extend(block_data)
-                    result.append(new_block)
-                block = bytearray()
-                block.extend(BitConverter.get_bytes_short(predicted_sample))
-                block.extend(BitConverter.get_bytes_short(index))
-
-            original_sample = BitConverter.to_int_16(data, i)
-            different = original_sample - predicted_sample
-
-            if different >= 0:
-                new_sample = 0
-            else:
-                new_sample = 8
-                different = -different
-
-            mask = 4
-            temp_step_size = step_size
-            for j in range(0, 3):
-                if different >= temp_step_size:
-                    new_sample |= mask
-                    different -= temp_step_size
-                temp_step_size >>= 1
-                mask >>= 1
-
-            block.append(new_sample)
-
-            different = 0
-            if new_sample & 4 != 0:
-                different += step_size
-            if new_sample & 2 != 0:
-                different += step_size >> 1
-            if new_sample & 1 != 0:
-                different += step_size >> 3
-            different += step_size >> 8
-
-            if new_sample & 8 != 0:
-                different = -different
-            predicted_sample += different
-
-            if predicted_sample > 32767:
-                predicted_sample = 32767
-            elif predicted_sample < -32768:
-                predicted_sample = -32768
-
-            index += ImaAdpcm.INDEX_TABLE[new_sample]
-            if index < 0:
-                index = 0
-            elif index > 88:
-                index = 88
-            step_size = ImaAdpcm.STEPSIZE_TABLE[index]
-
-        if len(block) > 4:
-            block_data = ImaAdpcm.bit4_to_bit8(block[4:len(block) - 4])
-            new_block = bytearray()
-            new_block.extend(block[0:4])
-            new_block.extend(block_data)
-            result.append(new_block)
+        result = Helper.bit4_to_bit8(result)
 
         return result
-
-    @staticmethod
-    def bit8_to_bit4(data: bytearray) -> bytearray:
-        bit4 = bytearray()
-
-        for i in range(0, len(data)):
-            bit4.append(data[i] & 0x0f)
-            bit4.append((data[i] & 0xf0) >> 4)
-
-        return bit4
-
-    @staticmethod
-    def bit4_to_bit8(bytes_: bytearray) -> bytearray:
-        bit8 = bytearray()
-
-        for i in range(0, len(bytes_), 2):
-            byte1 = bytes_[i]
-            byte2 = 0
-            if i + 1 < len(bytes_):
-                byte2 = bytes_[i + 1] << 4
-            bit8.append(byte1 + byte2)
-
-        return bit8
 
     INDEX_TABLE = [-1, -1, -1, -1, 2, 4, 6, 8,
                    -1, -1, -1, -1, 2, 4, 6, 8]

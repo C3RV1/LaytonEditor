@@ -4,6 +4,8 @@ from .WAV import *
 from .binaryedit.binreader import *
 from .binaryedit.binwriter import *
 from .Compression import PCM
+from .Helper import Helper
+from .Compression.PCM import BitConverter
 
 
 class SoundBase:
@@ -14,8 +16,7 @@ class SoundBase:
         self._copyright = copyright_
         self._editable = editable
 
-        self._pcm16 = bytearray()
-        self._pcm16_loop = bytearray()
+        self._pcm16 = []
 
         self._loop_enabled = True
         self._loop_begin_sample = 0
@@ -27,6 +28,9 @@ class SoundBase:
         self._block_size = 0
         self._sample_bit_depth = 0
         self._ignore_loop = False  # Ignore the loop if it does not need to be re-decoded
+
+    def create_objects(self):
+        pass
 
     @property
     def sound_file(self):
@@ -80,33 +84,32 @@ class SoundBase:
     def sample_bit_depth(self):
         return self._sample_bit_depth
 
-    def initialize(self):
-        encoded = self.read_file()
-        return
+    def initialize(self, decode_all=False):
+        self.read_file()
 
-        self._pcm16 = self.decode(encoded, False)
-        if self._loop_enabled and not self._ignore_loop:
-            self._pcm16_loop = self.decode(encoded, True)
-        else:
-            self._pcm16_loop = self._pcm16.copy()
+        if not decode_all:
+            return
+
+        # Automatically copies to pcm16
+        return self.decode()
 
     # Abstract
     def read_file(self) -> bytearray:
         raise NotImplementedError("read_file not implemented")
 
     # Abstract
-    def decode(self, encoded: bytearray, loop_enabled: bool) -> bytearray:
+    def decode(self, sample_steps=-1) -> bytearray:
         raise NotImplementedError("decode not implemented")
 
     def import_(self, file_in: str):
         wav = self.read_wav(file_in)
+        self._channels = wav.wave.fmt.num_channels
+        self.create_objects()
         self._pcm16 = wav.wave.data.data
-        self._pcm16_loop = bytearray()
 
         self._total_samples = int(len(wav.wave.data.data) /
                                    ((wav.wave.fmt.bits_per_sample / 8) * wav.wave.fmt.num_channels))
         self._sample_rate = wav.wave.fmt.sample_rate
-        self._channels = wav.wave.fmt.num_channels
         self._block_size = wav.wave.fmt.block_align
         self._sample_bit_depth = wav.wave.fmt.bits_per_sample
 
@@ -118,9 +121,6 @@ class SoundBase:
         raise NotImplementedError("write_file not implemented")
 
     def encode(self) -> bytearray:
-        return self._encode(self._pcm16)
-
-    def _encode(self, data: bytearray) -> bytearray:
         raise NotImplementedError("encode not implemented")
 
     @staticmethod
@@ -155,13 +155,27 @@ class SoundBase:
         br.seek(br.tell() - 4)
         wav.wave.data.chunk_id = br.read_chars(4)
         wav.wave.data.chunk_size = br.read_uint32()
-        wav.wave.data.data = br.read_bytearray(wav.wave.data.chunk_size - 0x08)
+
+        wav_data = br.read_bytearray(wav.wave.data.chunk_size)
+        if wav.wave.fmt.num_channels == 2:
+            wav_data = Helper.divide_channels(wav_data)
+        else:
+            wav_data = [wav_data]
+        wav_data_lists = []
+        for channel in wav_data:
+            parsed = []
+            for i in range(0, len(channel), 2):
+                parsed.append(BitConverter.to_int_16(channel, i))
+            wav_data_lists.append(parsed)
+        wav.wave.data.data = wav_data_lists
+
         br.close()
 
         if wav.wave.fmt.audio_format != WaveFormat.WAVE_FORMAT_PCM:
             raise NotImplementedError()
 
         if wav.wave.fmt.audio_format == WaveFormat.WAVE_FORMAT_PCM and wav.wave.fmt.bits_per_sample == 0x08:
+            raise NotImplementedError()
             wav.wave.fmt.bits_per_sample = 0x10
             wav.wave.fmt.block_align = wav.wave.fmt.num_channels * wav.wave.fmt.bits_per_sample / 8
             wav.wave.fmt.byte_rate = wav.wave.fmt.sample_rate * wav.wave.fmt.bits_per_sample * \
@@ -170,19 +184,28 @@ class SoundBase:
 
         return wav
 
-    def save_wav(self, file_out: str, loop: bool):
+    def save_wav(self, file_out: str):
+        def convert_channel_to_bytearray(channel):
+            converted = bytearray()
+            for sample in channel:
+                converted += BitConverter.get_bytes_short(int(sample))
+            return converted
+
         byte_rate = int(self._sample_rate * 0x10 * self._channels / 8)
         block_align = int(self._channels * 0x10 / 8)
 
         bw = None
         try:
+            bytearray_channel = list(map(lambda x: convert_channel_to_bytearray(x), self._pcm16))
+            if self._channels == 2:
+                bytearray_channel = Helper.merge_channels(bytearray_channel[0], bytearray_channel[1])
+            else:
+                bytearray_channel = bytearray_channel[0]
+
             bw = BinaryWriter(open(file_out, "wb"))
 
             bw.write_bytearray(bytearray(b"RIFF"))
-            if loop:
-                bw.write_uint32(0x28 + len(self._pcm16_loop))
-            else:
-                bw.write_uint32(0x28 + len(self._pcm16))
+            bw.write_uint32(0x28 + len(bytearray_channel))
 
             bw.write_bytearray(bytearray(b"WAVE"))
             bw.write_bytearray(bytearray(b"fmt\x20"))
@@ -195,12 +218,8 @@ class SoundBase:
             bw.write_uint16(0x10)
 
             bw.write_bytearray(bytearray(b"data"))
-            if loop:
-                bw.write_uint32(len(self._pcm16_loop))
-                bw.write_bytearray(self._pcm16_loop)
-            else:
-                bw.write_uint32(len(self._pcm16))
-                bw.write_bytearray(self._pcm16)
+            bw.write_uint32(len(bytearray_channel))
+            bw.write_bytearray(bytearray_channel)
         except Exception as e:
             print("Exception (SoundBase) saving wav to: {}".format(file_out))
             print(str(e))
