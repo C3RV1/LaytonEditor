@@ -1,23 +1,26 @@
 MIi_CpuCopy32 = 0x0202092c;
-AllocSomething = 0x0203d73c;
-FreeSomething = 0x0203d728;
+
 FS_InitFile = 0x02023be8;
 FS_OpenFile = 0x02023ec8;
 FS_ReadFile = 0x0202401c;
 FS_CloseFile = 0x02023f10;
 FS_SeekFile = 0x0202402c;
 FS_OpenFileFast = 0x02023e58;
+
 OS_CreateThread = 0x0201ded0;
 OS_WakeupThreadDirect = 0x0201e26c;
-Timer_Set = 0x0201d564;
+OS_SetTimer = 0x0201d564;
 OS_SetIRQFunction = 0x0201d408;
-enableIRQ = 0x0201d5d8;
-AllocBytes = 0x0203d6c4;
-FreeBytes = 0x0203d728;
+OS_EnableIRQ = 0x0201d5d8;
 
-setupsound = 0x0207fb54;
-stopsound = 0x0207fbcc;
-startsound = 0x0207fbdc;
+OS_Malloc = 0x0203d6c4;
+OS_Free = 0x0203d728;
+OS_Malloc2 = 0x0203d73c;
+OS_Free2 = 0x0203d728;
+
+snd_setup = 0x0207fb54;
+snd_stop = 0x0207fbcc;
+snd_start = 0x0207fbdc;
 
 sqm_load = 0x0207f780;
 sqm_started = 0x0207fa78;
@@ -64,3 +67,5 @@ text_clear = 0x02072a2c;
 plz_load_file = 0x0206c8b8;
 plz_read_file = 0x0206bdd4;
 load_file_compressed = 0x0206c230;
+
+draw_box = 0x02070e8c;

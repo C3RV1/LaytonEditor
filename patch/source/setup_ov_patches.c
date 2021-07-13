@@ -1,6 +1,4 @@
-#include "proflayton.h"
-#include "string.h"
-#include <hooks.hpp>
+#include <lt2.h>
 
 u32 overlay = 0;
 extern u32 __ovpt_start;
@@ -19,32 +17,26 @@ void set_overlay_disabled(int ov)
 
 void print_enabled_overlays()
 {
-    char final[200] = "PDB: Overlays loaded: ";
-    char *finalptr = final + sizeof("PDB: Overlays loaded: ");
-    char buffer[20];
     for (int ov = 0; ov < 64; ov++)
     {
         if (loaded_overlays[ov >> 5] & (1 << ov))
         {
-            sprintf(buffer, "%d ", ov);
-            strcpy(finalptr, buffer);
-            finalptr += strlen(buffer);
+            printf("%d ", ov);
         }
     }
-    *finalptr++ = '\n';
-    *finalptr++ = 0;
-    printf(final);
 }
 
 void patchoverlays()
 {
-    printf("PDB: Loaded Overlay: %d\n", overlay);
+    printf("PDB: Loaded Overlay %d | ", overlay);
     set_overlay_enabled(overlay);
     print_enabled_overlays();
+    putc('\n');
     
     ovpatch_t *ptr = (ovpatch_t *)(&__ovpt_start);
-    while (ptr <= (ovpatch_t *) &__ovpt_end)
+    while (ptr < (ovpatch_t *) &__ovpt_end)
     {
+        printf("Checking overlay %d \n", ptr->overlay);
         if (ptr->overlay == overlay)
         {
             if (ptr->paste_org > 0)
@@ -78,7 +70,8 @@ HOOK(0x0202492c, u32 param1, u32 param2)
  HOOK(0x02024980, u32 param1, u32 param2)
  {
       overlay = param2;
-      printf("PDB: Unloaded Overlay %d\n", param2);
+      printf("PDB: Unloaded Overlay %d | ", param2);
       set_overlay_disabled(param2);
       print_enabled_overlays();
+      putc('\n');
  }
