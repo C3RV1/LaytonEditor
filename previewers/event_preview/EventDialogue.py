@@ -110,8 +110,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         # Init dialogue positions
         self.inner_text = PygameEngine.UI.Text.Text(())
         self.inner_text.layer = 120
-        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True, line_spacing=2,
-                                 letter_spacing=1)
+        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True,
+                                 line_spacing=2, letter_spacing=1)
         self.inner_text.world_rect.x = (- 256 // 2) + 10
         self.inner_text.world_rect.y = self.world_rect.y - self.world_rect.h + 20
         self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_BOTTOM]

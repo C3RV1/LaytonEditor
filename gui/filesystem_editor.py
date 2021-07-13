@@ -17,6 +17,7 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from previewers.event_preview.EventPlayer import EventPlayer
 from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
+from previewers.sadl_preview.SADLPreview import SADLPreview
 
 
 class ClipBoardFile:
@@ -119,6 +120,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_soundbank_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
+        self.fp_stream_menu = wx.Menu()
 
         def add_menu_item(menu, title, handler):
             fs_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
@@ -153,9 +155,13 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_event_menu, "Apply changes and Save", self.fp_event_apply_and_save)
 
+        add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
+        add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
+
         self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.event_previewer = EventPlayer()
         self.puzzle_previewer = PuzzlePlayer()
+        self.sadl_previewer = SADLPreview()
 
         self.puzzle_scintilla.SetEOLMode(wx.stc.STC_EOL_LF)
 
@@ -274,6 +280,12 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.opened_archives.append(name)
                 treenode_import_from_plz_file(self.ft_filetree, self.ft_filetree.GetSelection(), name, self.rom)
             self.fp_formats_book.SetSelection(0)  # Empty page
+        elif name.lower().endswith(".sad"):
+            self.pygame_previewer.start_renderer(self.sadl_previewer)
+            self.sadl_previewer.load_sound(name)
+            self.fp_formats_book.SetSelection(0)  # Empty page
+            self.fp_menus_loaded.append("Stream")
+            self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
@@ -542,3 +554,9 @@ class FilesystemEditor(generated.FilesystemEditor):
         else:
             self.event_previewer.event_data.save_to_rom()
             self.pygame_previewer.start_renderer(self.event_previewer)
+
+    def fp_stream_export_wav(self, event):
+        pass
+
+    def fp_stream_import_wav(self, event):
+        pass
