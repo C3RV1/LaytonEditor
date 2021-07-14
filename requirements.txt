@@ -4,5 +4,4 @@ ndspy~=3.0.0
 Pillow~=8.2.0
 numpy~=1.19.5
 sounddevice~=0.4.1
-cint~=1.0.0
 colorama~=0.4.4

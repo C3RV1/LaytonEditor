@@ -5,9 +5,9 @@ from .binaryedit.binreader import *
 from .binaryedit.binwriter import *
 from .Compression.IMA_ADPCM import ImaAdpcm
 from .Compression.Procyon import Procyon
-from cint.cint import I32, I8
 from io import BytesIO
 from typing import Union
+import time
 import math
 
 
@@ -249,7 +249,7 @@ class SADL(SoundBase):
             cod |= 2
         else:
             cod |= 4
-        bw.write_byte(int(I8(cod)))
+        bw.write_ubyte(int(cod))
 
         br.close()
         if isinstance(file_out, str):
@@ -316,13 +316,19 @@ class SADL(SoundBase):
         self.sadl.coding = Coding.NDS_PROCYON
 
         samples_written = 0
-        while samples_written < self.number_samples:
+        start_time = time.time()
+        while samples_written < self._total_samples:
             samples_to_do = 30
-            if samples_written + samples_to_do > self.number_samples:
-                samples_to_do = self.number_samples - samples_written
+            if samples_written + samples_to_do > self._total_samples:
+                samples_to_do = self._total_samples - samples_written
 
-            if samples_written % 500 == 0:
-                print(f"{samples_written*100/self.number_samples:.4}%")
+            if samples_written % 4500 == 0 and samples_written != 0:
+                time_diff = time.time() - start_time
+                samples_per_sec = samples_written / time_diff
+                time_remaining = (self._total_samples - samples_written) / samples_per_sec
+                print(f"{samples_written*100/self._total_samples:.2f}%\t\t"
+                      f"{samples_per_sec:.2f} samples per sec\t\t"
+                      f"estimated {time_remaining:.2f}s remaining")
 
             for chan in range(self._channels):
                 procyon_obj: Procyon = self.procyon_objects[chan]
@@ -333,6 +339,7 @@ class SADL(SoundBase):
                 buffer.extend(temp)
 
             samples_written += samples_to_do
+        print(f"Time taken: {time.time() - start_time}")
 
         return buffer
 

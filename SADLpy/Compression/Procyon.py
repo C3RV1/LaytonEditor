@@ -1,23 +1,6 @@
 # Ported from: https://github.com/pleonex/tinke by Cervi for Team Top Hat
-from cint.cint import U16, I32
 from ..Helper import Helper
-from .PCM import BitConverter
 import numpy as np
-
-
-def binary_log2(n: int):
-    scale = 12
-    while n > 0:
-        n = n >> 1
-        scale -= 1
-        if scale == 0:
-            break
-    return scale
-
-
-def binary_log2_bytes(b: bytearray):
-    c = [U16(BitConverter.from_bytes_short(b[n:n+2])) for n in range(0, len(b), 2)]
-    return binary_log2(int(sum(c)/len(c)))
 
 
 class Procyon:
@@ -28,10 +11,18 @@ class Procyon:
                  [122, -60]]
 
     def __init__(self):
-        self.hist = [I32(0), I32(0)]
+        self.hist = [0, 0]
 
     def reset(self):
-        self.hist = [I32(0), I32(0)]
+        self.hist = [0, 0]
+
+    def clamp_unsigned(self, value, bytes):
+        size = 8*bytes
+        return ((value + (1 << size)) % (2 << size)) - (1 << size)
+
+    def clamp_hist(self):
+        self.hist[0] = self.clamp_unsigned(self.hist[0], 4)
+        self.hist[1] = self.clamp_unsigned(self.hist[1], 4)
 
     def decode_sample(self, sample, coef1, coef2, scale):
         # error = sample - 0x10 if sample >> 3 == 1 else sample
@@ -44,6 +35,7 @@ class Procyon:
 
         self.hist[1] = self.hist[0]
         self.hist[0] = sample
+        self.clamp_hist()
 
         clamp = Helper.clamp16((sample + 32) >> 6) >> 6 << 6
 
@@ -63,6 +55,7 @@ class Procyon:
 
         self.hist[1] = self.hist[0]
         self.hist[0] = pred + error_approx
+        self.clamp_hist()
 
         sample_approx = pred + error_approx
         clamp = Helper.clamp16((sample_approx + 32) >> 6) >> 6 << 6
