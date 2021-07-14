@@ -339,7 +339,7 @@ class SADL(SoundBase):
                 buffer.extend(temp)
 
             samples_written += samples_to_do
-        print(f"Time taken: {time.time() - start_time}")
+        print(f"Time taken: {time.time() - start_time:.2f}s")
 
         return buffer
 
