@@ -17,6 +17,9 @@ tests/
 *.dat
 *.gds
 *.nds
+*.SAD
+*.wav
+*.sad
 venv
 test*
 data_extracted
