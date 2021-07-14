@@ -6,6 +6,8 @@ from .binaryedit.binwriter import *
 from .Compression import PCM
 from .Helper import Helper
 from .Compression.PCM import BitConverter
+from io import BytesIO
+from typing import Union
 
 
 class SoundBase:
@@ -94,7 +96,7 @@ class SoundBase:
         return self.decode()
 
     # Abstract
-    def read_file(self) -> bytearray:
+    def read_file(self, br: BinaryReader = None) -> bytearray:
         raise NotImplementedError("read_file not implemented")
 
     # Abstract
@@ -107,8 +109,7 @@ class SoundBase:
         self.create_objects()
         self._pcm16 = wav.wave.data.data
 
-        self._total_samples = int(len(wav.wave.data.data) /
-                                   ((wav.wave.fmt.bits_per_sample / 8) * wav.wave.fmt.num_channels))
+        self._total_samples = int(len(wav.wave.data.data[0]))
         self._sample_rate = wav.wave.fmt.sample_rate
         self._block_size = wav.wave.fmt.block_align
         self._sample_bit_depth = wav.wave.fmt.bits_per_sample
@@ -117,7 +118,7 @@ class SoundBase:
         self._loop_begin_sample = 0
         self._loop_end_sample = self._total_samples
 
-    def write_file(self, file_out: str, data: bytearray):
+    def write_file(self, file_out: Union[str, BytesIO], data: bytearray):
         raise NotImplementedError("write_file not implemented")
 
     def encode(self) -> bytearray:
@@ -125,7 +126,7 @@ class SoundBase:
 
     @staticmethod
     def read_wav(file_in: str) -> sWAV:
-        wav =sWAV()
+        wav = sWAV()
 
         br = BinaryReader(open(file_in, "rb"))
 
@@ -142,13 +143,15 @@ class SoundBase:
         wav.wave.fmt.audio_format = br.read_uint16()
         wav.wave.fmt.num_channels = br.read_uint16()
         wav.wave.fmt.sample_rate = br.read_uint32()
+        sample_rate = wav.wave.fmt.sample_rate
         wav.wave.fmt.byte_rate = br.read_uint32()
         wav.wave.fmt.block_align = br.read_uint16()
         wav.wave.fmt.bits_per_sample = br.read_uint16()
         br.seek(0x14 + wav.wave.fmt.chunk_size)
         data_id = br.read_chars(4)
         while data_id != b"data":
-            # br.seek(br.tell() + br.read_uint32() + 0x04)
+            offset = br.read_uint32()
+            br.seek(br.tell() + offset)
             data_id = br.read_chars(4)
 
         # data sub-chunk
@@ -157,16 +160,36 @@ class SoundBase:
         wav.wave.data.chunk_size = br.read_uint32()
 
         wav_data = br.read_bytearray(wav.wave.data.chunk_size)
+
         if wav.wave.fmt.num_channels == 2:
+            print("Dividing stereo channels")
             wav_data = Helper.divide_channels(wav_data)
         else:
+            print("Mono channel -> no division needed")
             wav_data = [wav_data]
+
         wav_data_lists = []
+        convert_sample_rate = False
+        target_sample_rate = sample_rate
+        if sample_rate != 32728 and sample_rate != 16364:
+            convert_sample_rate = True
+            if sample_rate > 32728:
+                target_sample_rate = 32728
+            elif sample_rate > 16364:
+                target_sample_rate = 16364
+            else:
+                raise ValueError(f"Cannot transform sample rate of {sample_rate} to and accepted sample rate")
+        if convert_sample_rate:
+            print(f"Reducing sample rate from {sample_rate} to {target_sample_rate}")
+        print("Converting bytearrays to lists")
         for channel in wav_data:
             parsed = []
             for i in range(0, len(channel), 2):
                 parsed.append(BitConverter.to_int_16(channel, i))
+            if convert_sample_rate:
+                parsed = Helper.reduce_sample_rate(parsed, sample_rate, target_sample_rate)
             wav_data_lists.append(parsed)
+        wav.wave.fmt.sample_rate = target_sample_rate
         wav.wave.data.data = wav_data_lists
 
         br.close()

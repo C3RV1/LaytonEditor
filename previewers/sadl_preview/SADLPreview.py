@@ -2,7 +2,7 @@ from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
 from PygameEngine.UI.Text import Text
 from PygameEngine.Alignment import Alignment
 from pygame_utils.SADLStreamPlayer import SoundPlayer
-from pygame_utils.rom.rom_extract import load_effect
+from pygame_utils.rom.rom_extract import load_sadl
 from PygameEngine.UI.Button import Button
 import pygame as pg
 
@@ -54,11 +54,10 @@ class SADLPreview(TwoScreenRenderer):
 
     def load_sound(self, path: str):
         self.stop_sound()
-        self.sadl = load_effect(path)
+        self.sadl = load_sadl(path)
         self.track_name.text = path.split("/")[-1]
 
     def toggle_sound(self):
-        print("Toggle sound")
         if self.playing:
             self.stop_sound()
         else:
@@ -68,7 +67,7 @@ class SADLPreview(TwoScreenRenderer):
         self.play_btn.set_tag("ON")
         if self.sadl and not self.playing:
             self.playing = True
-            self.track_player.start_sound(self.sadl, volume=0.2)
+            self.track_player.start_sound(self.sadl, volume=0.5)
 
     def stop_sound(self):
         self.play_btn.set_tag("OFF")

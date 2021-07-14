@@ -1,6 +1,6 @@
 from .abstracts.EventSoundAbstract import EventSoundAbstract
 import pygame_utils.SADLStreamPlayer
-from pygame_utils.rom.rom_extract import load_effect
+from pygame_utils.rom.rom_extract import load_sadl
 
 
 class EventSound(EventSoundAbstract):
@@ -10,7 +10,7 @@ class EventSound(EventSoundAbstract):
         self.loops = False
 
     def play(self, path):
-        sadl = load_effect(path)
+        sadl = load_sadl(path)
         self.player.start_sound(sadl, self.loops)
 
     def stop(self):

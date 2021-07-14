@@ -19,6 +19,10 @@ from previewers.event_preview.EventPlayer import EventPlayer
 from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
 from previewers.sadl_preview.SADLPreview import SADLPreview
 
+from pygame_utils.rom.rom_extract import load_sadl
+from SADLpy.SADL import SADL
+from io import BytesIO
+
 
 class ClipBoardFile:
     def __init__(self, name: str, raw: bytes):
@@ -556,7 +560,42 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.pygame_previewer.start_renderer(self.event_previewer)
 
     def fp_stream_export_wav(self, event):
-        pass
+        with wx.FileDialog(self, "Export to WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_SAVE) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+
+            with wx.ProgressDialog("Exporting to WAV", "This could take several minutes.", parent=self,
+                                   style=wx.PD_APP_MODAL) as progressDialog:
+                sadl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+                sadl_file = load_sadl(sadl_file_path, self.rom)
+                sadl_file.decode()
+                sadl_file.save_wav(pathname)
+                progressDialog.Update(100, "Completed")
 
     def fp_stream_import_wav(self, event):
-        pass
+        with wx.FileDialog(self, "Import WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_OPEN) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            sadl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+
+            with wx.ProgressDialog("Importing WAV...", "This could take several minutes.", parent=self,
+                                   style=wx.PD_APP_MODAL) as progressDialog:
+                print("Loading sadl")
+                sadl: SADL = load_sadl(sadl_file_path)
+                print("Importing")
+                sadl.import_(pathname)
+                print("Encoding")
+                encoded = sadl.encode()
+                print("Encoded")
+                bytesio_buffer = BytesIO()
+                sadl.write_file(bytesio_buffer, encoded)
+                bytes_sadl = bytesio_buffer.getvalue()
+
+                self.rom.files[self.rom.filenames.idOf(sadl_file_path)] = bytes_sadl
+
+                bytesio_buffer.close()
+                self.refresh_preview()
+                progressDialog.Update(100, "Completed")
+

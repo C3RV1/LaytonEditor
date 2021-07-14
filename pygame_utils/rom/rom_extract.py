@@ -95,19 +95,21 @@ def load_bg(path: str, sprite: PygameEngine.Sprite.Sprite):
     sprite.dirty = 1
 
 
-def load_effect(path: str) -> SADLpy.SADL.SADL:
-    rom = RomSingleton.RomSingleton().rom
+def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
+    if rom is None:
+        rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", LANG)
     sad_export_path = EXPORT_PATH + "/" + path
+    sound_data = rom.files[rom.filenames.idOf(path)]
 
-    if not os.path.isfile(sad_export_path):
-        os.makedirs(os.path.dirname(sad_export_path), exist_ok=True)
-        sound_data = rom.files[rom.filenames.idOf(path)]
-        with open(sad_export_path, "wb") as sad_export_file:
-            sad_export_file.write(sound_data)
+    # if not os.path.isfile(sad_export_path):
+    #     os.makedirs(os.path.dirname(sad_export_path), exist_ok=True)
+    #     with open(sad_export_path, "wb") as sad_export_file:
+    #         sad_export_file.write(sound_data)
 
     sadl = SADLpy.SADL.SADL(sad_export_path, 0)
-    sadl.read_file()
+    sadl.read_file(sound_data)
+
     return sadl
 
 
