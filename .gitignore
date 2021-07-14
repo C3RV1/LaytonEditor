@@ -17,6 +17,7 @@ tests/
 *.dat
 *.gds
 *.nds
+venv
 test*
 data_extracted
 data_permanent/fonts

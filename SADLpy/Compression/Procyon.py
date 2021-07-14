@@ -1,6 +1,5 @@
 # Ported from: https://github.com/pleonex/tinke by Cervi for Team Top Hat
-
-from cint.cint import I32, I8, U8, U16
+from cint.cint import U16, I32
 from ..Helper import Helper
 from .PCM import BitConverter
 import numpy as np
@@ -22,98 +21,142 @@ def binary_log2_bytes(b: bytearray):
 
 
 class Procyon:
-    PROC_COEF = [bytearray(b"\x00\x00"),
-                 bytearray(b"\x3c\x00"),
-                 bytearray(b"\x73\xcc"),
-                 bytearray(b"\x62\xc9"),
-                 bytearray(b"\x7a\xc4")]
+    PROC_COEF = [[0, 0],
+                 [0x3c, 0],
+                 [115, -52],
+                 [98, -55],
+                 [122, -60]]
 
-    @staticmethod
-    def decode(encoded: bytearray, offset: int, samples_to_do: int, hist: list) -> np.ndarray:
+    def __init__(self):
+        self.hist = [I32(0), I32(0)]
+
+    def reset(self):
+        self.hist = [I32(0), I32(0)]
+
+    def decode_sample(self, sample, coef1, coef2, scale):
+        # error = sample - 0x10 if sample >> 3 == 1 else sample
+        error = sample
+        error <<= (6 + scale)
+
+        pred = (self.hist[0] * coef1 + self.hist[1] * coef2 + 32) >> 6
+
+        sample = pred + error
+
+        self.hist[1] = self.hist[0]
+        self.hist[0] = sample
+
+        clamp = Helper.clamp16((sample + 32) >> 6) >> 6 << 6
+
+        return clamp
+
+    def encode_sample(self, sample, coef1, coef2, scale):
+        value = sample << 6
+        pred = (self.hist[0]*coef1 + self.hist[1]*coef2 + 32) >> 6
+        error = value - pred
+        error_scaled = error >> (scale + 6)
+
+        result = error_scaled & 0xF
+        result = (result + 8) % 16 - 8
+
+        error_approx = result
+        error_approx <<= (scale + 6)
+
+        self.hist[1] = self.hist[0]
+        self.hist[0] = pred + error_approx
+
+        sample_approx = pred + error_approx
+        clamp = Helper.clamp16((sample_approx + 32) >> 6) >> 6 << 6
+
+        diff = abs(sample - clamp)
+        return result, diff
+
+    def decode_block(self, block: bytearray, samples_to_do: int) -> np.ndarray:
         buffer = np.zeros(shape=(samples_to_do,), dtype=np.int32)
 
-        pos = offset + 15
-        header = encoded[pos]
-        header = header ^ 0x80
-        scale = 12 - (header & 0xf)
-        coef_index = (header >> 4) & 0xf
+        header = block[0xF] ^ 0x80
+        scale = header & 0xf
+        coef_index = header >> 4
 
-        if coef_index > 4:
-            coef_index = 0
-        coef1 = ((Procyon.PROC_COEF[coef_index][0] + 128) % 256) - 128
-        coef2 = ((Procyon.PROC_COEF[coef_index][1] + 128) % 256) - 128
+        coef1 = Procyon.PROC_COEF[coef_index][0]
+        coef2 = Procyon.PROC_COEF[coef_index][1]
 
         for i in range(samples_to_do):
-            pos = offset + i // 2
-            sample_byte = encoded[int(pos)] ^ 0x80
-            sample_byte = ((sample_byte + 128) % 256) - 128
+            sample_byte = block[int(i // 2)] ^ 0x80
 
-            if i & 1 != 0:
-                sample = Helper.get_high_nibble_signed(int(sample_byte))
+            if i & 1 == 1:
+                sample = Helper.get_high_nibble_signed(sample_byte)
             else:
-                sample = Helper.get_low_nibble_signed(int(sample_byte))
-
-            sample <<= 12
-            sample = ((sample + 65536) % (1 << 32)) - 65536
-
-            if scale < 0:
-                sample <<= -scale
-            else:
-                sample >>= scale
-
-            sample = (((hist[0] * coef1 + hist[1] * coef2) + 32) >> 6) + (sample << 6)
-            sample = ((sample + 65536) % (1 << 32)) - 65536
-
-            hist[1] = hist[0]
-            hist[0] = sample
-
-            clamp = Helper.clamp16((sample + 32) >> 6) >> 6 << 6
-
-            buffer[i] = clamp
+                sample = Helper.get_low_nibble_signed(sample_byte)
+            buffer[i] = self.decode_sample(sample, coef1, coef2, scale)
 
         return buffer
 
-    @staticmethod
-    def encode(decoded: bytearray, offset: int, hist: list, samples_to_do: int = 30):
+    def encode_block(self, block: list):
+        # TODO: Encoding improve performance
+        if len(block) < 30:
+            block.extend([0]*(30 - len(block)))
+        best_encoded, scale, coef_index = self.search_best_encode(block)
 
-        buffer = bytearray()
-        scale = 7
+        result = bytearray(b"\x00" * 16)
+        current_value = 0
+        for i, sample in enumerate(best_encoded):
+            sample = (sample + 16) % 16  # Make positive
+            if i % 2 == 0:  # low nibble
+                current_value = sample
+            else:  # high nibble
+                current_value |= sample << 4
+                result[i//2] = current_value ^ 0x80
+        header = (coef_index << 4) | scale
+        current_value = header
+        result[-1] = current_value ^ 0x80
+        return result
+
+    def search_best_encode(self, block: list):
         coef_index = 0
+        scale = 0
 
-        coef1 = I8(Procyon.PROC_COEF[coef_index][0])
-        coef2 = I8(Procyon.PROC_COEF[coef_index][1])
+        current_hist = [0, 0]
+        current_hist[0] = self.hist[0]
+        current_hist[1] = self.hist[1]
+        new_hist = [0, 0]
 
-        samp1 = 0
+        num_coef = 5
+        num_scales = 12
 
-        # Encode wave data
-        for i in range(samples_to_do):
-            pos = offset + i * 2  # Every short
-            clamp = I32(BitConverter.from_bytes_short(decoded[pos:pos+2]))
-            sample = ((clamp >> 6 << 6) << 6) - 32
+        best_encoded = None
+        min_difference = -1
+        for temp_coef in range(num_coef):
+            for temp_scale in range(num_scales):
+                self.hist[0] = current_hist[0]
+                self.hist[1] = current_hist[1]
+                encoded, difference = self.get_encoding_difference(block, temp_coef, temp_scale, min_difference)
 
-            hist1 = hist[0]
-            hist0 = sample
+                if difference < min_difference or best_encoded is None:
+                    min_difference = difference
+                    best_encoded = encoded
+                    coef_index = temp_coef
+                    scale = temp_scale
+                    new_hist[0] = self.hist[0]
+                    new_hist[1] = self.hist[1]
+                    if difference == 0:
+                        return best_encoded, scale, coef_index
+        self.hist = new_hist
+        return best_encoded, scale, coef_index
 
-            sample = (sample - (((hist[0] * coef1 + hist[1] * coef2) + 32) >> 6)) << 6
+    def get_encoding_difference(self, block: list, coef_index, scale, min_difference):
+        coef1 = self.PROC_COEF[coef_index][0]
+        coef2 = self.PROC_COEF[coef_index][1]
 
-            hist[1] = hist1
-            hist[0] = hist0
+        result = [0]*len(block)
 
-            if scale < 0:
-                sample >>= -scale
-            else:
-                sample <<= scale
+        total_difference = 0
 
-            if i & 1 == 0:  # Should pass to low nibble
-                sample = Helper.from_low_nibble_signed((sample >> 12))
-                samp1 = sample
-            else:  # Should pass to high nibble
-                sample = Helper.from_high_nibble_signed((sample >> 12))
+        for i, sample in enumerate(block):
+            r, diff = self.encode_sample(sample, coef1, coef2, scale)
+            result[i] = r
+            total_difference += diff
+            if total_difference > min_difference and min_difference >= 0:
+                # if we already know that this can't possibly be the best combination, we return
+                return result, total_difference
 
-                buffer.append(U8(samp1 + sample + 1) ^ 0x80)
-
-        # add header
-        header = (12 - scale) & 0xf
-        header += coef_index << 4
-        buffer.append(int(U8(header ^ 0x80)))
-        return buffer
+        return result, total_difference

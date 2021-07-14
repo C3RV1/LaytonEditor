@@ -6,6 +6,8 @@ from .binaryedit.binwriter import *
 from .Compression.IMA_ADPCM import ImaAdpcm
 from .Compression.Procyon import Procyon
 from cint.cint import I32, I8
+from io import BytesIO
+from typing import Union
 import math
 
 
@@ -34,9 +36,6 @@ class SADL(SoundBase):
         self.sadl = SADLStruct()
         self._ignore_loop = True
 
-        self.buffer = []
-        self.hist = []
-        self.length = []
         self.offset = []
         self._sample_extend = 0
         self._current_extend = 0
@@ -46,21 +45,21 @@ class SADL(SoundBase):
         self._force_channels = 1
 
         self.pos = 0
-        self.ima_decompressers = []
+        self.adpcm_objects = []
+        self.procyon_objects = []
 
     def create_objects(self):
         start_offset = 0x100
         self._pcm16 = []
-        self.ima_decompressers = []
+        self.adpcm_objects = []
         self.offset = []
         self.length = []
         self.hist = []
 
         for i in range(0, self._channels):
             self.offset.append(start_offset + self._block_size * i)
-            self.length.append(0)
-            self.hist.append([I32(0), I32(0)])
-            self.ima_decompressers.append(ImaAdpcm())
+            self.adpcm_objects.append(ImaAdpcm())
+            self.procyon_objects.append(Procyon())
             self._pcm16.append(list())
 
         if not self._loop_enabled:
@@ -68,8 +67,11 @@ class SADL(SoundBase):
         else:
             self.pos = start_offset + self._loop_begin_sample * 2 * self._block_size
 
-    def read_file(self) -> bytearray:
-        br = BinaryReader(open(self._sound_file, "rb"))
+    def read_file(self, br: BinaryReader = None) -> bytearray:
+        if br is None:
+            br = BinaryReader(open(self._sound_file, "rb"))
+        elif isinstance(br, bytes) or isinstance(br, bytearray):
+            br = BinaryReader(BytesIO(br))
 
         self.sadl.id_ = br.read_chars(4)
 
@@ -152,7 +154,7 @@ class SADL(SoundBase):
         # Decompress channels
         channels_decompressed = []
         for i, channel in enumerate(channels):
-            decompressed = self.ima_decompressers[i].decompress(channel)
+            decompressed = self.adpcm_objects[i].decompress(channel)
             channels_decompressed.append(decompressed)
 
         for i, buff in enumerate(channels_decompressed):
@@ -178,11 +180,11 @@ class SADL(SoundBase):
                 samples_to_do = sample_steps - self.samples_written
 
             for chan in range(0, self._channels):
-                temp = Procyon.decode(self.encoded, self.offset[chan],
-                                      samples_to_do, self.hist[chan])
+                procyon_obj: Procyon = self.procyon_objects[chan]
+                temp = procyon_obj.decode_block(self.encoded[self.offset[chan]:self.offset[chan] + 0x10],
+                                                samples_to_do)
 
                 buffer[chan].extend(temp)
-                self.length[chan] += len(temp)
 
                 self.offset[chan] += int(self._block_size * self._channels)
 
@@ -209,9 +211,14 @@ class SADL(SoundBase):
                     self._current_extend += self._sample_extend
         return buffer_parsed
 
-    def write_file(self, file_out: str, data: bytearray):
-        bw = BinaryWriter(open(file_out, "wb"))
-        br = BinaryReader(open(self._sound_file, "rb"))
+    def write_file(self, file_out: Union[str, BytesIO], data: bytearray):
+        if isinstance(file_out, str):
+            bw = BinaryWriter(open(file_out, "wb"))
+        elif isinstance(file_out, BytesIO):
+            bw = BinaryWriter(file_out)
+        else:
+            return
+        br = BinaryReader(BytesIO(self.encoded))
 
         # Copy header from original file
         bw.write_bytearray(br.read_bytearray(0x100))
@@ -222,6 +229,10 @@ class SADL(SoundBase):
         # Update header values
         # .. update file size
         bw.seek(0x40)
+        bw.write_uint32(bw.length())
+
+        # .. update loop size
+        bw.seek(0x58)
         bw.write_uint32(bw.length())
 
         # .. update channels
@@ -241,12 +252,17 @@ class SADL(SoundBase):
         bw.write_byte(int(I8(cod)))
 
         br.close()
-        bw.close()
+        if isinstance(file_out, str):
+            bw.close()
+
+    def encode(self) -> bytearray:
+        return self.encode_with_encoding(Coding.NDS_PROCYON)
 
     def encode_with_encoding(self, coding: int) -> bytearray:
+        self.sadl.coding = coding
         if coding == Coding.INT_IMA:
             return self._encode_ima_adpcm()
-        elif coding == Coding.NDS_PROCYON and False:
+        elif coding == Coding.NDS_PROCYON:
             return self._encode_nds_procyon(self._pcm16)
         else:
             raise NotImplementedError("Encoding {} not supported".format(coding))
@@ -266,17 +282,13 @@ class SADL(SoundBase):
             raise NotImplementedError("Only sample of 16 bits is allowed.\n" +
                                       "This audio has {}. Please convert it.".format(self.sample_bit_depth))
 
-        # Force to use IMA ADPCM encoding since Procyon encoding has not been implemented yet.
-        self.sadl.coding = Coding.INT_IMA
-        self._sample_rate = 16364
-
-        # self._sample_rate = 32728
+        # self._sample_rate = 16364
 
         channels_compressed = []
 
         for i, channel in enumerate(self._pcm16):
-            self.ima_decompressers[i].reset()
-            compressed = self.ima_decompressers[i].compress(self._pcm16[i])
+            self.adpcm_objects[i].reset()
+            compressed = self.adpcm_objects[i].compress(self._pcm16[i])
             channels_compressed.append(compressed)
 
             rest = len(channels_compressed[-1]) % (self.sadl.interleave_block_size * 2)
@@ -292,54 +304,31 @@ class SADL(SoundBase):
 
         return merged_channels
 
-    def _encode_nds_procyon(self, data: bytearray) -> bytearray:
-        interleave = 60
+    def _encode_nds_procyon(self, data: list) -> bytearray:
+        for i in range(self._channels):
+            self.procyon_objects[i].reset()
+        interleave = self.sadl.interleave_block_size
         buffer = bytearray()
         offset = []
-        hist = []
         for i in range(self._channels):
             offset.append(interleave * i)
-            hist.append([I32(0), I32(0)])
 
         self.sadl.coding = Coding.NDS_PROCYON
 
         samples_written = 0
-        while samples_written < self.number_samples - 60:
+        while samples_written < self.number_samples:
             samples_to_do = 30
             if samples_written + samples_to_do > self.number_samples:
-                samples_to_do = self.number_samples - samples_written - 60
+                samples_to_do = self.number_samples - samples_written
+
+            if samples_written % 500 == 0:
+                print(f"{samples_written*100/self.number_samples:.4}%")
 
             for chan in range(self._channels):
-                temp = Procyon.encode(data, offset[chan], hist[chan], samples_to_do=samples_to_do)
+                procyon_obj: Procyon = self.procyon_objects[chan]
+                temp = procyon_obj.encode_block(data[chan][offset[chan]:offset[chan] + samples_to_do])
 
-                offset[chan] += interleave * self._channels
-
-                buffer.extend(temp)
-
-            samples_written += samples_to_do
-
-        return buffer
-    def _encode_nds_procyon(self, data: bytearray) -> bytearray:
-        interleave = 60
-        buffer = bytearray()
-        offset = []
-        hist = []
-        for i in range(self._channels):
-            offset.append(interleave * i)
-            hist.append([I32(0), I32(0)])
-
-        self.sadl.coding = Coding.NDS_PROCYON
-
-        samples_written = 0
-        while samples_written < self.number_samples - 60:
-            samples_to_do = 30
-            if samples_written + samples_to_do > self.number_samples:
-                samples_to_do = self.number_samples - samples_written - 60
-
-            for chan in range(self._channels):
-                temp = Procyon.encode(data, offset[chan], hist[chan], samples_to_do=samples_to_do)
-
-                offset[chan] += interleave * self._channels
+                offset[chan] += samples_to_do
 
                 buffer.extend(temp)
 

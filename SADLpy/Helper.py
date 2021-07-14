@@ -36,6 +36,18 @@ class Helper:
         return [left, right]
 
     @staticmethod
+    def reduce_sample_rate(data: list, original_rate: int, target_rate: int):
+        converted_data = []
+        acc = original_rate
+        for sample in data:
+            acc -= target_rate
+            if acc >= original_rate:
+                continue
+            converted_data.append(sample)
+            acc += original_rate
+        return converted_data
+
+    @staticmethod
     def bit8_to_bit4(data: bytearray) -> bytearray:
         bit4 = bytearray()
 
@@ -62,7 +74,7 @@ class Helper:
 
     @staticmethod
     def get_high_nibble_signed(n: int) -> int:
-        return Helper.NIBBLE_TO_INT[int(n) >> 4]
+        return (((n >> 4) + 8) % 16) - 8
 
     @staticmethod
     def from_high_nibble_signed(n: int) -> int:
@@ -70,7 +82,7 @@ class Helper:
 
     @staticmethod
     def get_low_nibble_signed(n: int) -> int:
-        return Helper.NIBBLE_TO_INT[int(n) & 0xf]
+        return (((n & 0xf) + 8) % 16) - 8
 
     @staticmethod
     def from_low_nibble_signed(n: int) -> int:
@@ -83,7 +95,3 @@ class Helper:
         if val < -32768:
             return -32768
         return val
-
-    @staticmethod
-    def convert_channels_to_samples(channels, sample_rate):
-        pass

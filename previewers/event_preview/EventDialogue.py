@@ -8,7 +8,7 @@ from pygame_utils.rom.rom_extract import load_animation
 from typing import Optional
 import pygame as pg
 import pygame_utils.SADLStreamPlayer
-from pygame_utils.rom.rom_extract import load_effect
+from pygame_utils.rom.rom_extract import load_sadl
 
 from .abstracts.EventDialogueAbstract import EventDialogueAbstract
 from utility.replace_substitutions import replace_substitutions
@@ -96,7 +96,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         # If there is a voice line play it (first we stop it)
         self.voice_player.stop()
         if self.voice_line != -1:
-            sfx = load_effect(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
+            sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
             self.voice_player.start_sound(sfx)
 
         if self.character_talking is not None:
@@ -110,8 +110,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         # Init dialogue positions
         self.inner_text = PygameEngine.UI.Text.Text(())
         self.inner_text.layer = 120
-        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True, line_spacing=2,
-                                 letter_spacing=1)
+        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True,
+                                 line_spacing=2, letter_spacing=1)
         self.inner_text.world_rect.x = (- 256 // 2) + 10
         self.inner_text.world_rect.y = self.world_rect.y - self.world_rect.h + 20
         self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_BOTTOM]
