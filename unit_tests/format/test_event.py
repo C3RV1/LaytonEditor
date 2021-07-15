@@ -18,8 +18,6 @@ class TestEventData(unittest.TestCase):
 
     def test_loading_saving(self):
         pz_data = self.get_ev()
-        print(pz_data.write(None))
-        print(pz_data.original)
         assert pz_data.write(None) == pz_data.original
 
     def test_readable(self):

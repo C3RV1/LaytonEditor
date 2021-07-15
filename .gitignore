@@ -21,6 +21,6 @@ tests/
 *.wav
 *.sad
 venv
-test*
+_test*
 data_extracted
 data_permanent/fonts

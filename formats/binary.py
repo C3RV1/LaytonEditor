@@ -345,7 +345,7 @@ class BinaryWriter(_BaseBinaryWrapper):
         self.write_struct("d", x)
 
     def write_string(self, string: AnyStr, size: Optional[int] = None,
-                     encoding: Optional[str] = "shift_jis", pad: Optional[str] = b"\0"):
+                     encoding: Optional[str] = "shift_jis", pad: Optional[bytes] = b"\0"):
         if encoding and isinstance(string, str):
             string = string.encode(encoding)
         if size:
