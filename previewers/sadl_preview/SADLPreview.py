@@ -51,6 +51,7 @@ class SADLPreview(TwoScreenRenderer):
         super(SADLPreview, self).unload()
         self.play_btn.unload()
         self.ui_manager.clear()
+        self.track_player.stop()
 
     def load_sound(self, path: str):
         self.stop_sound()

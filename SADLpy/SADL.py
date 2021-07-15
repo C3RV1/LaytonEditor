@@ -255,15 +255,15 @@ class SADL(SoundBase):
         if isinstance(file_out, str):
             bw.close()
 
-    def encode(self) -> bytearray:
-        return self.encode_with_encoding(Coding.NDS_PROCYON)
+    def encode(self, progress_func=None) -> bytearray:
+        return self.encode_with_encoding(Coding.NDS_PROCYON, progress_func=progress_func)
 
-    def encode_with_encoding(self, coding: int) -> bytearray:
+    def encode_with_encoding(self, coding: int, progress_func=None) -> bytearray:
         self.sadl.coding = coding
         if coding == Coding.INT_IMA:
             return self._encode_ima_adpcm()
         elif coding == Coding.NDS_PROCYON:
-            return self._encode_nds_procyon(self._pcm16)
+            return self._encode_nds_procyon(self._pcm16, progress_func=progress_func)
         else:
             raise NotImplementedError("Encoding {} not supported".format(coding))
 
@@ -304,7 +304,7 @@ class SADL(SoundBase):
 
         return merged_channels
 
-    def _encode_nds_procyon(self, data: list) -> bytearray:
+    def _encode_nds_procyon(self, data: list, progress_func=None) -> bytearray:
         for i in range(self._channels):
             self.procyon_objects[i].reset()
         interleave = self.sadl.interleave_block_size
@@ -322,13 +322,16 @@ class SADL(SoundBase):
             if samples_written + samples_to_do > self._total_samples:
                 samples_to_do = self._total_samples - samples_written
 
-            if samples_written % 4500 == 0 and samples_written != 0:
+            if samples_written % 900 == 0 and samples_written != 0:
                 time_diff = time.time() - start_time
                 samples_per_sec = samples_written / time_diff
                 time_remaining = (self._total_samples - samples_written) / samples_per_sec
                 print(f"{samples_written*100/self._total_samples:.2f}%\t\t"
                       f"{samples_per_sec:.2f} samples per sec\t\t"
                       f"estimated {time_remaining:.2f}s remaining")
+                if callable(progress_func):
+                    if not progress_func(samples_written*100/self._total_samples):
+                        return None
 
             for chan in range(self._channels):
                 procyon_obj: Procyon = self.procyon_objects[chan]

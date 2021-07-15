@@ -169,13 +169,14 @@ class TrackPreamble:
 
 
 class TrackContent:
-    event_bytes: list
+    event_bytes: bytes
 
     def read(self, br: binary.BinaryReader, track_header: TrackChunkHeader):
-        self.event_bytes = br.read_char_array(track_header.chunk_length - 4)
+        eb = br.read_char_array(track_header.chunk_length - 4)
+        self.event_bytes = b"".join(eb)
 
     def write(self, bw: binary.BinaryWriter):
-        bw.write_char_array(self.event_bytes)
+        bw.write_char_array([bytes([x]) for x in list(self.event_bytes)])
         if offset := bw.tell() % 4:
             bw.write_char_array([b"\x98"]*(4 - offset))
 

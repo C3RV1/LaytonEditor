@@ -95,6 +95,7 @@ def tree_import_from_nds_folder(tree: wx.TreeCtrl, folder: Folder, rom: Nintendo
 
 
 class FilesystemEditor(generated.FilesystemEditor):
+    PUZZLE_REGEX = re.compile("^n([0-9]+).dat")
     base_folder: Folder = None
     rom: NintendoDSRom = None
     preview_data = None
@@ -257,7 +258,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.preview_data = (name, archive)
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
-        elif res := re.search("^n([0-9]+).dat", name):
+        elif res := self.PUZZLE_REGEX.search(name):
             self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
             self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
             self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
@@ -574,20 +575,28 @@ class FilesystemEditor(generated.FilesystemEditor):
                 progressDialog.Update(100, "Completed")
 
     def fp_stream_import_wav(self, event):
-        with wx.FileDialog(self, "Import WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_OPEN) as fileDialog:
+        def progressUpdate(value):
+            value *= 0.97
+            res = progressDialog.Update(value)[0]
+            wx.Yield()
+            return res
+        with wx.FileDialog(self, "Import WAV", wildcard="WAV Files (*.wav)|*.wav",
+                           style=wx.FD_OPEN) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return
             pathname = fileDialog.GetPath()
             sadl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
 
             with wx.ProgressDialog("Importing WAV...", "This could take several minutes.", parent=self,
-                                   style=wx.PD_APP_MODAL) as progressDialog:
+                                   style=wx.PD_APP_MODAL | wx.PD_REMAINING_TIME | wx.PD_CAN_ABORT) as progressDialog:
                 print("Loading sadl")
                 sadl: SADL = load_sadl(sadl_file_path)
                 print("Importing")
                 sadl.import_(pathname)
                 print("Encoding")
-                encoded = sadl.encode()
+                encoded = sadl.encode(progress_func=progressUpdate)
+                if not encoded:
+                    return
                 print("Encoded")
                 bytesio_buffer = BytesIO()
                 sadl.write_file(bytesio_buffer, encoded)
