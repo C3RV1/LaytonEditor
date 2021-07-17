@@ -235,12 +235,10 @@ class SADL(SoundBase):
         bw.seek(0x58)
         bw.write_uint32(bw.length())
 
-        # .. update channels
-        bw.seek(0x32)
-        bw.write_byte(self._channels)
-
-        # ..update encoding and sample rate values
-        bw.seek(0x33)
+        # .. update channels, loop, encoding and sample rate
+        bw.seek(0x31)
+        bw.write_ubyte(self.sadl.loop_flag)
+        bw.write_ubyte(self._channels)
         br.seek(0x33)
         cod = br.read_byte()
         cod &= 0x09

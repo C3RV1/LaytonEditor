@@ -3,6 +3,8 @@ import os
 import shutil
 import formats.graphics.ani as ani
 import formats.graphics.bg as bg
+import formats.sound.smd as smd
+import formats.binary as binary
 import PIL.Image as imgl
 import json
 import pygame as pg
@@ -111,6 +113,18 @@ def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
     sadl.read_file(sound_data)
 
     return sadl
+
+
+def load_smd(path: str, rom=None) -> smd.SMDL:
+    if rom is None:
+        rom = RomSingleton.RomSingleton().rom
+    path = path.replace("?", LANG)
+    smd_file = binary.BinaryReader(rom.open(path, "rb"))
+
+    smd_obj = smd.SMDL()
+    smd_obj.read(smd_file)
+    smd_file.close()
+    return smd_obj
 
 
 def clear_extracted():

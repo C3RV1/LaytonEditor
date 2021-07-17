@@ -18,7 +18,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
                     EventDialogueAbstract):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SoundPlayer, event_player):
+    def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SADLStreamPlayer, event_player):
         PygameEngine.UI.UIElement.UIElement.__init__(self)
         PygameEngine.Sprite.Sprite.__init__(self, ())
         EventDialogueAbstract.__init__(self)
@@ -97,7 +97,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.voice_player.stop()
         if self.voice_line != -1:
             sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
-            self.voice_player.start_sound(sfx)
+            self.voice_player.start_sound(sfx, volume=1)
 
         if self.character_talking is not None:
             self.character_talking.set_talking()

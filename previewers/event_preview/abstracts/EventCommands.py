@@ -198,7 +198,7 @@ class SadSfxCMD(EventCMD):
     def execute(self, editing, instant):
         Debug.log(f"Executing sad sfx sad_id={self.sad_id}", self)
         if not instant:
-            self.player.play(f"data_lt2/stream/ST_{str(self.sad_id).zfill(3)}.SAD")
+            self.player.play_sadl(f"data_lt2/stream/ST_{str(self.sad_id).zfill(3)}.SAD")
 
 
 class DialogueCMD(EventCMD):
@@ -228,12 +228,25 @@ class WaitCMD(EventCMD):
         self.wait_frames = wait_frames
 
     def execute(self, editing, instant):
-        Debug.log(f"Executing wait frames={self.wait_frames}", self)
+        Debug.log(f"Executing wait_frames={self.wait_frames}", self)
         if not instant:
             self.waiter.wait(self.wait_frames)
 
 
-def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm, waiter, sfx_player,
+class BGMusicCMD(EventCMD):
+    def __init__(self, player, bgm_id, volume=0.5):
+        super(BGMusicCMD, self).__init__()
+        self.player: EventSoundAbstract = player
+        self.bgm_id = bgm_id
+        self.volume = volume
+
+    def execute(self, editing, instant):
+        Debug.log(f"Executing bg music bgm_id={self.bgm_id} volume={self.volume}", self)
+        if not instant:
+            self.player.play_smdl(f"data_lt2/sound/BG_{str(self.bgm_id).zfill(3)}.SMD", volume=self.volume)
+
+
+def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm, waiter, sound_player,
                       dialogue):
     commands = list()
     commands.append(
@@ -327,7 +340,11 @@ def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm,
             next_voice = event_gds_cmd.params[0]
         elif event_gds_cmd.command == 0x5d:
             commands.append(
-                SadSfxCMD(sfx_player, event_gds_cmd.params[0])
+                SadSfxCMD(sound_player, event_gds_cmd.params[0])
+            )
+        elif event_gds_cmd.command == 0x62:
+            commands.append(
+                BGMusicCMD(sound_player, event_gds_cmd.params[0])
             )
         elif event_gds_cmd.command == 0x6a:
             commands.append(

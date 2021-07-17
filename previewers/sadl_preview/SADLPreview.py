@@ -1,7 +1,7 @@
 from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
 from PygameEngine.UI.Text import Text
 from PygameEngine.Alignment import Alignment
-from pygame_utils.SADLStreamPlayer import SoundPlayer
+from pygame_utils.SADLStreamPlayer import SADLStreamPlayer
 from pygame_utils.rom.rom_extract import load_sadl
 from PygameEngine.UI.Button import Button
 import pygame as pg
@@ -35,7 +35,7 @@ class SADLPreview(TwoScreenRenderer):
         self.play_btn.time_interact_command = 0.09
         self.play_btn.color_key = pg.Color(0, 255, 0)
 
-        self.track_player = SoundPlayer()
+        self.track_player = SADLStreamPlayer()
         self.playing = False
 
         self.sadl = None

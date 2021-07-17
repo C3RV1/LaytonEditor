@@ -134,7 +134,6 @@ class TrackChunkHeader:
     chunk_length = int
 
     def read(self, br: binary.BinaryReader):
-        br.align(4)
         self.label = br.read_string(4, encoding=None)
         if self.label != b"trk\x20":
             raise ValueError("TrackChunkHeader does not start with magic value")
@@ -194,6 +193,7 @@ class Track:
         self.track_header.read(br)
         self.track_preamble.read(br)
         self.track_content.read(br, self.track_header)
+        br.align(4)
 
     def write(self, bw: binary.BinaryWriter):
         self.track_header.chunk_length = len(self.track_content.event_bytes) + 4
@@ -210,7 +210,7 @@ class EOCChunk:
     def read(self, br: binary.BinaryReader):
         self.label = br.read_string(4, encoding=None)
         if self.label != b"eoc\x20":
-            raise ValueError("EOCChunk does not start with magic value")
+            raise ValueError(f"EOCChunk does not start with magic value ({repr(self.label)}")
         self.param1 = br.read_uint32()
         self.param2 = br.read_uint32()
         br.read_uint32()  # 0

@@ -29,7 +29,9 @@ class PlaceEditor(gui.generated.PlaceEditor):
                 if index == place_index:
                     # TODO: Clean with intializer
                     self._places[subindex] = Place()
-                    self._places[subindex].read_stream(self._place_archive.open(filename))
+                    place_file = self._place_archive.open(filename)
+                    self._places[subindex].read_stream(place_file)
+                    place_file.close()
 
         # Load placeviewer for place
         self.plc_preview.load_place(self._places[place_subindex], self._rom)

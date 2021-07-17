@@ -3,7 +3,7 @@ import pygame as pg
 import numpy as np
 
 
-class SoundPlayer:
+class SADLStreamPlayer:
     def __init__(self):
         self.sadl: SADLpy.SADL.SADL = None
         self.sound_obj: pg.mixer.Sound = None

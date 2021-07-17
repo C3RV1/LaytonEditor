@@ -33,7 +33,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.waiter = EventWaiter()
 
         self.sound_player = EventSound()
-        self.voice_player = pygame_utils.SADLStreamPlayer.SoundPlayer()
+        self.voice_player = pygame_utils.SADLStreamPlayer.SADLStreamPlayer()
         self.next_voice = -1
 
         self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player, self)
@@ -46,8 +46,12 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.run_events = False
 
+    def start_bg_music(self):
+        self.sound_player.play_smdl(f"data_lt2/sound/BG_004.SMD")
+
     def reset(self):
-        self.sound_player.stop()
+        self.sound_player.stop_sadl()
+        self.sound_player.stop_smdl()
         self.voice_player.stop()
         self.waiter.stop()
         self.dialogue.end_dialogue()
@@ -62,6 +66,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
     def load(self, skip_fade_in=False):
         super().load()
         self.reset()
+        self.start_bg_music()
 
         self.top_bg.add(self.top_group)
         self.top_bg.load()
@@ -82,7 +87,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
                                           bg_top=self.top_bg, character_obj=self.characters,
-                                          sfx_player=self.sound_player, waiter=self.waiter,
+                                          sound_player=self.sound_player, waiter=self.waiter,
                                           dialogue=self.dialogue)
         load_animation(f"data_lt2/ani/event/twindow.arc", self.dialogue)
         self.dialogue.init_position()
@@ -90,6 +95,9 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
     def unload(self):
         super(EventPlayer, self).unload()
+        self.sound_player.stop_sadl()
+        self.sound_player.stop_smdl()
+        self.voice_player.stop()
         self.top_bg.unload()
         self.btm_bg.unload()
         for character in self.characters:

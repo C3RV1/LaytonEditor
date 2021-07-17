@@ -20,6 +20,9 @@ tests/
 *.SAD
 *.wav
 *.sad
+*.sf2
+*.dll
+*.pdb
 venv
 _test*
 data_extracted

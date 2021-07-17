@@ -65,7 +65,7 @@ class SampleInfo:
     loop_enabled: bool
     # number of pcm samples before the loop point
     loop: int
-    # tuning in simitones
+    # tuning in semitones
     tuning: float
 
 
