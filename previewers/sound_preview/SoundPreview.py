@@ -2,7 +2,9 @@ from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
 from PygameEngine.UI.Text import Text
 from PygameEngine.Alignment import Alignment
 from pygame_utils.SADLStreamPlayer import SADLStreamPlayer
-from pygame_utils.rom.rom_extract import load_sadl
+from pygame_utils.SMDLStreamPlayer import SMDLStreamPlayer
+from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
+from pygame_utils.rom.rom_extract import load_sadl, load_smd
 from PygameEngine.UI.Button import Button
 import pygame as pg
 
@@ -35,10 +37,11 @@ class SADLPreview(TwoScreenRenderer):
         self.play_btn.time_interact_command = 0.09
         self.play_btn.color_key = pg.Color(0, 255, 0)
 
-        self.track_player = SADLStreamPlayer()
+        self.sadl_player = SADLStreamPlayer()
+        self.smdl_player = SMDLStreamPlayer()
+        self.current_player: StreamPlayerAbstract = StreamPlayerAbstract()
+        self.snd_obj = None
         self.playing = False
-
-        self.sadl = None
 
     def load(self):
         super(SADLPreview, self).load()
@@ -51,14 +54,39 @@ class SADLPreview(TwoScreenRenderer):
         super(SADLPreview, self).unload()
         self.play_btn.unload()
         self.ui_manager.clear()
-        self.track_player.stop()
+        self.current_player.stop()
 
-    def load_sound(self, path: str):
+    def load_sadl(self, path: str):
         self.stop_sound()
-        self.sadl = load_sadl(path)
+        self.snd_obj = load_sadl(path)
+        self.current_player = self.sadl_player
         self.track_name.text = path.split("/")[-1]
+        if self.check_playable():
+            self.explanation_text.text = "Touch the headphones to play"
+            self.play_btn.set_tag("OFF")
+        else:
+            self.explanation_text.text = "Missing dependencies"
+            self.play_btn.set_tag("CAN'T BE PLAYED")
+
+    def load_smdl(self, path):
+        self.stop_sound()
+        self.snd_obj, presets = load_smd(path)
+        self.current_player = self.smdl_player
+        self.current_player.set_preset_dict(presets)
+        self.track_name.text = path.split("/")[-1]
+        if self.check_playable():
+            self.explanation_text.text = "Touch the headphones to play"
+            self.play_btn.set_tag("OFF")
+        else:
+            self.explanation_text.text = "Missing dependencies"
+            self.play_btn.set_tag("CAN'T BE PLAYED")
+
+    def check_playable(self):
+        return self.current_player.get_playable()
 
     def toggle_sound(self):
+        if not self.check_playable():
+            return
         if self.playing:
             self.stop_sound()
         else:
@@ -66,18 +94,18 @@ class SADLPreview(TwoScreenRenderer):
 
     def start_sound(self):
         self.play_btn.set_tag("ON")
-        if self.sadl and not self.playing:
+        if self.snd_obj and not self.playing:
             self.playing = True
-            self.track_player.start_sound(self.sadl, volume=0.5)
+            self.current_player.start_sound(self.snd_obj, volume=0.5)
 
     def stop_sound(self):
         self.play_btn.set_tag("OFF")
         self.playing = False
-        self.track_player.stop()
+        self.current_player.stop()
 
     def update(self):
         super(SADLPreview, self).update()
-        self.track_player.update_()
+        self.current_player.update_()
         self.ui_manager.update()
         self.play_btn.update_animation()
 

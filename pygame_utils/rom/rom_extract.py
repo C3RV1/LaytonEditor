@@ -4,6 +4,7 @@ import shutil
 import formats.graphics.ani as ani
 import formats.graphics.bg as bg
 import formats.sound.smd as smd
+import formats.sound.swd as swd
 import formats.binary as binary
 import PIL.Image as imgl
 import json
@@ -115,7 +116,7 @@ def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
     return sadl
 
 
-def load_smd(path: str, rom=None) -> smd.SMDL:
+def load_smd(path: str, rom=None) -> tuple:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", LANG)
@@ -124,7 +125,12 @@ def load_smd(path: str, rom=None) -> smd.SMDL:
     smd_obj = smd.SMDL()
     smd_obj.read(smd_file)
     smd_file.close()
-    return smd_obj
+
+    swd_path = path.split(".")[0] + ".SWD"
+    swd_file = binary.BinaryReader(rom.open(swd_path, "rb"))
+    swd_presets = swd.swd_read_presetbank(swd_file).presets
+    swd_file.close()
+    return smd_obj, swd_presets
 
 
 def clear_extracted():

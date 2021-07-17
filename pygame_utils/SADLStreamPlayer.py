@@ -1,10 +1,12 @@
 import SADLpy.SADL
 import pygame as pg
 import numpy as np
+from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
 
 
-class SADLStreamPlayer:
+class SADLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
+        super(SADLStreamPlayer, self).__init__()
         self.sadl: SADLpy.SADL.SADL = None
         self.sound_obj: pg.mixer.Sound = None
         self.sound_buffer = None
@@ -28,14 +30,14 @@ class SADLStreamPlayer:
         self.sound_buffer[self.buffer_offset:self.buffer_offset + new_samples.shape[0]] = new_samples
         self.buffer_offset += new_samples.shape[0]
 
-    def start_sound(self, sadl: SADLpy.SADL.SADL, loops=0, volume=0.5):
+    def start_sound(self, snd_obj: SADLpy.SADL.SADL, loops=0, volume=0.5):
         if self.sound_obj is not None:
             self.sound_obj.stop()
-        if self.sadl is not sadl:
-            self.sadl = sadl
+        if self.sadl is not snd_obj:
+            self.sadl = snd_obj
             self.sadl.sample_rate = pg.mixer.get_init()[0]  # Set sadl sample rate
-            sadl.channels = 2
-            self.sound_obj = pg.sndarray.make_sound(np.zeros((sadl.alloc_size, sadl.channels), dtype=np.int16))
+            snd_obj.channels = 2
+            self.sound_obj = pg.sndarray.make_sound(np.zeros((snd_obj.alloc_size, snd_obj.channels), dtype=np.int16))
             self.sound_buffer = pg.sndarray.samples(self.sound_obj)
             self.loading_finished = False
             self.buffer_offset = 0

@@ -34,8 +34,6 @@ import os
 # https://docs.python.org/3/library/os.html#os.add_dll_directory
 if hasattr(os, 'add_dll_directory'):
     os.environ['PATH'] += f";{os.path.dirname(__file__) + '/fluidsynth/'}"
-    print(os.environ['PATH'])
-    print(os.add_dll_directory(os.path.dirname(__file__) + "/fluidsynth/"))
 
 lib = find_library('fluidsynth') or \
     find_library('libfluidsynth') or \

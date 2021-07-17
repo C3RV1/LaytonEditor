@@ -8,11 +8,12 @@ class EventSound(EventSoundAbstract):
     def __init__(self):
         super().__init__()
         self.sadl_player = pygame_utils.SADLStreamPlayer.SADLStreamPlayer()
-        self.bg_player = pygame_utils.SMDLStreamPlayer.SMDStreamPlayer()
+        self.bg_player = pygame_utils.SMDLStreamPlayer.SMDLStreamPlayer()
         self.loops = False
 
     def play_smdl(self, path, volume=0.5):
-        smd_obj = load_smd(path)
+        smd_obj, presets = load_smd(path)
+        self.bg_player.set_preset_dict(presets)
         self.bg_player.start_sound(smd_obj, volume=volume)
 
     def stop_smdl(self):

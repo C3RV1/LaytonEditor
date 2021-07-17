@@ -110,6 +110,7 @@ def swd_read_presets(stream, samples_info) -> Dict[int, Preset]:
             splits.append(
                 SplitEntry(highkey, lowkey, samples_info[sample_index], tuning, rootkey))
         presets[preset_index] = Preset(splits, lfos)
+        print(preset_index, presets[preset_index])
     return presets
 
 

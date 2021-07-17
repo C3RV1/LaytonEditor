@@ -1,48 +1,57 @@
 { "frames": [
    {
     "filename": "headphones_play 0.ase",
-    "frame": { "x": 0, "y": 0, "w": 77, "h": 66 },
+    "frame": { "x": 0, "y": 0, "w": 89, "h": 89 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 66 },
-    "sourceSize": { "w": 77, "h": 66 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
     "duration": 100
    },
    {
     "filename": "headphones_play 1.ase",
-    "frame": { "x": 77, "y": 0, "w": 77, "h": 66 },
+    "frame": { "x": 89, "y": 0, "w": 89, "h": 89 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 66 },
-    "sourceSize": { "w": 77, "h": 66 },
-    "duration": 350
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
+    "duration": 300
    },
    {
     "filename": "headphones_play 2.ase",
-    "frame": { "x": 154, "y": 0, "w": 77, "h": 66 },
+    "frame": { "x": 178, "y": 0, "w": 89, "h": 89 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 66 },
-    "sourceSize": { "w": 77, "h": 66 },
-    "duration": 120
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
+    "duration": 100
    },
    {
     "filename": "headphones_play 3.ase",
-    "frame": { "x": 231, "y": 0, "w": 77, "h": 66 },
+    "frame": { "x": 267, "y": 0, "w": 89, "h": 89 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 66 },
-    "sourceSize": { "w": 77, "h": 66 },
-    "duration": 120
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
+    "duration": 100
    },
    {
     "filename": "headphones_play 4.ase",
-    "frame": { "x": 308, "y": 0, "w": 77, "h": 66 },
+    "frame": { "x": 356, "y": 0, "w": 89, "h": 89 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 66 },
-    "sourceSize": { "w": 77, "h": 66 },
-    "duration": 120
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
+    "duration": 100
+   },
+   {
+    "filename": "headphones_play 5.ase",
+    "frame": { "x": 445, "y": 0, "w": 89, "h": 89 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 89 },
+    "sourceSize": { "w": 89, "h": 89 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -50,11 +59,12 @@
   "version": "1.3-beta5-x64",
   "image": "headphones_play.png",
   "format": "RGBA8888",
-  "size": { "w": 385, "h": 66 },
+  "size": { "w": 534, "h": 89 },
   "scale": "1",
   "frameTags": [
    { "name": "OFF", "from": 0, "to": 0, "direction": "forward", "color": "#000000ff" },
-   { "name": "ON", "from": 1, "to": 4, "direction": "forward", "color": "#000000ff" }
+   { "name": "ON", "from": 1, "to": 4, "direction": "forward", "color": "#000000ff" },
+   { "name": "CAN'T BE PLAYED", "from": 5, "to": 5, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "Layer 4", "opacity": 255, "blendMode": "normal" },

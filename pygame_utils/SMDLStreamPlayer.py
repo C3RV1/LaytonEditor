@@ -3,6 +3,9 @@ from formats import binary
 import io
 from queue import PriorityQueue
 import numpy as np
+from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
+from formats.sound.soundtypes import Preset
+from typing import Dict
 
 from dataclasses import dataclass, field
 from typing import Any
@@ -39,10 +42,13 @@ class SMDLSequencer:
         self.octave = [0] * len(self.smd_obj.tracks)
         self.tracks_br = []
         self.track_lengths = []
+        self.track_completed = [False] * len(self.smd_obj.tracks)
 
         self.event_queue = PriorityQueue()
         self.current_tick = 0
         self.completed = False
+
+        self.PROGRAM_MAP = {}
 
         if fluidsynth is None or not os.path.isfile(sf2_path):
             self.fs = None
@@ -67,16 +73,57 @@ class SMDLSequencer:
 
     PAUSE_TICKS = [96, 72, 64, 48, 36, 32, 24, 18, 16, 12, 9, 8, 6, 4, 3, 2]
 
-    PROGRAM_MAP = {78: 78, 12: 0, 30: 27, 27: 27, 93: 93, 21: 21, 22: 21, 23: 21, 81: 81, 105: 105}
+    # NO: 365, 812, 818, 849, 859, 869, 888, 898, 899, 1100, 1114, 1120, 1126, 1201
+    SAMPLE_TO_PROGRAM = {
+        105: [76, 98],  # Piano (Bright)
+        27: [103, 104, 105, 106, 107, 108, 109, 110, 111, 112],  # Vibraphone
+        0: [126, 127, 128, 129, 130, 131, 132, 133, 134, 135],  # Accordion
+        # For some reason some Bandoneon notes don't work correctly
+        # 0: [126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 843, 845, 847, 855, 857, 865, 867],  # Accordion + Bandoneon
+        115: [210, 212, 214, 216],  # BD Cym Shaker
+        114: [294, 302, 303, 795, 797],  # Maracas WBlock Tri
+        62: [306, 311, 315, 318, 320, 328],  # Oboe/Violin
+        81: [342, 349, 358, 366, 372],  # String Ensemble 1
+        117: [465],  # Crash Cymbal
+        103: [486, 492, 504, 506, 514, 516, 518],  # Harpsichord
+        33: [668, 672, 674, 676, 678, 680, 682, 684],  # Marimba
+        99: [711, 717, 725, 729, 733, 741, 745],  # Guitar
+        78: [806, 809, 811, 813, 815, 819, 821, 829],  # Cello
+        10: [843, 845, 847, 855, 857, 859, 865, 867],  # Bandoneon
+        83: [877, 879, 881, 884, 887, 889, 891, 894, 897, 901],  # String Ensemble 2
+        93: [970, 972, 974, 975],  # Upright Bass
+        21: [1090, 1092, 1096, 1098, 1104, 1106, 1108, 1112, 1118, 1122, 1124],  # Celesta/Music Box
+        120: [1161],  # Timpani
+        113: [1190, 1191, 1192, 1193, 1194, 1195, 1196, ],  # Flute
+        85: [1197, 1198, 1199, 1200, 1202, 1203, 1204],  # Bassoon-ish
+        116: [1213, 1214, 1215, 1216, 1217, 1218, 1219],
+        106: [1229, 1230, 1231, 1232, 1233, 1234, 1235, 1236, 1237, 1238, 1239]  # Piano (Muted)
+    }
+
+    def map_preset(self, preset: Preset):
+        for sample in preset.split_entries:
+            for program in self.SAMPLE_TO_PROGRAM.keys():
+                if sample.sample_info.sample_index in self.SAMPLE_TO_PROGRAM[program]:
+                    return program
+        return None
+
+    def create_program_map(self, presets: Dict[int, Preset]):
+        for preset_index in presets.keys():
+            mapped_preset = self.map_preset(presets[preset_index])
+            print(f"Preset {preset_index} mapped to {mapped_preset}")
+            if mapped_preset is not None:
+                self.PROGRAM_MAP[preset_index] = mapped_preset
 
     def read_pauses(self, track_id):
         track_br = self.tracks_br[track_id]
-        while track_br.tell() < self.track_lengths[track_id]:
+        while track_br.tell() < self.track_lengths[track_id] and not self.track_completed[track_id]:
+            prefix = f"[Track {track_id} tick: {self.current_tick}]\t"
             event = track_br.read_uint8()
 
             def post_pause(track_id1=track_id):
                 self.read_pauses(track_id1)
             if event == 0x98:
+                self.track_completed[track_id] = True
                 break
             elif 0x0 <= event <= 0x7F:  # Note
                 note_data = track_br.read_uint8()
@@ -139,6 +186,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
+                return
             elif event == 0xa4 or event == 0xa5:
                 self.bpm = track_br.read_uint8()
             elif event == 0x99:
@@ -165,13 +213,14 @@ class SMDLSequencer:
 
     def read_events(self, track_id):
         track_br = self.tracks_br[track_id]
-        while track_br.tell() < self.track_lengths[track_id]:
-            # prefix = f"[Track {track_id} tick: {self.current_tick}]\t"
+        while track_br.tell() < self.track_lengths[track_id] and not self.track_completed[track_id]:
+            prefix = f"[Track {track_id} tick: {self.current_tick}]\t"
 
             def post_pause(track_id1=track_id):
                 self.read_events(track_id1)
             event = track_br.read_uint8()
             if event == 0x98:
+                self.track_completed[track_id] = True
                 break
             elif 0x0 <= event <= 0x7F:  # Note
                 note_data = track_br.read_uint8()
@@ -253,6 +302,7 @@ class SMDLSequencer:
                 # print(f"{prefix}Pause 6 ending on {pause_end}")
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
+                return
             elif event == 0x99:
                 # Loop does not work because of pygame
                 self.loop_start[track_id] = track_br.tell()
@@ -268,7 +318,7 @@ class SMDLSequencer:
                 # print(f"{prefix}Set tempo: {self.bpm}")
             elif event == 0xac:
                 program = track_br.read_uint8()
-                # print(f"{prefix}Program select: {program}")
+                print(f"{prefix}Program select: {program}")
                 if program in self.PROGRAM_MAP.keys():
                     program = self.PROGRAM_MAP[program]
                     self.fs.program_select(track_id, self.sf_id, 0, program)
@@ -325,16 +375,19 @@ class SMDLSequencer:
         for i in range(len(self.tracks_br)):
             track_start = PrioritizedItem(0, lambda track_id=i: self.read_pauses(track_id))
             self.event_queue.put(track_start)
+        samples = 0
         while not self.event_queue.empty():
             task: PrioritizedItem = self.event_queue.get()
             task_start = task.priority
             task_function = task.item
             ticks_to_do = (task_start // 2) - self.current_tick
             if ticks_to_do > 0:
+                samples += self.ticks_to_samples(ticks_to_do)
                 self.current_tick = task_start // 2
             if callable(task_function):
                 task_function()
-        return self.ticks_to_samples(self.current_tick)  # 2 extra seconds
+        print(f"SAMPLES: {self.current_tick}")
+        return samples  # 2 extra seconds
 
     def reset(self):
         if not self.fs:
@@ -343,6 +396,7 @@ class SMDLSequencer:
             track_br.seek(0)
         self.current_tick = 0
         self.last_note_length = [0] * len(self.smd_obj.tracks)
+        self.track_completed = [False] * len(self.smd_obj.tracks)
         self.last_delay = [0] * len(self.smd_obj.tracks)
         self.bpm = 120
         self.completed = False
@@ -375,15 +429,25 @@ class SMDLSequencer:
         self.completed = True
         return samples
 
+    @staticmethod
+    def get_dependencies_met():
+        sf2_path = os.path.dirname(__file__) + "/layton2.sf2"
+        return fluidsynth is not None and os.path.isfile(sf2_path)
 
-class SMDStreamPlayer:
+
+class SMDLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
-        self.smd_sequencer: [SMDLSequencer] = None
+        super(SMDLStreamPlayer, self).__init__()
+        self.smd_sequencer: SMDLSequencer = None
         self.sound_obj: [pg.mixer.Sound] = None
         self.sound_buffer = None
         self.loading = False
         self.loading_finished = False
         self.buffer_offset = 0
+        self.preset_dict: Dict[int, Preset] = {}
+
+    def set_preset_dict(self, preset_dict: Dict[int, Preset]):
+        self.preset_dict = preset_dict
 
     def update_(self):
         if self.loading:
@@ -401,16 +465,19 @@ class SMDStreamPlayer:
         self.sound_buffer[self.buffer_offset:self.buffer_offset + new_samples.shape[0]] = new_samples
         self.buffer_offset += new_samples.shape[0]
 
-    def start_sound(self, smd_obj: smd.SMDL, volume=0.5):
+    def start_sound(self, snd_obj: smd.SMDL, loops=0, volume=0.5):
+        if not SMDLSequencer.get_dependencies_met():
+            return
         if self.sound_obj is not None:
             self.sound_obj.stop()
         if self.smd_sequencer:
-            do_load = self.smd_sequencer.smd_obj is not smd_obj
+            do_load = self.smd_sequencer.smd_obj is not snd_obj
         else:
             do_load = True
         if do_load:
             sample_rate = pg.mixer.get_init()[0]
-            self.smd_sequencer = SMDLSequencer(smd_obj, sample_rate=sample_rate)
+            self.smd_sequencer = SMDLSequencer(snd_obj, sample_rate=sample_rate)
+            self.smd_sequencer.create_program_map(self.preset_dict)
             length = self.smd_sequencer.compute_sample_count()
             self.smd_sequencer.reset()
             self.sound_obj = pg.sndarray.make_sound(np.zeros((length, 2), dtype=np.int16))
@@ -420,6 +487,7 @@ class SMDStreamPlayer:
             self.add_samples(first_init=True)
         if not self.loading_finished:
             self.loading = True
+        # We ignore the loops passed
         if self.smd_sequencer.loops:
             loops = -1
         else:
@@ -433,16 +501,20 @@ class SMDStreamPlayer:
         if self.sound_obj is not None:
             self.sound_obj.stop()
 
+    @staticmethod
+    def get_playable():
+        return SMDLSequencer.get_dependencies_met()
+
 
 if __name__ == '__main__':
     pg.init()
-    with open("smd/BG_004.SMD", "rb") as smd_file:
+    with open("BG_024.SMD", "rb") as smd_file:
         smd_br = binary.BinaryReader(smd_file)
         smd_obj_test = smd.SMDL()
         smd_obj_test.read(smd_br)
 
     samples_total = []
-    smd_player = SMDStreamPlayer()
+    smd_player = SMDLStreamPlayer()
     smd_player.start_sound(smd_obj_test)
 
     print("Playing")

@@ -17,7 +17,7 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from previewers.event_preview.EventPlayer import EventPlayer
 from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
-from previewers.sadl_preview.SADLPreview import SADLPreview
+from previewers.sound_preview.SoundPreview import SADLPreview
 
 from pygame_utils.rom.rom_extract import load_sadl
 from SADLpy.SADL import SADL
@@ -166,7 +166,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.event_previewer = EventPlayer()
         self.puzzle_previewer = PuzzlePlayer()
-        self.sadl_previewer = SADLPreview()
+        self.sound_previewer = SADLPreview()
 
         self.puzzle_scintilla.SetEOLMode(wx.stc.STC_EOL_LF)
 
@@ -286,11 +286,15 @@ class FilesystemEditor(generated.FilesystemEditor):
                 treenode_import_from_plz_file(self.ft_filetree, self.ft_filetree.GetSelection(), name, self.rom)
             self.fp_formats_book.SetSelection(0)  # Empty page
         elif name.lower().endswith(".sad"):
-            self.pygame_previewer.start_renderer(self.sadl_previewer)
-            self.sadl_previewer.load_sound(name)
+            self.pygame_previewer.start_renderer(self.sound_previewer)
+            self.sound_previewer.load_sadl(name)
             self.fp_formats_book.SetSelection(0)  # Empty page
             self.fp_menus_loaded.append("Stream")
             self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
+        elif name.lower().endswith(".smd"):
+            self.pygame_previewer.start_renderer(self.sound_previewer)
+            self.sound_previewer.load_smdl(name)
+            self.fp_formats_book.SetSelection(0)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
