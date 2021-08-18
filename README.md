@@ -5,6 +5,9 @@ The instructions on how to use the editor are on the `wiki` page.
 
 Japanese has not been tested and might not work.
 
+Current support is limited to Professor Layton 2. Other games have not been
+tested, but would probably lack many features and give many errors.
+
 ## Installation
 
 To install the LaytonEditor just clone this repository and install the
@@ -50,6 +53,5 @@ future versions, the fonts will be automatically extracted from the rom.
 
 ## Credits
 
-* [thatrandomstrange](https://github.com/thatrandomstranger/LaytonEditor)
-* [bullbin](https://github.com/bullbin)
+* [thatrandomstrange](https://github.com/thatrandomstranger)
 * [cervi](https://github.com/C3RV1)
