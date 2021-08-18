@@ -1,2 +1,3 @@
 
-LANG = "fr"
+# Global language (from rom)
+LANG = "en"

@@ -4,6 +4,7 @@ import ndspy.rom
 import wx.aui
 import wx.stc
 
+from formats import conf
 from formats.filesystem import NintendoDSRom
 from gui import generated
 from gui.filesystem_editor import FilesystemEditor
@@ -24,17 +25,34 @@ class MainEditor(generated.MainEditor):
 
     # Helper functions
     def open_rom(self, rom: Union[NintendoDSRom, BinaryIO, bytes, str, ndspy.rom.NintendoDSRom]):
+        rom_last_filename = self.rom_last_filename
         if isinstance(rom, str):  # Filename
-            self.rom_last_filename = rom
-            self.rom = NintendoDSRom.fromFile(rom)
+            rom_last_filename = rom
+            rom = NintendoDSRom.fromFile(rom)
         elif isinstance(rom, BinaryIO):  # File
-            self.rom = NintendoDSRom(rom.read())
+            rom = NintendoDSRom(rom.read())
         elif isinstance(rom, bytes):  # Raw bytes
-            self.rom = NintendoDSRom(rom)
+            rom = NintendoDSRom(rom)
         elif isinstance(rom, ndspy.rom.NintendoDSRom):
-            self.rom = NintendoDSRom(rom.save())
+            rom = NintendoDSRom(rom.save())
         elif isinstance(rom, NintendoDSRom):
-            self.rom = rom
+            rom = rom
+
+        # Load language from arm9
+        arm9 = self.rom.loadArm9()
+        lang_address = 0x02000d3c-arm9.ramAddress
+        lang_id = self.rom.arm9[lang_address]
+        lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
+        conf.LANG = lang_table[lang_id]
+        print(f"Game language: {conf.LANG}")
+        if conf.LANG == "jp":
+            error_dialog = wx.MessageDialog(self, "Japan is not currently supported", style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+            return
+
+        # After checking language
+        self.rom = rom
+        self.rom_last_filename = rom_last_filename
 
         RomSingleton(rom=self.rom)
 
