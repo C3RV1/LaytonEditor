@@ -23,6 +23,7 @@ tests/
 *.sf2
 *.dll
 *.pdb
+*.SMD
 venv
 _test*
 data_extracted

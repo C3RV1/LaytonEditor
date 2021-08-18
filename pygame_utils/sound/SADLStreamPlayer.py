@@ -1,7 +1,7 @@
 import SADLpy.SADL
 import pygame as pg
 import numpy as np
-from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
+from pygame_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 
 
 class SADLStreamPlayer(StreamPlayerAbstract):

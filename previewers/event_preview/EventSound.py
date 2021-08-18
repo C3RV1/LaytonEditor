@@ -1,14 +1,14 @@
 from .abstracts.EventSoundAbstract import EventSoundAbstract
-import pygame_utils.SADLStreamPlayer
-import pygame_utils.SMDLStreamPlayer
+import pygame_utils.sound.SADLStreamPlayer
+import pygame_utils.sound.SMDLStreamPlayer
 from pygame_utils.rom.rom_extract import load_sadl, load_smd
 
 
 class EventSound(EventSoundAbstract):
     def __init__(self):
         super().__init__()
-        self.sadl_player = pygame_utils.SADLStreamPlayer.SADLStreamPlayer()
-        self.bg_player = pygame_utils.SMDLStreamPlayer.SMDLStreamPlayer()
+        self.sadl_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.bg_player = pygame_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
         self.loops = False
 
     def play_smdl(self, path, volume=0.5):

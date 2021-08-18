@@ -7,7 +7,7 @@ from .EventCharacter import EventCharacter
 from pygame_utils.rom.rom_extract import load_animation
 from typing import Optional
 import pygame as pg
-import pygame_utils.SADLStreamPlayer
+import pygame_utils.sound.SADLStreamPlayer
 from pygame_utils.rom.rom_extract import load_sadl
 
 from .abstracts.EventDialogueAbstract import EventDialogueAbstract
@@ -18,7 +18,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
                     EventDialogueAbstract):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, groups, voice_player: pygame_utils.SADLStreamPlayer.SADLStreamPlayer, event_player):
+    def __init__(self, groups, voice_player: pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer, event_player):
         PygameEngine.UI.UIElement.UIElement.__init__(self)
         PygameEngine.Sprite.Sprite.__init__(self, ())
         EventDialogueAbstract.__init__(self)

@@ -6,9 +6,11 @@ import formats.dcc_parser as dcc
 import utility.replace_substitutions as subs
 from typing import Optional
 
+from formats import conf
+
 
 class Event:
-    def __init__(self, rom: fs.NintendoDSRom = None, lang="en"):
+    def __init__(self, rom: fs.NintendoDSRom = None):
         self.rom = rom
         self.event_id = 0
 
@@ -21,9 +23,8 @@ class Event:
         self.characters_pos = [0, 0, 0, 0, 0, 0, 0, 0]
         self.characters_shown = [False, False, False, False, False, False, False, False]
         self.characters_anim_index = [0, 0, 0, 0, 0, 0, 0, 0]
-        self.lang = lang
 
-        self.original = ""
+        self.original = b""
 
     def set_event_id(self, new_id):
         self.event_id = new_id
@@ -120,7 +121,7 @@ class Event:
 
     def load_texts(self):
         prefix, postfix, complete = self.resolve_event_id()
-        self.event_texts = self.rom.get_archive(f"data_lt2/event/?/ev_t{complete}.plz".replace("?", self.lang))
+        self.event_texts = self.rom.get_archive(f"data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
 
     def get_text(self, text_num):
         prefix, postfix, complete = self.resolve_event_id()
@@ -210,7 +211,9 @@ class Event:
                 "parameters": params
             })
 
-        return parser.serialize()
+        a = parser.serialize()
+        print(a)
+        return a
 
     def from_readable(self, readable):
         parser = dcc.Parser()

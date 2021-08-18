@@ -9,12 +9,13 @@ import formats.binary as binary
 import PIL.Image as imgl
 import json
 import pygame as pg
+
+from formats import conf
 from pygame_utils.rom import RomSingleton
 import SADLpy.SADL
 
 EXPORT_PATH = "data_extracted"
 ORIGINAL_FPS = 60
-LANG = "en"
 
 
 def set_extension(path, ext):
@@ -23,7 +24,7 @@ def set_extension(path, ext):
 
 def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
     rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", LANG)
+    path = path.replace("?", conf.LANG)
     path = set_extension(path, ".arc")
     export_path = EXPORT_PATH + "/" + path
     if not rom.filenames.idOf(path):
@@ -83,7 +84,7 @@ def load_animation(path: str, sprite: PygameEngine.Sprite.Sprite):
 
 def load_bg(path: str, sprite: PygameEngine.Sprite.Sprite):
     rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", LANG)
+    path = path.replace("?", conf.LANG)
     path = set_extension(path, ".arc")
     export_path = EXPORT_PATH + "/" + path + ".png"
     if not rom.filenames.idOf(path):
@@ -101,7 +102,7 @@ def load_bg(path: str, sprite: PygameEngine.Sprite.Sprite):
 def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", LANG)
+    path = path.replace("?", conf.LANG)
     sad_export_path = EXPORT_PATH + "/" + path
     sound_data = rom.files[rom.filenames.idOf(path)]
 
@@ -119,7 +120,7 @@ def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
 def load_smd(path: str, rom=None) -> tuple:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", LANG)
+    path = path.replace("?", conf.LANG)
     smd_file = binary.BinaryReader(rom.open(path, "rb"))
 
     smd_obj = smd.SMDL()

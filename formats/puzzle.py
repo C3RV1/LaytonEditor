@@ -10,6 +10,7 @@ import formats.dcc_parser
 import formats.gds_parser as pz_gds
 
 import utility.replace_substitutions as subs
+from formats import conf
 
 
 class Puzzle:
@@ -156,7 +157,7 @@ class Puzzle:
         if rom.name == b'LAYTON1' and False:
             _folder: str = rom.filenames["data/ani"]
         elif rom.name == b'LAYTON2':
-            _folder: str = rom.filenames["data_lt2/nazo/en"]
+            _folder: str = rom.filenames["data_lt2/nazo/?".replace("?", conf.LANG)]
         else:
             print(f"Could get images for: {rom.name}")
             return False, ""
@@ -165,7 +166,7 @@ class Puzzle:
         if bank > 3:
             bank = 3
 
-        plz = rom.get_archive(f"data_lt2/nazo/en/nazo{bank}.plz")
+        plz = rom.get_archive(f"data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
         if f"n{self.internal_id}.dat" not in plz.filenames:
             print("Nazo dat not found")
             return False, ""
@@ -186,7 +187,7 @@ class Puzzle:
         if not self.bg_lang:
             file_name = "q{}.arc".format(self.bg_btm_id)
         else:
-            file_name = "en/q{}.arc".format(self.bg_btm_id)
+            file_name = "?/q{}.arc".format(self.bg_btm_id).replace("?", conf.LANG)
         return f"data_lt2/bg/nazo/{file_name}"
 
     @staticmethod
@@ -202,7 +203,7 @@ class Puzzle:
         dat_files.files[dat_index] = self.export_data()
         dat_files.save()
 
-        nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/en/nz_lst.dlz", rom=self.rom)
+        nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/?/nz_lst.dlz".replace("?", conf.LANG), rom=self.rom)
         nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
         for item in nazo_list:
             if item[0] == self.internal_id:

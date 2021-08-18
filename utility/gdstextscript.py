@@ -2,6 +2,8 @@ import formats.gds
 import formats.filesystem
 import re
 
+from formats import conf
+
 command_names = [
     "x00", "x01", "fade_in", "fade_out", "dial", "x05", "set_mode", "set_next_mode",
     "play_movie", "goto", "x0a", "x0b", "x0c", "x0d", "x0e", "x0f",
@@ -50,7 +52,7 @@ def convert_to_textscript(gdsscript: formats.gds.GDS, index=None, rom=None) -> s
         if rom and command.command == 0x04 and index // 1000 != 24:
             # TODO: event-24_xxx
             if arch is None:
-                arch = rom.get_archive(f"/data_lt2/event/en/ev_t{index // 1000}.plz")
+                arch = rom.get_archive(f"/data_lt2/event/?/ev_t{index // 1000}.plz".replace("?", conf.LANG))
             dial_gds = formats.gds.GDS(f"t{index // 1000:02}_{index % 1000:03}_{command.params[0]:03}.gds", rom=arch)
             ret += command_names[command.command] + " " + ", ".join(
                 handlers[type(x)](x) for x in dial_gds.params)

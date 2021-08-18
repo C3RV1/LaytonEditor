@@ -80,8 +80,9 @@ class Parser:
                 in_string = not in_string
                 current_token += self.code[code_index]
             elif self.code[code_index] == "\\" and self.code[code_index + 1] == "\"" and in_string:
-                code_index += 1
-                current_token += "\""
+                code_index += 2
+                current_token += "\\\""
+                continue
             elif self.code[code_index] == " " and not in_string:
                 pass
             else:
@@ -144,9 +145,10 @@ class Parser:
                             current_token += "\""
                             token_copy = token_copy[1:]
                             while len(token_copy) > 0 and token_copy[0] != "\"":
-                                if token_copy[:2] == "\"":
-                                    current_token += "\""
-                                    token_copy = token_copy[1:]
+                                if token_copy[:2] == '\\"':
+                                    current_token += '\\"'
+                                    token_copy = token_copy[2:]
+                                    continue
                                 current_token += token_copy[0]
                                 token_copy = token_copy[1:]
                             current_token += "\""
@@ -235,9 +237,9 @@ class Parser:
     def convert_variables(self):
 
         def convert_variable(value):
-            if value.startswith("\"") and value.endswith("\""):
+            if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
-                value = bytes(value, "utf-8").decode("unicode_escape")
+                value = value.replace("\\n", "\n").replace('\\"', '"')
                 return value
             elif is_int(value):
                 return int(value)
@@ -284,7 +286,7 @@ class Parser:
     def revert_variables(self):
         def revert_variable(value):
             if isinstance(value, str):
-                value = bytes(value, 'unicode_escape').decode('utf-8').replace('\"', '\\\"')
+                value = value.replace("\n", "\\n").replace('"', '\\"')
                 return f"\"{value}\""
             elif value is True:
                 return "true"

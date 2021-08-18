@@ -3,7 +3,7 @@ from formats import binary
 import io
 from queue import PriorityQueue
 import numpy as np
-from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
+from pygame_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound.soundtypes import Preset
 from typing import Dict
 
@@ -28,6 +28,8 @@ class PrioritizedItem:
 
 
 class SMDLSequencer:
+    TRACK_SELECT = -1
+
     def __init__(self, smd_obj: smd.SMDL, sample_rate=44100):
         self.smd_obj: smd.SMDL = smd_obj
 
@@ -373,6 +375,8 @@ class SMDLSequencer:
             return 0
         self.reset()
         for i in range(len(self.tracks_br)):
+            if i != self.TRACK_SELECT and self.TRACK_SELECT > 0:
+                continue
             track_start = PrioritizedItem(0, lambda track_id=i: self.read_pauses(track_id))
             self.event_queue.put(track_start)
         samples = 0
@@ -408,6 +412,8 @@ class SMDLSequencer:
         start_tick = self.current_tick
         if self.event_queue.empty() and not self.completed:
             for i in range(len(self.tracks_br)):
+                if i != self.TRACK_SELECT and self.TRACK_SELECT > 0:
+                    continue
                 track_start = PrioritizedItem(0, lambda track_id=i: self.read_events(track_id))
                 self.event_queue.put(track_start)
         while not self.event_queue.empty():

@@ -3,12 +3,12 @@ import PygameEngine.GameManager
 import PygameEngine.Input
 import PygameEngine.Sprite
 import PygameEngine.UI.UIManager
-import pygame_utils.SADLStreamPlayer
+import pygame_utils.sound.SADLStreamPlayer
 from previewers.event_preview.EventCharacter import EventCharacter
 from previewers.event_preview.EventDialogue import EventDialogue
 from pygame_utils import TwoScreenRenderer
 from pygame_utils.rom import RomSingleton
-from pygame_utils.rom.rom_extract import load_animation, LANG
+from pygame_utils.rom.rom_extract import load_animation
 from .EventBG import EventBG
 from previewers.event_preview.abstracts.EventCommands import *
 from .EventSound import EventSound
@@ -22,7 +22,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         self.inp = PygameEngine.Input.Input()
 
-        self.event_data = ev_dat.Event(rom=RomSingleton.RomSingleton().rom, lang=LANG)
+        self.event_data = ev_dat.Event(rom=RomSingleton.RomSingleton().rom)
 
         self.top_bg = EventBG(self.top_group, "top")
         self.btm_bg = EventBG(self.btm_group, "bottom")
@@ -33,7 +33,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.waiter = EventWaiter()
 
         self.sound_player = EventSound()
-        self.voice_player = pygame_utils.SADLStreamPlayer.SADLStreamPlayer()
+        self.voice_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.next_voice = -1
 
         self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player, self)

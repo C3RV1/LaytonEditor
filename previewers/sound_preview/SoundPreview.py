@@ -1,9 +1,9 @@
 from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
 from PygameEngine.UI.Text import Text
 from PygameEngine.Alignment import Alignment
-from pygame_utils.SADLStreamPlayer import SADLStreamPlayer
-from pygame_utils.SMDLStreamPlayer import SMDLStreamPlayer
-from pygame_utils.StreamPlayerAbstract import StreamPlayerAbstract
+from pygame_utils.sound.SADLStreamPlayer import SADLStreamPlayer
+from pygame_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
+from pygame_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from pygame_utils.rom.rom_extract import load_sadl, load_smd
 from PygameEngine.UI.Button import Button
 import pygame as pg
