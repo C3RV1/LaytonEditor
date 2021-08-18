@@ -211,9 +211,7 @@ class Event:
                 "parameters": params
             })
 
-        a = parser.serialize()
-        print(a)
-        return a
+        return parser.serialize()
 
     def from_readable(self, readable):
         parser = dcc.Parser()
