@@ -50,6 +50,5 @@ future versions, the fonts will be automatically extracted from the rom.
 
 ## Credits
 
-* [thatrandomstrange](https://github.com/thatrandomstranger/LaytonEditor)
-* [bullbin](https://github.com/bullbin)
+* [thatrandomstrange](https://github.com/thatrandomstranger)
 * [cervi](https://github.com/C3RV1)
