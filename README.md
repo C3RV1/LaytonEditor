@@ -5,6 +5,9 @@ The instructions on how to use the editor are on the `wiki` page.
 
 Japanese has not been tested and might not work.
 
+Current support is limited to Professor Layton 2. Other games have not been
+tested, but would probably lack many features and give many errors.
+
 ## Installation
 
 To install the LaytonEditor just clone this repository and install the
