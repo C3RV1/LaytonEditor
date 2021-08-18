@@ -1,6 +1,6 @@
 # The game uses some substitutions to represent certain characters
 # For example: <''> corresponds to a "
-# This function 'fixes' this substitutions
+# This function replaces this substitutions
 subs_dict = {"<''>": '”',
              "<,,>": "„",
              "<^?>": "¿",
