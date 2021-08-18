@@ -196,10 +196,18 @@ class Event:
                 func = "set_voice"
             elif cmd.command == 0x5d:
                 func = "sfx_sad"
+            elif cmd.command == 0x5e:
+                func = "sfx_sed"
             elif cmd.command == 0x62:
                 func = "bg_music"
             elif cmd.command == 0x6a:
                 func = "bg_shake"
+            elif cmd.command == 0x8a:
+                func = "bgm_fade_out"
+            elif cmd.command == 0x8b:
+                func = "bgm_fade_in"
+            elif cmd.command == 0x99:
+                func = "dialogue_sfx"
             elif cmd.command == 0x4:
                 func = "dial"
                 dial_gds = self.get_text(params[0])
@@ -324,11 +332,23 @@ class Event:
             elif func == "sfx_sad":
                 command.command = 0x5d
                 command.params = params
+            elif func == "sfx_sed":
+                command.command = 0x5e
+                command.params = params
             elif func == "bg_music":
                 command.command = 0x62
                 command.params = params
             elif func == "bg_shake":
                 command.command = 0x6a
+                command.params = params
+            elif func == "bgm_fade_out":
+                command.command = 0x8a
+                command.params = params
+            elif func == "bgm_fade_in":
+                command.command = 0x8b
+                command.params = params
+            elif func == "dialogue_sfx":
+                command.command = 0x99
                 command.params = params
             elif func == "dial":
                 command.command = 0x4

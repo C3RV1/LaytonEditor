@@ -4,7 +4,7 @@ class StreamPlayerAbstract:
     def __init__(self):
         pass
 
-    def update_(self):
+    def update_(self, delta_time):
         pass
 
     def add_samples(self, first_init=False):
@@ -14,6 +14,9 @@ class StreamPlayerAbstract:
         pass
 
     def stop(self):
+        pass
+
+    def fade(self, time, fade_in):
         pass
 
     @staticmethod

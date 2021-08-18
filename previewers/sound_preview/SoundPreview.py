@@ -105,7 +105,7 @@ class SADLPreview(TwoScreenRenderer):
 
     def update(self):
         super(SADLPreview, self).update()
-        self.current_player.update_()
+        self.current_player.update_(self.gm.delta_time)
         self.ui_manager.update()
         self.play_btn.update_animation()
 

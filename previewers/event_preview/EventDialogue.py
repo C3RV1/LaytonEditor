@@ -18,7 +18,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
                     EventDialogueAbstract):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, groups, voice_player: pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer, event_player):
+    def __init__(self, groups, event_player):
         PygameEngine.UI.UIElement.UIElement.__init__(self)
         PygameEngine.Sprite.Sprite.__init__(self, ())
         EventDialogueAbstract.__init__(self)
@@ -50,12 +50,24 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
         self.character_talking: Optional[EventCharacter] = None
 
-        self.voice_player = voice_player
+        self.voice_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.voice_line = -1
+
+        self.dialogue_sfx_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.dialogue_sfx_id = -1
 
         self.groups_perseverance = groups
 
         self.on_dialogue = True
+
+    def update_(self):
+        self.voice_player.update_(self.gm.delta_time)
+        self.dialogue_sfx_player.update_(self.gm.delta_time)
+
+    def unload(self):
+        self.voice_player.stop()
+        self.dialogue_sfx_player.stop()
+        super(EventDialogue, self).unload()
 
     def show(self):
         if not self.alive():
@@ -75,7 +87,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             self.inner_text.kill()
         self.char_name.kill()
 
-    def start_dialogue(self, character, chr_anim, text, voice):
+    def start_dialogue(self, character, chr_anim, text, voice, dialogue_sfx):
         self.character_talking = character
         self.reset_all()
         if chr_anim is not None and self.character_talking is not None:
@@ -84,6 +96,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         # self.text_left_to_do = "I can change the #rcolor@B Also continue next line#x."
         self.text_left_to_do = replace_substitutions(self.text_left_to_do)
         self.voice_line = voice
+        self.dialogue_sfx_id = dialogue_sfx
         self.on_dialogue = True
         self.show()
         if self.character_talking is not None:
@@ -94,7 +107,6 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def set_talking(self):
         # If there is a voice line play it (first we stop it)
-        self.voice_player.stop()
         if self.voice_line != -1:
             sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
             self.voice_player.start_sound(sfx, volume=1)
@@ -135,6 +147,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.on_dialogue = False
         self.hide()
         self.set_not_talking()
+        self.voice_player.stop()
+        self.dialogue_sfx_player.stop()
 
     # When we are interacting (UIElement)
     def _interact(self):
@@ -178,6 +192,11 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             if self.finished:
                 self.pause()
             return
+        elif self.text_left_to_do.startswith("@s"):
+            self.text_left_to_do = self.text_left_to_do[2:]
+            if self.dialogue_sfx_id != -1:
+                sadl = load_sadl(f"data_lt2/stream/ST_{str(self.dialogue_sfx_id).zfill(3)}.SAD")
+                self.dialogue_sfx_player.start_sound(sadl)
 
         # Move one character from self.text_left_to_do to current_text
         self.current_text += self.text_left_to_do[:1]

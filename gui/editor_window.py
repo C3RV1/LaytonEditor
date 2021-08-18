@@ -39,9 +39,9 @@ class MainEditor(generated.MainEditor):
             rom = rom
 
         # Load language from arm9
-        arm9 = self.rom.loadArm9()
+        arm9 = rom.loadArm9()
         lang_address = 0x02000d3c-arm9.ramAddress
-        lang_id = self.rom.arm9[lang_address]
+        lang_id = rom.arm9[lang_address]
         lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
         conf.LANG = lang_table[lang_id]
         print(f"Game language: {conf.LANG}")

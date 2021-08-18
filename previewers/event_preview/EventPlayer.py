@@ -33,10 +33,8 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.waiter = EventWaiter()
 
         self.sound_player = EventSound()
-        self.voice_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
-        self.next_voice = -1
 
-        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self.voice_player, self)
+        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self)
         self.dialogue.layer = 100
         self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_TOP
         self.dialogue.world_rect.y += 192 // 2
@@ -47,12 +45,13 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         self.run_events = False
 
     def start_bg_music(self):
-        self.sound_player.play_smdl(f"data_lt2/sound/BG_004.SMD")
+        pass
+        # Plays the bg music of the room you where in (BG_004 for testing)
+        # self.sound_player.play_smdl(f"data_lt2/sound/BG_004.SMD")
 
     def reset(self):
         self.sound_player.stop_sadl()
         self.sound_player.stop_smdl()
-        self.voice_player.stop()
         self.waiter.stop()
         self.dialogue.end_dialogue()
 
@@ -97,7 +96,6 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
         super(EventPlayer, self).unload()
         self.sound_player.stop_sadl()
         self.sound_player.stop_smdl()
-        self.voice_player.stop()
         self.top_bg.unload()
         self.btm_bg.unload()
         for character in self.characters:
@@ -123,7 +121,7 @@ class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
 
         # Update sounds
         self.sound_player.update_()
-        self.voice_player.update_()
+        self.dialogue.update_()
 
         # Update wait
         self.waiter.update_()

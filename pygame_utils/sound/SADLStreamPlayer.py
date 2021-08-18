@@ -13,15 +13,34 @@ class SADLStreamPlayer(StreamPlayerAbstract):
         self.loading = False
         self.loading_finished = False
         self.buffer_offset = 0
+        self.volume = 0.0
 
-    def update_(self):
+        self.fading = False
+        self.is_fade_in = False
+        self.current_fade_time = 0.0
+        self.fade_time = 0.0
+
+    def update_(self, delta_time):
         if self.loading:
             self.add_samples()
+        if self.fading:
+            self.do_fade(delta_time)
+
+    def do_fade(self, delta_time):
+        if self.current_fade_time >= self.fade_time:
+            self.current_fade_time = self.fade_time
+            self.fading = False
+        percentage = (self.current_fade_time / self.fade_time)
+        if not self.is_fade_in:
+            percentage = 1 - percentage
+        new_volume = self.volume * percentage
+        self.sound_obj.set_volume(new_volume)
+        self.current_fade_time += delta_time
 
     def add_samples(self, first_init=False):
         sample_steps = 17
         if first_init:
-            sample_steps *= 5  # If the sound gets cut increase this number (slower load, better playback)
+            sample_steps *= 6  # If the sound gets cut increase this number (slower load, better playback)
         new_samples = np.array(self.sadl.decode(sample_steps))
         if new_samples.shape[0] == 0:
             self.loading = False
@@ -46,9 +65,16 @@ class SADLStreamPlayer(StreamPlayerAbstract):
             self.loading = True
         self.sound_obj.set_volume(volume)
         self.sound_obj.play(loops=loops)
+        self.volume = volume
 
     def stop(self):
         self.loading_finished = False
         self.loading = False
         if self.sound_obj is not None:
             self.sound_obj.stop()
+
+    def fade(self, time, fade_in):
+        self.fading = True
+        self.fade_time = time
+        self.current_fade_time = 0.0
+        self.is_fade_in = fade_in

@@ -15,3 +15,6 @@ class EventSoundAbstract:
 
     def stop_smdl(self):
         pass
+
+    def fade(self, is_fade_in, frames):
+        pass

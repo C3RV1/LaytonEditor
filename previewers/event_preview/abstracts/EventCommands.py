@@ -202,7 +202,7 @@ class SadSfxCMD(EventCMD):
 
 
 class DialogueCMD(EventCMD):
-    def __init__(self, dialogue, character, text, anim, voice):
+    def __init__(self, dialogue, character, text, anim, voice, dialogue_sfx):
         super().__init__()
         self.dialogue: EventDialogueAbstract = dialogue
         self.character: EventCharacterAbstract = character
@@ -212,11 +212,12 @@ class DialogueCMD(EventCMD):
         else:
             self.anim = anim
         self.voice = voice
+        self.dialogue_sfx = dialogue_sfx
 
     def execute(self, editing, instant):
         Debug.log(f"Executing dialogue character={self.character} anim={self.anim} text={self.text} "
                   f"voice={self.voice}", self)
-        self.dialogue.start_dialogue(self.character, self.anim, self.text, self.voice)
+        self.dialogue.start_dialogue(self.character, self.anim, self.text, self.voice, self.dialogue_sfx)
         if instant:
             self.dialogue.end_dialogue()
 
@@ -246,6 +247,22 @@ class BGMusicCMD(EventCMD):
             self.player.play_smdl(f"data_lt2/sound/BG_{str(self.bgm_id).zfill(3)}.SMD", volume=self.volume)
 
 
+class BGMusicFadeCMD(EventCMD):
+    # TODO: Fix this
+    def __init__(self, player, is_fade_in, fadeout_frames):
+        super().__init__()
+        self.player: EventSoundAbstract = player
+        self.is_fade_in = is_fade_in
+        self.fadeout_frames = fadeout_frames
+
+    def execute(self, editing, instant):
+        Debug.log(f"Executing bg music fadeout fade_in={self.is_fade_in} frames={self.fadeout_frames}", self)
+        if not instant:
+            self.player.fade(self.is_fade_in, self.fadeout_frames)
+        else:
+            self.player.fade(self.is_fade_in, 0)
+
+
 def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm, waiter, sound_player,
                       dialogue):
     commands = list()
@@ -256,6 +273,7 @@ def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm,
     )
     commands[-1].setup_characters()
     next_voice = -1
+    next_dialogue_sad_sfx = -1
     for event_gds_cmd in event.event_gds.commands:  # type: formats.gds.GDSCommand
         if event_gds_cmd.command == 0x2:
             commands.append(
@@ -275,9 +293,11 @@ def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm,
                     character = char
                     break
             commands.append(
-                DialogueCMD(dialogue, character, dialogue_gds.params[4], dialogue_gds.params[1], next_voice)
+                DialogueCMD(dialogue, character, dialogue_gds.params[4], dialogue_gds.params[1], next_voice,
+                            next_dialogue_sad_sfx)
             )
             next_voice = -1
+            next_dialogue_sad_sfx = -1
         elif event_gds_cmd.command == 0x21:
             commands.append(
                 BGLoadCMD(BGLoadCMD.BTM, bg_top, bg_btm, event_gds_cmd.params[0])
@@ -366,6 +386,16 @@ def event_to_commands(event: formats.event.Event, character_obj, bg_top, bg_btm,
             commands.append(
                 FadeCMD(FadeCMD.FADE_IN, FadeCMD.FADE_TOP, bg_top, bg_btm, event_gds_cmd.params[0])
             )
+        elif event_gds_cmd.command == 0x8a:
+            commands.append(
+                BGMusicFadeCMD(sound_player, False, event_gds_cmd.params[1])
+            )
+        elif event_gds_cmd.command == 0x8b:
+            commands.append(
+                BGMusicFadeCMD(sound_player, True, event_gds_cmd.params[1])
+            )
+        elif event_gds_cmd.command == 0x99:
+            next_dialogue_sad_sfx = event_gds_cmd.params[0]
         else:
             Debug.log_warning(f"Command {hex(event_gds_cmd.command)} not recognised (skipped). ", "GDS to Commands")
     return commands
