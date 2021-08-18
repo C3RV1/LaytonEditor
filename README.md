@@ -3,6 +3,8 @@
 Rom editor for a professor layton romhack. Created by Team Top Hat.
 The instructions on how to use the editor are on the `wiki` page.
 
+Japanese has not been tested and might not work.
+
 ## Installation
 
 To install the LaytonEditor just clone this repository and install the
