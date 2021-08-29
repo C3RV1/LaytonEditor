@@ -1,188 +1,89 @@
-import formats.event as ev_dat
-import PygameEngine.GameManager
-import PygameEngine.Input
-import PygameEngine.Sprite
-import PygameEngine.UI.UIManager
-import pygame_utils.sound.SADLStreamPlayer
-from previewers.event_preview.EventCharacter import EventCharacter
-from previewers.event_preview.EventDialogue import EventDialogue
-from pygame_utils import TwoScreenRenderer
-from pygame_utils.rom import RomSingleton
-from pygame_utils.rom.rom_extract import load_animation
+from typing import List, Optional
+
+from formats.event import Event
+from .EventCharacter import EventCharacter
 from .EventBG import EventBG
-from previewers.event_preview.abstracts.EventCommands import *
 from .EventSound import EventSound
 from .EventWaiter import EventWaiter
+from .EventDialogue import EventDialogue
+from pg_utils.rom.RomSingleton import RomSingleton
+from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 
 
-class EventPlayer(TwoScreenRenderer.TwoScreenRenderer):
-    def __init__(self, event_id=None):
+class EventPlayer(TwoScreenRenderer):
+    def __init__(self, event: Event):
         super(EventPlayer, self).__init__()
-        self.event_id = event_id
+        self.event = event
+        self.current_command = 0
 
-        self.inp = PygameEngine.Input.Input()
+        self.sprite_loader = RomSingleton().get_sprite_loader()
+        self.font_loader = RomSingleton().get_font_loader()
 
-        self.event_data = ev_dat.Event(rom=RomSingleton.RomSingleton().rom)
+        self.top_bg = EventBG("top")
+        self.sprite_loader.load(f"data_lt2/bg/event/sub{self.event.map_top_id}.arc", self.top_bg, sprite_sheet=False)
+        self.btm_bg = EventBG("btm")
+        self.sprite_loader.load(f"data_lt2/bg/map/main{self.event.map_bottom_id}.arc", self.btm_bg, sprite_sheet=False)
 
-        self.top_bg = EventBG(self.top_group, "top")
-        self.btm_bg = EventBG(self.btm_group, "bottom")
-
-        self.characters = []
-
-        self.current_gds_command = 0
         self.waiter = EventWaiter()
+        self.event_sound = EventSound()
 
-        self.sound_player = EventSound()
+        self.characters: List[Optional[EventCharacter]] = [None]*8
+        self.character_slots: List[Optional[EventCharacter]] = [None]*6
 
-        self.dialogue: EventDialogue = EventDialogue(self.btm_group, self)
-        self.dialogue.layer = 100
-        self.dialogue.draw_alignment[1] = self.dialogue.ALIGNMENT_TOP
-        self.dialogue.world_rect.y += 192 // 2
-        self.ui_manager.add(self.dialogue)
+        for i in range(8):
+            if self.event.characters[i] == 0:
+                continue
+            char_id = self.event.characters[i]
+            slot = self.event.characters_pos[i]
+            anim = self.event.characters_anim_index[i]
+            visibility = self.event.characters_shown[i]
+            char = EventCharacter(char_id, slot, anim, visibility, self.sprite_loader)
+            self.character_slots[slot] = char
+            self.characters[i] = char
 
-        self.commands = []
+        self.dialogue = EventDialogue(self)
+        self.dialogue.init_text(self.font_loader)
 
-        self.run_events = False
+        self.run_events_until_busy()
 
-    def start_bg_music(self):
-        pass
-        # Plays the bg music of the room you where in (BG_004 for testing)
-        # self.sound_player.play_smdl(f"data_lt2/sound/BG_004.SMD")
+    def run_events_until_busy(self):
+        while True:
+            if self.current_command >= len(self.event.event_gds.commands):
+                return
+            command = self.event.event_gds.commands[self.current_command]
+            self.current_command += 1
 
-    def reset(self):
-        self.sound_player.stop_sadl()
-        self.sound_player.stop_smdl()
-        self.waiter.stop()
-        self.dialogue.end_dialogue()
+            # TODO: Process command
 
-        self.current_gds_command = 0
+            if self.is_busy():
+                return
 
-    def set_event_id(self, ev_id):
-        self.event_id = ev_id
-        self.event_data.set_event_id(ev_id)
-        self.event_data.load_from_rom()
+    def update(self, dt: float):
+        self.waiter.update_(dt)
+        self.event_sound.update_(dt)
+        self.top_bg.update_(dt)
+        for character in self.character_slots:
+            if character:
+                character.animate(dt)
+        if not self.is_busy():
+            self.run_events_until_busy()
 
-    def load(self, skip_fade_in=False):
-        super().load()
-        self.reset()
-        self.start_bg_music()
+    def draw(self):
+        self.top_bg.draw_back(self.top_camera)
+        self.top_bg.draw_front(self.top_camera)
 
-        self.top_bg.add(self.top_group)
-        self.top_bg.load()
-        self.btm_bg.add(self.btm_group)
-        self.btm_bg.load()
-        self.btm_bg.fade(self.btm_bg.FADE_IN, 0, True)
-        self.top_group.add([])
-        for character in self.characters:
-            self.btm_group.add(character)
-
-        if self.event_id is None:
-            raise ValueError("event_id can't be none")
-        self.event_data.set_event_id(self.event_id)
-        self.event_data.load_from_rom()
-
-        while len(self.characters) < 6:
-            self.characters.append(EventCharacter(self.btm_group))
-
-        self.commands = event_to_commands(self.event_data, bg_btm=self.btm_bg,
-                                          bg_top=self.top_bg, character_obj=self.characters,
-                                          sound_player=self.sound_player, waiter=self.waiter,
-                                          dialogue=self.dialogue)
-        load_animation(f"data_lt2/ani/event/twindow.arc", self.dialogue)
-        self.dialogue.init_position()
-        self.run_gds_command()
+        self.btm_bg.draw_back(self.btm_camera)
+        for character in self.character_slots:
+            if character:
+                character.draw(self.btm_camera)
+        self.btm_bg.draw_front(self.btm_camera)
 
     def unload(self):
-        super(EventPlayer, self).unload()
-        self.sound_player.stop_sadl()
-        self.sound_player.stop_smdl()
         self.top_bg.unload()
         self.btm_bg.unload()
         for character in self.characters:
-            character.unload()
-        self.dialogue.unload()
-
-    def update(self):
-        super().update()
-        if self.inp.quit:
-            self.running = False
-
-        # Update character animations
-        for character in self.characters:
-            if character.char_id == 0:
-                continue
-            character.update_animation(self.gm.delta_time)
-            if character.character_mouth is not None:
-                character.character_mouth.update_animation(self.gm.delta_time)
-
-        # Update faders and shakers
-        self.top_bg.update_()
-        self.btm_bg.update_()
-
-        # Update sounds
-        self.sound_player.update_()
-        self.dialogue.update_()
-
-        # Update wait
-        self.waiter.update_()
-
-        # Update UI Elements
-        self.ui_manager.update()
-
-        if not self.is_busy() and self.run_events:
-            self.run_gds_command()
-
-    def run_gds_command(self, run_until_command=-1):
-        self.run_events = run_until_command == -1  # Should we play commands
-        if not self.run_events:
-            Debug.log_debug(f"Running until command {run_until_command}", self)
-        while True:
-            if self.current_gds_command >= len(self.commands):
-                self.run_events = False
-                break
-            next_command: EventCMD = self.commands[self.current_gds_command]
-
-            # If we have completed run_until_command and we are auto_progressing to next command
-            if self.current_gds_command > run_until_command and not self.run_events:
-                return
-            self.current_gds_command += 1
-
-            # Have we completed run_until_command?
-            editing = not self.run_events
-            instant = (self.current_gds_command <= run_until_command)
-
-            try:
-                next_command.execute(editing, instant)
-            except Exception as e:
-                Debug.log_error(f"Error while executing command. Error {e}", self)
-
-            # If we should return and we are auto_progressing to next command
-            if self.is_busy() and not instant:
-                return
-        Debug.log("Event execution finished", self)
+            if character:
+                character.unload()
 
     def is_busy(self):
         return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy()
-
-    def exit(self):
-        super().exit()
-
-    def execute_command(self, command):
-        command_split = command.split(" ")
-        if command_split[0] == "setani":
-            try:
-                int(command_split[1])
-            except:
-                Debug.log_warning(f"Command setani 1: Cannot set for character {command_split[1]}", self)
-                return
-            character = None
-            for char in self.characters:
-                char: EventCharacter
-                if char.get_char_id() == int(command_split[1]):
-                    character = char
-                    break
-            if character:
-                character.set_anim(command_split[2].replace("_", " "))
-                Debug.log(f"Command setani: Setting {character} to {command_split[2].replace('_', ' ')}", self)
-            else:
-                Debug.log_warning(f"Command setani 2: Cannot set for character {command_split[1]}", self)

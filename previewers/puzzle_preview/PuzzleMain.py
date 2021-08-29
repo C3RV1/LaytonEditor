@@ -4,10 +4,10 @@ from PygameEngine.UI.Text import Text
 from PygameEngine.Sprite import Sprite
 from PygameEngine.Animation import Animation
 from PygameEngine.UI.UIManager import UIManager
-from pygame_utils.rom.rom_extract import load_animation, load_bg
+from pg_utils.rom.rom_extract import load_animation, load_bg
 import formats.puzzle as pzd
 from typing import TYPE_CHECKING
-from pygame_utils import TwoScreenRenderer
+from pg_utils import TwoScreenRenderer
 from previewers.puzzle_preview.PuzzleHints import PuzzleHints
 from utility.replace_substitutions import replace_substitutions
 
@@ -52,7 +52,7 @@ class PuzzleMain(TwoScreenRenderer.TwoScreenRenderer):
     def load(self):
         self.btm_group.remove(self.btm_group.sprites())
         self.top_group.remove(self.btm_group.sprites())
-        self.btm_group.add(self.btm_bg, self.puzzle_main_elements)
+        self.btm_group.wake(self.btm_bg, self.puzzle_main_elements)
         self.hints_btn.draw_alignment = [Alignment.LEFT, Alignment.BOTTOM]
         self.hints_btn.world_rect.x = 256 // 2
         self.hints_btn.world_rect.y = -192 // 2
@@ -94,7 +94,7 @@ class PuzzleMain(TwoScreenRenderer.TwoScreenRenderer):
         load_animation("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn)
         self.submit_btn.set_tag("off")
 
-        self.top_group.add([self.text_bg, self.puzzle_text])
+        self.top_group.wake([self.text_bg, self.puzzle_text])
         load_bg(self.puzzle_player.puzzle_data.btm_path, self.btm_bg)
         load_bg(f"data_lt2/bg/nazo/system/nazo_text{self.puzzle_player.puzzle_data.bg_top_id}.arc", self.text_bg)
         self.puzzle_text.text = replace_substitutions(self.puzzle_player.puzzle_data.text.decode(
@@ -104,10 +104,10 @@ class PuzzleMain(TwoScreenRenderer.TwoScreenRenderer):
 
         self.pz_hints.load()
 
-        self.ui_manager.add([self.hints_btn, self.quit_btn, self.submit_btn, self.memo_btn])
+        self.ui_manager.wake([self.hints_btn, self.quit_btn, self.submit_btn, self.memo_btn])
 
     def load_header(self):
-        self.top_group.add(self.header_top_left)
+        self.top_group.wake(self.header_top_left)
         for header_top_left in self.header_top_left:
             load_animation(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_top_left)
             header_top_left.draw_alignment = [header_top_left.ALIGNMENT_RIGHT, header_top_left.ALIGNMENT_BOTTOM]
@@ -137,9 +137,9 @@ class PuzzleMain(TwoScreenRenderer.TwoScreenRenderer):
 
     def return_from_hints(self):
         self.btm_group.remove(self.pz_hints.hints_elements)
-        self.btm_group.add(self.puzzle_main_elements)
+        self.btm_group.wake(self.puzzle_main_elements)
         self.ui_manager.clear()
-        self.ui_manager.add(self.puzzle_main_elements)
+        self.ui_manager.wake(self.puzzle_main_elements)
         load_bg(self.puzzle_player.puzzle_data.btm_path, self.btm_bg)
 
     def quit_post(self):

@@ -2,7 +2,7 @@ from PygameEngine.Alignment import Alignment
 from PygameEngine.UI.Button import Button
 from PygameEngine.UI.UIManager import UIManager
 from PygameEngine.UI.Text import Text
-from pygame_utils.rom.rom_extract import load_animation, load_bg
+from pg_utils.rom.rom_extract import load_animation, load_bg
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class PuzzleHints:
             self.hint_select_btn[i].unload()
 
     def update_hint_select(self, sprites=False):
-        self.ui_manager.add(self.hint_select_btn)
+        self.ui_manager.wake(self.hint_select_btn)
         for i in range(3):
             path = f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc"
             if self.hints_used < i:
@@ -98,8 +98,8 @@ class PuzzleHints:
             self.hint_select_btn[i].set_tag("off")
 
     def enter_hints(self):
-        self.btm_group.add([self.hint_back, self.hint_select_btn])
-        self.ui_manager.add([self.hint_back])
+        self.btm_group.wake([self.hint_back, self.hint_select_btn])
+        self.ui_manager.wake([self.hint_back])
         self.view_hint(0)
 
     def view_hint(self, hint_num):
@@ -107,7 +107,7 @@ class PuzzleHints:
         if self.hints_used > hint_num:
             load_bg(f"data_lt2/bg/nazo/system/?/hint_{hint_num + 1}.arc", self.pz_main.btm_bg)
             self.btm_group.remove([self.hint_unlock, self.hint_no_unlock])
-            self.btm_group.add([self.hint_text])
+            self.btm_group.wake([self.hint_text])
             self.pz_main.ui_manager.remove([self.hint_unlock, self.hint_no_unlock])
             if hint_num == 0:
                 self.hint_text.text = self.pz_main.puzzle_player.puzzle_data.hint1.decode("ascii")
@@ -117,8 +117,8 @@ class PuzzleHints:
                 self.hint_text.text = self.pz_main.puzzle_player.puzzle_data.hint3.decode("ascii")
         else:
             load_bg(f"data_lt2/bg/nazo/system/?/jitenhint_{hint_num + 1}.arc", self.pz_main.btm_bg)
-            self.pz_main.ui_manager.add([self.hint_unlock, self.hint_no_unlock])
-            self.btm_group.add([self.hint_unlock, self.hint_no_unlock])
+            self.pz_main.ui_manager.wake([self.hint_unlock, self.hint_no_unlock])
+            self.btm_group.wake([self.hint_unlock, self.hint_no_unlock])
             self.btm_group.remove([self.hint_text])
 
     def btn_pre_anim(self, button: Button):
@@ -129,7 +129,7 @@ class PuzzleHints:
         self.hints_used += 1
         self.update_hint_select(sprites=True)
         if self.hints_used < 3:
-            self.pz_main.btm_group.add(self.hint_select_btn[self.hints_used])
+            self.pz_main.btm_group.wake(self.hint_select_btn[self.hints_used])
         self.view_hint(self.hints_used - 1)
         self.pz_main.hints_btn.set_tag(f"{self.hints_used}_off")
 

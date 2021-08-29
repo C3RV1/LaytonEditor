@@ -1,4 +1,4 @@
-from pygame_utils.rom import RomSingleton
+from pg_utils.rom import RomSingleton
 import formats.puzzle as pzd
 from previewers.puzzle_preview.PuzzleMain import PuzzleMain
 

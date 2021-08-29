@@ -1,13 +1,7 @@
-import PygameEngine.Animation
-import PygameEngine.Sprite
-import PygameEngine.UI.UIElement
-import PygameEngine.Input
-from .abstracts.EventCharacterAbstract import EventCharacterAbstract
-from pygame_utils.rom.rom_extract import load_animation
-import PygameEngine.Debug
+import pg_engine as pge
 
 
-class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
+class EventCharacter(pge.Sprite):
     FACING_LEFT = 1
     FACING_RIGHT = 2
 
@@ -19,20 +13,21 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
     SLOT_ON_LEFT = [0, 3, 4]  # Verified against game binary
     SLOT_ON_RIGHT = [1, 2, 5, 6]
 
-    def __init__(self, groups):
-        PygameEngine.Animation.Animation.__init__(self, groups)
-        EventCharacterAbstract.__init__(self)
+    def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
+        super(EventCharacter, self).__init__(*args, **kwargs)
         self.orientation = EventCharacter.FACING_RIGHT
-        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
-        self.world_rect.y = 192 // 2
-        self.slot = 0
-        self.character_mouth = None
+        self.center[1] = pge.Alignment.TOP
+        self.position[1] = 192 // 2
+        self.slot = slot
+        self.character_mouth: pge.Sprite = pge.Sprite()
 
-        self.groups_perseverance = groups
-
-        self.char_id = 0
+        self.char_id = character_id
 
         self.talking = False
+
+        self.load_character(loader)
+        self.set_tag_by_num(anim_num)
+        self.set_visibility(visibility)
 
     def check_orientation(self):
         if self.slot in EventCharacter.SLOT_ON_LEFT:
@@ -43,7 +38,6 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
     def update_(self):
         if self.char_id == 0:
             return
-        self.update_anim_frame()
         self.check_orientation()
         if self.orientation == EventCharacter.FACING_RIGHT:
             self.flip(True, False)
@@ -52,54 +46,45 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
 
         if self.orientation == EventCharacter.FACING_RIGHT:
             offset = EventCharacter.SLOT_OFFSET[self.slot] - 256 // 2
-            self.draw_alignment[0] = self.ALIGNMENT_RIGHT
+            self.center[0] = pge.Alignment.RIGHT
         else:
             offset = (256 // 2) - EventCharacter.SLOT_OFFSET[self.slot]
-            self.draw_alignment[0] = self.ALIGNMENT_LEFT
-        self.world_rect.x = offset
+            self.center[0] = pge.Alignment.LEFT
+        self.position[0] = offset
         self.update_child()
-        self.dirty = 1
 
     def update_child(self):
-        mouth_offset = [self.current_tag["child_x"], self.current_tag["child_y"]]
+        mouth_offset = [self._active_tag.vars_["child_x"], self._active_tag.vars_["child_y"]]
+        world_rect = self.get_world_rect()
         if self.character_mouth is not None:
             if self.orientation == EventCharacter.FACING_RIGHT:
-                mouth_offset[0] = self.world_rect.w - mouth_offset[0]
-                self.character_mouth.draw_alignment[0] = self.ALIGNMENT_LEFT
-                self.character_mouth.flip(True, False)
+                mouth_offset[0] = world_rect.w - mouth_offset[0]
+                self.character_mouth.center[0] = pge.Alignment.RIGHT
+                self.character_mouth.flipped = [True, False]
             else:
-                mouth_offset[0] = mouth_offset[0] - self.world_rect.w
-                self.character_mouth.draw_alignment[0] = self.ALIGNMENT_RIGHT
-                self.character_mouth.flip(False, False)
+                self.character_mouth.center[0] = pge.Alignment.LEFT
+                self.character_mouth.flipped = [False, False]
 
-            self.character_mouth.world_rect.x = self.world_rect.x + mouth_offset[0]
-            self.character_mouth.world_rect.y = self.world_rect.y - self.world_rect.h + mouth_offset[1]
-            self.character_mouth.draw_alignment[1] = self.ALIGNMENT_BOTTOM
-            self.character_mouth.set_tag_by_num(self.current_tag["child_index"])
-            if self.current_tag["child_index"] == 0:
-                self.character_mouth.kill()
-            elif self.alive() and not self.character_mouth.alive():
-                self.character_mouth.add(self.groups())
-            self.character_mouth.dirty = 1
-        self.dirty = 1
+            self.character_mouth.position[0] = world_rect.x + mouth_offset[0]
+            self.character_mouth.position[1] = self.position[1] - world_rect.h + mouth_offset[1]
+            self.character_mouth.center[1] = pge.Alignment.BOTTOM
+            self.character_mouth.set_tag_by_num(self._active_tag.vars_["child_index"])
+            if self._active_tag.vars_["child_index"] == 0:
+                self.character_mouth.visible = False
+            elif self.visible and not self.character_mouth.visible:
+                self.character_mouth.visible = True
 
     def show(self):
-        if not self.alive():
-            self.add(self.groups_perseverance)
+        if not self.visible:
+            self.visible = True
             if self.character_mouth is not None:
-                self.character_mouth.add(self.groups_perseverance)
-        self.dirty = 1
-        if self.character_mouth is not None:
-            self.character_mouth.dirty = 1
+                self.character_mouth.visible = True
 
     def hide(self):
-        if self.alive():
-            self.kill()
+        if self.visible:
+            self.visible = False
             if self.character_mouth is not None:
-                self.character_mouth.kill()
-        self.dirty = 1
-        if self.character_mouth is not None:
-            self.character_mouth.dirty = 1
+                self.character_mouth.visible = False
 
     def set_visibility(self, visibility):
         if visibility:
@@ -120,41 +105,29 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
             self.set_not_talking()
         self.update_()
 
-    def set_character(self, character):
-        self.char_id = character
-        self.draw_alignment[1] = PygameEngine.Sprite.Sprite.ALIGNMENT_TOP
-        self.world_rect.y = 192 // 2
-        if character == 0:
-            self.hide()
-            return
-        load_animation(f"data_lt2/ani/eventchr/chr{character}.arc", self)
-        if self.sprite_sheet_info["meta"]["drawoff"] is not None:
-            self.world_rect.x += self.sprite_sheet_info["meta"]["drawoff"][0]
-            self.world_rect.y += self.sprite_sheet_info["meta"]["drawoff"][1]
-        if self.character_mouth is None:
-            self.create_mouth()
-        if not load_animation(f"data_lt2/ani/sub/chr{character}_face.arc", self.character_mouth):
-            self.character_mouth.kill()
-            self.character_mouth = None
+    def load_character(self, loader: pge.SpriteLoader):
+        if loader:
+            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self)
+        if drawoff := self._vars.get("drawoff", None) is not None:
+            self.position[0] += drawoff[0]
+            self.position[1] += drawoff[1]
+        if self._vars.get('child_image', "") != "" and loader:
+            loader.load(f"data_lt2/ani/sub/{self._vars['child_image']}", self)
         self.set_tag_by_num(1)
         self.update_()
-        self.show()
-
-    def get_anim_list(self):
-        return list(map(lambda tag: tag["name"], self.sprite_sheet_info["meta"]["frameTags"]))
 
     def set_talking(self):
         self.talking = True
-        current_tag = self.current_tag["name"]
+        current_tag = self._active_tag.name
         if not current_tag.startswith("*"):
             self.set_tag("*" + current_tag)
-            if self.current_tag["name"] != "*" + current_tag:
+            if self._active_tag.name != "*" + current_tag:
                 self.set_tag("*" + current_tag + " ")
             self.update_()
 
     def set_not_talking(self):
         self.talking = False
-        current_tag = self.current_tag["name"]
+        current_tag = self._active_tag.name
         if current_tag.endswith(" "):
             current_tag = current_tag[:-1]
         if current_tag.startswith("*"):
@@ -171,9 +144,11 @@ class EventCharacter(PygameEngine.Animation.Animation, EventCharacterAbstract):
         return f"<Character {self.char_id}>"
 
     def create_mouth(self):
-        self.character_mouth = PygameEngine.Animation.Animation(())
-        self.character_mouth.layer = 10
-        self.character_mouth.add(self.groups_perseverance)
+        self.character_mouth = pge.Sprite()
+
+    def draw(self, cam: pge.Camera):
+        super(EventCharacter, self).draw(cam)
+        self.character_mouth.draw(cam)
 
     def get_visibility(self):
-        return self.alive()
+        return self.visible

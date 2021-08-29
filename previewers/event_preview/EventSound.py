@@ -1,16 +1,12 @@
-from PygameEngine.GameManager import GameManager
-from .abstracts.EventSoundAbstract import EventSoundAbstract
-import pygame_utils.sound.SADLStreamPlayer
-import pygame_utils.sound.SMDLStreamPlayer
-from pygame_utils.rom.rom_extract import load_sadl, load_smd
+import pg_utils.sound.SADLStreamPlayer
+import pg_utils.sound.SMDLStreamPlayer
+from pg_utils.rom.rom_extract import load_sadl, load_smd
 
 
-class EventSound(EventSoundAbstract):
+class EventSound:
     def __init__(self):
-        super().__init__()
-        self.gm = GameManager()
-        self.sadl_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
-        self.bg_player = pygame_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
+        self.sadl_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.bg_player = pg_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
         self.loops = False
 
     def play_smdl(self, path, volume=0.5):
@@ -28,9 +24,9 @@ class EventSound(EventSoundAbstract):
     def stop_sadl(self):
         self.sadl_player.stop()
 
-    def update_(self):
-        self.sadl_player.update_(self.gm.delta_time)
-        self.bg_player.update_(self.gm.delta_time)
+    def update_(self, dt: float):
+        self.sadl_player.update_(dt)
+        self.bg_player.update_(dt)
 
     def fade(self, is_fade_in, frames):
         time = frames / 1000.0

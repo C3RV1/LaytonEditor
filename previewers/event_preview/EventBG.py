@@ -1,32 +1,26 @@
-from .abstracts.EventBGAbstract import EventBGAbstract
-from pygame_utils.ScreenShaker import ScreenShaker
-from pygame_utils.ScreenFader import ScreenFader
-from pygame_utils.rom.rom_extract import load_bg, ORIGINAL_FPS
-import PygameEngine.Sprite
+from pg_utils.ScreenShaker import ScreenShaker
+from pg_utils.ScreenFader import ScreenFader
+import pg_engine as pge
 import pygame as pg
 
 
-class EventBG(EventBGAbstract):
-    def __init__(self, groups, name="unnamed"):
-        super().__init__()
-        self.bg = ScreenShaker(())
-        self.bg.layer = -1000
-        self.fader = ScreenFader(())
-        self.fader.layer = 1000
-        self.translucent = PygameEngine.Sprite.Sprite(())
-        self.translucent.layer = -100
-
-        self.bg.add(groups)
-        self.fader.add(groups)
-        self.translucent.add(groups)
+class EventBG:
+    def __init__(self, name="unnamed"):
+        self.bg = ScreenShaker()
+        self.fader = ScreenFader()
+        self.fader.load_fader()
+        self.translucent = pge.Sprite()
+        surf = pg.Surface([256, 192])
+        surf.fill(pg.Color(0, 0, 0))
+        self.translucent.surf = surf
 
         self.name = name
 
     def fade(self, fade_type, fade_time, instant):
         self.fader.set_fade(fade_type, False, instant_time=instant)
         if fade_time is not None:
-            self.fader.current_time = fade_time / ORIGINAL_FPS
-            self.fader.fade_time = fade_time / ORIGINAL_FPS
+            self.fader.current_time = fade_time / 60.0
+            self.fader.fade_time = fade_time / 60.0
         else:
             self.fader.current_time = self.fader.DEFAULT_FADE_TIME
             self.fader.fade_time = self.fader.DEFAULT_FADE_TIME
@@ -38,10 +32,6 @@ class EventBG(EventBGAbstract):
     def shake(self):
         self.bg.shake()
 
-    def set_bg(self, path):
-        load_bg(path, self.bg)
-        self.set_opacity(0)
-
     @property
     def shaking(self):
         return self.bg.shaking
@@ -51,34 +41,36 @@ class EventBG(EventBGAbstract):
         return self.fader.fading
 
     def set_opacity(self, opacity):
-        self.translucent.set_alpha(opacity)
+        self.translucent.alpha = opacity
 
     def set_fade_max_opacity(self, opacity):
         self.fader.max_fade = opacity
 
-    def add(self, groups):
-        self.bg.add(groups)
-        self.fader.add(groups)
-        self.translucent.add(groups)
+    def wake(self):
+        self.bg.visible = True
+        self.fader.visible = True
+        self.translucent.visible = True
 
     def kill(self):
-        self.bg.kill()
-        self.fader.kill()
-        self.translucent.kill()
-
-    def load(self):
-        self.fader.load_fader()
-        self.translucent.original_image = pg.Surface([256, 192])
-        self.translucent.original_image.fill(pg.Color(0, 0, 0))
+        self.bg.visible = False
+        self.fader.visible = False
+        self.translucent.visible = False
 
     def unload(self):
         self.bg.unload()
         self.fader.unload()
         self.translucent.unload()
 
-    def update_(self):
-        self.fader.update_()
-        self.bg.update_()
+    def update_(self, dt: float):
+        self.fader.update(dt)
+        self.bg.update(dt)
+
+    def draw_back(self, cam: pge.Camera):
+        self.bg.draw(cam)
+        self.translucent.draw(cam)
+
+    def draw_front(self, cam: pge.Camera):
+        self.fader.draw(cam)
 
     def busy(self):
         return self.fading

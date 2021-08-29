@@ -1,10 +1,10 @@
-from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
+from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from PygameEngine.UI.Text import Text
 from PygameEngine.Alignment import Alignment
-from pygame_utils.sound.SADLStreamPlayer import SADLStreamPlayer
-from pygame_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
-from pygame_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
-from pygame_utils.rom.rom_extract import load_sadl, load_smd
+from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
+from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
+from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
+from pg_utils.rom.rom_extract import load_sadl, load_smd
 from PygameEngine.UI.Button import Button
 import pygame as pg
 
@@ -46,9 +46,9 @@ class SADLPreview(TwoScreenRenderer):
     def load(self):
         super(SADLPreview, self).load()
         self.play_btn.load_sprite_sheet("data_permanent/sprites/headphones_play.png")
-        self.btm_group.add(self.play_btn)
+        self.btm_group.wake(self.play_btn)
         self.ui_manager.clear()
-        self.ui_manager.add(self.play_btn)
+        self.ui_manager.wake(self.play_btn)
 
     def unload(self):
         super(SADLPreview, self).unload()

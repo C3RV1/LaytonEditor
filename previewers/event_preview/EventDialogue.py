@@ -1,43 +1,27 @@
-import PygameEngine.UI.UIElement
-import PygameEngine.UI.Text
-import PygameEngine.Sprite
-import PygameEngine.GameManager
-import PygameEngine.Input
+import pg_engine as pge
 from .EventCharacter import EventCharacter
-from pygame_utils.rom.rom_extract import load_animation
-from typing import Optional
 import pygame as pg
-import pygame_utils.sound.SADLStreamPlayer
-from pygame_utils.rom.rom_extract import load_sadl
+import pg_utils.sound.SADLStreamPlayer
+from pg_utils.rom.rom_extract import load_sadl
 
-from .abstracts.EventDialogueAbstract import EventDialogueAbstract
 from utility.replace_substitutions import replace_substitutions
 
 
-class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Sprite,
-                    EventDialogueAbstract):
+class EventDialogue(pge.Sprite):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, groups, event_player):
-        PygameEngine.UI.UIElement.UIElement.__init__(self)
-        PygameEngine.Sprite.Sprite.__init__(self, ())
-        EventDialogueAbstract.__init__(self)
-        self.gm = PygameEngine.GameManager.GameManager()
+    def __init__(self, event_player, *args, **kwargs):
+        super(EventDialogue, self).__init__(*args, **kwargs)
+        self.gm = pge.GameManager()
 
         self.event_player = event_player
 
-        self.check_interacting = self._check_interacting
-        self.pre_interact = self.pre_interact_
-        self.post_interact = self.end_dialogue
+        self.inner_text: pge.Text = pge.Text()
 
-        self.interact = self._interact
-        self.inner_text = None
+        self.char_name = pge.Sprite(())
+        self.char_name.center = [pge.Alignment.RIGHT, pge.Alignment.BOTTOM]
 
-        self.char_name = PygameEngine.Sprite.Sprite(())
-        self.char_name.layer = 101
-        self.char_name.draw_alignment = [self.ALIGNMENT_RIGHT, self.ALIGNMENT_BOTTOM]
-
-        self.inp = PygameEngine.Input.Input()
+        self.inp = pge.Input()
 
         self.current_line = 0
         self.current_pause = 0
@@ -48,21 +32,19 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.current_time_between_progress = 0
         self.time_to_progress = 1/60
 
-        self.character_talking: Optional[EventCharacter] = None
+        self.character_talking: EventCharacter = None
 
-        self.voice_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.voice_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.voice_line = -1
 
-        self.dialogue_sfx_player = pygame_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.dialogue_sfx_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.dialogue_sfx_id = -1
-
-        self.groups_perseverance = groups
 
         self.on_dialogue = True
 
-    def update_(self):
-        self.voice_player.update_(self.gm.delta_time)
-        self.dialogue_sfx_player.update_(self.gm.delta_time)
+    def update_(self, dt: float):
+        self.voice_player.update_(dt)
+        self.dialogue_sfx_player.update_(dt)
 
     def unload(self):
         self.voice_player.stop()
@@ -70,24 +52,16 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         super(EventDialogue, self).unload()
 
     def show(self):
-        if not self.alive():
-            self.add(self.groups_perseverance)
-        if not self.inner_text.alive():
-            self.inner_text.add(self.groups_perseverance)
-        if not self.char_name.alive():
-            self.char_name.add(self.groups_perseverance)
-        self.dirty = 1
+        self.visible = True
+        self.inner_text.visible = True
+        self.char_name.visible = True
 
     def hide(self):
-        if self.current_camera is not None:
-            if len(self.groups()) > 0:
-                self.current_camera.draw(self.groups()[0], dirty_all=True)
-        self.kill()
-        if self.inner_text is not None:
-            self.inner_text.kill()
-        self.char_name.kill()
+        self.visible = False
+        self.inner_text.visible = False
+        self.char_name.visible = False
 
-    def start_dialogue(self, character, chr_anim, text, voice, dialogue_sfx):
+    def start_dialogue(self, character, chr_anim, text, voice, dialogue_sfx, loader: pge.SpriteLoader):
         self.character_talking = character
         self.reset_all()
         if chr_anim is not None and self.character_talking is not None:
@@ -100,9 +74,9 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.on_dialogue = True
         self.show()
         if self.character_talking is not None:
-            self.init_char_name()
+            self.init_char_name(loader)
         else:
-            self.char_name.kill()
+            self.char_name.visible = False
         self.set_talking()
 
     def set_talking(self):
@@ -118,43 +92,29 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         if self.character_talking is not None:
             self.character_talking.set_not_talking()
 
-    def init_position(self):
+    def init_text(self, font_loader: pge.FontLoader):
         # Init dialogue positions
-        self.inner_text = PygameEngine.UI.Text.Text(())
-        self.inner_text.layer = 120
-        self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True,
-                                 line_spacing=2, letter_spacing=1)
-        self.inner_text.world_rect.x = (- 256 // 2) + 10
-        self.inner_text.world_rect.y = self.world_rect.y - self.world_rect.h + 20
-        self.inner_text.draw_alignment = [self.inner_text.ALIGNMENT_RIGHT, self.inner_text.ALIGNMENT_BOTTOM]
-        self.char_name.world_rect.y = self.world_rect.y - self.world_rect.h
-        self.char_name.world_rect.x = - 256 // 2
+        font_loader.load("font_event", 12, self.inner_text)
+        # self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True,
+        #                          line_spacing=2, letter_spacing=1)
+        self.inner_text.position[0] = (- 256 // 2) + 10
+        self.inner_text.position[1] = self.get_world_rect().y + 20
+        self.inner_text.center = [pge.Alignment.RIGHT, pge.Alignment.BOTTOM]
+        self.char_name.position[1] = self.get_world_rect().y
+        self.char_name.position[0] = - 256 // 2
 
-    # Check if we are interacting with the dialogue (UIElement)
-    def _check_interacting(self):
+    def interact(self, cam: pge.Camera):
         if self.finished and not self.paused:
+            self.on_dialogue = False
+            self.hide()
+            self.set_not_talking()
             self.voice_player.stop()
-            self.interacting = False
+            self.dialogue_sfx_player.stop()
             return
-        self.interacting = True
-
-    # Once we start to interact we set talking (UIElement)
-    def pre_interact_(self):
         self.on_dialogue = True
 
-    def end_dialogue(self):
-        self.text_left_to_do = ""
-        self.on_dialogue = False
-        self.hide()
-        self.set_not_talking()
-        self.voice_player.stop()
-        self.dialogue_sfx_player.stop()
-
-    # When we are interacting (UIElement)
-    def _interact(self):
         # Get if the mouse was pressed in the display port of the current camera (bottom camera)
-        mouse_pressed = self.inp.get_mouse_down(1) and \
-                        self.current_camera.display_port.collidepoint(self.inp.get_screen_mouse_pos())
+        mouse_pressed = self.inp.get_mouse_down(1) and cam.viewport.collidepoint(self.inp.get_mouse_pos())
         if self.paused:
             if mouse_pressed:
                 self.unpause()
@@ -170,7 +130,7 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
             self.progress_text()
 
     def progress_text(self):
-        # TODO: commands starting with & (event 10060) and @s
+        # Commands starting with & (event 10060) and @s
         if self.text_left_to_do.startswith("@p"):  # Pause
             self.current_pause += 1
             self.pause()
@@ -230,8 +190,9 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
         self.reset_texts()
 
     # Init character name sprite
-    def init_char_name(self):
-        load_animation(f"data_lt2/ani/eventchr/?/chr{self.character_talking.char_id}_n.arc", self.char_name)
+    def init_char_name(self, loader: pge.SpriteLoader):
+        loader.load(f"data_lt2/ani/eventchr/?/chr{self.character_talking.char_id}_n.arc", self.char_name,
+                    sprite_sheet=True)
 
     # Pause the text
     def pause(self):
@@ -250,3 +211,8 @@ class EventDialogue(PygameEngine.UI.UIElement.UIElement, PygameEngine.Sprite.Spr
 
     def busy(self):
         return self.on_dialogue
+
+    def draw(self, cam: pge.Camera):
+        super(EventDialogue, self).draw(cam)
+        self.inner_text.draw(cam)
+        self.char_name.draw(cam)
