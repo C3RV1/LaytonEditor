@@ -5,7 +5,7 @@ import json
 
 
 class SpriteLoader:
-    def load(self, path: str, sprite: Sprite, sprite_sheet=False, convert_alpha=True):
+    def load(self, path: str, sprite: Sprite, sprite_sheet=False, convert_alpha=True, do_copy=False):
         pass
 
 

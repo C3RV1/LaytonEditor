@@ -24,10 +24,13 @@ class FontLoaderOS(FontLoaderSYS):
 
     def load(self, path: str, size: int, text: Text):
         if self.base_path:
-            path = os.path.join(self.base_path, path)
-        if not os.path.isfile(path):
+            real_path = os.path.join(self.base_path, path)
+        else:
+            real_path = path
+        if not os.path.isfile(real_path):
             super(FontLoaderOS, self).load(path, size, text)
             return
+        path = real_path
         _, ext = os.path.splitext(path)
         if ext == ".ttf" or ext == ".otf":
             pg_font = pg.font.Font(path, size)

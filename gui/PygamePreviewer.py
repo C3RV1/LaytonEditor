@@ -1,34 +1,29 @@
 import threading
-from PygameEngine.GameManager import GameManager
-from PygameEngine.Renderer import Renderer
-from PygameEngine.Sprite import Sprite
-from PygameEngine.UI.Text import Text
-from pygame_utils.TwoScreenRenderer import TwoScreenRenderer
-from typing import Optional
+import pg_engine as pge
+from pg_utils.TwoScreenRenderer import TwoScreenRenderer
+from typing import Any
 import pygame as pg
-from pygame_utils.rom.rom_extract import clear_extracted
 
 
 class PreviewerDefaultRenderer(TwoScreenRenderer):
     def __init__(self):
         super(PreviewerDefaultRenderer, self).__init__()
-        self.tth_logo = Sprite(())
-        self.previewer_text = Text(())
-
-    def load(self):
-        self.btm_group.add([self.tth_logo])
-        self.top_group.add([self.previewer_text])
-        super(PreviewerDefaultRenderer, self).load()
-        self.tth_logo.load("data_permanent/sprites/team_top_hat_logo.png")
-        self.tth_logo.scale([128, 128], conserve_aspect_ratio=True)
-        self.previewer_text.set_font("data_permanent/fonts/fontq.png", [7, 10], is_font_map=True)
-        self.previewer_text.text = "Game Previewer"
-        self.previewer_text.color = (240, 240, 240)
+        sprite_loader = pge.SpriteLoaderOS(base_path="data_permanent/sprites")
+        font_loader = pge.FontLoaderOS(base_path="data_permanent/fonts")
+        self.tth_logo = pge.Sprite()
+        sprite_loader.load("team_top_hat_logo.png", self.tth_logo)
+        self.tth_logo.set_size([128, 128], conserve_ratio=True, ratio_type=self.tth_logo.SNAP_MIN)
+        self.previewer_text = pge.Text(text="Game Previewer", color=pg.Color(240, 240, 240))
+        font_loader.load("consolas", 24, self.previewer_text)
 
     def unload(self):
-        super(PreviewerDefaultRenderer, self).unload()
         self.tth_logo.unload()
         self.previewer_text.unload()
+
+    def draw(self):
+        self.top_camera.surf.fill(pg.Color(40, 40, 40))
+        self.tth_logo.draw(self.btm_camera)
+        self.previewer_text.draw(self.top_camera)
 
 
 class PygamePreviewer(threading.Thread):
@@ -36,13 +31,12 @@ class PygamePreviewer(threading.Thread):
 
     def __init__(self):
         super(PygamePreviewer, self).__init__()
-        clear_extracted()
-        self.gm = GameManager(screen_size=[256*TwoScreenRenderer.SCALE, 192*2*TwoScreenRenderer.SCALE],
-                              full_screen=False, name="Layton Editor Previewer",
-                              screen_pos=[100, 100])
-        self.current_renderer: Optional[Renderer] = None
-        self.default_renderer = PreviewerDefaultRenderer()
-        self.default_renderer.load()
+        self.gm = pge.GameManager(pge.GameManagerConfig(
+            screen_size=(256*TwoScreenRenderer.SCALE, 192*2*TwoScreenRenderer.SCALE),
+            full_screen=False, window_name="Layton Editor Previewer",
+            screen_pos=(100, 100)
+        ))
+        self.current_renderer: Any = PreviewerDefaultRenderer()
         self.loop_lock = threading.Lock()
         PygamePreviewer.INSTANCE = self
 
@@ -52,29 +46,20 @@ class PygamePreviewer(threading.Thread):
             self.loop_lock.acquire()
             if not self.gm.running:
                 break
-            if self.current_renderer:
-                pg.display.update(self.current_renderer.run())
-            else:
-                pg.display.update(self.default_renderer.run())
+            self.current_renderer.update(self.gm.delta_time)
+            self.current_renderer.draw()
             self.loop_lock.release()
 
-    def start_renderer(self, renderer):
+    def start_renderer(self, renderer: TwoScreenRenderer):
         self.loop_lock.acquire()
         if self.current_renderer:
-            if self.current_renderer.loaded:
-                self.current_renderer.unload()
-        if self.default_renderer.loaded:
-            self.default_renderer.unload()
-        self.current_renderer: Renderer = renderer
-        self.current_renderer.load()
+            self.current_renderer.unload()
+        self.current_renderer = renderer
         self.loop_lock.release()
 
     def stop_renderer(self):
         self.loop_lock.acquire()
         if self.current_renderer:
-            if self.current_renderer.loaded:
-                self.current_renderer.unload()
-        self.current_renderer = None
-        if not self.default_renderer.loaded:
-            self.default_renderer.load()
+            self.current_renderer.unload()
+        self.current_renderer = PreviewerDefaultRenderer()
         self.loop_lock.release()

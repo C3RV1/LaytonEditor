@@ -84,3 +84,7 @@ class GameManager(object):
         if self._running:
             self._running = False
             pg.quit()
+
+    @property
+    def running(self):
+        return self._running

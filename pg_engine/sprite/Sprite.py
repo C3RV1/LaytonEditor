@@ -41,6 +41,9 @@ class Tag:
 
 
 class Sprite(Renderable):
+    SNAP_MAX = 0
+    SNAP_MIN = 1
+
     def __init__(self, rotation=0, scale=None, flipped=None, special_flags=0, color_key=None, alpha=None, **kwargs):
         super().__init__(**kwargs)
         if scale is None:
@@ -179,11 +182,21 @@ class Sprite(Renderable):
         self._scale[1] = v[1]
         self._transform_needed = True
 
-    def set_size(self, new_size: list):
+    def set_size(self, new_size: list, conserve_ratio=False, ratio_type=SNAP_MAX):
         if self._size[0] == 0 or self._size[1] == 0:
             return
-        self._scale[0] = new_size[0] / self._size[0]
-        self._scale[1] = new_size[1] / self._size[1]
+        if not conserve_ratio:
+            self._scale[0] = new_size[0] / self._size[0]
+            self._scale[1] = new_size[1] / self._size[1]
+        else:
+            # Axis to scale
+            scale_axis = int(self._size[0] > self._size[1])
+
+            if ratio_type == self.SNAP_MIN:
+                scale_axis = 1 - scale_axis
+
+            self._scale[scale_axis] = new_size[scale_axis] / self._size[scale_axis]
+            self._scale[1 - scale_axis] = self._scale[scale_axis]
         self._transform_needed = True
 
     @property
@@ -232,9 +245,10 @@ class Sprite(Renderable):
             self.visible = False
             self._transform_needed = False
         if not self._transform_needed:
-            return
-        if cam:
-            if cam.zoom != self._cam_zoom:
+            if cam:
+                if cam.zoom == self._cam_zoom:
+                    return
+            else:
                 return
         if cam:
             self._cam_zoom[0] = cam.zoom[0]
@@ -265,7 +279,6 @@ class Sprite(Renderable):
         if cam:
             _real_size[0] /= cam.zoom[0]
             _real_size[1] /= cam.zoom[1]
-            print(f"Real size: {_real_size}")
             self._real_size = _real_size
 
         if not cam:
@@ -338,5 +351,5 @@ class Sprite(Renderable):
         if self.visible:
             cam.surf.blit(self._transformed_surf, (position.x, position.y), area=clip, special_flags=self.special_flags)
 
-    def set_loader(self, loader: SpriteLoader):
+    def set_loader(self, loader: 'SpriteLoader'):
         self._loader = loader

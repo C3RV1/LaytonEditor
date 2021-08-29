@@ -1,10 +1,4 @@
-from PygameEngine.Alignment import Alignment
-from PygameEngine.UI.Button import Button
-from PygameEngine.UI.Text import Text
-from PygameEngine.Sprite import Sprite
-from PygameEngine.Animation import Animation
-from PygameEngine.UI.UIManager import UIManager
-from pg_utils.rom.rom_extract import load_animation, load_bg
+import pg_engine as pge
 import formats.puzzle as pzd
 from typing import TYPE_CHECKING
 from pg_utils import TwoScreenRenderer

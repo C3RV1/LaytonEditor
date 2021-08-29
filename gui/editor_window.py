@@ -10,7 +10,7 @@ from gui import generated
 from gui.filesystem_editor import FilesystemEditor
 from gui.sprite_editor import SpriteEditor
 from gui.PygamePreviewer import PygamePreviewer
-from pygame_utils.rom.RomSingleton import RomSingleton
+from pg_utils.rom.RomSingleton import RomSingleton
 
 
 class MainEditor(generated.MainEditor):

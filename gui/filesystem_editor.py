@@ -7,6 +7,7 @@ import wx.stc
 import utility.gdstextscript
 from formats.filesystem import *
 from formats.gds import GDS
+from formats.event import Event
 from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
 from formats.place import Place
@@ -16,10 +17,10 @@ from gui.place_editor import PlaceEditor
 
 from gui.PygamePreviewer import PygamePreviewer
 from previewers.event_preview.EventPlayer import EventPlayer
-from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
-from previewers.sound_preview.SoundPreview import SADLPreview
+# from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
+# from previewers.sound_preview.SoundPreview import SADLPreview
 
-from pygame_utils.rom.rom_extract import load_sadl
+from pg_utils.rom.rom_extract import load_sadl
 from SADLpy.SADL import SADL
 from io import BytesIO
 
@@ -62,7 +63,7 @@ def treenode_import_from_plz_file(tree: wx.TreeCtrl, treenode: wx.TreeItemId,
     for name in rom.get_archive(archive).filenames:
         if skip_event_dat(archive, name):  # Skip dat files for events
             continue
-        node = tree.AppendItem(treenode, name, data=(name, rom.get_archive(archive)))
+        _node = tree.AppendItem(treenode, name, data=(name, rom.get_archive(archive)))
     return treenode
 
 
@@ -79,7 +80,7 @@ def treenode_import_from_nds_folder(tree: wx.TreeCtrl, treenode: wx.TreeItemId,
                                     folder: Folder, rom: NintendoDSRom) -> wx.TreeItemId:
     tree.DeleteChildren(treenode)
     for index, name in enumerate(folder.files, folder.firstID):
-        node = tree.AppendItem(treenode, name, data=(rom.filenames[index], rom))
+        _node = tree.AppendItem(treenode, name, data=(rom.filenames[index], rom))
 
     for name, fd in folder.folders:
         node = tree.AppendItem(treenode, name, data=(folder_get_subfolder_name(rom.filenames, fd), rom))
@@ -163,10 +164,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
 
-        self.pygame_previewer: PygamePreviewer = PygamePreviewer.INSTANCE
-        self.event_previewer = EventPlayer()
-        self.puzzle_previewer = PuzzlePlayer()
-        self.sound_previewer = SADLPreview()
+        self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
 
         self.puzzle_scintilla.SetEOLMode(wx.stc.STC_EOL_LF)
 
@@ -196,7 +194,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         except RuntimeError:
             # wrapped c/c++ object of type TreeCtrl has been deleted
             return
-        self.pygame_previewer.stop_renderer()
+        self.previewer.stop_renderer()
 
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         for menu_title in self.fp_menus_loaded:
@@ -259,22 +257,25 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := self.PUZZLE_REGEX.search(name):
-            self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
-            self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
-            self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
+            # self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
+            # self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
+            # self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
             self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
-            self.fp_formats_book.SetSelection(8) # DCC Page
+            self.fp_formats_book.SetSelection(8)  # DCC Page
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
         elif name.endswith(".gds"):
             gds = GDS(name, rom=archive)
             if name.startswith("e"):
                 index = int(name[1:7])
-                self.event_previewer.set_event_id(index)
-                self.pygame_previewer.start_renderer(self.event_previewer)
-                self.puzzle_scintilla.SetText(self.event_previewer.event_data.to_readable())
+                event = Event(self.rom)
+                event.set_event_id(index)
+                event.load_from_rom()
+                self.previewer.start_renderer(EventPlayer(event))
+                event_player: EventPlayer = self.previewer.current_renderer
+                self.puzzle_scintilla.SetText(event_player.event.to_readable())
                 self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
-                self.fp_formats_book.SetSelection(8) # DCC Page
+                self.fp_formats_book.SetSelection(8)  # DCC Page
                 self.fp_menus_loaded.append("Event")
                 self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:
@@ -286,14 +287,14 @@ class FilesystemEditor(generated.FilesystemEditor):
                 treenode_import_from_plz_file(self.ft_filetree, self.ft_filetree.GetSelection(), name, self.rom)
             self.fp_formats_book.SetSelection(0)  # Empty page
         elif name.lower().endswith(".sad"):
-            self.pygame_previewer.start_renderer(self.sound_previewer)
-            self.sound_previewer.load_sadl(name)
+            # self.previewer.start_renderer(self.sound_previewer)
+            # self.sound_previewer.load_sadl(name)
             self.fp_formats_book.SetSelection(0)  # Empty page
             self.fp_menus_loaded.append("Stream")
             self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
         elif name.lower().endswith(".smd"):
-            self.pygame_previewer.start_renderer(self.sound_previewer)
-            self.sound_previewer.load_smdl(name)
+            # self.previewer.start_renderer(self.sound_previewer)
+            # self.sound_previewer.load_smdl(name)
             self.fp_formats_book.SetSelection(0)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
@@ -362,12 +363,12 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.opened_archives = []
         tree_import_from_nds_folder(self.ft_filetree, self.base_folder, self.rom)
 
-    def fp_ani_edit_clicked(self, event):
+    def fp_ani_edit_clicked(self, _):
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         filename = path.split("/")[-1]
         self.GetGrandParent().open_sprite_editor_page(self.preview_data, filename)
 
-    def fp_ani_export_clicked(self, event):
+    def fp_ani_export_clicked(self, _):
         self.preview_data: AniSprite
         image_index = self.fp_ani_imageindex.GetValue()
         image = self.preview_data.extract_image_pil(image_index)
@@ -410,7 +411,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_ani_imageindex.SetValue(len(self.preview_data.images) - 1)
         self.preview_save = True
 
-    def fp_ani_remove_clicked(self, event):
+    def fp_ani_remove_clicked(self, _):
         # TODO: Completely remove, and fix animation indexes
         self.preview_data: AniSprite
         image_index = self.fp_ani_imageindex.GetValue()
@@ -418,7 +419,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_ani_viewimage_scaled.load_bitmap(image_index)
         self.preview_save = True
 
-    def fp_samplebank_play_clicked(self, event):
+    def fp_samplebank_play_clicked(self, _):
         index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
         sample = self.preview_data.samples[index]
         sd.play(sample.pcm, sample.samplerate)
@@ -485,7 +486,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         self.ft_filetree.AppendItem(parent_item, self.clipboard.name, data=(path, archive))
 
-    def fp_bg_export_clicked(self, event):
+    def fp_bg_export_clicked(self, _):
         self.preview_data: BGImage
         image = self.preview_data.extract_image_pil()
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
@@ -498,7 +499,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             if pathname:
                 image.save(pathname)
 
-    def fp_bg_import_clicked(self, event):
+    def fp_bg_import_clicked(self, _):
         self.preview_data: BGImage
         with wx.FileDialog(self, "Open image", wildcard="PNG file (*.png)|*.png",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
@@ -523,7 +524,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.fp_gds_cmd_name.SetLabel("")
                 self.fp_gds_cmd_help.SetLabel("")
 
-    def fp_place_edit_clicked(self, event):
+    def fp_place_edit_clicked(self, _):
         # TODO: Cleanup with utility functions in editor window
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         finds = re.findall(r"n_place([0-9]+)_([0-9]+)\.dat", path)
@@ -536,18 +537,20 @@ class FilesystemEditor(generated.FilesystemEditor):
         editor_window.le_editor_pages.ChangeSelection(editor_window.le_editor_pages.GetPageIndex(page))
         page.enter()
 
-    def fp_text_edit_changed(self, _event):
+    def fp_text_edit_changed(self, _):
         self.preview_save = True
 
-    def fp_puzzle_apply_mods(self, event):
+    def fp_puzzle_apply_mods(self, _):
+        return
         successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
+            self.previewer.start_renderer(self.puzzle_previewer.pz_main)
 
-    def fp_puzzle_save(self, event):
+    def fp_puzzle_save(self, _):
+        return
         successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
@@ -555,16 +558,17 @@ class FilesystemEditor(generated.FilesystemEditor):
         else:
             self.puzzle_previewer.puzzle_data.save_to_rom()
 
-    def fp_event_apply_and_save(self, event):
-        successful, error_msg = self.event_previewer.event_data.from_readable(self.puzzle_scintilla.GetText())
+    def fp_event_apply_and_save(self, _):
+        event_previewer: EventPlayer = self.previewer.current_renderer
+        successful, error_msg = event_previewer.event.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.event_previewer.event_data.save_to_rom()
-            self.pygame_previewer.start_renderer(self.event_previewer)
+            event_previewer.event.save_to_rom()
+            self.previewer.start_renderer(EventPlayer(event_previewer.event))
 
-    def fp_stream_export_wav(self, event):
+    def fp_stream_export_wav(self, _):
         with wx.FileDialog(self, "Export to WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_SAVE) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return
@@ -578,8 +582,8 @@ class FilesystemEditor(generated.FilesystemEditor):
                 sadl_file.save_wav(pathname)
                 progressDialog.Update(100, "Completed")
 
-    def fp_stream_import_wav(self, event):
-        def progressUpdate(value):
+    def fp_stream_import_wav(self, _):
+        def progress_update(value):
             value *= 0.97
             res = progressDialog.Update(value)[0]
             wx.Yield()
@@ -598,7 +602,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 print("Importing")
                 sadl.import_(pathname)
                 print("Encoding")
-                encoded = sadl.encode(progress_func=progressUpdate)
+                encoded = sadl.encode(progress_func=progress_update)
                 if not encoded:
                     return
                 print("Encoded")
@@ -611,4 +615,3 @@ class FilesystemEditor(generated.FilesystemEditor):
                 bytesio_buffer.close()
                 self.refresh_preview()
                 progressDialog.Update(100, "Completed")
-

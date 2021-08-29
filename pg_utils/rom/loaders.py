@@ -1,6 +1,7 @@
 import os
 
 import pg_engine as pge
+from formats import conf
 from pg_engine import Sprite
 from pg_engine.sprite.Sprite import Frame, Tag
 import pygame as pg
@@ -13,18 +14,22 @@ def set_extension(path, ext):
     return os.path.splitext(path)[0] + ext
 
 
-class SpriteLoaderROM(pge.SpriteLoader):
-    def __init__(self, rom: NintendoDSRom, base_path=None):
-        self.base_path: [str, None] = base_path
+class SpriteLoaderROM(pge.SpriteLoaderOS):
+    def __init__(self, rom: NintendoDSRom, base_path=None, base_os_path=None):
+        super(SpriteLoaderROM, self).__init__(base_path=base_os_path)
+        self._base_rom_path = base_path
         self.rom = rom
 
-    def load(self, path: str, sprite: Sprite, sprite_sheet=True, convert_alpha=True):
+    def load(self, path: str, sprite: Sprite, sprite_sheet=True, convert_alpha=False, do_copy=False):
         # sprite_sheet and convert_alpha are ignored
-        if self.base_path is not None:
-            path = os.path.join(self.base_path, path).replace("\\", "/")
-        if path not in self.rom.filenames:
-            return
+        if self._base_rom_path is not None:
+            path = os.path.join(self._base_rom_path, path).replace("\\", "/")
+        path = path.replace("?", conf.LANG)
         path = set_extension(path, ".arc")
+        if path not in self.rom.filenames:
+            super().load(path + ".png", sprite, sprite_sheet=sprite_sheet, convert_alpha=convert_alpha,
+                         do_copy=do_copy)
+            return
         frames = []
         tags = []
         vars_ = {}
