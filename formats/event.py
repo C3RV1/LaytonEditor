@@ -268,6 +268,8 @@ class Event:
                         command.command = 0x32
                     elif params[1] == 1:  # [0x88]
                         command.command = 0x88
+                        if params[2] is None:
+                            params[2] = 42
                 else:  # [0x3, 0x33, 0x72, 0x87]
                     if params[1] == 2:  # [0x3, 0x72]
                         if params[2] is None:  # [0x3]
@@ -278,6 +280,8 @@ class Event:
                         command.command = 0x33
                     elif params[1] == 1:  # [0x87]
                         command.command = 0x87
+                        if params[2] is None:
+                            params[2] = 42
                 if command.command in [0x72, 0x80, 0x87, 0x88]:
                     command.params = params[2:]
             elif func == "set_room":

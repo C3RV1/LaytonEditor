@@ -556,22 +556,22 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.preview_save = True
 
     def fp_puzzle_apply_mods(self, _):
-        return
-        successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        puzzle_preview: PuzzlePlayer = self.previewer.current_renderer
+        successful, error_msg = puzzle_preview.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.previewer.start_renderer(self.puzzle_previewer.pz_main)
+            self.previewer.start_renderer(PuzzlePlayer(puzzle_preview.puzzle_data))
 
     def fp_puzzle_save(self, _):
-        return
-        successful, error_msg = self.puzzle_previewer.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        puzzle_preview: PuzzlePlayer = self.previewer.current_renderer
+        successful, error_msg = puzzle_preview.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.puzzle_previewer.puzzle_data.save_to_rom()
+            puzzle_preview.puzzle_data.save_to_rom()
 
     def fp_event_apply_and_save(self, _):
         event_previewer: EventPlayer = self.previewer.current_renderer

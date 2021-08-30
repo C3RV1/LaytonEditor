@@ -199,7 +199,7 @@ class Puzzle:
         nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
         for item in nazo_list:
             if item[0] == self.internal_id:
-                item[2] = self.pad_with_0(self.title, 0x30)
+                item[2] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
         nz_lst_dlz.pack("<hh48sh", nazo_list)
         nz_lst_dlz.save()
 

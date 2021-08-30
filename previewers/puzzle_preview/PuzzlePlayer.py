@@ -6,6 +6,9 @@ from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 import pg_engine as pge
 import pygame as pg
 
+from pg_utils.rom.rom_extract import load_smd
+from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
+
 
 class PuzzlePlayer(TwoScreenRenderer):
     def __init__(self, puzzle_data: pzd.Puzzle):
@@ -18,6 +21,8 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.current_between_letters = 0.0
         self.on_hints = False
         self.puzzle_data = puzzle_data
+
+        self.inp = pge.Input()
 
         self.sprite_loader: pge.SpriteLoader = RomSingleton().get_sprite_loader()
         self.font_loader: pge.FontLoader = RomSingleton().get_font_loader()
@@ -33,7 +38,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.internal_id}.arc", self.btm_bg,
                                     sprite_sheet=False)
 
-        self.top_text = pge.Text(position=[-256//2 + 10, -192 // 2 + 22],
+        self.top_text = pge.Text(position=[-256//2 + 8, -192 // 2 + 22],
                                  center=[pge.Alignment.LEFT, pge.Alignment.TOP],
                                  color=pg.Color(0, 0, 0),
                                  line_spacing=2)
@@ -117,6 +122,14 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         self.view_hint(self.progress_hints(set_hint=0))
 
+        smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
+        self.puzzle_bg_music = SMDLStreamPlayer()
+        self.puzzle_bg_music.set_preset_dict(presets)
+        self.puzzle_bg_music.start_sound(smd, loops=-1)
+
+    def unload(self):
+        self.puzzle_bg_music.stop()
+
     def progress_hints(self, set_hint=None):
         if set_hint is not None:
             self.hints_used = set_hint
@@ -126,7 +139,8 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints_btn.pressed_tag = f"{self.hints_used}_on"
         if self.hints_used > 0:
             hint_sprite = self.hint_selected[self.hints_used - 1]
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{self.hints_used}.arc", hint_sprite, sprite_sheet=True)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{self.hints_used}.arc", hint_sprite,
+                                    sprite_sheet=True)
         if self.hints_used < 3:
             hint_sprite = self.hint_selected[self.hints_used]
             self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hintlock{self.hints_used + 1}.arc", hint_sprite,
@@ -155,6 +169,8 @@ class PuzzlePlayer(TwoScreenRenderer):
             while self.current_between_letters > self.between_letters:
                 self.text_pos += 1
                 self.current_between_letters -= self.between_letters
+            if self.inp.get_mouse_down(1):
+                self.text_pos = len(self.puzzle_data.text)
             self.text_pos = min(self.text_pos, len(self.puzzle_data.text))
             self.top_text.text = self.puzzle_data.text[:self.text_pos]
 
