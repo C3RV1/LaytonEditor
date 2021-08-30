@@ -145,7 +145,7 @@ class Event:
         parser.get_path("evs", create=True)
         for cmd in self.event_gds.commands:
             func = f"gds_{hex(cmd.command)}"
-            params = cmd.params
+            params = cmd.params.copy()
             if cmd.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x80, 0x87, 0x88]:  # fade command
                 func = "fade"
                 params_1 = [False, 0, None]  # fade_in, fade_screen
