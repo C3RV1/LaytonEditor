@@ -3,6 +3,7 @@ import pg_engine as pge
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from typing import Any
 import pygame as pg
+import gc
 
 
 class PreviewerDefaultRenderer(TwoScreenRenderer):
@@ -54,6 +55,7 @@ class PygamePreviewer(threading.Thread):
         self.loop_lock.acquire()
         if self.current_renderer:
             self.current_renderer.unload()
+            gc.collect()
         self.current_renderer = renderer
         self.loop_lock.release()
 
@@ -61,5 +63,6 @@ class PygamePreviewer(threading.Thread):
         self.loop_lock.acquire()
         if self.current_renderer:
             self.current_renderer.unload()
+            gc.collect()
         self.current_renderer = PreviewerDefaultRenderer()
         self.loop_lock.release()

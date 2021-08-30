@@ -120,9 +120,10 @@ class Sprite(Renderable):
             return
         for tag in self._tag_info:
             if tag.name == name:
-                self._tag_time = 0.0
-                self._tag_frame = 0
-                self._active_tag = tag
+                if tag != self._active_tag:
+                    self._active_tag = tag
+                    self._tag_time = 0.0
+                    self._tag_frame = 0
                 return
         Debug.log_warning(f"Not found tag {name}", self)
         return
@@ -138,13 +139,15 @@ class Sprite(Renderable):
         if self._active_tag not in self._tag_info:
             return
         tag = self._active_tag
+        if len(self._active_tag.frames) == 0:
+            return
         self._tag_time += dt
-        duration = tag.frame_durations[self._tag_frame] / 1000.0
+        duration = tag.frame_durations[self._tag_frame] / 60.0
         while self._tag_time > duration != 0:
             self._tag_frame += 1
             self._tag_frame %= len(tag.frames)
             self._tag_time -= duration
-            duration = tag.frame_durations[self._tag_frame] / 1000.0
+            duration = tag.frame_durations[self._tag_frame] / 60.0
         self.set_frame(tag.frames[self._tag_frame])
 
     @property

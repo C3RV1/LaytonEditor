@@ -16,10 +16,10 @@ class EventDialogue(pge.Sprite):
 
         self.event_player = event_player
 
-        self.inner_text: pge.Text = pge.Text()
+        self.inner_text: pge.Text = pge.Text(center=[pge.Alignment.LEFT, pge.Alignment.TOP])
 
-        self.char_name = pge.Sprite(())
-        self.char_name.center = [pge.Alignment.RIGHT, pge.Alignment.BOTTOM]
+        self.char_name = pge.Sprite()
+        self.char_name.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
 
         self.inp = pge.Input()
 
@@ -40,7 +40,7 @@ class EventDialogue(pge.Sprite):
         self.dialogue_sfx_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.dialogue_sfx_id = -1
 
-        self.on_dialogue = True
+        self.on_dialogue = False
 
     def update_(self, dt: float):
         self.voice_player.update_(dt)
@@ -99,11 +99,12 @@ class EventDialogue(pge.Sprite):
         #                          line_spacing=2, letter_spacing=1)
         self.inner_text.position[0] = (- 256 // 2) + 10
         self.inner_text.position[1] = self.get_world_rect().y + 20
-        self.inner_text.center = [pge.Alignment.RIGHT, pge.Alignment.BOTTOM]
+        self.inner_text.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
         self.char_name.position[1] = self.get_world_rect().y
         self.char_name.position[0] = - 256 // 2
 
-    def interact(self, cam: pge.Camera):
+    def interact(self, cam: pge.Camera, dt: float):
+        self.update_(dt)
         if self.finished and not self.paused:
             self.on_dialogue = False
             self.hide()
@@ -164,8 +165,6 @@ class EventDialogue(pge.Sprite):
 
         # Update current text object
         self.inner_text.color = pg.Color(0, 0, 0)
-        self.inner_text.bg_color = pg.Color(0, 255, 0)
-        self.inner_text.mask_color = pg.Color(0, 255, 0)
         self.inner_text.text = self.current_text
 
         # If we have finished we pause
@@ -213,6 +212,8 @@ class EventDialogue(pge.Sprite):
         return self.on_dialogue
 
     def draw(self, cam: pge.Camera):
+        if not self.visible:
+            return
         super(EventDialogue, self).draw(cam)
         self.inner_text.draw(cam)
         self.char_name.draw(cam)

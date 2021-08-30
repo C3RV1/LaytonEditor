@@ -40,7 +40,7 @@ class SADLStreamPlayer(StreamPlayerAbstract):
     def add_samples(self, first_init=False):
         sample_steps = 17
         if first_init:
-            sample_steps *= 6  # If the sound gets cut increase this number (slower load, better playback)
+            sample_steps *= 3  # If the sound gets cut increase this number (slower load, better playback)
         new_samples = np.array(self.sadl.decode(sample_steps))
         if new_samples.shape[0] == 0:
             self.loading = False

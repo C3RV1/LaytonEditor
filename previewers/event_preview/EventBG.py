@@ -13,6 +13,7 @@ class EventBG:
         surf = pg.Surface([256, 192])
         surf.fill(pg.Color(0, 0, 0))
         self.translucent.surf = surf
+        self.translucent.alpha = 0
 
         self.name = name
 

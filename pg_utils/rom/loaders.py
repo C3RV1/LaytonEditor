@@ -8,6 +8,7 @@ import pygame as pg
 from formats.filesystem import NintendoDSRom
 from formats.graphics.ani import AniSprite
 from formats.graphics.bg import BGImage
+import numpy as np
 
 
 def set_extension(path, ext):
@@ -41,9 +42,11 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
                 h = max(img_h, h)
                 frames.append(Frame(w, 0, img_w, img_h))
                 w += img_w
-            surf = pg.Surface((w, h), flags=pg.SRCALPHA)
-            for i, img in ani_sprite.images:
-                img_surf = pg.surfarray.make_surface(ani_sprite.palette[img])
+            surf = pg.Surface((w, h))
+            for i, img in enumerate(ani_sprite.images):
+                array_surf = ani_sprite.palette[img][:, :, :-1]
+                array_surf = np.swapaxes(array_surf, 0, 1)
+                img_surf = pg.surfarray.make_surface(array_surf)
                 surf.blit(img_surf, frames[i].position)
 
             for animation in ani_sprite.animations:
@@ -60,7 +63,12 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
 
             vars_.update(ani_sprite.variables)
             vars_["child_image"] = ani_sprite.child_image
+            color_key = pg.Color(0, 255, 0)
         else:
             bg_sprite = BGImage(path, rom=self.rom)
-            surf = pg.surfarray.make_surface(bg_sprite.palette[bg_sprite.image])
+            img_array = bg_sprite.palette[bg_sprite.image][:,:,:-1]
+            img_array = np.swapaxes(img_array, 0, 1)
+            surf = pg.surfarray.make_surface(img_array)
+            color_key = None
         sprite.load_sprite(self, surf, frames, tags, vars_=vars_)
+        sprite.color_key = color_key

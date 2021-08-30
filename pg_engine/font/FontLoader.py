@@ -11,7 +11,12 @@ class FontLoader:
 
 
 class FontLoaderSYS(FontLoader):
+    def __init__(self, fall_back_font=None):
+        self.fall_back_font = fall_back_font
+
     def load(self, path: str, size: int, text: Text):
+        if path not in pg.font.get_fonts() and self.fall_back_font:
+            path = self.fall_back_font
         if path not in pg.font.get_fonts():
             super(FontLoaderSYS, self).load(path, size, text)
             return
@@ -19,7 +24,8 @@ class FontLoaderSYS(FontLoader):
 
 
 class FontLoaderOS(FontLoaderSYS):
-    def __init__(self, base_path=None):
+    def __init__(self, base_path=None, **kwargs):
+        super(FontLoaderOS, self).__init__(**kwargs)
         self.base_path = base_path
 
     def load(self, path: str, size: int, text: Text):

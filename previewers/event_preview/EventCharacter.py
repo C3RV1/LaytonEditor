@@ -16,7 +16,7 @@ class EventCharacter(pge.Sprite):
     def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
         super(EventCharacter, self).__init__(*args, **kwargs)
         self.orientation = EventCharacter.FACING_RIGHT
-        self.center[1] = pge.Alignment.TOP
+        self.center[1] = pge.Alignment.BOTTOM
         self.position[1] = 192 // 2
         self.slot = slot
         self.character_mouth: pge.Sprite = pge.Sprite()
@@ -40,16 +40,16 @@ class EventCharacter(pge.Sprite):
             return
         self.check_orientation()
         if self.orientation == EventCharacter.FACING_RIGHT:
-            self.flip(True, False)
+            self.flipped = [True, False]
         else:
-            self.flip(False, False)
+            self.flipped = [False, False]
 
         if self.orientation == EventCharacter.FACING_RIGHT:
             offset = EventCharacter.SLOT_OFFSET[self.slot] - 256 // 2
-            self.center[0] = pge.Alignment.RIGHT
+            self.center[0] = pge.Alignment.LEFT
         else:
             offset = (256 // 2) - EventCharacter.SLOT_OFFSET[self.slot]
-            self.center[0] = pge.Alignment.LEFT
+            self.center[0] = pge.Alignment.RIGHT
         self.position[0] = offset
         self.update_child()
 
@@ -67,7 +67,7 @@ class EventCharacter(pge.Sprite):
 
             self.character_mouth.position[0] = world_rect.x + mouth_offset[0]
             self.character_mouth.position[1] = self.position[1] - world_rect.h + mouth_offset[1]
-            self.character_mouth.center[1] = pge.Alignment.BOTTOM
+            self.character_mouth.center[1] = pge.Alignment.TOP
             self.character_mouth.set_tag_by_num(self._active_tag.vars_["child_index"])
             if self._active_tag.vars_["child_index"] == 0:
                 self.character_mouth.visible = False
@@ -107,14 +107,20 @@ class EventCharacter(pge.Sprite):
 
     def load_character(self, loader: pge.SpriteLoader):
         if loader:
-            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self)
-        if drawoff := self._vars.get("drawoff", None) is not None:
+            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, sprite_sheet=True)
+        print(self._vars)
+        if (drawoff := self._vars.get("drawoff", None)) is not None:
             self.position[0] += drawoff[0]
             self.position[1] += drawoff[1]
         if self._vars.get('child_image', "") != "" and loader:
-            loader.load(f"data_lt2/ani/sub/{self._vars['child_image']}", self)
+            loader.load(f"data_lt2/ani/sub/{self._vars['child_image']}", self.character_mouth, sprite_sheet=True)
         self.set_tag_by_num(1)
         self.update_()
+
+    def animate(self, dt: float):
+        super(EventCharacter, self).animate(dt)
+        if self.character_mouth:
+            self.character_mouth.animate(dt)
 
     def set_talking(self):
         self.talking = True
@@ -142,9 +148,6 @@ class EventCharacter(pge.Sprite):
 
     def __repr__(self):
         return f"<Character {self.char_id}>"
-
-    def create_mouth(self):
-        self.character_mouth = pge.Sprite()
 
     def draw(self, cam: pge.Camera):
         super(EventCharacter, self).draw(cam)
