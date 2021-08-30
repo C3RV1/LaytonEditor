@@ -4,7 +4,6 @@ from typing import List, TYPE_CHECKING, Tuple
 
 import pygame as pg
 
-from ..Debug import Debug
 from ..Camera import Camera
 from ..Renderable import Renderable
 
@@ -123,7 +122,6 @@ class Sprite(Renderable):
                     self._tag_time = 0.0
                     self._tag_frame = 0
                 return
-        Debug.log_warning(f"Not found tag {name}", self)
         return
 
     def set_tag_by_num(self, num: int):
@@ -354,3 +352,5 @@ class Sprite(Renderable):
 
     def set_loader(self, loader: 'SpriteLoader'):
         self._loader = loader
+
+    # TODO: Implement some sort of unload? or does python automatically collect it correctly?

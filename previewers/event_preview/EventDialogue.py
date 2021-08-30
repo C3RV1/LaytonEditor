@@ -98,13 +98,12 @@ class EventDialogue(pge.Sprite):
     def init_text(self, font_loader: pge.FontLoader):
         # Init dialogue positions
         font_loader.load("font_event", 12, self.inner_text)
-        # self.inner_text.set_font("data_permanent/fonts/font_event.png?cp1252", [9, 12], is_font_map=True,
-        #                          line_spacing=2, letter_spacing=1)
         self.inner_text.position[0] = (- 256 // 2) + 10
-        self.inner_text.position[1] = self.get_world_rect().y + 20
+        self.inner_text.position[1] = self.get_world_rect().y + 19
         self.inner_text.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
+        self.inner_text.line_spacing = 3
         self.char_name.position[1] = self.get_world_rect().y
-        self.char_name.position[0] = - 256 // 2
+        self.char_name.position[0] = - 256 // 2 + 7
 
     def interact(self, cam: pge.Camera, dt: float):
         self.update_(dt)
