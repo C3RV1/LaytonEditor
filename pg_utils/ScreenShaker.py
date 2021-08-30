@@ -24,8 +24,8 @@ class ScreenShaker(pge.Sprite):
 
         cycle1 = (((self.current_shake_time // self.cycle) % 4) <= 1) * 2.0 - 1
         cycle2 = (((self.current_shake_time // self.cycle) % 4) % 2) * 2 - 1
-        self.position = cycle1 * current_shake_intensity
-        self.position = cycle2 * current_shake_intensity
+        self.position[0] = cycle1 * current_shake_intensity
+        self.position[1] = cycle2 * current_shake_intensity
         if percentage == 0:
             self.shaking = False
 
