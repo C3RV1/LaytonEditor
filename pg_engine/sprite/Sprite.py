@@ -290,7 +290,7 @@ class Sprite(Renderable):
         if not self._transformed_surf.get_flags() & pg.SRCALPHA:
             if self._color_key:
                 self._transformed_surf.set_colorkey(self._color_key)
-            if self._alpha:
+            if self._alpha is not None:
                 self._transformed_surf.set_alpha(int(self._alpha))
 
     @property
