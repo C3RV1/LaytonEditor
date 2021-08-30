@@ -11,6 +11,7 @@ from formats.event import Event
 from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
 from formats.place import Place
+from formats.puzzle import Puzzle
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
 from gui import generated
 from gui.place_editor import PlaceEditor
@@ -19,7 +20,7 @@ from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 from previewers.event_preview.EventPlayer import EventPlayer
-# from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
+from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
 from previewers.sound_preview.SoundPreview import SoundPreview
 
 from pg_utils.rom.rom_extract import load_sadl, load_smd
@@ -260,9 +261,12 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := self.PUZZLE_REGEX.search(name):
-            # self.puzzle_previewer.set_puzzle_id(int(res.group(1)))
-            # self.pygame_previewer.start_renderer(self.puzzle_previewer.pz_main)
-            # self.puzzle_scintilla.SetText(self.puzzle_previewer.puzzle_data.to_readable())
+            puzzle = Puzzle(self.rom)
+            puzzle.set_internal_id(int(res.group(1)))
+            puzzle.load_from_rom()
+            self.previewer.start_renderer(PuzzlePlayer(puzzle))
+            set_previewer = True
+            self.puzzle_scintilla.SetText(puzzle.to_readable())
             self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
             self.fp_formats_book.SetSelection(8)  # DCC Page
             self.fp_menus_loaded.append("Puzzle")
@@ -276,8 +280,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 event.load_from_rom()
                 self.previewer.start_renderer(EventPlayer(event))
                 set_previewer = True
-                event_player: EventPlayer = self.previewer.current_renderer
-                self.puzzle_scintilla.SetText(event_player.event.to_readable())
+                self.puzzle_scintilla.SetText(event.to_readable())
                 self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
                 self.fp_formats_book.SetSelection(8)  # DCC Page
                 self.fp_menus_loaded.append("Event")

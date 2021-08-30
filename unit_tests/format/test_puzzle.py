@@ -22,7 +22,7 @@ class TestPuzzleData(unittest.TestCase):
 
     def test_values(self):
         pz_data = self.get_pzd()
-        assert pz_data.title == b"Dr Schrader's Map"
+        assert pz_data.title == "Dr Schrader's Map"
         assert pz_data.type == 26
         assert pz_data.number == 1
         assert pz_data.location_id == 91
@@ -36,7 +36,7 @@ class TestPuzzleData(unittest.TestCase):
         assert pz_data.bg_lang is False
         assert pz_data.ans_bg_lang is False
         assert len(pz_data.correct_answer) == 55  # Not checking full answer, but the length
-        assert pz_data.correct_answer == b"Excellent work!\n\nNow, let's hurry to the doctor's flat!"
+        assert pz_data.correct_answer == "Excellent work!\n\nNow, let's hurry to the doctor's flat!"
         assert pz_data.picarat_decay == [10, 9, 8]
 
     def test_readable(self):

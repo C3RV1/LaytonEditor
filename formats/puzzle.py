@@ -71,13 +71,13 @@ class Puzzle:
         self.location_id = 0
         self.picarat_decay = [0, 0, 0]
         self.reward_id = 0
-        self.text = b""
-        self.correct_answer = b""
-        self.incorrect_answer = b""
-        self.hint1 = b""
-        self.hint2 = b""
-        self.hint3 = b""
-        self.title = b""
+        self.text = ""
+        self.correct_answer = ""
+        self.incorrect_answer = ""
+        self.hint1 = ""
+        self.hint2 = ""
+        self.hint3 = ""
+        self.title = ""
 
         self.bg_btm_id = 0
         self.bg_top_id = 0
@@ -95,7 +95,7 @@ class Puzzle:
         self.original = b
 
         self.number = struct.unpack("<h", b[0x0:0x2])[0]
-        self.title = self.load_str(b, 0x4)
+        self.title = self.load_str(b, 0x4).decode(self.encoding)
         self.tutorial_id = b[0x34]
         for i in range(3):
             self.picarat_decay[i] = b[0x35 + i]
@@ -107,35 +107,35 @@ class Puzzle:
         self.reward_id = b[0x3F]
 
         puzzle_text_offset = 0x70 + struct.unpack("<i", b[0x40:0x44])[0]
-        self.text = self.load_str(b, puzzle_text_offset)
+        self.text = self.load_str(b, puzzle_text_offset).decode(self.encoding)
         puzzle_correct_answer_offset = 0x70 + struct.unpack("<i", b[0x44:0x48])[0]
-        self.correct_answer = self.load_str(b, puzzle_correct_answer_offset)
+        self.correct_answer = self.load_str(b, puzzle_correct_answer_offset).decode(self.encoding)
         puzzle_incorrect_answer_offset = 0x70 + struct.unpack("<i", b[0x48:0x4c])[0]
-        self.incorrect_answer = self.load_str(b, puzzle_incorrect_answer_offset)
+        self.incorrect_answer = self.load_str(b, puzzle_incorrect_answer_offset).decode(self.encoding)
         puzzle_hint1_offset = 0x70 + struct.unpack("<i", b[0x4c:0x50])[0]
-        self.hint1 = self.load_str(b, puzzle_hint1_offset)
+        self.hint1 = self.load_str(b, puzzle_hint1_offset).decode(self.encoding)
         puzzle_hint2_offset = 0x70 + struct.unpack("<i", b[0x50:0x54])[0]
-        self.hint2 = self.load_str(b, puzzle_hint2_offset)
+        self.hint2 = self.load_str(b, puzzle_hint2_offset).decode(self.encoding)
         puzzle_hint3_offset = 0x70 + struct.unpack("<i", b[0x54:0x58])[0]
-        self.hint3 = self.load_str(b, puzzle_hint3_offset)
+        self.hint3 = self.load_str(b, puzzle_hint3_offset).decode(self.encoding)
 
     def export_data(self):
         puzzle_text_section = b""
-        puzzle_text_section += self.text + b"\x00"
+        puzzle_text_section += self.text.encode(self.encoding) + b"\x00"
         puzzle_correct_offset = len(puzzle_text_section)
-        puzzle_text_section += self.correct_answer + b"\x00"
+        puzzle_text_section += self.correct_answer.encode(self.encoding) + b"\x00"
         puzzle_incorrect_offset = len(puzzle_text_section)
-        puzzle_text_section += self.incorrect_answer + b"\x00"
+        puzzle_text_section += self.incorrect_answer.encode(self.encoding) + b"\x00"
         puzzle_hint1_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint1 + b"\x00"
+        puzzle_text_section += self.hint1.encode(self.encoding) + b"\x00"
         puzzle_hint2_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint2 + b"\x00"
+        puzzle_text_section += self.hint2.encode(self.encoding) + b"\x00"
         puzzle_hint3_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint3 + b"\x00"
+        puzzle_text_section += self.hint3.encode(self.encoding) + b"\x00"
 
         result = struct.pack("<h", self.number)
         result += struct.pack("<h", 112)
-        result += self.pad_with_0(self.title, 0x30)
+        result += self.pad_with_0(self.title.encode(self.encoding), 0x30)
         result += bytes([self.tutorial_id])
         for picarat in self.picarat_decay:
             result += bytes([picarat])
@@ -181,14 +181,6 @@ class Puzzle:
         self.load(dat_file)
         self.load_gds()
         return True
-
-    @property
-    def btm_path(self):
-        if not self.bg_lang:
-            file_name = "q{}.arc".format(self.bg_btm_id)
-        else:
-            file_name = "?/q{}.arc".format(self.bg_btm_id).replace("?", conf.LANG)
-        return f"data_lt2/bg/nazo/{file_name}"
 
     @staticmethod
     def load_str(b, offset):
@@ -249,7 +241,7 @@ class Puzzle:
         parser = formats.dcc_parser.Parser()
         parser.reset()
         parser.get_path("pzd", create=True)
-        parser.set_named("pzd.title", self.title.decode(self.encoding))
+        parser.set_named("pzd.title", self.title)
         parser.set_named("pzd.type", self.type)
         parser.set_named("pzd.number", self.number)
         parser.set_named("pzd.location_id", self.location_id)
@@ -265,14 +257,14 @@ class Puzzle:
         parser.get_path("pzd.picarat_decay", create=True)
         for picarat in self.picarat_decay:
             parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", subs.replace_substitutions(self.text.decode(self.encoding), puzzle=True))
-        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer.decode(self.encoding),
+        parser.set_named("pzd.text", subs.replace_substitutions(self.text, puzzle=True))
+        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer,
                                                                           puzzle=True))
         parser.set_named("pzd.incorrect_answer",
-                         subs.replace_substitutions(self.incorrect_answer.decode(self.encoding), puzzle=True))
-        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1.decode(self.encoding), puzzle=True))
-        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2.decode(self.encoding), puzzle=True))
-        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3.decode(self.encoding), puzzle=True))
+                         subs.replace_substitutions(self.incorrect_answer, puzzle=True))
+        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1, puzzle=True))
+        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2, puzzle=True))
+        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3, puzzle=True))
 
         parser.get_path("pzs", create=True)
         gds_parser = self.get_gds_parser()
@@ -300,17 +292,16 @@ class Puzzle:
             if not parser.exists(req_path):
                 return False, f"Missing {req_path}"
 
-        self.title = parser["pzd.title"].encode(self.encoding)
+        self.title = parser["pzd.title"]
         self.type = parser["pzd.type"]
         self.number = parser["pzd.number"]
-        self.text = subs.convert_substitutions(parser["pzd.text"], puzzle=True).encode(self.encoding)
+        self.text = subs.convert_substitutions(parser["pzd.text"], puzzle=True)
         self.correct_answer = subs.convert_substitutions(parser["pzd.correct_answer"],
-                                                         puzzle=True).encode(self.encoding)
-        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"],
-                                                           puzzle=True).encode(self.encoding)
-        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"], puzzle=True).encode(self.encoding)
-        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"], puzzle=True).encode(self.encoding)
-        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"], puzzle=True).encode(self.encoding)
+                                                         puzzle=True)
+        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"], puzzle=True)
+        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"], puzzle=True)
+        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"], puzzle=True)
+        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"], puzzle=True)
 
         self.tutorial_id = parser["pzd.tutorial_id"]
         self.reward_id = parser["pzd.reward_id"]
