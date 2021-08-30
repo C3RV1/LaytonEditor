@@ -26,4 +26,5 @@ class RomSingleton:
             return loaders.SpriteLoaderROM(self.rom)
 
     def get_font_loader(self):
-        return pge.FontLoaderOS(fall_back_font="arial", base_path="data_permanent/fonts")
+        return pge.FontLoaderOS(fall_back_font_sys="arial", base_path="data_permanent/fonts",
+                                fall_back_font_os="../font_default.json")

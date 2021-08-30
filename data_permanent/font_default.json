@@ -1,0 +1,816 @@
+{
+  "origin": "https://poppyworks.itch.io/silver",
+  "font_image": "font_default.png",
+  "image_tile_width": 16,
+  "encoding": "cp1252",
+  "text_color": [0, 0, 0],
+  "tile_width": 7,
+  "tile_height": 10,
+  "mask_color": [255, 255, 255],
+  "separator_size": 2,
+  "character_spacing": 1,
+  "color_commands": {
+    "r": [240, 0, 0],
+    "b": [0, 0, 240],
+    "x": [0, 0, 0],
+    "w": [255, 255, 255]
+  },
+  "color_command_prefix": "#",
+  "char_map": [
+    {
+      "-Code": "20",
+      "-Index": 0,
+      "-Width": 3
+    },
+    {
+      "-Code": "21",
+      "-Index": 1,
+      "-Width": 3
+    },
+    {
+      "-Code": "22",
+      "-Index": 2,
+      "-Width": 5
+    },
+    {
+      "-Code": "23",
+      "-Index": 3,
+      "-Width": 5
+    },
+    {
+      "-Code": "24",
+      "-Index": 4,
+      "-Width": 5
+    },
+    {
+      "-Code": "25",
+      "-Index": 5,
+      "-Width": 4
+    },
+    {
+      "-Code": "26",
+      "-Index": 6,
+      "-Width": 5
+    },
+    {
+      "-Code": "27",
+      "-Index": 7,
+      "-Width": 4
+    },
+    {
+      "-Code": "28",
+      "-Index": 8,
+      "-Width": 4
+    },
+    {
+      "-Code": "29",
+      "-Index": 9,
+      "-Width": 4
+    },
+    {
+      "-Code": "2a",
+      "-Index": 10,
+      "-Width": 5
+    },
+    {
+      "-Code": "2b",
+      "-Index": 11,
+      "-Width": 5
+    },
+    {
+      "-Code": "2c",
+      "-Index": 12,
+      "-Width": 2
+    },
+    {
+      "-Code": "2d",
+      "-Index": 13,
+      "-Width": 5
+    },
+    {
+      "-Code": "2e",
+      "-Index": 14,
+      "-Width": 2
+    },
+    {
+      "-Code": "2f",
+      "-Index": 15,
+      "-Width": 3
+    },
+    {
+      "-Code": "30",
+      "-Index": 16,
+      "-Width": 5
+    },
+    {
+      "-Code": "31",
+      "-Index": 17,
+      "-Width": 4
+    },
+    {
+      "-Code": "32",
+      "-Index": 18,
+      "-Width": 5
+    },
+    {
+      "-Code": "33",
+      "-Index": 19,
+      "-Width": 5
+    },
+    {
+      "-Code": "34",
+      "-Index": 20,
+      "-Width": 5
+    },
+    {
+      "-Code": "35",
+      "-Index": 21,
+      "-Width": 5
+    },
+    {
+      "-Code": "36",
+      "-Index": 22,
+      "-Width": 5
+    },
+    {
+      "-Code": "37",
+      "-Index": 23,
+      "-Width": 5
+    },
+    {
+      "-Code": "38",
+      "-Index": 24,
+      "-Width": 5
+    },
+    {
+      "-Code": "39",
+      "-Index": 25,
+      "-Width": 5
+    },
+    {
+      "-Code": "3a",
+      "-Index": 26,
+      "-Width": 2
+    },
+    {
+      "-Code": "3b",
+      "-Index": 27,
+      "-Width": 2
+    },
+    {
+      "-Code": "3d",
+      "-Index": 28,
+      "-Width": 5
+    },
+    {
+      "-Code": "3f",
+      "-Index": 29,
+      "-Width": 5
+    },
+    {
+      "-Code": "40",
+      "-Index": 30,
+      "-Width": 5
+    },
+    {
+      "-Code": "41",
+      "-Index": 31,
+      "-Width": 5
+    },
+    {
+      "-Code": "42",
+      "-Index": 32,
+      "-Width": 5
+    },
+    {
+      "-Code": "43",
+      "-Index": 33,
+      "-Width": 5
+    },
+    {
+      "-Code": "44",
+      "-Index": 34,
+      "-Width": 5
+    },
+    {
+      "-Code": "45",
+      "-Index": 35,
+      "-Width": 5
+    },
+    {
+      "-Code": "46",
+      "-Index": 36,
+      "-Width": 5
+    },
+    {
+      "-Code": "47",
+      "-Index": 37,
+      "-Width": 5
+    },
+    {
+      "-Code": "48",
+      "-Index": 38,
+      "-Width": 5
+    },
+    {
+      "-Code": "49",
+      "-Index": 39,
+      "-Width": 3
+    },
+    {
+      "-Code": "4a",
+      "-Index": 40,
+      "-Width": 5
+    },
+    {
+      "-Code": "4b",
+      "-Index": 41,
+      "-Width": 5
+    },
+    {
+      "-Code": "4c",
+      "-Index": 42,
+      "-Width": 5
+    },
+    {
+      "-Code": "4d",
+      "-Index": 43,
+      "-Width": 5
+    },
+    {
+      "-Code": "4e",
+      "-Index": 44,
+      "-Width": 5
+    },
+    {
+      "-Code": "4f",
+      "-Index": 45,
+      "-Width": 5
+    },
+    {
+      "-Code": "50",
+      "-Index": 46,
+      "-Width": 5
+    },
+    {
+      "-Code": "51",
+      "-Index": 47,
+      "-Width": 5
+    },
+    {
+      "-Code": "52",
+      "-Index": 48,
+      "-Width": 5
+    },
+    {
+      "-Code": "53",
+      "-Index": 49,
+      "-Width": 5
+    },
+    {
+      "-Code": "54",
+      "-Index": 50,
+      "-Width": 5
+    },
+    {
+      "-Code": "55",
+      "-Index": 51,
+      "-Width": 5
+    },
+    {
+      "-Code": "56",
+      "-Index": 52,
+      "-Width": 5
+    },
+    {
+      "-Code": "57",
+      "-Index": 53,
+      "-Width": 5
+    },
+    {
+      "-Code": "58",
+      "-Index": 54,
+      "-Width": 5
+    },
+    {
+      "-Code": "59",
+      "-Index": 55,
+      "-Width": 5
+    },
+    {
+      "-Code": "5a",
+      "-Index": 56,
+      "-Width": 5
+    },
+    {
+      "-Code": "5b",
+      "-Index": 57,
+      "-Width": 4
+    },
+    {
+      "-Code": "5d",
+      "-Index": 58,
+      "-Width": 4
+    },
+    {
+      "-Code": "5e",
+      "-Index": 59,
+      "-Width": 5
+    },
+    {
+      "-Code": "5f",
+      "-Index": 60,
+      "-Width": 3
+    },
+    {
+      "-Code": "60",
+      "-Index": 61,
+      "-Width": 3
+    },
+    {
+      "-Code": "61",
+      "-Index": 62,
+      "-Width": 5
+    },
+    {
+      "-Code": "62",
+      "-Index": 63,
+      "-Width": 5
+    },
+    {
+      "-Code": "63",
+      "-Index": 64,
+      "-Width": 5
+    },
+    {
+      "-Code": "64",
+      "-Index": 65,
+      "-Width": 5
+    },
+    {
+      "-Code": "65",
+      "-Index": 66,
+      "-Width": 5
+    },
+    {
+      "-Code": "66",
+      "-Index": 67,
+      "-Width": 5
+    },
+    {
+      "-Code": "67",
+      "-Index": 68,
+      "-Width": 5
+    },
+    {
+      "-Code": "68",
+      "-Index": 69,
+      "-Width": 5
+    },
+    {
+      "-Code": "69",
+      "-Index": 70,
+      "-Width": 3
+    },
+    {
+      "-Code": "6a",
+      "-Index": 71,
+      "-Width": 5
+    },
+    {
+      "-Code": "6b",
+      "-Index": 72,
+      "-Width": 5
+    },
+    {
+      "-Code": "6c",
+      "-Index": 73,
+      "-Width": 3
+    },
+    {
+      "-Code": "6d",
+      "-Index": 74,
+      "-Width": 5
+    },
+    {
+      "-Code": "6e",
+      "-Index": 75,
+      "-Width": 5
+    },
+    {
+      "-Code": "6f",
+      "-Index": 76,
+      "-Width": 5
+    },
+    {
+      "-Code": "70",
+      "-Index": 77,
+      "-Width": 5
+    },
+    {
+      "-Code": "71",
+      "-Index": 78,
+      "-Width": 5
+    },
+    {
+      "-Code": "72",
+      "-Index": 79,
+      "-Width": 5
+    },
+    {
+      "-Code": "73",
+      "-Index": 80,
+      "-Width": 5
+    },
+    {
+      "-Code": "74",
+      "-Index": 81,
+      "-Width": 5
+    },
+    {
+      "-Code": "75",
+      "-Index": 82,
+      "-Width": 5
+    },
+    {
+      "-Code": "76",
+      "-Index": 83,
+      "-Width": 5
+    },
+    {
+      "-Code": "77",
+      "-Index": 84,
+      "-Width": 5
+    },
+    {
+      "-Code": "78",
+      "-Index": 85,
+      "-Width": 5
+    },
+    {
+      "-Code": "79",
+      "-Index": 86,
+      "-Width": 5
+    },
+    {
+      "-Code": "7a",
+      "-Index": 87,
+      "-Width": 5
+    },
+    {
+      "-Code": "80",
+      "-Index": 88,
+      "-Width": 5
+    },
+    {
+      "-Code": "82",
+      "-Index": 89,
+      "-Width": 2
+    },
+    {
+      "-Code": "84",
+      "-Index": 90,
+      "-Width": 3
+    },
+    {
+      "-Code": "8b",
+      "-Index": 91,
+      "-Width": 2
+    },
+    {
+      "-Code": "8c",
+      "-Index": 92,
+      "-Width": 7
+    },
+    {
+      "-Code": "91",
+      "-Index": 93,
+      "-Width": 4
+    },
+    {
+      "-Code": "92",
+      "-Index": 94,
+      "-Width": 4
+    },
+    {
+      "-Code": "93",
+      "-Index": 95,
+      "-Width": 5
+    },
+    {
+      "-Code": "94",
+      "-Index": 96,
+      "-Width": 5
+    },
+    {
+      "-Code": "95",
+      "-Index": 97,
+      "-Width": 4
+    },
+    {
+      "-Code": "9b",
+      "-Index": 98,
+      "-Width": 2
+    },
+    {
+      "-Code": "9c",
+      "-Index": 99,
+      "-Width": 7
+    },
+    {
+      "-Code": "a1",
+      "-Index": 100,
+      "-Width": 3
+    },
+    {
+      "-Code": "a3",
+      "-Index": 101,
+      "-Width": 5
+    },
+    {
+      "-Code": "aa",
+      "-Index": 102,
+      "-Width": 5
+    },
+    {
+      "-Code": "ab",
+      "-Index": 103,
+      "-Width": 4
+    },
+    {
+      "-Code": "ac",
+      "-Index": 104,
+      "-Width": 5
+    },
+    {
+      "-Code": "ad",
+      "-Index": 105,
+      "-Width": 4
+    },
+    {
+      "-Code": "ae",
+      "-Index": 106,
+      "-Width": 4
+    },
+    {
+      "-Code": "af",
+      "-Index": 107,
+      "-Width": 4
+    },
+    {
+      "-Code": "b0",
+      "-Index": 108,
+      "-Width": 3
+    },
+    {
+      "-Code": "ba",
+      "-Index": 109,
+      "-Width": 5
+    },
+    {
+      "-Code": "bb",
+      "-Index": 110,
+      "-Width": 4
+    },
+    {
+      "-Code": "bf",
+      "-Index": 111,
+      "-Width": 5
+    },
+    {
+      "-Code": "c0",
+      "-Index": 112,
+      "-Width": 5
+    },
+    {
+      "-Code": "c1",
+      "-Index": 113,
+      "-Width": 5
+    },
+    {
+      "-Code": "c2",
+      "-Index": 114,
+      "-Width": 5
+    },
+    {
+      "-Code": "c3",
+      "-Index": 115,
+      "-Width": 5
+    },
+    {
+      "-Code": "c4",
+      "-Index": 116,
+      "-Width": 5
+    },
+    {
+      "-Code": "c5",
+      "-Index": 117,
+      "-Width": 5
+    },
+    {
+      "-Code": "c7",
+      "-Index": 118,
+      "-Width": 5
+    },
+    {
+      "-Code": "c8",
+      "-Index": 119,
+      "-Width": 5
+    },
+    {
+      "-Code": "c9",
+      "-Index": 120,
+      "-Width": 5
+    },
+    {
+      "-Code": "ca",
+      "-Index": 121,
+      "-Width": 5
+    },
+    {
+      "-Code": "cb",
+      "-Index": 122,
+      "-Width": 5
+    },
+    {
+      "-Code": "cc",
+      "-Index": 123,
+      "-Width": 3
+    },
+    {
+      "-Code": "cd",
+      "-Index": 124,
+      "-Width": 3
+    },
+    {
+      "-Code": "ce",
+      "-Index": 125,
+      "-Width": 3
+    },
+    {
+      "-Code": "cf",
+      "-Index": 126,
+      "-Width": 3
+    },
+    {
+      "-Code": "d1",
+      "-Index": 127,
+      "-Width": 5
+    },
+    {
+      "-Code": "d2",
+      "-Index": 128,
+      "-Width": 5
+    },
+    {
+      "-Code": "d3",
+      "-Index": 129,
+      "-Width": 5
+    },
+    {
+      "-Code": "d4",
+      "-Index": 130,
+      "-Width": 5
+    },
+    {
+      "-Code": "d6",
+      "-Index": 131,
+      "-Width": 5
+    },
+    {
+      "-Code": "d9",
+      "-Index": 132,
+      "-Width": 5
+    },
+    {
+      "-Code": "da",
+      "-Index": 133,
+      "-Width": 5
+    },
+    {
+      "-Code": "db",
+      "-Index": 134,
+      "-Width": 5
+    },
+    {
+      "-Code": "dc",
+      "-Index": 135,
+      "-Width": 5
+    },
+    {
+      "-Code": "df",
+      "-Index": 136,
+      "-Width": 5
+    },
+    {
+      "-Code": "e0",
+      "-Index": 137,
+      "-Width": 5
+    },
+    {
+      "-Code": "e1",
+      "-Index": 138,
+      "-Width": 5
+    },
+    {
+      "-Code": "e2",
+      "-Index": 139,
+      "-Width": 5
+    },
+    {
+      "-Code": "e4",
+      "-Index": 140,
+      "-Width": 5
+    },
+    {
+      "-Code": "e7",
+      "-Index": 141,
+      "-Width": 5
+    },
+    {
+      "-Code": "e8",
+      "-Index": 142,
+      "-Width": 5
+    },
+    {
+      "-Code": "e9",
+      "-Index": 143,
+      "-Width": 5
+    },
+    {
+      "-Code": "ea",
+      "-Index": 144,
+      "-Width": 5
+    },
+    {
+      "-Code": "eb",
+      "-Index": 145,
+      "-Width": 5
+    },
+    {
+      "-Code": "ec",
+      "-Index": 146,
+      "-Width": 3
+    },
+    {
+      "-Code": "ed",
+      "-Index": 147,
+      "-Width": 3
+    },
+    {
+      "-Code": "ee",
+      "-Index": 148,
+      "-Width": 3
+    },
+    {
+      "-Code": "ef",
+      "-Index": 149,
+      "-Width": 3
+    },
+    {
+      "-Code": "f1",
+      "-Index": 150,
+      "-Width": 5
+    },
+    {
+      "-Code": "f2",
+      "-Index": 151,
+      "-Width": 5
+    },
+    {
+      "-Code": "f3",
+      "-Index": 152,
+      "-Width": 5
+    },
+    {
+      "-Code": "f4",
+      "-Index": 153,
+      "-Width": 5
+    },
+    {
+      "-Code": "f6",
+      "-Index": 154,
+      "-Width": 5
+    },
+    {
+      "-Code": "f9",
+      "-Index": 155,
+      "-Width": 5
+    },
+    {
+      "-Code": "fa",
+      "-Index": 156,
+      "-Width": 5
+    },
+    {
+      "-Code": "fb",
+      "-Index": 157,
+      "-Width": 5
+    },
+    {
+      "-Code": "fc",
+      "-Index": 158,
+      "-Width": 5
+    }
+  ]
+}
