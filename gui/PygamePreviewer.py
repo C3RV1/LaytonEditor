@@ -57,6 +57,7 @@ class PygamePreviewer(threading.Thread):
             self.current_renderer.unload()
             gc.collect()
         self.current_renderer = renderer
+        self.gm.tick()
         self.loop_lock.release()
 
     def stop_renderer(self):
@@ -65,4 +66,5 @@ class PygamePreviewer(threading.Thread):
             self.current_renderer.unload()
             gc.collect()
         self.current_renderer = PreviewerDefaultRenderer()
+        self.gm.tick()
         self.loop_lock.release()
