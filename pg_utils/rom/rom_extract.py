@@ -38,11 +38,8 @@ def load_smd(path: str, rom=None) -> tuple:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", conf.LANG)
-    smd_file = binary.BinaryReader(rom.open(path, "rb"))
 
-    smd_obj = smd.SMDL()
-    smd_obj.read(smd_file)
-    smd_file.close()
+    smd_obj = smd.SMDL(path=path, rom=rom)
 
     swd_path = path.split(".")[0] + ".SWD"
     swd_file = binary.BinaryReader(rom.open(swd_path, "rb"))

@@ -1,4 +1,7 @@
-from formats import binary
+from typing import BinaryIO
+
+from formats.binary import BinaryReader, BinaryWriter
+from formats.filesystem import FileFormat
 import io
 
 
@@ -17,7 +20,7 @@ class SMDLHeader:
     centisecond: int
     file_name: bytes
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         br.seek(0, io.SEEK_SET)
         self.magic = br.read_string(4, encoding=None)
         if self.magic != b"smdl":
@@ -43,7 +46,7 @@ class SMDLHeader:
         br.read_uint32()  # 0xFFFFFFFF
         br.read_uint32()  # 0xFFFFFFFF
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.seek(0, io.SEEK_SET)
         bw.write_string(self.magic)
         bw.write_uint32(0)
@@ -84,7 +87,7 @@ class SongChunk:
     unk11: int
     unk12: int
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         br.seek(0x40, io.SEEK_SET)
         self.label = br.read_string(4, encoding=None)
         if self.label != b"song":
@@ -106,7 +109,7 @@ class SongChunk:
         br.read_uint32()  # 0xFFFFFF00
         br.read_string(16, encoding=None)  # 16 0xFF Padding
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.seek(0x40, io.SEEK_SET)
         bw.write_string(self.label)
         bw.write_uint32(self.unk1)
@@ -133,7 +136,7 @@ class TrackChunkHeader:
     param2: int
     chunk_length = int
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         self.label = br.read_string(4, encoding=None)
         if self.label != b"trk\x20":
             raise ValueError("TrackChunkHeader does not start with magic value")
@@ -141,7 +144,7 @@ class TrackChunkHeader:
         self.param2 = br.read_uint32()
         self.chunk_length = br.read_uint32()
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.write_string(self.label)
         bw.write_uint32(self.param1)
         bw.write_uint32(self.param2)
@@ -154,13 +157,13 @@ class TrackPreamble:
     unk1: int
     unk2: int
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         self.track_id = br.read_uint8()
         self.channel_id = br.read_uint8()
         self.unk1 = br.read_uint8()
         self.unk2 = br.read_uint8()
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.write_uint8(self.track_id)
         bw.write_uint8(self.channel_id)
         bw.write_uint8(self.unk1)
@@ -170,11 +173,11 @@ class TrackPreamble:
 class TrackContent:
     event_bytes: bytes
 
-    def read(self, br: binary.BinaryReader, track_header: TrackChunkHeader):
+    def read(self, br: BinaryReader, track_header: TrackChunkHeader):
         eb = br.read_char_array(track_header.chunk_length - 4)
         self.event_bytes = b"".join(eb)
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.write_char_array([bytes([x]) for x in list(self.event_bytes)])
         if offset := bw.tell() % 4:
             bw.write_char_array([b"\x98"]*(4 - offset))
@@ -185,7 +188,7 @@ class Track:
     track_preamble: TrackPreamble
     track_content: TrackContent
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         self.track_header = TrackChunkHeader()
         self.track_preamble = TrackPreamble()
         self.track_content = TrackContent()
@@ -195,7 +198,7 @@ class Track:
         self.track_content.read(br, self.track_header)
         br.align(4)
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         self.track_header.chunk_length = len(self.track_content.event_bytes) + 4
         self.track_header.write(bw)
         self.track_preamble.write(bw)
@@ -207,7 +210,7 @@ class EOCChunk:
     param1: int = 0x1
     param2: int = 0x04FF0000
 
-    def read(self, br: binary.BinaryReader):
+    def read(self, br: BinaryReader):
         self.label = br.read_string(4, encoding=None)
         if self.label != b"eoc\x20":
             raise ValueError(f"EOCChunk does not start with magic value ({repr(self.label)}")
@@ -215,41 +218,52 @@ class EOCChunk:
         self.param2 = br.read_uint32()
         br.read_uint32()  # 0
 
-    def write(self, bw: binary.BinaryWriter):
+    def write(self, bw: BinaryWriter):
         bw.write_string(self.label)
         bw.write_uint32(self.param1)
         bw.write_uint32(self.param2)
         bw.write_uint32(0)
 
 
-class SMDL:
+class SMDL(FileFormat):
     smdl_header: SMDLHeader
     song_chunk: SongChunk
     tracks = []
     eoc_chunk: EOCChunk
 
-    def read(self, br: binary.BinaryReader):
+    def read_stream(self, stream: BinaryIO):
+        if isinstance(stream, BinaryReader):
+            rdr = stream
+        else:
+            rdr = BinaryReader(stream)
         self.smdl_header = SMDLHeader()
         self.song_chunk = SongChunk()
         self.tracks = []
         self.eoc_chunk = EOCChunk()
 
-        self.smdl_header.read(br)
-        self.song_chunk.read(br)
+        self.smdl_header.read(rdr)
+        self.song_chunk.read(rdr)
         for i in range(self.song_chunk.num_tracks):
             new_track = Track()
-            new_track.read(br)
+            new_track.read(rdr)
             self.tracks.append(new_track)
-        self.eoc_chunk.read(br)
+        self.eoc_chunk.read(rdr)
 
-    def write(self, bw: binary.BinaryWriter):
+    def write_stream(self, stream):
+        if isinstance(stream, BinaryWriter):
+            wtr = stream
+        else:
+            wtr = BinaryWriter(stream)
         self.song_chunk.num_tracks = len(self.tracks)
-        self.song_chunk.write(bw)
+        self.song_chunk.write(wtr)
         for track in self.tracks:
             track: Track
-            track.write(bw)
-        self.eoc_chunk.write(bw)
-        self.smdl_header.file_length = bw.tell()
-        self.smdl_header.write(bw)
-        bw.seek(-1, io.SEEK_END)
+            track.write(wtr)
+        self.eoc_chunk.write(wtr)
+        self.smdl_header.file_length = wtr.tell()
+        self.smdl_header.write(wtr)
+        wtr.seek(0, io.SEEK_END)
+
+    def write(self):
+        pass
 

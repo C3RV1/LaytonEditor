@@ -18,15 +18,13 @@ class TestSMD(unittest.TestCase):
     def test_SMDReadAndSave(self):
         smd_file = self.get_smd()
         smd_data = smd_file.read()
-        smd_file = binary.BinaryReader(smd_file)
-        smd_file.seek(0)
+        smd_file.close()
 
-        smd_obj = smd.SMDL()
-        smd_obj.read(smd_file)
+        smd_obj = smd.SMDL(filename="data_lt2/sound/BG_004.SMD", rom=self.rom)
 
         exported_file = io.BytesIO()
         exported_file = binary.BinaryWriter(exported_file)
-        smd_obj.write(exported_file)
+        smd_obj.write_stream(exported_file)
 
         exported_data = exported_file.readall()
         assert smd_data == exported_data

@@ -11,6 +11,9 @@ import time
 import math
 
 
+# TODO: Merge SADLpy into formats
+
+
 class Coding:
     EMPTY = 0
     INT_IMA = 0x70
