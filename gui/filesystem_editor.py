@@ -16,11 +16,13 @@ from gui import generated
 from gui.place_editor import PlaceEditor
 
 from gui.PygamePreviewer import PygamePreviewer
+from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
+from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 from previewers.event_preview.EventPlayer import EventPlayer
 # from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
-# from previewers.sound_preview.SoundPreview import SADLPreview
+from previewers.sound_preview.SoundPreview import SoundPreview
 
-from pg_utils.rom.rom_extract import load_sadl
+from pg_utils.rom.rom_extract import load_sadl, load_smd
 from SADLpy.SADL import SADL
 from io import BytesIO
 
@@ -194,7 +196,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         except RuntimeError:
             # wrapped c/c++ object of type TreeCtrl has been deleted
             return
-        self.previewer.stop_renderer()
 
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         for menu_title in self.fp_menus_loaded:
@@ -205,6 +206,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.save_preview()
         self.preview_save = False
         self.preview_data = None
+
+        set_previewer = False
 
         if name.endswith(".arc") and name.split("/")[1] == "bg":
             background = BGImage(name, rom=archive)
@@ -272,6 +275,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 event.set_event_id(index)
                 event.load_from_rom()
                 self.previewer.start_renderer(EventPlayer(event))
+                set_previewer = True
                 event_player: EventPlayer = self.previewer.current_renderer
                 self.puzzle_scintilla.SetText(event_player.event.to_readable())
                 self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
@@ -287,17 +291,25 @@ class FilesystemEditor(generated.FilesystemEditor):
                 treenode_import_from_plz_file(self.ft_filetree, self.ft_filetree.GetSelection(), name, self.rom)
             self.fp_formats_book.SetSelection(0)  # Empty page
         elif name.lower().endswith(".sad"):
-            # self.previewer.start_renderer(self.sound_previewer)
-            # self.sound_previewer.load_sadl(name)
+            sound_previewer = SoundPreview(SADLStreamPlayer(), load_sadl(name), name)
+            self.previewer.start_renderer(sound_previewer)
+            set_previewer = True
             self.fp_formats_book.SetSelection(0)  # Empty page
             self.fp_menus_loaded.append("Stream")
             self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
         elif name.lower().endswith(".smd"):
-            # self.previewer.start_renderer(self.sound_previewer)
-            # self.sound_previewer.load_smdl(name)
+            smdl_stream_player = SMDLStreamPlayer()
+            smdl, swd_presets = load_smd(name)
+            smdl_stream_player.set_preset_dict(swd_presets)
+            sound_previewer = SoundPreview(smdl_stream_player, smdl, name)
+            self.previewer.start_renderer(sound_previewer)
+            set_previewer = True
             self.fp_formats_book.SetSelection(0)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
+
+        if not set_previewer:
+            self.previewer.stop_renderer()
 
     def save_preview(self):
         if isinstance(self.preview_data, FileFormat):

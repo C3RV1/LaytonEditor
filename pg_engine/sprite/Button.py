@@ -12,13 +12,14 @@ class Button(Sprite):
         self.pressed_counter = pressed_counter
         self._current_pressed_counter = 0
         self.input_manager = Input()
-        self.set_tag(self._not_pressed_tag)
+        if self._not_pressed_tag:
+            self.set_tag(self._not_pressed_tag)
 
     def pressed(self, cam: Camera, dt: float):
         if not self._pressed:
             if self.input_manager.get_mouse_down(1):
                 mouse_pos = self.input_manager.get_mouse_pos()
-                if self.get_screen_rect(cam).collidepoint(mouse_pos[0], mouse_pos[1]):
+                if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
                     self._pressed = True
                     if self._pressed_tag:
                         self.set_tag(self._pressed_tag)

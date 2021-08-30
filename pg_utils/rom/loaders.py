@@ -57,7 +57,7 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
                 tags.append(Tag(
                     animation.name,
                     [f.image_index for f in animation.frames],
-                    [f.duration for f in animation.frames],
+                    [f.duration / 60.0 for f in animation.frames],
                     vars_=vars_
                 ))
 
@@ -72,3 +72,6 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
             color_key = None
         sprite.load_sprite(self, surf, frames, tags, vars_=vars_)
         sprite.color_key = color_key
+
+
+# TODO: Font loader rom

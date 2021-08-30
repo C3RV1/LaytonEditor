@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass, field
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 
 import pygame as pg
 
@@ -116,8 +116,6 @@ class Sprite(Renderable):
                 self._update_cropped()
 
     def set_tag(self, name: str):
-        if name == self._active_tag:
-            return
         for tag in self._tag_info:
             if tag.name == name:
                 if tag != self._active_tag:
@@ -142,12 +140,12 @@ class Sprite(Renderable):
         if len(self._active_tag.frames) == 0:
             return
         self._tag_time += dt
-        duration = tag.frame_durations[self._tag_frame] / 60.0
+        duration = tag.frame_durations[self._tag_frame]
         while self._tag_time > duration != 0:
             self._tag_frame += 1
             self._tag_frame %= len(tag.frames)
             self._tag_time -= duration
-            duration = tag.frame_durations[self._tag_frame] / 60.0
+            duration = tag.frame_durations[self._tag_frame]
         self.set_frame(tag.frames[self._tag_frame])
 
     @property
@@ -326,7 +324,7 @@ class Sprite(Renderable):
                        self.position[1] - self._real_size[1] * self.center[1],
                        self._real_size[0], self._real_size[1])
 
-    def get_screen_rect(self, cam: Camera, update_pos=True):
+    def get_screen_rect(self, cam: Camera, update_pos=True) -> Tuple[pg.Rect, pg.Rect]:
         self._position_to_screen(cam)
         size = list(self._real_size)
         size[0] *= cam.zoom[0]

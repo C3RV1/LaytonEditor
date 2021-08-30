@@ -48,10 +48,11 @@ class SpriteLoaderOS(SpriteLoader):
                     elif "from" in tag and "to" in tag:
                         frames = list(range(tag["from"], tag["to"] + 1))
                     if "durations" in tag:
-                        frame_durations = tag["durations"]
+                        for duration in tag["durations"]:
+                            frame_durations.append(duration / 1000.0)
                     else:
                         for frame in frames:
-                            frame_durations.append(data["frames"][frame]["duration"])
+                            frame_durations.append(data["frames"][frame]["duration"] / 1000.0)
                     tag_info.append(Tag(tag["name"], frames, frame_durations))
                 SpriteLoaderOS.CACHE = [surf, frame_info, tag_info]
         if not do_copy:

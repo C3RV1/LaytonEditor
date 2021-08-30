@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from pg_engine.Alignment import Alignment
 from pg_engine.Camera import Camera
 import pygame as pg
@@ -26,7 +28,7 @@ class Renderable:
     def draw(self, cam: Camera):
         self._position_to_screen(cam)
 
-    def get_screen_rect(self, cam: Camera) -> pg.Rect:
+    def get_screen_rect(self, cam: Camera) -> Tuple[pg.Rect, pg.Rect]:
         pass
 
     def get_world_rect(self) -> pg.Rect:
