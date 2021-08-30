@@ -62,12 +62,12 @@ class EventPlayer(TwoScreenRenderer):
             command = self.event.event_gds.commands[self.current_command]
             self.current_command += 1
 
-            self.execute_command(command)
+            self.execute_gds_command(command)
 
             if self.is_busy():
                 return
 
-    def execute_command(self, command: gds.GDSCommand):
+    def execute_gds_command(self, command: gds.GDSCommand):
         fade_out = 1
         fade_in = 2
         if command.command == 0x2:
@@ -104,14 +104,7 @@ class EventPlayer(TwoScreenRenderer):
             if command.params[0] < 8:
                 self.characters[command.params[0]].set_visibility(command.params[1] > 0)
         elif command.command == 0x30:
-            character = None
-            for char in self.characters:
-                if char.get_char_id() == command.params[0]:
-                    character = char
-                    break
-            slot = command.params[1]
-            if character:
-                character.set_slot(slot)
+            self.characters[command.params[0]].set_slot(command.params[1])
         elif command.command == 0x31:
             self.waiter.wait(command.params[0])
         elif command.command == 0x32:
@@ -154,6 +147,23 @@ class EventPlayer(TwoScreenRenderer):
             self.next_dialogue_sfx = command.params[0]
         else:
             pge.Debug.log_warning(f"Command {hex(command.command)} not recognised (skipped). ", self)
+
+    def execute_str_command(self, command):
+        print(command)
+        command_split = command.split(" ")
+        if command_split[0] == "setani":
+            try:
+                int(command_split[1])
+            except ValueError:
+                return
+            character = None
+            for char in self.characters:
+                char: EventCharacter
+                if char.get_char_id() == int(command_split[1]):
+                    character = char
+                    break
+            if character:
+                character.set_anim(command_split[2].replace("_", " "))
 
     def update(self, dt: float):
         self.waiter.update_(dt)

@@ -3,6 +3,9 @@ from .EventCharacter import EventCharacter
 import pygame as pg
 import pg_utils.sound.SADLStreamPlayer
 from pg_utils.rom.rom_extract import load_sadl
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .EventPlayer import EventPlayer
 
 from utility.replace_substitutions import replace_substitutions
 
@@ -10,11 +13,11 @@ from utility.replace_substitutions import replace_substitutions
 class EventDialogue(pge.Sprite):
     NUMBER_OF_LINES = 5
 
-    def __init__(self, event_player, *args, **kwargs):
+    def __init__(self, event_player: 'EventPlayer', *args, **kwargs):
         super(EventDialogue, self).__init__(*args, **kwargs)
         self.gm = pge.GameManager()
 
-        self.event_player = event_player
+        self.event_player: 'EventPlayer' = event_player
 
         self.inner_text: pge.Text = pge.Text(center=[pge.Alignment.LEFT, pge.Alignment.TOP])
 
@@ -149,7 +152,7 @@ class EventDialogue(pge.Sprite):
                 self.text_left_to_do = self.text_left_to_do[1:]
             self.text_left_to_do = self.text_left_to_do[1:]
             if self.character_talking is not None:
-                self.event_player.execute_command(command)
+                self.event_player.execute_str_command(command)
             if self.finished:
                 self.pause()
             return
