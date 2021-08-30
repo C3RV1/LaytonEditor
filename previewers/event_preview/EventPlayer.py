@@ -26,13 +26,13 @@ class EventPlayer(TwoScreenRenderer):
         self.top_bg = EventBG("top")
         self.sprite_loader.load(f"data_lt2/bg/event/sub{self.event.map_top_id}.arc", self.top_bg.bg,
                                 sprite_sheet=False)
-        self.top_bg.fade(2, None, False)
+        self.top_bg.fade(2, None, True)
         self.top_bg.set_opacity(0)
         self.btm_bg = EventBG("btm")
         self.sprite_loader.load(f"data_lt2/bg/map/main{self.event.map_bottom_id}.arc", self.btm_bg.bg,
                                 sprite_sheet=False)
         self.btm_bg.set_opacity(120)
-        self.btm_bg.fade(2, None, False)
+        self.btm_bg.fade(2, None, True)
 
         self.waiter = EventWaiter()
         self.event_sound = EventSound()
@@ -92,9 +92,11 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x21:
             bg_path = command.params[0]
             self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg, sprite_sheet=False)
+            self.btm_bg.set_opacity(0)
         elif command.command == 0x22:
             bg_path = command.params[0]
             self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg, sprite_sheet=False)
+            self.top_bg.set_opacity(0)
         elif command.command == 0x2a:
             self.characters[command.params[0]].show()
         elif command.command == 0x2b:
