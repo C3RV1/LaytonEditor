@@ -160,14 +160,17 @@ class Sprite(Renderable):
 
     def predict_real_size(self):
         w, h = self._size
-        rotation = self._rotation % 180
-        if rotation >= 90:
-            w, h = h, w
-            rotation -= 90
-        rotation_rad = rotation * math.pi / 180.0
-        new_w = math.ceil(w * math.cos(rotation_rad) + h * math.sin(rotation_rad))
-        new_h = math.ceil(w * math.sin(rotation_rad) + h * math.cos(rotation_rad))
-        self._real_size = [new_w, new_h]
+        if self._rotation != 0:
+            rotation = self._rotation % 180
+            if rotation >= 90:
+                w, h = h, w
+                rotation -= 90
+            rotation_rad = rotation * math.pi / 180.0
+            new_w = math.ceil(w * math.cos(rotation_rad) + h * math.sin(rotation_rad))
+            new_h = math.ceil(w * math.sin(rotation_rad) + h * math.cos(rotation_rad))
+            self._real_size = [new_w, new_h]
+        else:
+            self._real_size = self._size
 
     @property
     def scale(self):
@@ -179,6 +182,7 @@ class Sprite(Renderable):
             return
         self._scale[0] = v[0]
         self._scale[1] = v[1]
+        self.predict_real_size()
         self._transform_needed = True
 
     def set_size(self, new_size: list, conserve_ratio=False, ratio_type=SNAP_MAX):
@@ -196,6 +200,7 @@ class Sprite(Renderable):
 
             self._scale[scale_axis] = new_size[scale_axis] / self._size[scale_axis]
             self._scale[1 - scale_axis] = self._scale[scale_axis]
+        self.predict_real_size()
         self._transform_needed = True
 
     @property
@@ -208,6 +213,7 @@ class Sprite(Renderable):
             return
         self._surf = v
         self._size = self._surf.get_size()
+        self.predict_real_size()
         # update cropped if sprite_sheet
         self._update_cropped()
         self._transform_needed = True
@@ -330,15 +336,7 @@ class Sprite(Renderable):
         r = [self._screen_position[0], self._screen_position[1], size[0], size[1]]
         r[0] -= size[0] * self.center[0]
         r[1] -= size[1] * self.center[1]
-        clip = [0, 0, 0, 0]
-        for i in [0, 1]:
-            if r[i] < cam.viewport[i]:
-                clip[i] = cam.viewport[i] - r[i]
-                r[i] = cam.viewport[i]
-                r[i+2] -= clip[i]
-            if r[i] + r[i+2] > cam.viewport[i] + cam.viewport[i+2]:
-                r[i+2] -= (r[i] + r[i+2]) - (cam.viewport[i] + cam.viewport[i+2])
-        clip[2:4] = r[2:4]
+        clip = cam.clip_rect(r)
         return pg.Rect(r), pg.Rect(clip)
 
     def draw(self, cam: Camera):

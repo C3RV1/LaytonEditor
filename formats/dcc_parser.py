@@ -234,91 +234,93 @@ class Parser:
         for imported_file in imported:
             self.code.insert(0, f"${imported_file}")
 
-    def convert_variables(self):
-
-        def convert_variable(value):
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-                value = value.replace("\\n", "\n").replace('\\"', '"')
-                return value
-            elif is_int(value):
-                return int(value)
-            elif is_hex(value):
-                return int(value, 16)
-            elif is_float(value):
-                return float(value)
-            elif value == "true":
-                return True
-            elif value == "false":
-                return False
-            elif value == "null":
-                return None
-            elif self.get_path(value) is not None:
+    @staticmethod
+    def convert_variable(value, self=None):
+        if value.startswith('"') and value.endswith('"'):
+            value = value[1:-1]
+            value = value.replace("\\n", "\n").replace('\\"', '"')
+            return value
+        elif is_int(value):
+            return int(value)
+        elif is_hex(value):
+            return int(value, 16)
+        elif is_float(value):
+            return float(value)
+        elif value == "true":
+            return True
+        elif value == "false":
+            return False
+        elif value == "null":
+            return None
+        elif self is not None:
+            if self.get_path(value) is not None:
                 if value not in self.converted_paths:
-                    convert_path(".".join(value.split(".")[:-1]))
+                    self.convert_path(".".join(value.split(".")[:-1]))
                 return self.get_path(value)
-            else:
-                raise ValueError(f"{value} is not recognised as a valid value")
+        raise ValueError(f"{value} is not recognised as a valid value")
 
-        def convert_path(path):
-            path_obj = self.get_path(path)
-            if path in self.converted_paths:
-                return path_obj
-            self.converted_paths.append(path)
-            if isinstance(path_obj, dict):
-                for i in range(len(path_obj["unnamed"])):
-                    path_obj["unnamed"][i] = convert_variable(path_obj["unnamed"][i])
-                for i in path_obj["named"].keys():
-                    if path is not None:
-                        new_path = path + "." + i
-                    else:
-                        new_path = i
-                    path_obj["named"][i] = convert_path(new_path)
-                for i in path_obj["calls"]:
-                    for parameter in range(len(i['parameters'])):
-                        i['parameters'][parameter] = convert_variable(i['parameters'][parameter])
-                return path_obj
-            else:
-                return convert_variable(path_obj)
+    def convert_path(self, path):
+        path_obj = self.get_path(path)
+        if path in self.converted_paths:
+            return path_obj
+        self.converted_paths.append(path)
+        if isinstance(path_obj, dict):
+            for i in range(len(path_obj["unnamed"])):
+                path_obj["unnamed"][i] = self.convert_variable(path_obj["unnamed"][i], self)
+            for i in path_obj["named"].keys():
+                if path is not None:
+                    new_path = path + "." + i
+                else:
+                    new_path = i
+                path_obj["named"][i] = self.convert_path(new_path)
+            for i in path_obj["calls"]:
+                for parameter in range(len(i['parameters'])):
+                    i['parameters'][parameter] = self.convert_variable(i['parameters'][parameter], self)
+            return path_obj
+        else:
+            return self.convert_variable(path_obj, self)
 
-        convert_path(None)
+    def convert_variables(self):
+        self.convert_path(None)
+
+    @staticmethod
+    def revert_variable(value):
+        if isinstance(value, str):
+            value = value.replace("\n", "\\n").replace('"', '\\"')
+            return f"\"{value}\""
+        elif value is True:
+            return "true"
+        elif value is False:
+            return "false"
+        elif value is None:
+            return "null"
+        elif isinstance(value, int):
+            return str(value)
+        elif isinstance(value, float):
+            return str(value)
+        else:
+            raise ValueError(f"{value} can't be converted to non-value")
+
+    def revert_path(self, path):
+        path_obj = self.get_path(path)
+        if isinstance(path_obj, dict):
+            for i in range(len(path_obj["unnamed"])):
+                path_obj["unnamed"][i] = self.revert_variable(path_obj["unnamed"][i])
+            for i in path_obj["named"].keys():
+                if path is not None:
+                    new_path = path + "." + i
+                else:
+                    new_path = i
+                path_obj["named"][i] = self.revert_path(new_path)
+            for i in path_obj["calls"]:
+                for parameter in range(len(i['parameters'])):
+                    i['parameters'][parameter] = self.revert_variable(i['parameters'][parameter])
+            return path_obj
+        else:
+            return self.revert_variable(path_obj)
 
     def revert_variables(self):
-        def revert_variable(value):
-            if isinstance(value, str):
-                value = value.replace("\n", "\\n").replace('"', '\\"')
-                return f"\"{value}\""
-            elif value is True:
-                return "true"
-            elif value is False:
-                return "false"
-            elif value is None:
-                return "null"
-            elif isinstance(value, int):
-                return str(value)
-            elif isinstance(value, float):
-                return str(value)
-            else:
-                raise ValueError(f"{value} can't be converted to non-value")
-
-        def revert_path(path):
-            path_obj = self.get_path(path)
-            if isinstance(path_obj, dict):
-                for i in range(len(path_obj["unnamed"])):
-                    path_obj["unnamed"][i] = revert_variable(path_obj["unnamed"][i])
-                for i in path_obj["named"].keys():
-                    if path is not None:
-                        new_path = path + "." + i
-                    else:
-                        new_path = i
-                    path_obj["named"][i] = revert_path(new_path)
-                for i in path_obj["calls"]:
-                    for parameter in range(len(i['parameters'])):
-                        i['parameters'][parameter] = revert_variable(i['parameters'][parameter])
-                return path_obj
-            else:
-                return revert_variable(path_obj)
-        revert_path(None)
+        self.revert_path(None)
 
     def get_path(self, path, create=False, index=0) -> typing.Union[dict, str, None]:
         if path is not None:

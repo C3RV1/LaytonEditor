@@ -34,3 +34,15 @@ class Camera:
         point[1] -= self.viewport[1] + self.viewport[3] * self.alignment[1] - self.world_position[1]
         point[0] /= self.zoom[0]
         point[1] /= self.zoom[1]
+
+    def clip_rect(self, r):
+        clip = [0, 0, 0, 0]
+        for i in [0, 1]:
+            if r[i] < self.viewport[i]:
+                clip[i] = self.viewport[i] - r[i]
+                r[i] = self.viewport[i]
+                r[i+2] -= clip[i]
+            if r[i] + r[i+2] > self.viewport[i] + self.viewport[i+2]:
+                r[i+2] -= (r[i] + r[i+2]) - (self.viewport[i] + self.viewport[i+2])
+        clip[2:4] = r[2:4]
+        return clip
