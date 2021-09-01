@@ -22,7 +22,7 @@ class SMDLHeader:
 
     def read(self, br: BinaryReader):
         br.seek(0, io.SEEK_SET)
-        self.magic = br.read_string(4, encoding=None)
+        self.magic = br.read(4)
         if self.magic != b"smdl":
             raise ValueError("SMDHeader does not start with magic value")
         br.read_uint32()  # 0
@@ -48,7 +48,7 @@ class SMDLHeader:
 
     def write(self, bw: BinaryWriter):
         bw.seek(0, io.SEEK_SET)
-        bw.write_string(self.magic)
+        bw.write(self.magic)
         bw.write_uint32(0)
         bw.write_uint32(self.file_length)
         bw.write_uint16(self.version)
@@ -89,7 +89,7 @@ class SongChunk:
 
     def read(self, br: BinaryReader):
         br.seek(0x40, io.SEEK_SET)
-        self.label = br.read_string(4, encoding=None)
+        self.label = br.read(4)
         if self.label != b"song":
             raise ValueError("SongChunk does not start with magic value")
         self.unk1 = br.read_uint32()
@@ -107,11 +107,11 @@ class SongChunk:
         br.read_uint16()  # 0x0200
         br.read_uint16()  # 0x0800
         br.read_uint32()  # 0xFFFFFF00
-        br.read_string(16, encoding=None)  # 16 0xFF Padding
+        br.read(16)  # 16 0xFF Padding
 
     def write(self, bw: BinaryWriter):
         bw.seek(0x40, io.SEEK_SET)
-        bw.write_string(self.label)
+        bw.write(self.label)
         bw.write_uint32(self.unk1)
         bw.write_uint32(0xFF10)
         bw.write_uint32(0xFFFFFFB0)
@@ -127,7 +127,7 @@ class SongChunk:
         bw.write_uint16(0x0200)
         bw.write_uint16(0x0800)
         bw.write_uint32(0xFFFFFF00)
-        bw.write_string(b"\xFF"*16)
+        bw.write(b"\xFF"*16)
 
 
 class TrackChunkHeader:
@@ -137,7 +137,7 @@ class TrackChunkHeader:
     chunk_length = int
 
     def read(self, br: BinaryReader):
-        self.label = br.read_string(4, encoding=None)
+        self.label = br.read(4)
         if self.label != b"trk\x20":
             raise ValueError("TrackChunkHeader does not start with magic value")
         self.param1 = br.read_uint32()
@@ -263,7 +263,3 @@ class SMDL(FileFormat):
         self.smdl_header.file_length = wtr.tell()
         self.smdl_header.write(wtr)
         wtr.seek(0, io.SEEK_END)
-
-    def write(self):
-        pass
-

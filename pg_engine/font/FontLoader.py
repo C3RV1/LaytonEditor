@@ -97,7 +97,9 @@ class FontLoaderOS(FontLoaderSYS):
                         code = int(code, 16)
                     char_map[code] = CharMap(
                         char["-Index"],
-                        char["-Width"]
+                        char["-Width"],
+                        0,
+                        0
                     )
             else:
                 char_map = font_data["char_map"]

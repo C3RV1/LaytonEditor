@@ -70,6 +70,8 @@ class PygameFont(Font):
 class CharMap:
     index: int
     width: int
+    left_spacing: int
+    right_spacing: int
 
 
 class FontMap(Font):
@@ -110,11 +112,15 @@ class FontMap(Font):
             if char == self._color_command_prefix:
                 i += 1
                 continue
+
             if char not in self._char_map:
                 continue
-            w += self._char_map[char].width
+
+            c_map = self._char_map[char]
+            if chars_rendered > 0:
+                w += c_map.left_spacing + self._char_spacing
+            w += c_map.width + c_map.right_spacing
             chars_rendered += 1
-        w += self._char_spacing * max(0, chars_rendered - 1)
         return w, h
 
     def _set_color(self, color: pg.Color):
@@ -128,9 +134,11 @@ class FontMap(Font):
     def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str):
         pos = list(pos)
         i = 0
+        chars_rendered = 0
         while i < len(text):
             char = self._encode_char(text[i])
             i += 1
+
             if char == self._color_command_prefix:
                 if i == len(text):
                     continue
@@ -140,18 +148,28 @@ class FontMap(Font):
                 if color:
                     self._set_color(color)
                 continue
+
             if char not in self._char_map:
                 continue
+
             char_map = self._char_map[char]
+
+            if chars_rendered > 0:
+                pos[0] += char_map.left_spacing
+
             if self._font_surface_tile_width is not None:
                 tile_x = char_map.index % self._font_surface_tile_width
                 tile_y = (char_map.index - tile_x) // self._font_surface_tile_width
             else:
                 tile_x = char_map.index
                 tile_y = 0
+
             source = pg.Rect(tile_x * (self._tile_width + self._separator_size) + self._separator_size,
                              tile_y * (self._tile_height + self._separator_size) + self._separator_size,
                              self._tile_width,
                              self._tile_height)
             surf.blit(self._font_surface, pos, area=source)
-            pos[0] += char_map.width + self._char_spacing
+
+            pos[0] += char_map.width + char_map.right_spacing + self._char_spacing
+
+            chars_rendered += 1

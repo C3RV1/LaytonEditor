@@ -183,7 +183,7 @@ class BinaryReader(_BaseBinaryWrapper):
         chunk = self.read(3)
         if len(chunk) != 3:
             return None
-        return struct.unpack('<i', chunk + (b'\0' if chunk[2] < 128 else b'\xff'))
+        return struct.unpack('<i', chunk + (b'\0' if chunk[2] < 128 else b'\xff'))[0]
 
     def read_uint24(self) -> Optional[int]:  # Little endian only
         chunk = self.read(3)
