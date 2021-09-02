@@ -4,7 +4,6 @@ from typing import List, Dict
 from formats.filesystem import FileFormat
 from formats.binary import BinaryReader
 import numpy as np
-import pygame as pg
 
 
 class NFTRHeader:
@@ -210,7 +209,6 @@ class CMAPChunk:
         self.char_map = char_map
 
 
-
 class NFTR(FileFormat):
     header: NFTRHeader
     font_info: FINFChunk
@@ -218,11 +216,11 @@ class NFTR(FileFormat):
     char_width: CWDHChunk
     char_maps: List[CMAPChunk]
 
-    def read_stream(self, stream: BinaryReader):
+    def read_stream(self, stream: any):
         if isinstance(stream, BinaryReader):
-            rdr = stream
+            rdr: BinaryReader = stream
         else:
-            rdr = BinaryReader(stream)
+            rdr: BinaryReader = BinaryReader(stream)
         self.header = NFTRHeader()
         self.font_info = FINFChunk()
         self.char_glyph = CGLPChunk()
@@ -259,20 +257,3 @@ class NFTR(FileFormat):
 
     def write_stream(self, stream):
         raise NotImplementedError("NTFR Saving not implemented")
-
-
-def main():
-    with open("fontevent.NFTR", "rb") as nftr_file:
-        rdr = BinaryReader(nftr_file)
-        nftr = NFTR()
-        nftr.read_stream(rdr)
-    return nftr
-
-
-if __name__ == '__main__':
-    nftr = main()
-    palette = np.array([[255, 255, 255], [0, 0, 0]])
-    a = palette[nftr.char_glyph.tile_bitmaps[-1]]
-    a = a.swapaxes(0, 1)
-    s = pg.surfarray.make_surface(a)
-    pg.image.save(s, "test1.png")
