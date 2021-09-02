@@ -1,7 +1,8 @@
 # http://problemkaputt.de/gbatek.htm#dscartridgenitrofontresourceformat
+from typing import List, Dict
 
 from formats.filesystem import FileFormat
-from formats.binary import BinaryReader, BinaryWriter
+from formats.binary import BinaryReader
 import numpy as np
 import pygame as pg
 
@@ -74,7 +75,7 @@ class CGLPChunk:  # Character Glyph
     max_proportional_width: int
     tile_depth: int  # Bits per pixel
     tile_rotation: int
-    tile_bitmaps: list
+    tile_bitmaps: List[np.ndarray]
 
     def read(self, rdr: BinaryReader):
         self.chunk_id = rdr.read(4)[::-1]
@@ -91,7 +92,6 @@ class CGLPChunk:  # Character Glyph
         self.tile_rotation = rdr.read_uint8()
 
         self.tile_bitmaps = []
-        remaining_chunk_size = self.chunk_size - 0x10
 
         tile_bytes = self.tile_bytes
         tile_width = self.tile_width
@@ -103,8 +103,7 @@ class CGLPChunk:  # Character Glyph
         bit_steps = get_bit_steps(self.tile_depth)
         bit_mask = ((1 << bit_steps) - 1)
 
-        while remaining_chunk_size > tile_bytes:
-            remaining_chunk_size -= tile_bytes
+        for _ in range((self.chunk_size - 0x10) // tile_bytes):
             buffer = rdr.read(tile_bytes)
             bitmap = np.zeros(bitmap_items, dtype=np.uint8)
 
@@ -139,9 +138,9 @@ class CWDHChunk:  # Character width
     chunk_size: int  # 0x10 + tile_count*3 + padding
     first_tile_no: int  # 0
     last_tile_no: int  # tile_count - 1
-    left_spacing: list
-    width: list
-    right_spacing: list
+    left_spacing: List[int]
+    width: List[int]
+    total_width: List[int]
 
     def read(self, rdr: BinaryReader, tile_count: int):
         self.chunk_id = rdr.read(4)[::-1]
@@ -150,10 +149,11 @@ class CWDHChunk:  # Character width
         self.chunk_size = rdr.read_uint32()
         self.first_tile_no = rdr.read_uint16()
         self.last_tile_no = rdr.read_uint16()
+        rdr.read(4)
 
         self.left_spacing = []
         self.width = []
-        self.right_spacing = []
+        self.total_width = []
         for i in range(tile_count):
             left_spacing = rdr.read_uint8()
             width = rdr.read_uint8()
@@ -161,7 +161,7 @@ class CWDHChunk:  # Character width
 
             self.left_spacing.append(left_spacing)
             self.width.append(width)
-            self.right_spacing.append(total_width - width - left_spacing)
+            self.total_width.append(total_width)
 
 
 class CMAPChunk:
@@ -172,7 +172,7 @@ class CMAPChunk:
     map_type: int
     offset_to_next_cmap: int
 
-    char_map: dict
+    char_map: Dict[int, int]
 
     def read(self, rdr: BinaryReader):
         self.chunk_id = rdr.read(4)[::-1]
@@ -199,7 +199,7 @@ class CMAPChunk:
                 if tile == 0xFFFF:
                     i += 1
                     continue
-                char_map[i] = rdr.read_uint16()
+                char_map[i] = tile
                 i += 1
         elif self.map_type == 2:
             groups = rdr.read_uint16()
@@ -211,14 +211,18 @@ class CMAPChunk:
 
 
 
-class NFTR:
+class NFTR(FileFormat):
     header: NFTRHeader
     font_info: FINFChunk
     char_glyph: CGLPChunk
     char_width: CWDHChunk
-    char_maps: list
+    char_maps: List[CMAPChunk]
 
-    def read(self, rdr: BinaryReader):
+    def read_stream(self, stream: BinaryReader):
+        if isinstance(stream, BinaryReader):
+            rdr = stream
+        else:
+            rdr = BinaryReader(stream)
         self.header = NFTRHeader()
         self.font_info = FINFChunk()
         self.char_glyph = CGLPChunk()
@@ -244,12 +248,24 @@ class NFTR:
             self.char_maps.append(cmap)
             next_offset = cmap.offset_to_next_cmap
 
+    def get_encoding_str(self):
+        encoding_dict = {
+            0: "utf8",
+            1: "unicode",
+            2: "shift-jis",
+            3: "cp1252"
+        }
+        return encoding_dict[self.font_info.encoding]
+
+    def write_stream(self, stream):
+        raise NotImplementedError("NTFR Saving not implemented")
+
 
 def main():
     with open("fontevent.NFTR", "rb") as nftr_file:
         rdr = BinaryReader(nftr_file)
         nftr = NFTR()
-        nftr.read(rdr)
+        nftr.read_stream(rdr)
     return nftr
 
 

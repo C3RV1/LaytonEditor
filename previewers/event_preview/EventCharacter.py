@@ -110,11 +110,11 @@ class EventCharacter(pge.Sprite):
     def load_character(self, loader: pge.SpriteLoader):
         if loader:
             loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, sprite_sheet=True)
-        if (drawoff := self._vars.get("drawoff", None)) is not None:
+        if (drawoff := self.vars.get("drawoff", None)) is not None:
             self.position[0] += drawoff[0]
             self.position[1] += drawoff[1]
-        if self._vars.get('child_image', "") != "" and loader:
-            loader.load(f"data_lt2/ani/sub/{self._vars['child_image']}", self.character_mouth, sprite_sheet=True)
+        if self.vars.get('child_image', "") != "" and loader:
+            loader.load(f"data_lt2/ani/sub/{self.vars['child_image']}", self.character_mouth, sprite_sheet=True)
         self.set_tag_by_num(1)
 
     def animate(self, dt: float):

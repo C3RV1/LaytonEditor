@@ -9,8 +9,8 @@ import gc
 class PreviewerDefaultRenderer(TwoScreenRenderer):
     def __init__(self):
         super(PreviewerDefaultRenderer, self).__init__()
-        sprite_loader = pge.SpriteLoaderOS(base_path="data_permanent/sprites")
-        font_loader = pge.FontLoaderOS(base_path="data_permanent/fonts", fall_back_font_os="../font_default.json")
+        sprite_loader = pge.SpriteLoaderOS(base_path_os="data_permanent/sprites")
+        font_loader = pge.FontLoaderOS(base_path_os="data_permanent/fonts", fall_back_font_os="../font_default.json")
         self.tth_logo = pge.Sprite()
         sprite_loader.load("team_top_hat_logo.png", self.tth_logo)
         self.tth_logo.set_size([128, 128], conserve_ratio=True, ratio_type=self.tth_logo.SNAP_MIN)

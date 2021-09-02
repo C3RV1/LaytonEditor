@@ -49,7 +49,8 @@ class EventPlayer(TwoScreenRenderer):
             char = EventCharacter(char_id, slot, anim, visibility, self.sprite_loader)
             self.characters[i] = char
 
-        self.dialogue = EventDialogue(self, position=[0, 192//2], center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM])
+        self.dialogue = EventDialogue(self, position=[0, 192//2 + 3],
+                                      center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM])
         self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue)
         self.dialogue.init_text(self.font_loader)
 

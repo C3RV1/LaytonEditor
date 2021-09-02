@@ -71,15 +71,15 @@ class CharMap:
     index: int
     width: int
     left_spacing: int
-    right_spacing: int
+    total_width: int
 
 
 class FontMap(Font):
     MASKING_COLOR = pg.Color(0, 240, 0)
 
     def __init__(self, font_surface: pg.Surface, font_surface_tile_width: int, encoding: str,
-                 char_map: Dict[int, CharMap], current_color: pg.Color, tile_width: int, tile_height: int,
-                 mask_color: pg.Color, separator_size: int, character_spacing: int,
+                 char_map: Dict[int, CharMap], current_color: pg.Color, mask_color: pg.Color, tile_width: int, tile_height: int,
+                 separator_size: int, character_spacing: int,
                  color_commands: Dict[str, pg.Color], color_command_prefix="#"):
         self._font_surface = font_surface
         self._font_surface_tile_width = font_surface_tile_width
@@ -117,9 +117,7 @@ class FontMap(Font):
                 continue
 
             c_map = self._char_map[char]
-            if chars_rendered > 0:
-                w += c_map.left_spacing + self._char_spacing
-            w += c_map.width + c_map.right_spacing
+            w += c_map.total_width + self._char_spacing
             chars_rendered += 1
         return w, h
 
@@ -154,22 +152,19 @@ class FontMap(Font):
 
             char_map = self._char_map[char]
 
-            if chars_rendered > 0:
-                pos[0] += char_map.left_spacing
-
             if self._font_surface_tile_width is not None:
                 tile_x = char_map.index % self._font_surface_tile_width
-                tile_y = (char_map.index - tile_x) // self._font_surface_tile_width
+                tile_y = char_map.index // self._font_surface_tile_width
             else:
                 tile_x = char_map.index
                 tile_y = 0
 
             source = pg.Rect(tile_x * (self._tile_width + self._separator_size) + self._separator_size,
                              tile_y * (self._tile_height + self._separator_size) + self._separator_size,
-                             self._tile_width,
+                             char_map.width,
                              self._tile_height)
-            surf.blit(self._font_surface, pos, area=source)
+            surf.blit(self._font_surface, [pos[0] + char_map.left_spacing, pos[1]], area=source)
 
-            pos[0] += char_map.width + char_map.right_spacing + self._char_spacing
+            pos[0] += char_map.total_width + self._char_spacing
 
             chars_rendered += 1

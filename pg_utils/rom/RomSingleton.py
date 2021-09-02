@@ -19,12 +19,13 @@ class RomSingleton:
         elif rom_path is not None:
             self.rom = formats.filesystem.NintendoDSRom.fromFile(rom_path)
 
-    def get_sprite_loader(self):
+    def get_sprite_loader(self) -> pge.SpriteLoader:
         if self.rom is None:
             return pge.SpriteLoaderOS()
         else:
-            return loaders.SpriteLoaderROM(self.rom)
+            return loaders.SpriteLoaderROM(self.rom, base_path_rom="")
 
-    def get_font_loader(self):
-        return pge.FontLoaderOS(fall_back_font_sys="arial", base_path="data_permanent/fonts",
-                                fall_back_font_os="../font_default.json")
+    def get_font_loader(self) -> pge.FontLoader:
+        return loaders.FontLoaderROM(self.rom, base_path_rom="data_lt2/font",
+                                     fall_back_font_os="../font_default.json", base_path_os="data_permanent/fonts",
+                                     fall_back_font_sys="arial")

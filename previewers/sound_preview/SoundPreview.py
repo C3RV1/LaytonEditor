@@ -12,7 +12,7 @@ class SoundPreview(TwoScreenRenderer):
         super(SoundPreview, self).__init__()
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
-        self.sprite_loader_os = pge.SpriteLoaderOS(base_path="data_permanent/sprites")
+        self.sprite_loader_os = pge.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.font_loader = RomSingleton().get_font_loader()
 
         self.now_playing_text = pge.Text(position=[0, -10], center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM],

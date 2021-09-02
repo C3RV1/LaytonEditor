@@ -34,9 +34,9 @@ class FontLoaderSYS(FontLoader):
 
 
 class FontLoaderOS(FontLoaderSYS):
-    def __init__(self, base_path=None, fall_back_font_os=None, **kwargs):
+    def __init__(self, base_path_os=None, fall_back_font_os=None, **kwargs):
         super(FontLoaderOS, self).__init__(**kwargs)
-        self.base_path = base_path
+        self.base_path_os = base_path_os
         self.fall_back_font_os = fall_back_font_os
 
     def load(self, path: str, size: int, text: Text):
@@ -48,14 +48,14 @@ class FontLoaderOS(FontLoaderSYS):
         super(FontLoaderOS, self).load(path, size, text)
 
     def _load(self, path: str, size: int, text: Text):
-        if self.base_path:
-            real_path = os.path.join(self.base_path, path)
+        if self.base_path_os:
+            real_path = os.path.join(self.base_path_os, path)
         else:
             real_path = path
         _, ext = os.path.splitext(real_path)
         if ext == "":
             for valid_ext in [".ttf", ".otf", ".json"]:
-                if os.path.exists(real_path + valid_ext):
+                if os.path.isfile(real_path + valid_ext):
                     real_path += valid_ext
                     break
             _, ext = os.path.splitext(real_path)
@@ -99,14 +99,13 @@ class FontLoaderOS(FontLoaderSYS):
                         char["-Index"],
                         char["-Width"],
                         0,
-                        0
+                        char["-Width"]
                     )
             else:
                 char_map = font_data["char_map"]
 
-
             font = FontMap(font_surf, surf_tile_width, encoding, char_map,
-                           current_color, tile_width, tile_height, mask_color,
+                           current_color, mask_color, tile_width, tile_height,
                            separator_size, character_spacing, color_commands, color_command_prefix)
             text.font = font
             return True

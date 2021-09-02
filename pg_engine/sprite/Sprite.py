@@ -75,14 +75,14 @@ class Sprite(Renderable):
 
         self._loader = None
 
-        self._vars = {}
+        self.vars = {}
 
     def load_sprite(self, loader: 'SpriteLoader', surface: pg.Surface, frame_info, tag_info, vars_=None):
         self._loader = loader
         if vars_ is None:
-            self._vars = {}
+            self.vars = {}
         else:
-            self._vars = vars_
+            self.vars = vars_
         self._surf: pg.Surface = surface
         # Surface or cropped surface size depending on whether is sprite sheet or not
         self._size: tuple = surface.get_size()
@@ -121,6 +121,8 @@ class Sprite(Renderable):
                     self._active_tag = tag
                     self._tag_time = 0.0
                     self._tag_frame = 0
+                    if len(tag.frames) > 0:
+                        self.set_frame(tag.frames[0])
                 return
         return
 

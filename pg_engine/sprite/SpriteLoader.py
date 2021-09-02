@@ -12,8 +12,8 @@ class SpriteLoader:
 class SpriteLoaderOS(SpriteLoader):
     CACHE = {}
 
-    def __init__(self, base_path=None):
-        self.base_path = base_path
+    def __init__(self, base_path_os=None):
+        self.base_path = base_path_os
 
     def load(self, path: str, sprite: Sprite, sprite_sheet=False, convert_alpha=True, do_copy=False):
         if self.base_path:
