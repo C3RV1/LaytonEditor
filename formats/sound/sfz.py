@@ -1,4 +1,3 @@
-from typing import TextIO
 from .soundtypes import *
 
 def sfz_write_preset(stream: TextIO, preset: Preset, sample_location=r"..\samples\sample_%04i.wav"):

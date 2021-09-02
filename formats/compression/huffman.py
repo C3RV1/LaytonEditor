@@ -22,25 +22,25 @@ class HuffTreeNode:
         self.data = rdr.read_uint8()
         if not is_data:
             offset = self.data & 0x3F
-            zeroIsData = (self.data & 0x80) > 0
-            oneIsData = (self.data & 0x40) > 0
+            zero_is_data = (self.data & 0x80) > 0
+            one_is_data = (self.data & 0x40) > 0
 
             # off AND NOT == off XOR (off AND 1)
-            zeroRelOffset = (relative_offset ^ (relative_offset & 1)) + offset * 2 + 2
+            zero_rel_offset = (relative_offset ^ (relative_offset & 1)) + offset * 2 + 2
 
-            currStreamPos = rdr.c
+            curr_stream_pos = rdr.c
 
-            rdr.c += (zeroRelOffset - relative_offset) - 1
+            rdr.c += (zero_rel_offset - relative_offset) - 1
 
             # Node after 0
             self.child0 = HuffTreeNode.from_rdr(
-                rdr, zeroIsData, zeroRelOffset, max_stream_pos, parent=self)
+                rdr, zero_is_data, zero_rel_offset, max_stream_pos, parent=self)
             # Node after 1 directly located after the node after 0
             self.child1 = HuffTreeNode.from_rdr(
-                rdr, oneIsData, zeroRelOffset + 1, max_stream_pos, parent=self)
+                rdr, one_is_data, zero_rel_offset + 1, max_stream_pos, parent=self)
 
             # reset stream
-            rdr.c = currStreamPos
+            rdr.c = curr_stream_pos
         return self
 
     def to_wtr(self, wtr: BinaryWriter):
@@ -113,7 +113,7 @@ def compress(input_data: bytes, datablock_size=None) -> bytes:
         leaf_queue.append((frequencies[i], node))
         node_count += 1
 
-    if len(leaf_queue) < 2:  # Add an unused node to make it posible
+    if len(leaf_queue) < 2:  # Add an unused node to make it possible
         node = HuffTreeNode(True, data=0)
         leaves[0] = node
         leaf_queue.append((1, node))
@@ -204,42 +204,42 @@ def decompress(data: bytes) -> bytes:
     # Read the tree
     treesize = (rdr.read_uint8() + 1) * 2
     tree_end = (rdr.c - 1) + treesize
-    rootNode = HuffTreeNode.from_rdr(rdr, False, 5, tree_end)
+    root_node = HuffTreeNode.from_rdr(rdr, False, 5, tree_end)
     rdr.c = tree_end
 
     # Decompress with the tree
     bitsleft = 0  # amount of bits left to read from {commands}
     current_size = 0
-    currentNode = rootNode
+    current_node = root_node
 
     cashedbyte = -1
 
     while current_size < ds:
-        # Find next refrence to commands node
-        while not currentNode.is_data:
+        # Find next reference to commands node
+        while not current_node.is_data:
             if bitsleft == 0:
                 data = rdr.read_uint32()
                 bitsleft = 32
 
             bitsleft -= 1
-            nextIsOne = (data & (1 << bitsleft)) != 0
-            if nextIsOne:
-                currentNode = currentNode.child1
+            next_is_one = (data & (1 << bitsleft)) != 0
+            if next_is_one:
+                current_node = current_node.child1
             else:
-                currentNode = currentNode.child0
+                current_node = current_node.child0
 
         if blocksize == 8:
             current_size += 1
-            wtr.write_uint8(currentNode.data)
+            wtr.write_uint8(current_node.data)
 
         elif blocksize == 4:
             if cashedbyte < 0:
-                cashedbyte = currentNode.data
+                cashedbyte = current_node.data
             else:
-                cashedbyte |= currentNode.data << 4
+                cashedbyte |= current_node.data << 4
                 wtr.write_uint8(cashedbyte)
                 current_size += 1
                 cashedbyte = -1
-        currentNode = rootNode
+        current_node = root_node
 
     return wtr.data

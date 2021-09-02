@@ -5,16 +5,16 @@ from formats.binary import BinaryReader, SEEK_CUR
 def swd_read_sections(stream) -> Dict[str, Tuple[int, int]]:
     rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
     rdr.seek(0x50)  # goto the start of the sections
-    sections: Dict[str, Tuple[int, int]] = {}  # dict of the name of the section and then the start and lenght.
+    sections: Dict[str, Tuple[int, int]] = {}  # dict of the name of the section and then the start and length.
     while rdr.tell() < len(rdr):
         header_start = rdr.tell()
         name = rdr.read_string(4)
         rdr.seek(4, SEEK_CUR)
-        header_lenght = rdr.read_uint32()
-        start = header_start + header_lenght
-        lenght = rdr.read_uint32()
-        sections[name] = (start, lenght)
-        rdr.seek(start + lenght)
+        header_length = rdr.read_uint32()
+        start = header_start + header_length
+        length = rdr.read_uint32()
+        sections[name] = (start, length)
+        rdr.seek(start + length)
         rdr.align(0x10)
     return sections
 

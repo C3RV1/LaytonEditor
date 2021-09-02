@@ -101,8 +101,8 @@ class AniSprite(FileFormat):
             self.images.append(img)
 
         self.palette = np.zeros((256, 4), np.uint8)
-        palette_lenght = rdr.read_uint32()
-        for color_i in range(palette_lenght):
+        palette_length = rdr.read_uint32()
+        for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
                 self.palette[color_i, 3] = 255
@@ -315,7 +315,7 @@ class AniSubSprite(AniSprite):
 
         n_images = rdr.read_uint16()
         self.colordepth = 4 if rdr.read_uint16() == 3 else 8
-        palette_lenght = rdr.read_uint32()
+        palette_length = rdr.read_uint32()
 
         # import the images
         self.images = []
@@ -328,8 +328,8 @@ class AniSubSprite(AniSprite):
 
             rdr.seek(2, SEEK_CUR)
             for part_i in range(n_parts):
-                part_glb_x = rdr.read_uint16()
-                part_glb_y = rdr.read_uint16()
+                _part_glb_x = rdr.read_uint16()
+                _part_glb_y = rdr.read_uint16()
                 part_x = rdr.read_uint16()
                 part_y = rdr.read_uint16()
                 part_w = 2 ** (3 + rdr.read_uint16())
@@ -351,13 +351,13 @@ class AniSubSprite(AniSprite):
                 for yt, yslice in enumerate(part):
                     for xt, xslice in enumerate(yslice):
                         img[part_y + yt * 8:min(part_y + yt * 8 + 8, part_y + part_h),
-                        part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)] = \
+                            part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)] = \
                             xslice[:part_h - 8 * yt, :part_w - 8 * xt]
 
             self.images.append(img)
 
         self.palette = np.zeros((256, 4), np.uint8)
-        for color_i in range(palette_lenght):
+        for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
                 self.palette[color_i, 3] = 255
@@ -446,7 +446,7 @@ class AniSubSprite(AniSprite):
                         for xt, xslice in enumerate(yslice):
                             xslice[:part_h - 8 * yt, :part_w - 8 * xt] = \
                                 img[part_y + yt * 8:min(part_y + yt * 8 + 8, part_y + part_h),
-                                part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)]
+                                    part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)]
 
                     if self.colordepth == 8:
                         wtr.write(part.tobytes())

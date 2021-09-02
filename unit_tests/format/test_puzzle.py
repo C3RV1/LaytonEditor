@@ -1,5 +1,3 @@
-from io import BytesIO
-
 import formats.puzzle as pzd
 from formats.binary import BinaryWriter
 from formats.filesystem import NintendoDSRom

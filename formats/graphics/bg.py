@@ -1,6 +1,6 @@
 from typing import BinaryIO
 
-from formats.filesystem import NintendoDSRom, CompressedIOWrapper, FileFormat
+from formats.filesystem import FileFormat
 from formats.binary import BinaryReader, BinaryWriter
 
 from PIL import Image

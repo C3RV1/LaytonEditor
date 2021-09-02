@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from typing import Optional
 
 import formats.filesystem

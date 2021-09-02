@@ -68,7 +68,7 @@ class GDS(FileFormat):
             if isinstance(p, int):
                 wtr.write_uint16(1)
                 wtr.write_uint32(p)
-            elif isinstance(p,float):
+            elif isinstance(p, float):
                 wtr.write_uint16(2)
                 wtr.write_float(p)
             elif isinstance(p, str):
