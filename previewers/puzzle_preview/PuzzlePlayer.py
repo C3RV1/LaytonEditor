@@ -38,7 +38,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.internal_id}.arc", self.btm_bg,
                                     sprite_sheet=False)
 
-        self.top_text = pge.Text(position=[-256//2 + 13, -192 // 2 + 23],
+        self.top_text = pge.Text(position=[-256//2 + 8, -192 // 2 + 23],
                                  center=[pge.Alignment.LEFT, pge.Alignment.TOP],
                                  color=pg.Color(0, 0, 0),
                                  line_spacing=2)
@@ -164,6 +164,7 @@ class PuzzlePlayer(TwoScreenRenderer):
                                     sprite_sheet=False)
 
     def update(self, dt: float):
+        self.puzzle_bg_music.update_(dt)
         if self.text_pos < len(self.puzzle_data.text):
             self.current_between_letters += dt
             while self.current_between_letters > self.between_letters:
