@@ -353,6 +353,8 @@ class BinaryWriter(_BaseBinaryWrapper):
             if len(string) < size:
                 self.write(pad * (size - len(string)))
         else:
+            if string[-1] != pad:
+                string += pad
             self.write(string)
 
     def write_int24(self, x: int):

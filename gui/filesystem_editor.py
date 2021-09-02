@@ -261,7 +261,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := self.PUZZLE_REGEX.search(name):
-            puzzle = Puzzle(self.rom)
+            puzzle = Puzzle(self.rom, id_=res.group(1))
             puzzle.set_internal_id(int(res.group(1)))
             puzzle.load_from_rom()
             self.previewer.start_renderer(PuzzlePlayer(puzzle))

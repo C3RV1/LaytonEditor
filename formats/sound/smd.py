@@ -145,7 +145,7 @@ class TrackChunkHeader:
         self.chunk_length = br.read_uint32()
 
     def write(self, bw: BinaryWriter):
-        bw.write_string(self.label)
+        bw.write(self.label)
         bw.write_uint32(self.param1)
         bw.write_uint32(self.param2)
         bw.write_uint32(self.chunk_length)
@@ -219,7 +219,7 @@ class EOCChunk:
         br.read_uint32()  # 0
 
     def write(self, bw: BinaryWriter):
-        bw.write_string(self.label)
+        bw.write(self.label)
         bw.write_uint32(self.param1)
         bw.write_uint32(self.param2)
         bw.write_uint32(0)

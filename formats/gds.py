@@ -75,7 +75,6 @@ class GDS(FileFormat):
                 wtr.write_uint16(3)
                 wtr.write_uint16(len(p)+1)
                 wtr.write_string(p)
-                wtr.write_uint8(0)
         for c in self.commands:
             wtr.write_uint16(0)
             wtr.write_uint16(c.command)
@@ -90,7 +89,6 @@ class GDS(FileFormat):
                     wtr.write_uint16(3)
                     wtr.write_uint16(len(p)+1)
                     wtr.write_string(p)
-                    wtr.write_uint8(0)
         wtr.write_uint16(0xc)
         wtr.seek(0)
         wtr.write_uint32(len(wtr.data) - 4)

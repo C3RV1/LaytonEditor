@@ -1,4 +1,4 @@
-import struct
+from io import BytesIO
 
 from typing import Optional
 
@@ -8,6 +8,7 @@ import formats.graphics.bg
 import formats.dlz
 import formats.dcc_parser
 import formats.gds_parser as pz_gds
+from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
 from formats import conf
@@ -62,11 +63,11 @@ class Puzzle:
         MULTIPLE_CHOICE: pz_gds.MultipleChoiceGDSParser
     }
 
-    def __init__(self, rom: formats.filesystem.NintendoDSRom = None):
+    def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
         self.rom = rom
         self.type = 0
         self.number = 0
-        self.internal_id = 0
+        self.internal_id = id_
         self.tutorial_id = 0
         self.location_id = 0
         self.picarat_decay = [0, 0, 0]
@@ -91,94 +92,111 @@ class Puzzle:
     def set_internal_id(self, internal_id: int):
         self.internal_id = internal_id
 
-    def load(self, b: bytes):
-        self.original = b
+    def load(self, rdr):
+        if not isinstance(rdr, BinaryReader):
+            rdr = BinaryReader(rdr)
+        rdr: BinaryReader
 
-        self.number = struct.unpack("<h", b[0x0:0x2])[0]
-        self.title = self.load_str(b, 0x4).decode(self.encoding)
-        self.tutorial_id = b[0x34]
+        self.original = rdr.read()
+        rdr.seek(0)
+
+        self.number = rdr.read_uint16()
+        rdr.read_uint16()  # 112
+        self.title = rdr.read_string(encoding=self.encoding)
+        rdr.seek(0x34)
+        self.tutorial_id = rdr.read_uint8()
         for i in range(3):
-            self.picarat_decay[i] = b[0x35 + i]
-        self._flags = b[0x38]
-        self.location_id = b[0x39]
-        self.type = b[0x3a]
-        self.bg_btm_id = b[0x3B]
-        self.bg_top_id = b[0x3E]
-        self.reward_id = b[0x3F]
+            self.picarat_decay[i] = rdr.read_uint8()
+        print(rdr.tell())
+        self._flags = rdr.read_uint8()
+        self.location_id = rdr.read_uint8()
+        self.type = rdr.read_uint8()
+        self.bg_btm_id = rdr.read_uint8()
+        rdr.read_uint16()
+        self.bg_top_id = rdr.read_uint8()
+        self.reward_id = rdr.read_uint8()
 
-        puzzle_text_offset = 0x70 + struct.unpack("<i", b[0x40:0x44])[0]
-        self.text = self.load_str(b, puzzle_text_offset).decode(self.encoding)
-        puzzle_correct_answer_offset = 0x70 + struct.unpack("<i", b[0x44:0x48])[0]
-        self.correct_answer = self.load_str(b, puzzle_correct_answer_offset).decode(self.encoding)
-        puzzle_incorrect_answer_offset = 0x70 + struct.unpack("<i", b[0x48:0x4c])[0]
-        self.incorrect_answer = self.load_str(b, puzzle_incorrect_answer_offset).decode(self.encoding)
-        puzzle_hint1_offset = 0x70 + struct.unpack("<i", b[0x4c:0x50])[0]
-        self.hint1 = self.load_str(b, puzzle_hint1_offset).decode(self.encoding)
-        puzzle_hint2_offset = 0x70 + struct.unpack("<i", b[0x50:0x54])[0]
-        self.hint2 = self.load_str(b, puzzle_hint2_offset).decode(self.encoding)
-        puzzle_hint3_offset = 0x70 + struct.unpack("<i", b[0x54:0x58])[0]
-        self.hint3 = self.load_str(b, puzzle_hint3_offset).decode(self.encoding)
+        print(rdr.tell())
+        puzzle_text_offset = 0x70 + rdr.read_uint32()
+        puzzle_correct_answer_offset = 0x70 + rdr.read_uint32()
+        puzzle_incorrect_answer_offset = 0x70 + rdr.read_uint32()
+        puzzle_hint1_offset = 0x70 + rdr.read_uint32()
+        puzzle_hint2_offset = 0x70 + rdr.read_uint32()
+        puzzle_hint3_offset = 0x70 + rdr.read_uint32()
+        rdr.seek(puzzle_text_offset)
+        self.text = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
+        rdr.seek(puzzle_correct_answer_offset)
+        self.correct_answer = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
+        rdr.seek(puzzle_incorrect_answer_offset)
+        self.incorrect_answer = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
+        rdr.seek(puzzle_hint1_offset)
+        self.hint1 = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
+        rdr.seek(puzzle_hint2_offset)
+        self.hint2 = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
+        rdr.seek(puzzle_hint3_offset)
+        self.hint3 = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
 
-    def export_data(self):
-        puzzle_text_section = b""
-        puzzle_text_section += self.text.encode(self.encoding) + b"\x00"
-        puzzle_correct_offset = len(puzzle_text_section)
-        puzzle_text_section += self.correct_answer.encode(self.encoding) + b"\x00"
-        puzzle_incorrect_offset = len(puzzle_text_section)
-        puzzle_text_section += self.incorrect_answer.encode(self.encoding) + b"\x00"
-        puzzle_hint1_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint1.encode(self.encoding) + b"\x00"
-        puzzle_hint2_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint2.encode(self.encoding) + b"\x00"
-        puzzle_hint3_offset = len(puzzle_text_section)
-        puzzle_text_section += self.hint3.encode(self.encoding) + b"\x00"
+    def export_data(self, wtr):
+        if not isinstance(wtr, BinaryWriter):
+            wtr = BinaryWriter(wtr)
+        wtr: BinaryWriter
 
-        result = struct.pack("<h", self.number)
-        result += struct.pack("<h", 112)
-        result += self.pad_with_0(self.title.encode(self.encoding), 0x30)
-        result += bytes([self.tutorial_id])
+        puzzle_text_section = BinaryWriter()
+        puzzle_text_section.write_string(self.text, encoding=self.encoding)
+        puzzle_correct_offset = puzzle_text_section.tell()
+        puzzle_text_section.write_string(self.correct_answer, encoding=self.encoding)
+        puzzle_incorrect_offset = puzzle_text_section.tell()
+        puzzle_text_section.write_string(self.incorrect_answer, encoding=self.encoding)
+        puzzle_hint1_offset = puzzle_text_section.tell()
+        puzzle_text_section.write_string(self.hint1, encoding=self.encoding)
+        puzzle_hint2_offset = puzzle_text_section.tell()
+        puzzle_text_section.write_string(self.hint2, encoding=self.encoding)
+        puzzle_hint3_offset = puzzle_text_section.tell()
+        puzzle_text_section.write_string(self.hint3, encoding=self.encoding)
+
+        wtr.write_uint16(self.number)
+        wtr.write_uint16(112)
+        wtr.write_string(self.title, encoding=self.encoding, size=0x30)
+        wtr.write_uint8(self.tutorial_id)
         for picarat in self.picarat_decay:
-            result += bytes([picarat])
-        result += bytes([self._flags])
-        result += bytes([self.location_id])
-        result += bytes([self.type])
-        result += bytes([self.bg_btm_id])
-        result += self.original[0x3c:0x3e]  # UnkSoundId
-        result += bytes([self.bg_top_id])
-        result += bytes([self.reward_id])
-        result += struct.pack("<iiiiii", 0, puzzle_correct_offset, puzzle_incorrect_offset, puzzle_hint1_offset,
-                              puzzle_hint2_offset, puzzle_hint3_offset)
-        result += (b"\x00" * 4) * 6
-        result += puzzle_text_section
+            wtr.write_uint8(picarat)
+        wtr.write_uint8(self._flags)
+        wtr.write_uint8(self.location_id)
+        wtr.write_uint8(self.type)
+        wtr.write_uint8(self.bg_btm_id)
+        wtr.write(self.original[0x3c:0x3e])  # UnkSoundId
+        wtr.write_uint8(self.bg_top_id)
+        wtr.write_uint8(self.reward_id)
 
-        return result
+        wtr.write_uint32(0)
+        wtr.write_uint32(puzzle_correct_offset)
+        wtr.write_uint32(puzzle_incorrect_offset)
+        wtr.write_uint32(puzzle_hint1_offset)
+        wtr.write_uint32(puzzle_hint2_offset)
+        wtr.write_uint32(puzzle_hint3_offset)
+        wtr.write(b"\x00" * 4 * 6)
+        wtr.write(puzzle_text_section.data)
 
-    def get_dat_file(self, rom: formats.filesystem.NintendoDSRom):
-        if rom.name == b'LAYTON1' and False:
-            _folder: str = rom.filenames["data/ani"]
-        elif rom.name == b'LAYTON2':
-            _folder: str = rom.filenames["data_lt2/nazo/?".replace("?", conf.LANG)]
-        else:
-            print(f"Could get images for: {rom.name}")
-            return False, ""
+        return wtr
 
+    def get_dat_file(self, rom: formats.filesystem.NintendoDSRom, mode="rb"):
         bank = self.internal_id // 0x3c + 1
         if bank > 3:
             bank = 3
 
-        plz = rom.get_archive(f"data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
+        plz: formats.filesystem.PlzArchive = rom.get_archive(f"data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
         if f"n{self.internal_id}.dat" not in plz.filenames:
             print("Nazo dat not found")
-            return False, ""
+            return None
 
-        return plz, plz.filenames.index(f"n{self.internal_id}.dat")
+        return plz.open(f"n{self.internal_id}.dat", mode)
 
     def load_from_rom(self):
-        dat_files, index = self.get_dat_file(self.rom)
-        if dat_files is False:
+        dat_file = self.get_dat_file(self.rom, mode="rb")
+        if dat_file is None:
             return False
-        dat_file = dat_files.files[index]
         self.load(dat_file)
+        dat_file.close()
         self.load_gds()
         return True
 
@@ -191,9 +209,9 @@ class Puzzle:
         return ret
 
     def save_to_rom(self):
-        dat_files, dat_index = self.get_dat_file(self.rom)
-        dat_files.files[dat_index] = self.export_data()
-        dat_files.save()
+        dat_file = self.get_dat_file(self.rom, mode="wb")
+        self.export_data(dat_file)
+        dat_file.close()
 
         nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/?/nz_lst.dlz".replace("?", conf.LANG), rom=self.rom)
         nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
@@ -223,13 +241,7 @@ class Puzzle:
         return True
 
     def save_gds(self):
-        gds_plz_file = self.rom.get_archive("data_lt2/script/puzzle.plz")
-
-        gds_filename = "q{}_param.gds".format(self.internal_id)
-
-        gds_file = gds_plz_file.open(gds_filename, "wb+")
-        self.gds.write_stream(gds_file)
-        gds_file.close()
+        self.gds.save()
         return True
 
     def get_gds_parser(self):
