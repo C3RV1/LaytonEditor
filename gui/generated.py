@@ -471,15 +471,15 @@ class SpriteEditor ( wx.Panel ):
 		ase_variables_layout = wx.BoxSizer( wx.VERTICAL )
 
 		self.ase_variables_dataview = wx.dataview.DataViewListCtrl( self.ase_page_variables, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
 		ase_variables_layout.Add( self.ase_variables_dataview, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -690,5 +690,303 @@ class PlaceEditor ( wx.Panel ):
 	def plc_splitOnIdle( self, event ):
 		self.plc_split.SetSashPosition( 0 )
 		self.plc_split.Unbind( wx.EVT_IDLE )
+
+
+###########################################################################
+## Class EventEditor
+###########################################################################
+
+class EventEditor ( wx.Panel ):
+
+	def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 900,600 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
+		wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
+
+		self.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
+		bSizer28 = wx.BoxSizer( wx.HORIZONTAL )
+
+		bSizer30 = wx.BoxSizer( wx.VERTICAL )
+
+		self.event_commands_add = wx.ScrolledWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.ALWAYS_SHOW_SB|wx.HSCROLL|wx.VSCROLL )
+		self.event_commands_add.SetScrollRate( 5, 5 )
+		self.event_commands_add.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.event_commands_add.SetMaxSize( wx.Size( -1,300 ) )
+
+		gSizer2 = wx.GridSizer( 0, 2, 0, 0 )
+
+		self.m_dialogueBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Dialogue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_dialogueBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_fadeBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Fade", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_fadeBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgLoadBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Background Load", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgLoadBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setModeBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Mode", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setModeBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setNextModeBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Next Mode", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setNextModeBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setMovieBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Movie", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setMovieBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setEventBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Event", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setEventBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setPuzzleBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Puzzle", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setPuzzleBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_chrShowBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Show Character", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_chrShowBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_chrHideBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Hide Character", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_chrHideBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_chrVisibilityBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Character Visibility", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_chrVisibilityBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_chrSlotBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Character Slot", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_chrSlotBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_chrAnimBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Character Animation", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_chrAnimBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_showChapterBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Show Chapter", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_showChapterBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_waitBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Wait", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_waitBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgOpacityBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Background Opacity", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgOpacityBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setVoiceBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Voice", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setVoiceBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_sfxSadBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Play SAD SFX", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_sfxSadBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgMusicBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Play Background Music", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgMusicBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgShakeBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Shake Background", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgShakeBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_sfxSedBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Play SED SFX", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_sfxSedBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgmFadeOutBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Fade Out BG Music", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgmFadeOutBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_bgmFadeInBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Fade In BG Music", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_bgmFadeInBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_dialogueSfxBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Dialogue SFX", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_dialogueSfxBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.event_commands_add.SetSizer( gSizer2 )
+		self.event_commands_add.Layout()
+		gSizer2.Fit( self.event_commands_add )
+		bSizer30.Add( self.event_commands_add, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.character_info = pg.PropertyGridManager(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PGMAN_DEFAULT_STYLE|wx.propgrid.PG_HIDE_MARGIN|wx.propgrid.PG_SPLITTER_AUTO_CENTER|wx.propgrid.PG_TOOLBAR|wx.propgrid.PG_TOOLTIPS|wx.TAB_TRAVERSAL)
+		self.character_info.SetExtraStyle( wx.propgrid.PG_EX_MODE_BUTTONS )
+		self.character_info.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
+
+		self.event_info = self.character_info.AddPage( u"Page", wx.NullBitmap );
+		self.m_mapTopID = self.event_info.Append( pg.IntProperty( u"Map Top ID", u"Map Top ID" ) )
+		self.m_mapBtmID = self.event_info.Append( pg.IntProperty( u"Map Bottom ID", u"Map Bottom ID" ) )
+
+		self.character_info0 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id0 = self.character_info0.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot0 = self.character_info0.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim0 = self.character_info0.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible0 = self.character_info0.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info1 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id1 = self.character_info1.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot1 = self.character_info1.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim1 = self.character_info1.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible1 = self.character_info1.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info2 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id2 = self.character_info2.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot2 = self.character_info2.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim2 = self.character_info2.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible2 = self.character_info2.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info3 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id3 = self.character_info3.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot3 = self.character_info3.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim3 = self.character_info3.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible3 = self.character_info3.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info4 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id4 = self.character_info4.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot4 = self.character_info4.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim4 = self.character_info4.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible4 = self.character_info4.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info5 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id5 = self.character_info5.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot5 = self.character_info5.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim5 = self.character_info5.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible5 = self.character_info5.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info6 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id6 = self.character_info6.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot6 = self.character_info6.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim6 = self.character_info6.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible6 = self.character_info6.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+
+		self.character_info7 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.char_id7 = self.character_info7.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
+		self.char_slot7 = self.character_info7.Append( pg.IntProperty( u"Slot", u"Slot" ) )
+		self.char_anim7 = self.character_info7.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
+		self.char_visible7 = self.character_info7.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
+		bSizer30.Add( self.character_info, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer28.Add( bSizer30, 2, wx.EXPAND, 5 )
+
+		self.event_commands = wx.ScrolledWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.event_commands.SetScrollRate( 5, 5 )
+		self.event_commands.SetMaxSize( wx.Size( 600,600 ) )
+
+		bSizer31 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_panel25 = wx.Panel( self.event_commands, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel25.SetBackgroundColour( wx.Colour( 192, 192, 192 ) )
+
+		bSizer32 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_staticText10 = wx.StaticText( self.m_panel25, wx.ID_ANY, u"Dialogue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText10.Wrap( -1 )
+
+		bSizer32.Add( self.m_staticText10, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+
+
+		self.m_panel25.SetSizer( bSizer32 )
+		self.m_panel25.Layout()
+		bSizer32.Fit( self.m_panel25 )
+		bSizer31.Add( self.m_panel25, 0, wx.EXPAND |wx.ALL, 5 )
+
+
+		self.event_commands.SetSizer( bSizer31 )
+		self.event_commands.Layout()
+		bSizer31.Fit( self.event_commands )
+		bSizer28.Add( self.event_commands, 3, wx.EXPAND |wx.ALL, 5 )
+
+
+		self.SetSizer( bSizer28 )
+		self.Layout()
+
+		# Connect Events
+		self.m_dialogueBtn.Bind( wx.EVT_BUTTON, self.add_dialogue )
+		self.m_fadeBtn.Bind( wx.EVT_BUTTON, self.add_fade )
+		self.m_bgLoadBtn.Bind( wx.EVT_BUTTON, self.add_bg_load )
+		self.m_setModeBtn.Bind( wx.EVT_BUTTON, self.add_set_mode )
+		self.m_setNextModeBtn.Bind( wx.EVT_BUTTON, self.add_set_next_mode )
+		self.m_setMovieBtn.Bind( wx.EVT_BUTTON, self.add_set_movie )
+		self.m_setEventBtn.Bind( wx.EVT_BUTTON, self.add_set_event )
+		self.m_setPuzzleBtn.Bind( wx.EVT_BUTTON, self.add_set_puzzle )
+		self.m_chrShowBtn.Bind( wx.EVT_BUTTON, self.add_chr_show )
+		self.m_chrHideBtn.Bind( wx.EVT_BUTTON, self.add_chr_hide )
+		self.m_chrVisibilityBtn.Bind( wx.EVT_BUTTON, self.add_chr_visibility )
+		self.m_chrSlotBtn.Bind( wx.EVT_BUTTON, self.add_chr_slot )
+		self.m_chrAnimBtn.Bind( wx.EVT_BUTTON, self.add_chr_anim )
+		self.m_showChapterBtn.Bind( wx.EVT_BUTTON, self.add_show_chapter )
+		self.m_waitBtn.Bind( wx.EVT_BUTTON, self.add_wait )
+		self.m_bgOpacityBtn.Bind( wx.EVT_BUTTON, self.add_bg_opacity )
+		self.m_setVoiceBtn.Bind( wx.EVT_BUTTON, self.add_set_voice )
+		self.m_sfxSadBtn.Bind( wx.EVT_BUTTON, self.add_sfx_sad )
+		self.m_bgMusicBtn.Bind( wx.EVT_BUTTON, self.add_bg_music )
+		self.m_bgShakeBtn.Bind( wx.EVT_BUTTON, self.add_bg_shake )
+		self.m_sfxSedBtn.Bind( wx.EVT_BUTTON, self.add_sfx_sed )
+		self.m_bgmFadeOutBtn.Bind( wx.EVT_BUTTON, self.add_btm_fade_out )
+		self.m_bgmFadeInBtn.Bind( wx.EVT_BUTTON, self.add_btm_fade_in )
+		self.m_dialogueSfxBtn.Bind( wx.EVT_BUTTON, self.add_dialogue_sfx )
+
+	def __del__( self ):
+		pass
+
+
+	# Virtual event handlers, overide them in your derived class
+	def add_dialogue( self, event ):
+		event.Skip()
+
+	def add_fade( self, event ):
+		event.Skip()
+
+	def add_bg_load( self, event ):
+		event.Skip()
+
+	def add_set_mode( self, event ):
+		event.Skip()
+
+	def add_set_next_mode( self, event ):
+		event.Skip()
+
+	def add_set_movie( self, event ):
+		event.Skip()
+
+	def add_set_event( self, event ):
+		event.Skip()
+
+	def add_set_puzzle( self, event ):
+		event.Skip()
+
+	def add_chr_show( self, event ):
+		event.Skip()
+
+	def add_chr_hide( self, event ):
+		event.Skip()
+
+	def add_chr_visibility( self, event ):
+		event.Skip()
+
+	def add_chr_slot( self, event ):
+		event.Skip()
+
+	def add_chr_anim( self, event ):
+		event.Skip()
+
+	def add_show_chapter( self, event ):
+		event.Skip()
+
+	def add_wait( self, event ):
+		event.Skip()
+
+	def add_bg_opacity( self, event ):
+		event.Skip()
+
+	def add_set_voice( self, event ):
+		event.Skip()
+
+	def add_sfx_sad( self, event ):
+		event.Skip()
+
+	def add_bg_music( self, event ):
+		event.Skip()
+
+	def add_bg_shake( self, event ):
+		event.Skip()
+
+	def add_sfx_sed( self, event ):
+		event.Skip()
+
+	def add_btm_fade_out( self, event ):
+		event.Skip()
+
+	def add_btm_fade_in( self, event ):
+		event.Skip()
+
+	def add_dialogue_sfx( self, event ):
+		event.Skip()
 
 

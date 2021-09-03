@@ -9,6 +9,7 @@ from formats.filesystem import NintendoDSRom
 from gui import generated
 from gui.filesystem_editor import FilesystemEditor
 from gui.sprite_editor import SpriteEditor
+from gui.event_editor import EventEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.rom.RomSingleton import RomSingleton
 
@@ -79,6 +80,15 @@ class MainEditor(generated.MainEditor):
     def open_sprite_editor_page(self, sprite, name):
         page = SpriteEditor(self.le_editor_pages, name=name)
         page.load_sprite(sprite)
+        self.le_editor_pages.AddPage(page, name)
+        current_page = self.le_editor_pages.GetPage(self.le_editor_pages.GetSelection())
+        current_page.exit()
+        self.le_editor_pages.ChangeSelection(self.le_editor_pages.GetPageIndex(page))
+        page.enter()
+
+    def open_event_editor_page(self, event, name):
+        page = EventEditor(self.le_editor_pages, name=name)
+        page.load_event(event)
         self.le_editor_pages.AddPage(page, name)
         current_page = self.le_editor_pages.GetPage(self.le_editor_pages.GetSelection())
         current_page.exit()

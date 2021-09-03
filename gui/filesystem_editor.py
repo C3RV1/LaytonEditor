@@ -163,6 +163,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
         add_menu_item(self.fp_event_menu, "Apply changes and Save", self.fp_event_apply_and_save)
+        add_menu_item(self.fp_event_menu, "Edit Event", self.fp_open_event_editor)
 
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
@@ -262,6 +263,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_formats_book.SetSelection(1)  # Text page
         elif res := self.PUZZLE_REGEX.search(name):
             puzzle = Puzzle(self.rom, id_=res.group(1))
+            self.preview_data = puzzle
             puzzle.set_internal_id(int(res.group(1)))
             puzzle.load_from_rom()
             self.previewer.start_renderer(PuzzlePlayer(puzzle))
@@ -276,6 +278,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             if name.startswith("e"):
                 index = int(name[1:7])
                 event = Event(self.rom)
+                self.preview_data = event
                 event.set_event_id(index)
                 event.load_from_rom()
                 self.previewer.start_renderer(EventPlayer(event))
@@ -556,32 +559,32 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.preview_save = True
 
     def fp_puzzle_apply_mods(self, _):
-        puzzle_preview: PuzzlePlayer = self.previewer.current_renderer
-        successful, error_msg = puzzle_preview.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        puzzle_data = self.preview_data
+        successful, error_msg = puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.previewer.start_renderer(PuzzlePlayer(puzzle_preview.puzzle_data))
+            self.previewer.start_renderer(PuzzlePlayer(self.preview_data))
 
     def fp_puzzle_save(self, _):
-        puzzle_preview: PuzzlePlayer = self.previewer.current_renderer
-        successful, error_msg = puzzle_preview.puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        puzzle_data = self.preview_data
+        successful, error_msg = puzzle_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            puzzle_preview.puzzle_data.save_to_rom()
+            puzzle_data.save_to_rom()
 
     def fp_event_apply_and_save(self, _):
-        event_previewer: EventPlayer = self.previewer.current_renderer
-        successful, error_msg = event_previewer.event.from_readable(self.puzzle_scintilla.GetText())
+        event_data = self.preview_data
+        successful, error_msg = event_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            event_previewer.event.save_to_rom()
-            self.previewer.start_renderer(EventPlayer(event_previewer.event))
+            event_data.save_to_rom()
+            self.previewer.start_renderer(EventPlayer(event_data))
 
     def fp_stream_export_wav(self, _):
         with wx.FileDialog(self, "Export to WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_SAVE) as fileDialog:
@@ -630,3 +633,8 @@ class FilesystemEditor(generated.FilesystemEditor):
                 bytesio_buffer.close()
                 self.refresh_preview()
                 progressDialog.Update(100, "Completed")
+
+    def fp_open_event_editor(self, _event):
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        filename = path.split("/")[-1]
+        self.GetGrandParent().open_event_editor_page(self.preview_data, filename)
