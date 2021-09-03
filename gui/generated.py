@@ -160,14 +160,14 @@ class FilesystemEditor ( wx.Panel ):
 		self.fp_gds_stc.SetViewWhiteSpace( False )
 		self.fp_gds_stc.SetMarginWidth( 2, 0 )
 		self.fp_gds_stc.SetIndentationGuides( True )
-		self.fp_gds_stc.SetReadOnly( False );
+		self.fp_gds_stc.SetReadOnly( False )
 		self.fp_gds_stc.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
 		self.fp_gds_stc.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
 		self.fp_gds_stc.SetMarginWidth ( 1, 16)
 		self.fp_gds_stc.SetMarginSensitive( 1, True )
 		self.fp_gds_stc.SetProperty ( "fold", "1" )
-		self.fp_gds_stc.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED );
-		self.fp_gds_stc.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER );
+		self.fp_gds_stc.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED )
+		self.fp_gds_stc.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER )
 		self.fp_gds_stc.SetMarginWidth( 0, self.fp_gds_stc.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
 		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
 		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
@@ -288,14 +288,14 @@ class FilesystemEditor ( wx.Panel ):
 		self.puzzle_scintilla.SetViewWhiteSpace( False )
 		self.puzzle_scintilla.SetMarginWidth( 2, 0 )
 		self.puzzle_scintilla.SetIndentationGuides( True )
-		self.puzzle_scintilla.SetReadOnly( False );
+		self.puzzle_scintilla.SetReadOnly( False )
 		self.puzzle_scintilla.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
 		self.puzzle_scintilla.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
 		self.puzzle_scintilla.SetMarginWidth ( 1, 16)
 		self.puzzle_scintilla.SetMarginSensitive( 1, True )
 		self.puzzle_scintilla.SetProperty ( "fold", "1" )
-		self.puzzle_scintilla.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED );
-		self.puzzle_scintilla.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER );
+		self.puzzle_scintilla.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED )
+		self.puzzle_scintilla.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER )
 		self.puzzle_scintilla.SetMarginWidth( 0, self.puzzle_scintilla.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
 		self.puzzle_scintilla.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
 		self.puzzle_scintilla.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
@@ -471,15 +471,15 @@ class SpriteEditor ( wx.Panel ):
 		ase_variables_layout = wx.BoxSizer( wx.VERTICAL )
 
 		self.ase_variables_dataview = wx.dataview.DataViewListCtrl( self.ase_page_variables, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_names = self.ase_variables_dataview.AppendTextColumn( u"Name", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_1 = self.ase_variables_dataview.AppendTextColumn( u"Value 1", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_2 = self.ase_variables_dataview.AppendTextColumn( u"Value 2", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_3 = self.ase_variables_dataview.AppendTextColumn( u"Value 3", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_4 = self.ase_variables_dataview.AppendTextColumn( u"Value 4", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_5 = self.ase_variables_dataview.AppendTextColumn( u"Value 5", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_6 = self.ase_variables_dataview.AppendTextColumn( u"Value 6", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_7 = self.ase_variables_dataview.AppendTextColumn( u"Value 7", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
+		self.ase_variables_dataview_value_8 = self.ase_variables_dataview.AppendTextColumn( u"Value 8", wx.dataview.DATAVIEW_CELL_EDITABLE, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
 		ase_variables_layout.Add( self.ase_variables_dataview, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -798,53 +798,53 @@ class EventEditor ( wx.Panel ):
 		self.character_info.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
 
 
-		self.event_info = self.character_info.AddPage( u"Page", wx.NullBitmap );
+		self.event_info = self.character_info.AddPage( u"Page", wx.NullBitmap )
 		self.m_mapTopID = self.event_info.Append( pg.IntProperty( u"Map Top ID", u"Map Top ID" ) )
 		self.m_mapBtmID = self.event_info.Append( pg.IntProperty( u"Map Bottom ID", u"Map Bottom ID" ) )
 
-		self.character_info0 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info0 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id0 = self.character_info0.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot0 = self.character_info0.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim0 = self.character_info0.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible0 = self.character_info0.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info1 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info1 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id1 = self.character_info1.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot1 = self.character_info1.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim1 = self.character_info1.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible1 = self.character_info1.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info2 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info2 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id2 = self.character_info2.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot2 = self.character_info2.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim2 = self.character_info2.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible2 = self.character_info2.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info3 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info3 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id3 = self.character_info3.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot3 = self.character_info3.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim3 = self.character_info3.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible3 = self.character_info3.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info4 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info4 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id4 = self.character_info4.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot4 = self.character_info4.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim4 = self.character_info4.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible4 = self.character_info4.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info5 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info5 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id5 = self.character_info5.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot5 = self.character_info5.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim5 = self.character_info5.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible5 = self.character_info5.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info6 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info6 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id6 = self.character_info6.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot6 = self.character_info6.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim6 = self.character_info6.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible6 = self.character_info6.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info7 = self.character_info.AddPage( u"Character 0", wx.NullBitmap );
+		self.character_info7 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
 		self.char_id7 = self.character_info7.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot7 = self.character_info7.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim7 = self.character_info7.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
