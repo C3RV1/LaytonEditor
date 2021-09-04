@@ -661,7 +661,7 @@ class PlaceEditor ( wx.Panel ):
 		self.plc_items = wx.TreeCtrl( self.plc_data, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_HIDE_ROOT )
 		plc_data_layout.Add( self.plc_items, 1, wx.ALL|wx.EXPAND, 5 )
 
-		self.plc_item_data = pg.PropertyGrid(self.plc_data, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PG_DEFAULT_STYLE)
+		self.plc_item_data = pg.PropertyGrid(self.plc_data, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.propgrid.PG_DEFAULT_STYLE|wx.propgrid.PG_SPLITTER_AUTO_CENTER)
 		self.m_propertyGridItem1 = self.plc_item_data.Append( pg.StringProperty( u"Name", u"Name" ) )
 		plc_data_layout.Add( self.plc_item_data, 1, wx.ALL|wx.EXPAND, 5 )
 
@@ -738,6 +738,9 @@ class EventEditor ( wx.Panel ):
 
 		self.m_setPuzzleBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Puzzle", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_setPuzzleBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_setRoomBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Room", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_setRoomBtn, 0, wx.ALL|wx.EXPAND, 5 )
 
 		self.m_chrShowBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Show Character", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_chrShowBtn, 0, wx.ALL|wx.EXPAND, 5 )
@@ -895,6 +898,7 @@ class EventEditor ( wx.Panel ):
 		self.m_setMovieBtn.Bind( wx.EVT_BUTTON, self.add_set_movie )
 		self.m_setEventBtn.Bind( wx.EVT_BUTTON, self.add_set_event )
 		self.m_setPuzzleBtn.Bind( wx.EVT_BUTTON, self.add_set_puzzle )
+		self.m_setRoomBtn.Bind( wx.EVT_BUTTON, self.add_set_room )
 		self.m_chrShowBtn.Bind( wx.EVT_BUTTON, self.add_chr_show )
 		self.m_chrHideBtn.Bind( wx.EVT_BUTTON, self.add_chr_hide )
 		self.m_chrVisibilityBtn.Bind( wx.EVT_BUTTON, self.add_chr_visibility )
@@ -939,6 +943,9 @@ class EventEditor ( wx.Panel ):
 		event.Skip()
 
 	def add_set_puzzle( self, event ):
+		event.Skip()
+
+	def add_set_room( self, event ):
 		event.Skip()
 
 	def add_chr_show( self, event ):

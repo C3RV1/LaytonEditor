@@ -163,7 +163,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
         add_menu_item(self.fp_event_menu, "Apply changes and Save", self.fp_event_apply_and_save)
-        add_menu_item(self.fp_event_menu, "Edit Event", self.fp_open_event_editor)
+        add_menu_item(self.fp_event_menu, "Edit Event Visually", self.fp_open_event_editor)
 
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)

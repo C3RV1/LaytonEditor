@@ -152,14 +152,41 @@ class Event:
 
         return parser.serialize()
 
+    func_names = {
+        "fade": "Fade",
+        "dialogue": "Dialogue",
+        "bg_load": "Load Background",
+        "set_room": "Set Room",
+        "set_mode": "Set Mode",
+        "set_next_mode": "Set Next Mode",
+        "set_movie": "Set Movie",
+        "set_event": "Set Event",
+        "set_puzzle": "Set Puzzle",
+        "chr_show": "Show Character",
+        "chr_hide": "Hide Character",
+        "chr_visibility": "Set Character Visibility",
+        "show_chapter": "Show Chapter",
+        "chr_slot": "Set Character Slot",
+        "wait": "Wait",
+        "bg_opacity": "Set Background Opacity",
+        "chr_anim": "Set Character Animation",
+        "set_voice": "Set Voice",
+        "sfx_sad": "Play SAD SFX",
+        "sfx_sed": "Play SED SFX",
+        "bg_music": "Play Background Music",
+        "bg_shake": "Shake Background",
+        "bgm_fade_out": "Fade Out BG Music",
+        "bgm_fade_in": "Fade In BG Music",
+        "dialogue_sfx": "Set Dialogue SFX",
+        "dial": "Dialogue"
+    }
+
     def convert_command(self, cmd: formats.gds.GDSCommand, for_code=True):
         func = f"gds_{hex(cmd.command)}"
-        name = func
         params = cmd.params.copy()
         param_names = [f"unk{i}" for i in range(len(params))]
         if cmd.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x80, 0x87, 0x88]:  # fade command
             func = "fade"
-            name = "Fade"
             param_names = ["Fade In", "Fade Screen", "Fade Frames"]
             params_1 = [False, 0, None]  # fade_in, fade_screen, fade_time
             params_1[0] = cmd.command in [0x2, 0x32, 0x80, 0x88]
@@ -174,108 +201,84 @@ class Event:
             params = params_1
         elif cmd.command in [0x21, 0x22]:
             func = "bg_load"
-            name = "Load Background"
             param_names = ["Path", "Screen"]
             params = [params[0], 0]
             params[-1] = 0 if cmd.command == 0x21 else 1  # screen for which to change the bg
         elif cmd.command == 0x5:
             func = "set_room"
-            name = "Set Room"
             param_names = ["Room ID"]
         elif cmd.command == 0x6:
             func = "set_mode"
-            name = "Set Mode"
             param_names = ["Mode"]
         elif cmd.command == 0x7:
             func = "set_next_mode"
-            name = "Set Next Mode"
             param_names = ["Mode"]
         elif cmd.command == 0x8:
             func = "set_movie"
-            name = "Set Movie"
             param_names = ["Movie ID"]
         elif cmd.command == 0x9:
             func = "set_event"
-            name = "Set Event"
             param_names = ["Event ID"]
         elif cmd.command == 0xb:
             func = "set_puzzle"
-            name = "Set Puzzle"
             param_names = ["Puzzle ID"]
         elif cmd.command == 0x2a:
             func = "chr_show"
-            name = "Show Character"
             param_names = ["Character Index"]
         elif cmd.command == 0x2b:
             func = "chr_hide"
-            name = "Hide Character"
             param_names = ["Character Index"]
         elif cmd.command == 0x2c:
             func = "chr_visibility"
-            name = "Set Character Visibility"
-            param_names = ["Character Index", "show"]
+            param_names = ["Character Index", "Visibility"]
             params[1] = True if params[1] > 0 else False
         elif cmd.command == 0x2d:
             func = "show_chapter"
-            name = "Show Chapter"
-            param_names = ["chapter_num"]
+            param_names = ["Chapter Number"]
         elif cmd.command == 0x30:
             func = "chr_slot"
-            name = "Set Character Slot"
             param_names = ["Character Index", "Slot"]
         elif cmd.command == 0x31:
             func = "wait"
-            name = "Wait"
             param_names = ["Wait Frames"]
         elif cmd.command == 0x37:
             func = "bg_opacity"
-            name = "Background Opacity"
             param_names[3] = "Opacity"
         elif cmd.command == 0x3f:
             func = "chr_anim"
-            name = "Set Character Animation"
-            param_names = ["Character ID", "Anim"]
+            param_names = ["Character ID", "Animation"]
         elif cmd.command == 0x5c:
             func = "set_voice"
-            name = "Set Voice"
             param_names = ["Voice ID"]
         elif cmd.command == 0x5d:
             func = "sfx_sad"
-            name = "Play SAD SFX"
             param_names = ["SFX ID"]
         elif cmd.command == 0x5e:
             func = "sfx_sed"
-            name = "Play SED SFX"
             param_names = ["SFX ID"]
         elif cmd.command == 0x62:
             func = "bg_music"
-            name = "Play Background Music"
             param_names = ["Music ID", "Volume", "unk2"]
         elif cmd.command == 0x6a:
             func = "bg_shake"
-            name = "Shake Background"
             param_names = []
         elif cmd.command == 0x8a:
             func = "bgm_fade_out"
-            name = "Fade Out BG Music"
         elif cmd.command == 0x8b:
             func = "bgm_fade_in"
-            name = "Fade In BG Music"
         elif cmd.command == 0x99:
             func = "dialogue_sfx"
-            name = "Set Dialogue SFX"
             param_names[0] = "SAD SFX ID"
         elif cmd.command == 0x4:
             func = "dialogue"
-            name = "Dialogue"
-            param_names = ["Text Gds Number", "Character ID", "Start Animation",
-                           "End Animation", "unk4", "Text"]
+            param_names = ["Text GDS Number", "Character ID", "Start Animation",
+                           "End Animation", "Sound Pitch?", "Text"]
             dial_gds = self.get_text(params[0])
             params = [params[0]]
             params.extend(dial_gds.params[:4])
             params.append(subs.replace_substitutions(dial_gds.params[4]))
-        if not for_code:
-            func = name
+        if not for_code and func in self.func_names:
+            func = self.func_names[func]
         return func, params, param_names
 
     def from_readable(self, readable):
@@ -320,7 +323,7 @@ class Event:
     def revert_command(self, func, params):
         command = formats.gds.GDSCommand(0)
         params = params.copy()
-        if func == "fade" or func == "Fade":
+        if func == "fade" or func == self.func_names["fade"]:
             if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
                 if params[1] == 2:  # [0x2, 0x80]
                     if params[2] is None or params[2] == -1:  # [0x2]
@@ -347,77 +350,77 @@ class Event:
                         params[2] = 42
             if command.command in [0x72, 0x80, 0x87, 0x88]:
                 command.params = params[2:]
-        elif func == "set_room" or func == "Set Room":
+        elif func == "set_room" or func == self.func_names["set_room"]:
             command.command = 0x5
             command.params = params
-        elif func == "set_mode" or func == "Set Mode":
+        elif func == "set_mode" or func == self.func_names["set_mode"]:
             command.command = 0x6
             command.params = params
-        elif func == "set_next_mode" or func == "Set Next Mode":
+        elif func == "set_next_mode" or func == self.func_names["set_next_mode"]:
             command.command = 0x7
             command.params = params
-        elif func == "set_movie" or func == "Set Movie":
+        elif func == "set_movie" or func == self.func_names["set_movie"]:
             command.command = 0x8
             command.params = params
-        elif func == "set_event" or func == "Set Event":
+        elif func == "set_event" or func == self.func_names["set_event"]:
             command.command = 0x9
             command.params = params
-        elif func == "set_puzzle" or func == "Set Puzzle":
+        elif func == "set_puzzle" or func == self.func_names["set_puzzle"]:
             command.command = 0xb
             command.params = params
-        elif func == "bg_load" or func == "Load Background":
+        elif func == "bg_load" or func == self.func_names["bg_load"]:
             command.command = 0x21 if params[-1] == 0 else 0x22
             command.params = [params[0], 3]
-        elif func == "chr_show" or func == "Show Character":
+        elif func == "chr_show" or func == self.func_names["chr_show"]:
             command.command = 0x2a
             command.params = params
-        elif func == "chr_hide" or func == "Hide Character":
+        elif func == "chr_hide" or func == self.func_names["chr_hide"]:
             command.command = 0x2b
             command.params = params
-        elif func == "chr_visibility" or func == "Set Character Visibility":
+        elif func == "chr_visibility" or func == self.func_names["chr_visibility"]:
             command.command = 0x2c
             params[1] = 2.0 if params[1] else -2.0
             command.params = params
-        elif func == "show_chapter" or func == "Show Chapter":
+        elif func == "show_chapter" or func == self.func_names["show_chapter"]:
             command.command = 0x2d
             command.params = params
-        elif func == "chr_slot" or func == "Set Character Slot":
+        elif func == "chr_slot" or func == self.func_names["chr_slot"]:
             command.command = 0x30
             command.params = params
-        elif func == "wait" or func == "Wait":
+        elif func == "wait" or func == self.func_names["wait"]:
             command.command = 0x31
             command.params = params
-        elif func == "bg_opacity" or func == "Set Background Opacity":
+        elif func == "bg_opacity" or func == self.func_names["bg_opacity"]:
             command.command = 0x37
             command.params = params
-        elif func == "chr_anim" or func == "Set Character Animation":
+        elif func == "chr_anim" or func == self.func_names["chr_anim"]:
             command.command = 0x3f
             command.params = params
-        elif func == "set_voice" or func == "Set Voice":
+        elif func == "set_voice" or func == self.func_names["set_voice"]:
             command.command = 0x5c
             command.params = params
-        elif func == "sfx_sad" or func == "Play SAD SFX":
+        elif func == "sfx_sad" or func == self.func_names["sfx_sad"]:
             command.command = 0x5d
             command.params = params
-        elif func == "sfx_sed" or func == "Play SED SFX":
+        elif func == "sfx_sed" or func == self.func_names["sfx_sed"]:
             command.command = 0x5e
             command.params = params
-        elif func == "bg_music" or func == "Play Background Music":
+        elif func == "bg_music" or func == self.func_names["bg_music"]:
             command.command = 0x62
             command.params = params
-        elif func == "bg_shake" or func == "Shake Background":
+        elif func == "bg_shake" or func == self.func_names["bg_shake"]:
             command.command = 0x6a
             command.params = params
-        elif func == "bgm_fade_out" or func == "Fade Out BG Music":
+        elif func == "bgm_fade_out" or func == self.func_names["bgm_fade_out"]:
             command.command = 0x8a
             command.params = params
-        elif func == "bgm_fade_in" or func == "Fade In BG Music":
+        elif func == "bgm_fade_in" or func == self.func_names["bgm_fade_in"]:
             command.command = 0x8b
             command.params = params
-        elif func == "dialogue_sfx" or func == "Set Dialogue SFX":
+        elif func == "dialogue_sfx" or func == self.func_names["dialogue_sfx"]:
             command.command = 0x99
             command.params = params
-        elif func == "dialogue" or func == "Dialogue":
+        elif func == "dial" or func == self.func_names["dial"]:
             command.command = 0x4
             command.params = [params[0]]
 

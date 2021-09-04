@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Any
+from typing import List
 
 from gui import generated
 from formats.event import Event
@@ -18,7 +18,9 @@ class CommandRepr:
         name, params, param_names = event.convert_command(gds_command, for_code=False)
         param_dict = []
         for i in range(len(params)):
-            param_dict.append([param_names[i] , type(params[i]).__name__, params[i]])
+            param_dict.append([param_names[i], type(params[i]).__name__, params[i]])
+            if param_dict[-1][1] == "int" and name != "Fade" and i != len(params) - 1:
+                param_dict[-1][1] = "uint"
         if name == "Dialogue":
             param_dict[-1][1] = "long_str"
         command_repr = CommandRepr(name, param_dict)
@@ -58,7 +60,9 @@ class CommandPanel(wx.Panel):
         self.properties: List[wx.propgrid.PGProperty] = []
         for param in command_repr.params:
             p_label, p_type, p_value = param
-            if p_type == "int":
+            if p_type == "uint":
+                property_ = self.propertygrid.Append(wx.propgrid.UIntProperty(p_label, p_label, p_value))
+            elif p_type == "int":
                 property_ = self.propertygrid.Append(wx.propgrid.IntProperty(p_label, p_label, p_value))
             elif p_type == "float":
                 property_ = self.propertygrid.Append(wx.propgrid.FloatProperty(p_label, p_label, p_value))
@@ -96,8 +100,8 @@ class CommandPanel(wx.Panel):
         self.delete_btn.Bind(wx.EVT_BUTTON, self.delete)
 
     def get_command_repr(self) -> CommandRepr:
-        for i, property in enumerate(self.properties):
-            self.command_repr.params[i][2] = property.GetValue()
+        for i, property_ in enumerate(self.properties):
+            self.command_repr.params[i][2] = property_.GetValue()
         return self.command_repr
 
     def move_up(self, _):
@@ -108,6 +112,7 @@ class CommandPanel(wx.Panel):
 
     def delete(self, _):
         self.GetGrandParent().delete(self)
+
 
 class EventEditor(generated.EventEditor):
     def __init__(self, *args, **kwargs):
@@ -131,7 +136,9 @@ class EventEditor(generated.EventEditor):
                                      wx.TAB_TRAVERSAL)
         sizer.Add(command_panel, 0, wx.ALL | wx.EXPAND, 5)
         command_panel.Layout()
+        self.event_commands.Layout()
         sizer.Layout()
+        self.Layout()
 
     def set_event_info(self):
         self.m_mapTopID.SetValue(self.event.map_top_id)
@@ -207,6 +214,7 @@ class EventEditor(generated.EventEditor):
 
     def move_down(self, command_panel):
         sizer: wx.Sizer = self.event_commands.GetSizer()
+        print(len(sizer.GetChildren()))
         for j, child in enumerate(sizer.GetChildren()):
             child: wx.SizerItem
             if child.GetWindow() == command_panel:
@@ -240,3 +248,174 @@ class EventEditor(generated.EventEditor):
 
     def exit(self):
         self.GetGrandParent().remove_menu("Event")
+
+    def add_dialogue(self, _):
+        self.add_command_panel(CommandRepr(
+            "Dialogue",
+            [["Text GDS Number", "uint", 0],
+             ["Character ID", "uint", 0],
+             ["Start Animation", "str", "NONE"],
+             ["End Animation", "str", "NONE"],
+             ["Sound Pitch?", "uint", 2],
+             ["Text", "long_str", ""]]
+        ))
+
+    def add_fade(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["fade"],
+            [["Fade In", "bool", False],
+             ["Fade Screen", "uint", 0],
+             ["Fade Frames", "int", -1]]
+        ))
+
+    def add_bg_load(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["bg_load"],
+            [["Path", "str", ""],
+             ["Screen", "uint", 0]]
+        ))
+
+    def add_set_mode(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_mode"],
+            [["Mode", "str", ""]]
+        ))
+
+    def add_set_next_mode(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_next_mode"],
+            [["Mode", "str", ""]]
+        ))
+
+    def add_set_movie(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_movie"],
+            [["Movie ID", "uint", 0]]
+        ))
+
+    def add_set_event(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_event"],
+            [["Event ID", "uint", 0]]
+        ))
+
+    def add_set_puzzle(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_puzzle"],
+            [["Puzzle ID", "uint", 0]]
+        ))
+
+    def add_set_room(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_room"],
+            [["Room ID", "uint", 0]]
+        ))
+
+    def add_chr_show(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["chr_show"],
+            [["Character Index", "uint", 0]]
+        ))
+
+    def add_chr_hide(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["chr_hide"],
+            [["Character Index", "uint", 0]]
+        ))
+
+    def add_chr_visibility(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["chr_visibility"],
+            [["Character Index", "uint", 0],
+             ["Visibility", "bool", False]]
+        ))
+
+    def add_chr_slot(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["chr_slot"],
+            [["Character Index", "uint", 0],
+             ["Slot", "int", 0]]
+        ))
+
+    def add_chr_anim(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["chr_anim"],
+            [["Character ID", "uint", 0],
+             ["Animation", "str", "NONE"]]
+        ))
+
+    def add_show_chapter(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["show_chapter"],
+            [["Chapter Number", "uint", 0]]
+        ))
+
+    def add_wait(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["wait"],
+            [["Wait Frames", "uint", 180]]
+        ))
+
+    def add_bg_opacity(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["bg_opacity"],
+            [["unk0", "uint", 0],
+             ["unk0", "uint", 0],
+             ["unk0", "uint", 0],
+             ["Opacity", "uint", 120]]
+        ))
+
+    def add_set_voice(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["set_voice"],
+            [["Voice ID", "uint", 0]]
+        ))
+
+    def add_sfx_sad(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["sfx_sad"],
+            [["SFX ID", "uint", 0]]
+        ))
+
+    def add_bg_music(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["bg_music"],
+            [["Music ID", "uint", 0],
+             ["Volume", "float", 1.0],
+             ["unk2", "uint", 0]]
+        ))
+
+    def add_bg_shake(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["bg_shake"],
+            []
+        ))
+
+    def add_sfx_sed(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["sfx_sed"],
+            [["SFX ID", "uint", 0]]
+        ))
+
+    def add_btm_fade_out(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["btm_fade_out"],
+            [["unk0", "float", 0],
+             ["unk1", "uint", 0]]
+        ))
+
+    def add_btm_fade_in(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["btm_fade_in"],
+            [["unk0", "float", 0],
+             ["unk1", "uint", 0]]
+        ))
+
+    def add_dialogue_sfx(self, _):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["dialogue_sfx"],
+            [["SAD SFX ID", "uint", 0],
+             ["unk1", "float", 0.0],
+             ["unk2", "uint", 0],
+             ["unk2", "uint", 0]]
+        ))
