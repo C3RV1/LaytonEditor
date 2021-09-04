@@ -139,7 +139,7 @@ class EventDialogue(pge.Sprite):
             self.pause()
             self.text_left_to_do = self.text_left_to_do[2:]
             return
-        elif self.text_left_to_do.startswith("@c"):  # Next page
+        elif self.text_left_to_do.startswith("\n\n"):  # Next page
             self.reset_texts()
             self.text_left_to_do = self.text_left_to_do[2:]
             return

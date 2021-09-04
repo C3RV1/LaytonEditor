@@ -3,12 +3,17 @@ from typing import List
 
 from gui import generated
 from formats.event import Event
-from formats.gds import GDSCommand, GDS
+from formats.gds import GDSCommand
 import wx
 import wx.propgrid
 
 from gui.PygamePreviewer import PygamePreviewer
 from previewers.event.EventPlayer import EventPlayer
+
+
+class ButtonNoTab(wx.Button):
+    def AcceptsFocusFromKeyboard(self):
+        return False
 
 
 @dataclass
@@ -48,36 +53,37 @@ class CommandPanel(wx.Panel):
         self.command_name_label.SetSize((112, -1))
         self.command_name_label.Wrap(-1)
 
-        self.move_up_btn = wx.Button(self, wx.ID_ANY, "Move Up", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.move_up_btn = ButtonNoTab(self, wx.ID_ANY, "Move Up", wx.DefaultPosition, wx.DefaultSize, 0)
         self.move_up_btn.SetSize((112, -1))
-        self.move_down_btn = wx.Button(self, wx.ID_ANY, "Move Down", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.move_down_btn = ButtonNoTab(self, wx.ID_ANY, "Move Down", wx.DefaultPosition, wx.DefaultSize, 0)
         self.move_down_btn.SetSize((112, -1))
-        self.delete_btn = wx.Button(self, wx.ID_ANY, "Delete", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.delete_btn = ButtonNoTab(self, wx.ID_ANY, "Delete", wx.DefaultPosition, wx.DefaultSize, 0)
         self.delete_btn.SetSize((112, -1))
 
-        self.propertygrid = wx.propgrid.PropertyGrid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                                     wx.propgrid.PG_DEFAULT_STYLE | wx.propgrid.PG_HIDE_MARGIN |
-                                                     wx.propgrid.PG_SPLITTER_AUTO_CENTER |
-                                                     wx.propgrid.PG_STATIC_LAYOUT | wx.propgrid.PG_STATIC_SPLITTER)
-        self.propertygrid.SetMaxSize((470, self.propertygrid.GetRowHeight() * len(command_repr.params) + 4))
+        self.property_grid = wx.propgrid.PropertyGrid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                                      wx.propgrid.PG_DEFAULT_STYLE | wx.propgrid.PG_HIDE_MARGIN |
+                                                      wx.propgrid.PG_SPLITTER_AUTO_CENTER |
+                                                      wx.propgrid.PG_STATIC_LAYOUT | wx.propgrid.PG_STATIC_SPLITTER |
+                                                      wx.TAB_TRAVERSAL)
+        self.property_grid.SetMaxSize((470, self.property_grid.GetRowHeight() * len(command_repr.params) + 4))
         self.properties: List[wx.propgrid.PGProperty] = []
         for param in command_repr.params:
             p_label, p_type, p_value = param
             if p_type == "uint":
-                property_ = self.propertygrid.Append(wx.propgrid.UIntProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.UIntProperty(p_label, p_label, p_value))
             elif p_type == "int":
-                property_ = self.propertygrid.Append(wx.propgrid.IntProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.IntProperty(p_label, p_label, p_value))
             elif p_type == "float":
-                property_ = self.propertygrid.Append(wx.propgrid.FloatProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.FloatProperty(p_label, p_label, p_value))
             elif p_type == "str":
-                property_ = self.propertygrid.Append(wx.propgrid.StringProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.StringProperty(p_label, p_label, p_value))
             elif p_type == "long_str":
-                property_ = self.propertygrid.Append(wx.propgrid.LongStringProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.LongStringProperty(p_label, p_label, p_value))
             elif p_type == "bool":
-                property_ = self.propertygrid.Append(wx.propgrid.BoolProperty(p_label, p_label, p_value))
+                property_ = self.property_grid.Append(wx.propgrid.BoolProperty(p_label, p_label, p_value))
             elif p_value is None:
                 param[1] = "int"
-                property_ = self.propertygrid.Append(wx.propgrid.IntProperty(p_label, p_label, -1))
+                property_ = self.property_grid.Append(wx.propgrid.IntProperty(p_label, p_label, -1))
             else:
                 continue
             property_: wx.propgrid.PGProperty
@@ -92,8 +98,8 @@ class CommandPanel(wx.Panel):
         sizer2.Add(self.delete_btn, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         self.delete_btn.Layout()
         sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 5)
-        sizer.Add(self.propertygrid, 0, wx.ALL | wx.EXPAND, 5)
-        self.propertygrid.Layout()
+        sizer.Add(self.property_grid, 0, wx.ALL | wx.EXPAND, 5)
+        self.property_grid.Layout()
         self.SetSizer(sizer)
         self.Layout()
         sizer.Fit(self)
@@ -101,6 +107,10 @@ class CommandPanel(wx.Panel):
         self.move_up_btn.Bind(wx.EVT_BUTTON, self.move_up)
         self.move_down_btn.Bind(wx.EVT_BUTTON, self.move_down)
         self.delete_btn.Bind(wx.EVT_BUTTON, self.delete)
+        self.property_grid.AddActionTrigger(wx.propgrid.PG_ACTION_NEXT_PROPERTY, wx.WXK_DOWN)
+        self.property_grid.AddActionTrigger(wx.propgrid.PG_ACTION_PREV_PROPERTY, wx.WXK_UP)
+        self.property_grid.DedicateKey(wx.WXK_DOWN)
+        self.property_grid.DedicateKey(wx.WXK_UP)
 
     def get_command_repr(self) -> CommandRepr:
         for i, property_ in enumerate(self.properties):
@@ -124,7 +134,7 @@ class EventEditor(generated.EventEditor):
     def __init__(self, *args, **kwargs):
         super(EventEditor, self).__init__(*args, **kwargs)
         self.menu = wx.Menu()
-        self.event: Event = None
+        self.event: [Event] = None
         self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.command_panels: List[CommandPanel] = []
         main_editor = self.GetGrandParent()

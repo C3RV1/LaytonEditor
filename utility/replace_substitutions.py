@@ -43,6 +43,7 @@ subs_dict = {"<''>": '”',
              "<,c>": "ç",
              "<,C>": "Ç",
              "<-n>": "ñ",
+             "@c": "\n\n",
              "@B": "\n",
              "<po>": "£",
              "<->": "•"}
@@ -50,7 +51,7 @@ subs_dict = {"<''>": '”',
 
 def replace_substitutions(text, puzzle=False):
     for key, sub in subs_dict.items():
-        if puzzle and key == "@B":
+        if puzzle and key in ["@B", "@c"]:
             continue
         text = text.replace(key, sub)
     return text
@@ -58,7 +59,7 @@ def replace_substitutions(text, puzzle=False):
 
 def convert_substitutions(text, puzzle=False):
     for key, sub in subs_dict.items():
-        if puzzle and key == "@B":
+        if puzzle and key in ["@B", "@c"]:
             continue
         text = text.replace(sub, key)
     return text
