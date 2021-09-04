@@ -270,7 +270,7 @@ class Event:
             func = "dialogue_sfx"
             param_names[0] = "SAD SFX ID"
         elif cmd.command == 0x4:
-            func = "dialogue"
+            func = "dial"
             param_names = ["Text GDS Number", "Character ID", "Start Animation",
                            "End Animation", "Sound Pitch?", "Text"]
             dial_gds = self.get_text(params[0])
@@ -280,6 +280,13 @@ class Event:
         if not for_code and func in self.func_names:
             func = self.func_names[func]
         return func, params, param_names
+
+    def clear_event_texts(self):
+        dial_files = self.event_texts.filenames
+        prefix, postfix, complete = self.resolve_event_id()
+        for filename in dial_files:
+            if filename.startswith(f"e{prefix}_{postfix}"):
+                self.event_texts.remove_file(filename)
 
     def from_readable(self, readable):
         parser = dcc.Parser()
@@ -306,11 +313,7 @@ class Event:
             self.characters_shown[i] = parser[f"evdat.char{i}.shown"]
             self.characters_anim_index[i] = parser[f"evdat.char{i}.anim"]
 
-        dial_files = self.event_texts.filenames
-        prefix, postfix, complete = self.resolve_event_id()
-        for filename in dial_files:
-            if filename.startswith(f"e{prefix}_{postfix}"):
-                self.event_texts.remove_file(filename)
+        self.clear_event_texts()
 
         self.event_gds.commands = []
         for call in parser["evs::calls"]:
