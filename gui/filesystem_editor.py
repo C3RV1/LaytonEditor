@@ -162,8 +162,9 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_puzzle_menu, "Apply changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
-        add_menu_item(self.fp_event_menu, "Apply changes and Save", self.fp_event_apply_and_save)
-        add_menu_item(self.fp_event_menu, "Edit Event Visually", self.fp_open_event_editor)
+        add_menu_item(self.fp_event_menu, "Apply changes", self.fp_event_apply_changes)
+        add_menu_item(self.fp_event_menu, "Save changes", self.fp_event_save_changes)
+        add_menu_item(self.fp_event_menu, "Edit Visually", self.fp_open_event_editor)
 
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
@@ -576,7 +577,16 @@ class FilesystemEditor(generated.FilesystemEditor):
         else:
             puzzle_data.save_to_rom()
 
-    def fp_event_apply_and_save(self, _):
+    def fp_event_apply_changes(self, _):
+        event_data = self.preview_data
+        successful, error_msg = event_data.from_readable(self.puzzle_scintilla.GetText())
+        if not successful:
+            error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+        else:
+            self.previewer.start_renderer(EventPlayer(event_data))
+
+    def fp_event_save_changes(self, _):
         event_data = self.preview_data
         successful, error_msg = event_data.from_readable(self.puzzle_scintilla.GetText())
         if not successful:
