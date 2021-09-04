@@ -66,6 +66,7 @@ class CommandPanel(wx.Panel):
                                                       wx.propgrid.PG_STATIC_LAYOUT | wx.propgrid.PG_STATIC_SPLITTER |
                                                       wx.TAB_TRAVERSAL)
         self.property_grid.SetMaxSize((470, self.property_grid.GetRowHeight() * len(command_repr.params) + 4))
+        self.property_grid.Bind(wx.EVT_MOUSEWHEEL, self.scroll_pg)
         self.properties: List[wx.propgrid.PGProperty] = []
         for param in command_repr.params:
             p_label, p_type, p_value = param
@@ -128,6 +129,11 @@ class CommandPanel(wx.Panel):
 
     def delete(self, _):
         self.GetGrandParent().delete(self)
+
+    def scroll_pg(self, event):
+        parent: wx.EvtHandler = self.GetParent().GetEventHandler()
+        parent.ProcessEvent(event)
+        event.Skip()
 
 
 class EventEditor(generated.EventEditor):
@@ -427,8 +433,8 @@ class EventEditor(generated.EventEditor):
         self.add_command_panel(CommandRepr(
             self.event.func_names["bg_opacity"],
             [["unk0", "uint", 0],
-             ["unk0", "uint", 0],
-             ["unk0", "uint", 0],
+             ["unk1", "uint", 0],
+             ["unk2", "uint", 0],
              ["Opacity", "uint", 120]]
         ))
 

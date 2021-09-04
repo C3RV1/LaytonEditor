@@ -6487,8 +6487,8 @@
                         <property name="pin_button">1</property>
                         <property name="pos"></property>
                         <property name="resize">Resizable</property>
-                        <property name="scroll_rate_x">5</property>
-                        <property name="scroll_rate_y">5</property>
+                        <property name="scroll_rate_x">10</property>
+                        <property name="scroll_rate_y">10</property>
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="subclass">; ; forward_declare</property>

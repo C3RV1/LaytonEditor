@@ -858,7 +858,7 @@ class EventEditor ( wx.Panel ):
 		bSizer28.Add( bSizer30, 2, wx.EXPAND, 5 )
 
 		self.event_commands = wx.ScrolledWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
-		self.event_commands.SetScrollRate( 5, 5 )
+		self.event_commands.SetScrollRate( 10, 10 )
 		self.event_commands.SetMaxSize( wx.Size( 600,600 ) )
 
 		bSizer31 = wx.BoxSizer( wx.VERTICAL )
