@@ -3,9 +3,12 @@ from typing import List
 
 from gui import generated
 from formats.event import Event
-from formats.gds import GDSCommand
+from formats.gds import GDSCommand, GDS
 import wx
 import wx.propgrid
+
+from gui.PygamePreviewer import PygamePreviewer
+from previewers.event_preview.EventPlayer import EventPlayer
 
 
 @dataclass
@@ -101,6 +104,9 @@ class CommandPanel(wx.Panel):
 
     def get_command_repr(self) -> CommandRepr:
         for i, property_ in enumerate(self.properties):
+            if self.command_repr.params[i][1] == "long_str":
+                self.command_repr.params[i][2] = property_.GetValue().replace(r"\n", "\n").replace(r"\\", "\\")
+                continue
             self.command_repr.params[i][2] = property_.GetValue()
         return self.command_repr
 
@@ -119,13 +125,14 @@ class EventEditor(generated.EventEditor):
         super(EventEditor, self).__init__(*args, **kwargs)
         self.menu = wx.Menu()
         self.event: Event = None
+        self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.command_panels: List[CommandPanel] = []
-        maineditor = self.GetGrandParent()
+        main_editor = self.GetGrandParent()
 
         def add_menu_item(menu, title, handler):
             ase_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
             menu.Append(ase_menu_item)
-            maineditor.Bind(wx.EVT_MENU, handler, id=ase_menu_item.GetId())
+            main_editor.Bind(wx.EVT_MENU, handler, id=ase_menu_item.GetId())
 
         add_menu_item(self.menu, "Apply", self.apply_changes)
         add_menu_item(self.menu, "Save", self.save_changes)
@@ -180,6 +187,46 @@ class EventEditor(generated.EventEditor):
         self.char_anim6.SetValue(self.event.characters_anim_index[6])
         self.char_anim7.SetValue(self.event.characters_anim_index[7])
 
+    def get_event_info(self):
+        self.event.map_top_id = self.m_mapTopID.GetValue()
+        self.event.map_bottom_id = self.m_mapBtmID.GetValue()
+
+        self.event.characters[0] = self.char_id0.GetValue()
+        self.event.characters[1] = self.char_id1.GetValue()
+        self.event.characters[2] = self.char_id2.GetValue()
+        self.event.characters[3] = self.char_id3.GetValue()
+        self.event.characters[4] = self.char_id4.GetValue()
+        self.event.characters[5] = self.char_id5.GetValue()
+        self.event.characters[6] = self.char_id6.GetValue()
+        self.event.characters[7] = self.char_id7.GetValue()
+
+        self.event.characters_pos[0] = self.char_slot0.GetValue()
+        self.event.characters_pos[1] = self.char_slot1.GetValue()
+        self.event.characters_pos[2] = self.char_slot2.GetValue()
+        self.event.characters_pos[3] = self.char_slot3.GetValue()
+        self.event.characters_pos[4] = self.char_slot4.GetValue()
+        self.event.characters_pos[5] = self.char_slot5.GetValue()
+        self.event.characters_pos[6] = self.char_slot6.GetValue()
+        self.event.characters_pos[7] = self.char_slot7.GetValue()
+
+        self.event.characters_shown[0] = self.char_visible0.GetValue()
+        self.event.characters_shown[1] = self.char_visible1.GetValue()
+        self.event.characters_shown[2] = self.char_visible2.GetValue()
+        self.event.characters_shown[3] = self.char_visible3.GetValue()
+        self.event.characters_shown[4] = self.char_visible4.GetValue()
+        self.event.characters_shown[5] = self.char_visible5.GetValue()
+        self.event.characters_shown[6] = self.char_visible6.GetValue()
+        self.event.characters_shown[7] = self.char_visible7.GetValue()
+
+        self.event.characters_anim_index[0] = self.char_anim0.GetValue()
+        self.event.characters_anim_index[1] = self.char_anim1.GetValue()
+        self.event.characters_anim_index[2] = self.char_anim2.GetValue()
+        self.event.characters_anim_index[3] = self.char_anim3.GetValue()
+        self.event.characters_anim_index[4] = self.char_anim4.GetValue()
+        self.event.characters_anim_index[5] = self.char_anim5.GetValue()
+        self.event.characters_anim_index[6] = self.char_anim6.GetValue()
+        self.event.characters_anim_index[7] = self.char_anim7.GetValue()
+
     def load_event(self, event: Event):
         self.event = event
         self.set_event_info()
@@ -192,11 +239,22 @@ class EventEditor(generated.EventEditor):
         self.event_commands.Layout()
         self.Layout()
 
-    def apply_changes(self, _event):
-        pass
+    def apply_changes(self, _):
+        sizer: wx.Sizer = self.event_commands.GetSizer()
+        self.get_event_info()
+        self.event.clear_event_texts()
+        command_panels = [child.GetWindow() for child in sizer.GetChildren()]
+        self.event.event_gds.commands.clear()
+        for command_panel in command_panels:
+            command_panel: CommandPanel
+            command_repr = command_panel.get_command_repr()
+            command = command_repr.to_gds(self.event)
+            self.event.event_gds.commands.append(command)
+        self.previewer.start_renderer(EventPlayer(self.event))
 
     def save_changes(self, _event):
-        pass
+        self.apply_changes(None)
+        self.event.save_to_rom()
 
     def move_up(self, command_panel: CommandPanel):
         sizer: wx.Sizer = self.event_commands.GetSizer()
@@ -214,7 +272,6 @@ class EventEditor(generated.EventEditor):
 
     def move_down(self, command_panel):
         sizer: wx.Sizer = self.event_commands.GetSizer()
-        print(len(sizer.GetChildren()))
         for j, child in enumerate(sizer.GetChildren()):
             child: wx.SizerItem
             if child.GetWindow() == command_panel:

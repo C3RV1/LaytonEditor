@@ -274,7 +274,6 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
         elif name.endswith(".gds"):
-            gds = GDS(name, rom=archive)
             if name.startswith("e"):
                 index = int(name[1:7])
                 event = Event(self.rom)
@@ -289,6 +288,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.fp_menus_loaded.append("Event")
                 self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:
+                gds = GDS(name, rom=archive)
                 self.fp_gds_stc.load_gds(gds)
                 self.fp_formats_book.SetSelection(2)  # GDS page
         elif name.endswith(".plz"):
