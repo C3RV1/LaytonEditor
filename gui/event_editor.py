@@ -8,7 +8,7 @@ import wx
 import wx.propgrid
 
 from gui.PygamePreviewer import PygamePreviewer
-from previewers.event_preview.EventPlayer import EventPlayer
+from previewers.event.EventPlayer import EventPlayer
 
 
 @dataclass

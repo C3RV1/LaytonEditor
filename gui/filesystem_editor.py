@@ -19,9 +19,9 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
-from previewers.event_preview.EventPlayer import EventPlayer
-from previewers.puzzle_preview.PuzzlePlayer import PuzzlePlayer
-from previewers.sound_preview.SoundPreview import SoundPreview
+from previewers.event.EventPlayer import EventPlayer
+from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
+from previewers.sound.SoundPreview import SoundPreview
 
 from pg_utils.rom.rom_extract import load_sadl, load_smd
 from SADLpy.SADL import SADL
