@@ -801,7 +801,7 @@ class EventEditor ( wx.Panel ):
 		self.character_info.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
 
 
-		self.event_info = self.character_info.AddPage( u"Page", wx.NullBitmap )
+		self.event_info = self.character_info.AddPage( u"Event Info", wx.NullBitmap )
 		self.m_mapTopID = self.event_info.Append( pg.IntProperty( u"Map Top ID", u"Map Top ID" ) )
 		self.m_mapBtmID = self.event_info.Append( pg.IntProperty( u"Map Bottom ID", u"Map Bottom ID" ) )
 
@@ -811,43 +811,43 @@ class EventEditor ( wx.Panel ):
 		self.char_anim0 = self.character_info0.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible0 = self.character_info0.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info1 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info1 = self.character_info.AddPage( u"Character 1", wx.NullBitmap )
 		self.char_id1 = self.character_info1.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot1 = self.character_info1.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim1 = self.character_info1.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible1 = self.character_info1.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info2 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info2 = self.character_info.AddPage( u"Character 2", wx.NullBitmap )
 		self.char_id2 = self.character_info2.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot2 = self.character_info2.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim2 = self.character_info2.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible2 = self.character_info2.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info3 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info3 = self.character_info.AddPage( u"Character 3", wx.NullBitmap )
 		self.char_id3 = self.character_info3.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot3 = self.character_info3.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim3 = self.character_info3.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible3 = self.character_info3.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info4 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info4 = self.character_info.AddPage( u"Character 4", wx.NullBitmap )
 		self.char_id4 = self.character_info4.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot4 = self.character_info4.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim4 = self.character_info4.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible4 = self.character_info4.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info5 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info5 = self.character_info.AddPage( u"Character 5", wx.NullBitmap )
 		self.char_id5 = self.character_info5.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot5 = self.character_info5.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim5 = self.character_info5.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible5 = self.character_info5.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info6 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info6 = self.character_info.AddPage( u"Character 6", wx.NullBitmap )
 		self.char_id6 = self.character_info6.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot6 = self.character_info6.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim6 = self.character_info6.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
 		self.char_visible6 = self.character_info6.Append( pg.BoolProperty( u"Visible", u"Visible" ) )
 
-		self.character_info7 = self.character_info.AddPage( u"Character 0", wx.NullBitmap )
+		self.character_info7 = self.character_info.AddPage( u"Character 7", wx.NullBitmap )
 		self.char_id7 = self.character_info7.Append( pg.IntProperty( u"Character ID", u"Character ID" ) )
 		self.char_slot7 = self.character_info7.Append( pg.IntProperty( u"Slot", u"Slot" ) )
 		self.char_anim7 = self.character_info7.Append( pg.IntProperty( u"Animation Index", u"Animation Index" ) )
