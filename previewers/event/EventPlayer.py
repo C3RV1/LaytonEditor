@@ -78,11 +78,15 @@ class EventPlayer(TwoScreenRenderer):
             self.top_bg.fade(fade_out, None, False)
             self.btm_bg.fade(fade_out, None, False)
         elif command.command == 0x4:
+            if len(command.params) == 0:
+                return
             dialogue_gds = self.event.get_text(command.params[0])
             if len(dialogue_gds.params) != 5:
                 return
             character = None
             for char in self.characters:
+                if char is None:
+                    continue
                 if char.get_char_id() == dialogue_gds.params[0]:
                     character = char
                     break
@@ -119,6 +123,8 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x3f:
             character = None
             for char in self.characters:
+                if char is None:
+                    continue
                 if char.get_char_id() == command.params[0]:
                     character = char
                     break
@@ -132,6 +138,11 @@ class EventPlayer(TwoScreenRenderer):
             self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD")
         elif command.command == 0x6a:
             self.btm_bg.shake()
+        elif command.command == 0x71:
+            # Something about mysteries -> hides all character
+            for char in self.characters:
+                if char:
+                    char.hide()
         elif command.command == 0x72:
             self.top_bg.fade(fade_out, command.params[0], False)
             self.btm_bg.fade(fade_out, command.params[0], False)

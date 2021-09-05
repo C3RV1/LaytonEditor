@@ -100,7 +100,10 @@ class FontMap(Font):
         self._font_surface.set_colorkey(self.MASKING_COLOR)
 
     def _encode_char(self, char: str):
-        return int.from_bytes(char.encode(self._encoding), "big")
+        try:
+            return int.from_bytes(char.encode(self._encoding), "big")
+        except:
+            return -1
 
     def _get_line_size(self, line: str) -> tuple:
         w, h = 0, self._tile_height

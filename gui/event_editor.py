@@ -461,7 +461,7 @@ class EventEditor(generated.EventEditor):
     def add_bg_shake(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["bg_shake"],
-            []
+            [["unk0", "uint", 30]]
         ))
 
     def add_sfx_sed(self, _):
@@ -472,16 +472,16 @@ class EventEditor(generated.EventEditor):
 
     def add_btm_fade_out(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["btm_fade_out"],
+            self.event.func_names["bgm_fade_out"],
             [["unk0", "float", 0],
-             ["unk1", "uint", 0]]
+             ["unk1", "uint", 320]]
         ))
 
     def add_btm_fade_in(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["btm_fade_in"],
-            [["unk0", "float", 0],
-             ["unk1", "uint", 0]]
+            self.event.func_names["bgm_fade_in"],
+            [["unk0", "float", 1.0],
+             ["unk1", "uint", 320]]
         ))
 
     def add_dialogue_sfx(self, _):

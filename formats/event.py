@@ -261,7 +261,6 @@ class Event:
             param_names = ["Music ID", "Volume", "unk2"]
         elif cmd.command == 0x6a:
             func = "bg_shake"
-            param_names = []
         elif cmd.command == 0x8a:
             func = "bgm_fade_out"
         elif cmd.command == 0x8b:
@@ -273,10 +272,16 @@ class Event:
             func = "dial"
             param_names = ["Text GDS Number", "Character ID", "Start Animation",
                            "End Animation", "Sound Pitch?", "Text"]
-            dial_gds = self.get_text(params[0])
-            params = [params[0]]
-            params.extend(dial_gds.params[:4])
-            params.append(subs.replace_substitutions(dial_gds.params[4]))
+            if len(params) == 0:
+                params = [0, 0, "NONE", "NONE", 2, ""]
+            else:
+                dial_gds = self.get_text(params[0])
+                params = [params[0]]
+                if len(dial_gds.params) == 0:
+                    params.extend([0, "NONE", "NONE", 2, ""])
+                else:
+                    params.extend(dial_gds.params[:4])
+                    params.append(subs.replace_substitutions(dial_gds.params[4]))
         if not for_code and func in self.func_names:
             func = self.func_names[func]
         return func, params, param_names
