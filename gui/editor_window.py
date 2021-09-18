@@ -40,16 +40,19 @@ class MainEditor(generated.MainEditor):
             rom = rom
 
         # Load language from arm9
-        arm9 = rom.loadArm9()
-        lang_address = 0x02000d3c-arm9.ramAddress
-        lang_id = rom.arm9[lang_address]
-        lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
-        conf.LANG = lang_table[lang_id]
-        print(f"Game language: {conf.LANG}")
-        if conf.LANG == "jp":
-            error_dialog = wx.MessageDialog(self, "Japanese is not currently supported", style=wx.ICON_ERROR | wx.OK)
-            error_dialog.ShowModal()
-            return
+        if rom.name == b"LAYTON2":
+            arm9 = rom.loadArm9()
+            lang_address = 0x02000d3c-arm9.ramAddress
+            lang_id = rom.arm9[lang_address]
+            lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
+            conf.LANG = lang_table[lang_id]
+            print(f"Game language: {conf.LANG}")
+            if conf.LANG == "jp":
+                error_dialog = wx.MessageDialog(self, "Japanese is not currently supported", style=wx.ICON_ERROR | wx.OK)
+                error_dialog.ShowModal()
+                return
+        else:
+            conf.LANG = "en"
 
         # After checking language
         self.rom = rom

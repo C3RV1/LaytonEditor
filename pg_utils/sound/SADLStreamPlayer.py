@@ -38,7 +38,7 @@ class SADLStreamPlayer(StreamPlayerAbstract):
         self.current_fade_time += delta_time
 
     def add_samples(self, first_init=False):
-        sample_steps = 17
+        sample_steps = 20
         if first_init:
             sample_steps *= 3  # If the sound gets cut increase this number (slower load, better playback)
         new_samples = np.array(self.sadl.decode(sample_steps))

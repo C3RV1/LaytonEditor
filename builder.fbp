@@ -6144,9 +6144,9 @@
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
                                 <property name="window_style"></property>
-                                <object class="propGridPage" expanded="0">
+                                <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Page</property>
+                                    <property name="label">Event Info</property>
                                     <property name="name">event_info</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="0">
@@ -6164,7 +6164,7 @@
                                         <property name="type">Int</property>
                                     </object>
                                 </object>
-                                <object class="propGridPage" expanded="0">
+                                <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
                                     <property name="label">Character 0</property>
                                     <property name="name">character_info0</property>
@@ -6200,7 +6200,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 1</property>
                                     <property name="name">character_info1</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6234,7 +6234,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 2</property>
                                     <property name="name">character_info2</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6268,7 +6268,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 3</property>
                                     <property name="name">character_info3</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6302,7 +6302,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 4</property>
                                     <property name="name">character_info4</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6336,7 +6336,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 5</property>
                                     <property name="name">character_info5</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6370,7 +6370,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 6</property>
                                     <property name="name">character_info6</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">
@@ -6404,7 +6404,7 @@
                                 </object>
                                 <object class="propGridPage" expanded="1">
                                     <property name="bitmap"></property>
-                                    <property name="label">Character 0</property>
+                                    <property name="label">Character 7</property>
                                     <property name="name">character_info7</property>
                                     <property name="permission">protected</property>
                                     <object class="propGridItem" expanded="1">

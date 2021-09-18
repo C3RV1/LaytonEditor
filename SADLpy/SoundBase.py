@@ -178,7 +178,7 @@ class SoundBase:
             elif sample_rate > 16364:
                 target_sample_rate = 16364
             else:
-                raise ValueError(f"Cannot transform sample rate of {sample_rate} to and accepted sample rate")
+                raise ValueError(f"Cannot transform sample rate of {sample_rate} to an accepted sample rate")
         if convert_sample_rate:
             print(f"Reducing sample rate from {sample_rate} to {target_sample_rate}")
         print("Converting bytearrays to lists")

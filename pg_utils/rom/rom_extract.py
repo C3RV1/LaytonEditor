@@ -1,6 +1,6 @@
 import os
 import shutil
-import formats.sound.smd as smd
+import formats.sound.smdl as smd
 import formats.sound.swd as swd
 import formats.binary as binary
 

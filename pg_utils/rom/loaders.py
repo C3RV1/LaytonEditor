@@ -51,15 +51,15 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
                 surf.blit(img_surf, frames[i].position)
 
             for animation in ani_sprite.animations:
-                vars_ = dict()
-                vars_["child_index"] = animation.child_image_animation_index
-                vars_["child_x"] = animation.child_image_x
-                vars_["child_y"] = animation.child_image_y
+                vars_tag = dict()
+                vars_tag["child_index"] = animation.child_image_animation_index
+                vars_tag["child_x"] = animation.child_image_x
+                vars_tag["child_y"] = animation.child_image_y
                 tags.append(Tag(
                     animation.name,
                     [f.image_index for f in animation.frames],
                     [f.duration / 60.0 for f in animation.frames],
-                    vars_=vars_
+                    vars_=vars_tag
                 ))
 
             vars_.update(ani_sprite.variables)
@@ -67,7 +67,7 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
             color_key = pg.Color(0, 255, 0)
         else:
             bg_sprite = BGImage(path, rom=self.rom)
-            img_array = bg_sprite.palette[bg_sprite.image][:,:,:-1]
+            img_array = bg_sprite.palette[bg_sprite.image][:, :, :-1]
             img_array = np.swapaxes(img_array, 0, 1)
             surf = pg.surfarray.make_surface(img_array)
             color_key = None
@@ -143,4 +143,3 @@ class FontLoaderROM(pge.FontLoaderOS):
             current_color, mask_color, tile_w, tile_h,
             0, 1, color_commands
         )
-
