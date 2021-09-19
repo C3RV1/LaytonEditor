@@ -1,6 +1,9 @@
-# Ported from: https://github.com/pleonex/tinke by Cervi for Team Top Hat
-from ..Helper import Helper
 import numpy as np
+
+
+def clamp_unsigned(value, bytes_):
+    size = 8*bytes_
+    return ((value + (1 << size)) % (2 << size)) - (1 << size)
 
 
 class Procyon:
@@ -12,20 +15,16 @@ class Procyon:
 
     def __init__(self):
         self.hist = [0, 0]
+        self.tmp_array = np.zeros((0x10,), dtype=np.uint8)
 
     def reset(self):
         self.hist = [0, 0]
 
-    def clamp_unsigned(self, value, bytes):
-        size = 8*bytes
-        return ((value + (1 << size)) % (2 << size)) - (1 << size)
-
     def clamp_hist(self):
-        self.hist[0] = self.clamp_unsigned(self.hist[0], 4)
-        self.hist[1] = self.clamp_unsigned(self.hist[1], 4)
+        self.hist[0] = clamp_unsigned(self.hist[0], 4)
+        self.hist[1] = clamp_unsigned(self.hist[1], 4)
 
     def decode_sample(self, sample, coef1, coef2, scale):
-        # error = sample - 0x10 if sample >> 3 == 1 else sample
         error = sample
         error <<= (6 + scale)
 
@@ -37,7 +36,12 @@ class Procyon:
         self.hist[0] = sample
         self.clamp_hist()
 
-        clamp = Helper.clamp16((sample + 32) >> 6) >> 6 << 6
+        clamp = (sample + 32) >> 6
+        if clamp > 32767:
+            clamp = 32767
+        if clamp < -32768:
+            clamp = -32768
+        clamp = clamp >> 6 << 6
 
         return clamp
 
@@ -47,7 +51,7 @@ class Procyon:
         error = value - pred
         error_scaled = error >> (scale + 6)
 
-        result = error_scaled & 0xF
+        result = error_scaled % 16
         result = (result + 8) % 16 - 8
 
         error_approx = result
@@ -58,14 +62,18 @@ class Procyon:
         self.clamp_hist()
 
         sample_approx = pred + error_approx
-        clamp = Helper.clamp16((sample_approx + 32) >> 6) >> 6 << 6
+
+        clamp = (sample_approx + 32) >> 6
+        if clamp > 32767:
+            clamp = 32767
+        if clamp < -32768:
+            clamp = -32768
+        clamp = clamp >> 6 << 6
 
         diff = abs(sample - clamp)
         return result, diff
 
-    def decode_block(self, block: bytearray, samples_to_do: int) -> np.ndarray:
-        buffer = np.zeros(shape=(samples_to_do,), dtype=np.int32)
-
+    def decode_block(self, block: np.ndarray, destination: np.ndarray) -> None:
         header = block[0xF] ^ 0x80
         scale = header & 0xf
         coef_index = header >> 4
@@ -73,38 +81,26 @@ class Procyon:
         coef1 = Procyon.PROC_COEF[coef_index][0]
         coef2 = Procyon.PROC_COEF[coef_index][1]
 
-        for i in range(samples_to_do):
+        for i in range(30):
             sample_byte = block[int(i // 2)] ^ 0x80
 
             if i & 1 == 1:
-                sample = Helper.get_high_nibble_signed(sample_byte)
+                sample = (sample_byte & 0xf0) >> 4
             else:
-                sample = Helper.get_low_nibble_signed(sample_byte)
-            buffer[i] = self.decode_sample(sample, coef1, coef2, scale)
+                sample = sample_byte & 0x0f
+            sample = ((sample + 8) % 16) - 8
+            destination[i] = self.decode_sample(sample, coef1, coef2, scale)
 
-        return buffer
-
-    def encode_block(self, block: list):
-        # TODO: Encoding improve performance
+    def encode_block(self, block: np.ndarray, destination: np.ndarray):
+        # TODO: Encoding improve performance (currently it's brute force)
         if len(block) < 30:
-            block.extend([0]*(30 - len(block)))
-        best_encoded, scale, coef_index = self.search_best_encode(block)
+            block = np.append(block, [0]*(30 - len(block)))
+        scale, coef_index = self.search_best_encode(block, destination)
 
-        result = bytearray(b"\x00" * 16)
-        current_value = 0
-        for i, sample in enumerate(best_encoded):
-            sample = (sample + 16) % 16  # Make positive
-            if i % 2 == 0:  # low nibble
-                current_value = sample
-            else:  # high nibble
-                current_value |= sample << 4
-                result[i//2] = current_value ^ 0x80
         header = (coef_index << 4) | scale
-        current_value = header
-        result[-1] = current_value ^ 0x80
-        return result
+        destination[0xF] = header ^ 0x80
 
-    def search_best_encode(self, block: list):
+    def search_best_encode(self, block: np.ndarray, destination: np.ndarray):
         coef_index = 0
         scale = 0
 
@@ -116,40 +112,47 @@ class Procyon:
         num_coef = 5
         num_scales = 12
 
-        best_encoded = None
+        tmp_array = self.tmp_array
         min_difference = -1
         for temp_coef in range(num_coef):
             for temp_scale in range(num_scales):
                 self.hist[0] = current_hist[0]
                 self.hist[1] = current_hist[1]
-                encoded, difference = self.get_encoding_difference(block, temp_coef, temp_scale, min_difference)
+                difference = self.get_encoding_difference(block, temp_coef, temp_scale, min_difference,
+                                                          tmp_array, destination)
 
-                if difference < min_difference or best_encoded is None:
+                if difference < min_difference or min_difference == -1:
                     min_difference = difference
-                    best_encoded = encoded
                     coef_index = temp_coef
                     scale = temp_scale
                     new_hist[0] = self.hist[0]
                     new_hist[1] = self.hist[1]
                     if difference == 0:
-                        return best_encoded, scale, coef_index
+                        break
+            if min_difference == 0:
+                break
         self.hist = new_hist
-        return best_encoded, scale, coef_index
+        return scale, coef_index
 
-    def get_encoding_difference(self, block: list, coef_index, scale, min_difference):
+    def get_encoding_difference(self, block: np.ndarray, coef_index, scale, min_difference,
+                                tmp_array: np.ndarray, destination: np.ndarray):
         coef1 = self.PROC_COEF[coef_index][0]
         coef2 = self.PROC_COEF[coef_index][1]
-
-        result = [0]*len(block)
 
         total_difference = 0
 
         for i, sample in enumerate(block):
             r, diff = self.encode_sample(sample, coef1, coef2, scale)
-            result[i] = r
+            r = (r + 16) % 16  # Make positive
+            if i % 2 == 0:
+                tmp_array[i//2] = r
+            else:
+                tmp_array[i//2] |= r << 4
+                tmp_array[i//2] ^= 0x80
             total_difference += diff
-            if total_difference > min_difference and min_difference >= 0:
+            if total_difference >= min_difference >= 0:
                 # if we already know that this can't possibly be the best combination, we return
-                return result, total_difference
+                return total_difference
 
-        return result, total_difference
+        destination[:15] = tmp_array[:15]
+        return total_difference

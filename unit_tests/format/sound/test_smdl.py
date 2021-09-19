@@ -1,4 +1,4 @@
-from formats.sound import smd
+from formats.sound import smdl
 from formats import binary
 from formats.filesystem import NintendoDSRom
 import unittest
@@ -20,7 +20,7 @@ class TestSMD(unittest.TestCase):
         smd_data = smd_file.read()
         smd_file.close()
 
-        smd_obj = smd.SMDL(filename="data_lt2/sound/BG_004.SMD", rom=self.rom)
+        smd_obj = smdl.SMDL(filename="data_lt2/sound/BG_004.SMD", rom=self.rom)
 
         exported_file = io.BytesIO()
         exported_file = binary.BinaryWriter(exported_file)

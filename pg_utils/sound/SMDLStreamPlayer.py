@@ -1,4 +1,4 @@
-from formats.sound import smd
+from formats.sound import smdl
 from formats import binary
 import io
 from queue import PriorityQueue
@@ -30,8 +30,8 @@ class PrioritizedItem:
 class SMDLSequencer:
     TRACK_SELECT = -1
 
-    def __init__(self, smd_obj: smd.SMDL, sample_rate=44100):
-        self.smd_obj: smd.SMDL = smd_obj
+    def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100):
+        self.smd_obj: smdl.SMDL = smd_obj
 
         self.sample_rate = sample_rate
         sf2_path = os.path.dirname(__file__) + "/layton2.sf2"
@@ -490,7 +490,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.sound_buffer[self.buffer_offset:self.buffer_offset + new_samples.shape[0]] = new_samples
         self.buffer_offset += new_samples.shape[0]
 
-    def start_sound(self, snd_obj: smd.SMDL, loops=0, volume=0.5):
+    def start_sound(self, snd_obj: smdl.SMDL, loops=0, volume=0.5):
         self.fading = False
         if not SMDLSequencer.get_dependencies_met():
             return

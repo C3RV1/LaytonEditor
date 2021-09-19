@@ -13,6 +13,7 @@ from formats.graphics.bg import BGImage
 from formats.place import Place
 from formats.puzzle import Puzzle
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
+from formats.sound import wav, sadl
 from gui import generated
 from gui.place_editor import PlaceEditor
 
@@ -24,8 +25,6 @@ from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 from previewers.sound.SoundPreview import SoundPreview
 
 from pg_utils.rom.rom_extract import load_sadl, load_smd
-from SADLpy.SADL import SADL
-from io import BytesIO
 
 
 class ClipBoardFile:
@@ -605,17 +604,14 @@ class FilesystemEditor(generated.FilesystemEditor):
             with wx.ProgressDialog("Exporting to WAV", "This could take several minutes.", parent=self,
                                    style=wx.PD_APP_MODAL) as progressDialog:
                 sadl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-                sadl_file = load_sadl(sadl_file_path, self.rom)
+                sadl_file: sadl.SADL = load_sadl(sadl_file_path, self.rom)
                 sadl_file.decode()
-                sadl_file.save_wav(pathname)
+                wav_obj = sadl_file.to_wav()
+                with open(pathname, "wb") as f:
+                    wav_obj.write_stream(f)
                 progressDialog.Update(100, "Completed")
 
     def fp_stream_import_wav(self, _):
-        def progress_update(value):
-            value *= 0.97
-            res = progressDialog.Update(value)[0]
-            wx.Yield()
-            return res
         with wx.FileDialog(self, "Import WAV", wildcard="WAV Files (*.wav)|*.wav",
                            style=wx.FD_OPEN) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -626,21 +622,19 @@ class FilesystemEditor(generated.FilesystemEditor):
             with wx.ProgressDialog("Importing WAV...", "This could take several minutes.", parent=self,
                                    style=wx.PD_APP_MODAL | wx.PD_REMAINING_TIME | wx.PD_CAN_ABORT) as progressDialog:
                 print("Loading sadl")
-                sadl: SADL = load_sadl(sadl_file_path)
+                sadl_obj: sadl.SADL = load_sadl(sadl_file_path)
                 print("Importing")
-                sadl.import_(pathname)
+                with open(pathname, "rb") as f:
+                    wav_obj = wav.WAV()
+                    wav_obj.read_stream(f)
                 print("Encoding")
-                encoded = sadl.encode(progress_func=progress_update)
-                if not encoded:
-                    return
+                sadl_obj.from_wav(wav_obj)
+                decoded_wav = sadl_obj.to_wav()
+                with open(pathname + ".tst.wav", "wb") as f:
+                    decoded_wav.write_stream(f)
                 print("Encoded")
-                bytesio_buffer = BytesIO()
-                sadl.write_file(bytesio_buffer, encoded)
-                bytes_sadl = bytesio_buffer.getvalue()
+                sadl_obj.save()
 
-                self.rom.files[self.rom.filenames.idOf(sadl_file_path)] = bytes_sadl
-
-                bytesio_buffer.close()
                 self.refresh_preview()
                 progressDialog.Update(100, "Completed")
 
