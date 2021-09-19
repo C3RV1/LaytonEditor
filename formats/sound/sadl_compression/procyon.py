@@ -15,6 +15,8 @@ class Procyon:
 
     def __init__(self):
         self.hist = [0, 0]
+        self.best_encoded = np.zeros((0x10,), dtype=np.uint8)
+        self.tmp_array = np.zeros((0x10,), dtype=np.uint8)
 
     def reset(self):
         self.hist = [0, 0]
@@ -72,9 +74,7 @@ class Procyon:
         diff = abs(sample - clamp)
         return result, diff
 
-    def decode_block(self, block: np.ndarray) -> np.ndarray:
-        buffer = np.zeros(shape=(30,), dtype=np.int32)
-
+    def decode_block(self, block: np.ndarray, destination: np.ndarray) -> None:
         header = block[0xF] ^ 0x80
         scale = header & 0xf
         coef_index = header >> 4
@@ -90,12 +90,11 @@ class Procyon:
             else:
                 sample = sample_byte & 0x0f
             sample = ((sample + 8) % 16) - 8
-            buffer[i] = self.decode_sample(sample, coef1, coef2, scale)
-
-        return buffer
+            destination[i] = self.decode_sample(sample, coef1, coef2, scale)
 
     def encode_block(self, block: np.ndarray) -> np.ndarray:
         # TODO: Encoding improve performance (currently it's brute force)
+        # TODO: Reuse arrays
         if len(block) < 30:
             block = np.append(block, [0]*(30 - len(block)))
         best_encoded, scale, coef_index = self.search_best_encode(block)

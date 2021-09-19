@@ -13,7 +13,7 @@ class TestSADL(unittest.TestCase):
         cls.rom = NintendoDSRom.fromFile(rom_path + "/../../../test_rom.nds")
 
     def get_sadl(self):
-        return self.rom.open("data_lt2/stream/bgm/BG_029.SAD", "rb")
+        return self.rom.open("data_lt2/stream/ST_001.SAD", "rb")
 
     def test_SADReadAndSave(self):
         sad_file = self.get_sadl()
@@ -37,10 +37,16 @@ class TestSADL(unittest.TestCase):
         sad_file.close()
 
         sad_obj = sadl.SADL()
-        sad_obj.read(sad_data)
+        sad_obj.read_stream(sad_data)
 
         exported_wav = sad_obj.to_wav()
+        with open("test_decode.wav", "wb") as f:
+            exported_wav.write_stream(f)
+        with open("test_decode.wav", "rb") as f:
+            exported_wav.read_stream(f)
+        sad_obj.from_wav(exported_wav)
+        exported_wav = sad_obj.to_wav()
 
-        with open("test_sad.wav", "wb") as f:
+        with open("test_encode.wav", "wb") as f:
             exported_wav.write_stream(f)
 

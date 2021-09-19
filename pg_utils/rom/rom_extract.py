@@ -1,12 +1,12 @@
 import os
 import shutil
-import formats.sound.smdl as smd
+import formats.sound.smdl as smdl
+import formats.sound.sadl as sadl
 import formats.sound.swd as swd
 import formats.binary as binary
 
 from formats import conf
 from pg_utils.rom import RomSingleton
-import SADLpy.SADL
 
 EXPORT_PATH = "data_extracted"
 ORIGINAL_FPS = 60
@@ -16,22 +16,13 @@ def set_extension(path, ext):
     return ".".join(path.split(".")[:-1]) + ext
 
 
-def load_sadl(path: str, rom=None) -> SADLpy.SADL.SADL:
+def load_sadl(path: str, rom=None) -> sadl.SADL:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", conf.LANG)
-    sad_export_path = EXPORT_PATH + "/" + path
-    sound_data = rom.files[rom.filenames.idOf(path)]
+    sadl_obj = sadl.SADL(path, 0, rom=rom)
 
-    # if not os.path.isfile(sad_export_path):
-    #     os.makedirs(os.path.dirname(sad_export_path), exist_ok=True)
-    #     with open(sad_export_path, "wb") as sad_export_file:
-    #         sad_export_file.write(sound_data)
-
-    sadl = SADLpy.SADL.SADL(sad_export_path, 0)
-    sadl.read_file(sound_data)
-
-    return sadl
+    return sadl_obj
 
 
 def load_smd(path: str, rom=None) -> tuple:
@@ -39,7 +30,7 @@ def load_smd(path: str, rom=None) -> tuple:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", conf.LANG)
 
-    smd_obj = smd.SMDL(filename=path, rom=rom)
+    smd_obj = smdl.SMDL(filename=path, rom=rom)
 
     swd_path = path.split(".")[0] + ".SWD"
     swd_file = binary.BinaryReader(rom.open(swd_path, "rb"))

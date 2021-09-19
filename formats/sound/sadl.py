@@ -1,8 +1,14 @@
+import math
+
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.sadl_compression import ima_adpcm, procyon
 from formats.sound.wav import WAV
+from formats.filesystem import FileFormat
 import numpy as np
 from typing import List
+
+
+# TODO: add loop support
 
 
 class Coding:
@@ -11,7 +17,7 @@ class Coding:
     NDS_PROCYON = 0xB0
 
 
-class SADL:
+class SADL(FileFormat):
     chunk_id: bytes
     original_header: bytes
 
@@ -31,7 +37,7 @@ class SADL:
     blocks_done: int
     offset: List[int]
 
-    def read(self, stream):
+    def read_stream(self, stream):
         if not isinstance(stream, BinaryReader):
             rdr = BinaryReader(stream)
         else:
@@ -84,7 +90,7 @@ class SADL:
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 
-    def write(self, stream):
+    def write_stream(self, stream):
         if not isinstance(stream, BinaryWriter):
             wtr = BinaryWriter(stream)
         else:
@@ -111,6 +117,12 @@ class SADL:
         buffer = buffer.swapaxes(0, 1)
         wtr.write(buffer.tobytes())
 
+        size = wtr.tell()
+        wtr.seek(0x40)
+        wtr.write_uint32(size)
+        wtr.seek(0x58)
+        wtr.write_uint32(size)
+
     def decode(self, blocks=-1):
         if self.coding == Coding.INT_IMA:
             if blocks == -1:
@@ -118,6 +130,8 @@ class SADL:
             decoded = np.zeros((self.channels, blocks * 32))
             for chan in range(self.channels):
                 for i in range(blocks):
+                    if i + self.blocks_done == self.num_samples // 2 // 0x10:
+                        continue
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
                     decoded_block = self.ima_decoders[chan].decompress(block)
                     self.offset[chan] += 0x10 * self.channels
@@ -129,10 +143,11 @@ class SADL:
             decoded = np.zeros((self.channels, blocks * 30), dtype=np.int16)
             for chan in range(self.channels):
                 for i in range(blocks):
+                    if i + self.blocks_done >= self.num_samples // 30:
+                        break
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
-                    decoded_block = self.procyon_decoders[chan].decode_block(block)
+                    self.procyon_decoders[chan].decode_block(block, decoded[chan][i*30:(i*30)+30])
                     self.offset[chan] += 0x10
-                    decoded[chan][i*30:(i*30)+30] = decoded_block
             self.blocks_done += blocks
         else:
             raise NotImplementedError()
@@ -145,3 +160,44 @@ class SADL:
         wav.fmt.bits_per_sample = 0x10
         wav.data.data = self.decode()
         return wav
+
+    def from_wav(self, wav: WAV):
+        self.channels = wav.fmt.num_channels
+        if self.channels > 2:
+            self.channels = 2
+        self.sample_rate = wav.fmt.sample_rate
+        if self.sample_rate <= 16364:
+            self.sample_rate = 16364
+        else:
+            self.sample_rate = 32728
+        wav.change_channels(self.channels)
+        wav.change_sample_rate(self.sample_rate)
+        with open("test_change_sample_rate.wav", "wb") as f:
+            wav.write_stream(f)
+        decoded = wav.data.data
+        self.encode(decoded)
+
+    def encode(self, decoded: np.ndarray):
+        self.num_samples = decoded.shape[1]
+        # Professor Layton 2 only supports Procyon encoding
+        self.coding = Coding.NDS_PROCYON
+        self.buffer = np.zeros((decoded.shape[0], int(math.ceil(self.num_samples / 30)) * 16), dtype=np.uint8)
+
+        self.procyon_decoders = []
+        self.offset = []
+        for i in range(self.channels):
+            self.procyon_decoders.append(procyon.Procyon())
+            self.offset.append(0)
+
+        print(f"Encoding {self.num_samples} samples")
+
+        for chan in range(self.channels):
+            buffer_off = 0
+            for i in range(0, self.num_samples, 30):
+                block = decoded[chan][i:i+30]
+                decoded_block = self.procyon_decoders[chan].encode_block(block)
+                self.buffer[chan][buffer_off:buffer_off + 0x10] = decoded_block
+                buffer_off += 0x10
+            self.procyon_decoders[chan].reset()
+            self.offset[chan] = 0
+        self.blocks_done = 0

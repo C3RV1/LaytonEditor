@@ -4,7 +4,7 @@ import numpy as np
 
 def change_sample_rate(buffer: np.ndarray, current, target) -> np.ndarray:
     shape = [0, 0]
-    shape[0] = buffer[0]
+    shape[0] = buffer.shape[0]
 
     # RATEo = SAMPLESo
     # RATEm = (SAMPLESo / RATEo) * RATEm

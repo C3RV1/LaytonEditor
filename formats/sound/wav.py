@@ -56,9 +56,9 @@ class DataChunk:
         self.chunk_size = rdr.read_uint32()
 
         if fmt_chunk.bits_per_sample == 0x10:
-            data = np.frombuffer(rdr.read(self.chunk_size), dtype="<H")
+            data = np.frombuffer(rdr.read(self.chunk_size), dtype="<h")
         elif fmt_chunk.bits_per_sample == 0x08:
-            data = np.frombuffer(rdr.read(self.chunk_size), dtype="<B")
+            data = np.frombuffer(rdr.read(self.chunk_size), dtype="<b")
         else:
             raise NotImplementedError()
         data = data.reshape((data.shape[0] // fmt_chunk.num_channels, fmt_chunk.num_channels))
