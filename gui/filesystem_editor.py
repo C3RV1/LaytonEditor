@@ -4,8 +4,6 @@ import sounddevice as sd
 import wx
 import wx.stc
 
-from SADLpy.SADL import SADL
-
 import utility.gdstextscript
 from formats.filesystem import *
 from formats.gds import GDS
