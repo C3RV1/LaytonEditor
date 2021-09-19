@@ -120,8 +120,6 @@ class SADL(FileFormat):
         size = wtr.tell()
         wtr.seek(0x40)
         wtr.write_uint32(size)
-        wtr.seek(0x58)
-        wtr.write_uint32(size)
 
     def decode(self, blocks=-1):
         if self.coding == Coding.INT_IMA:
