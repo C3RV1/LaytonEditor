@@ -195,8 +195,10 @@ class SADL(FileFormat):
             buffer_off = 0
             for i in range(0, self.num_samples, 30):
                 block = decoded[chan][i:i+30]
-                decoded_block = self.procyon_decoders[chan].encode_block(block)
-                self.buffer[chan][buffer_off:buffer_off + 0x10] = decoded_block
+                destination = self.buffer[chan][buffer_off:buffer_off + 0x10]
+                self.procyon_decoders[chan].encode_block(block, destination)
+                if i % 200*30 == 0 and i != 0:
+                    print(f"Blocks done: {i // 30} of {self.num_samples // 30}")
                 buffer_off += 0x10
             self.procyon_decoders[chan].reset()
             self.offset[chan] = 0
