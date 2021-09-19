@@ -270,7 +270,9 @@ class FileFormat:
             file.close()  # we opened the file here, we close the file here
 
     def save(self, filename=None, file=None, compressed=None, rom: NintendoDSRom = None):
+        should_close = False
         if not file:
+            should_close = True
             if filename:
                 file = rom.open(filename, "wb+") if rom else open(filename, "wb+")
                 self._last_filename = filename
@@ -287,6 +289,10 @@ class FileFormat:
             file = CompressedIOWrapper(file, double_typed=(compressed == 2))
 
         self.write_stream(file)
+
+        # Close file if we opened it here
+        if should_close:
+            file.close()
 
     def read_stream(self, stream):
         pass
