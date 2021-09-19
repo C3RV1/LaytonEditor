@@ -38,9 +38,11 @@ class EventDialogue(pge.Sprite):
         self.character_talking: EventCharacter = None
 
         self.voice_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.voice_player.set_volume(1)
         self.voice_line = -1
 
         self.dialogue_sfx_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.dialogue_sfx_player.set_volume(0.5)
         self.dialogue_sfx_id = -1
 
         self.on_dialogue = False
@@ -86,7 +88,7 @@ class EventDialogue(pge.Sprite):
         # If there is a voice line play it (first we stop it)
         if self.voice_line != -1:
             sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
-            self.voice_player.start_sound(sfx, volume=1)
+            self.voice_player.start_sound(sfx)
 
         if self.character_talking is not None:
             self.character_talking.set_talking()

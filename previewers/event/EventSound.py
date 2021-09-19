@@ -6,20 +6,22 @@ from pg_utils.rom.rom_extract import load_sadl, load_smd
 class EventSound:
     def __init__(self):
         self.sadl_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
+        self.sadl_player.set_volume(0.5)
         self.bg_player = pg_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
+        self.bg_player.set_volume(0.5)
         self.loops = False
 
-    def play_smdl(self, path, volume=0.5):
+    def play_smdl(self, path):
         smd_obj, presets = load_smd(path)
         self.bg_player.set_preset_dict(presets)
-        self.bg_player.start_sound(smd_obj, volume=volume)
+        self.bg_player.start_sound(smd_obj)
 
     def stop_smdl(self):
         self.bg_player.stop()
 
-    def play_sadl(self, path, volume=0.5):
+    def play_sadl(self, path):
         sadl = load_sadl(path)
-        self.sadl_player.start_sound(sadl, self.loops, volume=volume)
+        self.sadl_player.start_sound(sadl, self.loops)
 
     def stop_sadl(self):
         self.sadl_player.stop()

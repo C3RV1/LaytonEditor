@@ -330,7 +330,7 @@ class Sprite(Renderable):
                        self.position[1] - self._real_size[1] * self.center[1],
                        self._real_size[0], self._real_size[1])
 
-    def get_screen_rect(self, cam: Camera, update_pos=True) -> Tuple[pg.Rect, pg.Rect]:
+    def get_screen_rect(self, cam: Camera, update_pos=True, do_clip=True) -> Tuple[pg.Rect, pg.Rect]:
         self._position_to_screen(cam)
         size = list(self._real_size)
         size[0] *= cam.zoom[0]
@@ -338,7 +338,12 @@ class Sprite(Renderable):
         r = [self._screen_position[0], self._screen_position[1], size[0], size[1]]
         r[0] -= size[0] * self.center[0]
         r[1] -= size[1] * self.center[1]
-        clip = cam.clip_rect(r)
+        if do_clip:
+            clip = cam.clip_rect(r)
+        else:
+            clip = r.copy()
+            clip[0] = 0
+            clip[1] = 0
         return pg.Rect(r), pg.Rect(clip)
 
     def draw(self, cam: Camera):

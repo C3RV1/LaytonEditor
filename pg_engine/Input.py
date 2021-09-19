@@ -116,7 +116,7 @@ class Input(object):
 
     def grab_mouse(self, grab_id) -> None:
         if self._mouse_grab_id is None:
-            self._mouse_position_pre_grab = self._mouse_position.copy()
+            self._mouse_position_pre_grab = self._mouse_position
             self._mouse_grab_id = grab_id
 
     def release_mouse(self):
