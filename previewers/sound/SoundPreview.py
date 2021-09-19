@@ -32,14 +32,14 @@ class SoundPreview(TwoScreenRenderer):
         self.sprite_loader_os.load("headphones_play.png", self.play_btn, sprite_sheet=True, convert_alpha=False)
         self.play_btn.color_key = pg.Color(0, 255, 0)
 
-        self.volume_slider = pge.Slider(min_value=0, max_value=1, start_value=0.2)
+        self.volume_slider = pge.Slider(min_value=0, max_value=1, start_value=0.5)
         self.sprite_loader_os.load("slider_main.png", self.volume_slider, sprite_sheet=False)
         self.sprite_loader_os.load("slider_ball.png", self.volume_slider.child, sprite_sheet=False)
         self.volume_slider.center = [pge.Alignment.CENTER, pge.Alignment.BOTTOM]
-        self.volume_slider.position[1] = 192 // 2 - 10
+        self.volume_slider.position[1] = 192 // 2 - 20
 
         self.player: StreamPlayerAbstract = player
-        self.player.set_volume(0.2)
+        self.player.set_volume(0.5)
         self.snd_obj: Any = snd_obj
         self.playing = False
         if self.check_playable():
