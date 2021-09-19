@@ -445,38 +445,10 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
         super(SMDLStreamPlayer, self).__init__()
         self.smd_sequencer: SMDLSequencer = None
-        self.sound_obj: [pg.mixer.Sound] = None
-        self.sound_buffer = None
-        self.loading = False
-        self.loading_finished = False
-        self.buffer_offset = 0
         self.preset_dict: Dict[int, Preset] = {}
-        self.volume = 0.0
-
-        self.fading = False
-        self.current_fade_time = 0.0
-        self.fade_time = 0.0
 
     def set_preset_dict(self, preset_dict: Dict[int, Preset]):
         self.preset_dict = preset_dict
-
-    def update_(self, delta_time):
-        if self.loading:
-            self.add_samples()
-        if self.fading:
-            self.do_fade(delta_time)
-
-    def do_fade(self, delta_time):
-        if self.current_fade_time >= self.fade_time:
-            self.current_fade_time = self.fade_time
-            self.fading = False
-        percentage = (self.current_fade_time / self.fade_time)
-        if not self.is_fade_in:
-            percentage = 1 - percentage
-        new_volume = self.volume * percentage
-        if self.sound_obj is not None:
-            self.sound_obj.set_volume(new_volume)
-        self.current_fade_time += delta_time
 
     def add_samples(self, first_init=False):
         ticks_to_do = 48
@@ -490,7 +462,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.sound_buffer[self.buffer_offset:self.buffer_offset + new_samples.shape[0]] = new_samples
         self.buffer_offset += new_samples.shape[0]
 
-    def start_sound(self, snd_obj: smdl.SMDL, loops=0, volume=0.5):
+    def start_sound(self, snd_obj: smdl.SMDL, loops=0):
         self.fading = False
         if not SMDLSequencer.get_dependencies_met():
             return
@@ -519,21 +491,8 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         else:
             loops = 0
         self.sound_obj.play(loops=loops)
-        self.sound_obj.set_volume(volume)
-        self.volume = volume
-
-    def stop(self):
-        self.loading_finished = False
-        self.loading = False
-        if self.sound_obj is not None:
-            self.sound_obj.stop()
+        self.sound_obj.set_volume(self.volume)
 
     @staticmethod
     def get_playable():
         return SMDLSequencer.get_dependencies_met()
-
-    def fade(self, time, fade_in):
-        self.fading = True
-        self.fade_time = time
-        self.current_fade_time = 0.0
-        self.is_fade_in = fade_in
