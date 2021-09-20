@@ -29,9 +29,8 @@ class StreamPlayerAbstract:
         if not self.is_fade_in:
             percentage = 1 - percentage
         new_volume = self.volume * percentage
-        if not self.fading:
-            self.volume = new_volume
-        self.sound_obj.set_volume(new_volume)
+        if self.sound_obj:
+            self.sound_obj.set_volume(new_volume)
         self.current_fade_time += delta_time
 
     def stop(self):
@@ -47,9 +46,13 @@ class StreamPlayerAbstract:
         self.is_fade_in = fade_in
 
     def set_volume(self, volume):
-        if volume != self.volume and self.sound_obj is not None:
-            self.sound_obj.set_volume(volume)
-        self.volume = volume
+        if volume != self.volume:
+            self.volume = volume
+            if not self.fading:
+                if self.sound_obj is not None:
+                    self.sound_obj.set_volume(volume)
+            else:
+                self.do_fade(0)
 
     def add_samples(self, first_init=False):
         pass

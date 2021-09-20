@@ -8,7 +8,7 @@ class EventSound:
         self.sadl_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.sadl_player.set_volume(0.5)
         self.bg_player = pg_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
-        self.bg_player.set_volume(0.5)
+        self.bg_player.set_volume(0.3)
         self.loops = False
 
     def play_smdl(self, path):

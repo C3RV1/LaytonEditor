@@ -38,7 +38,7 @@ class EventDialogue(pge.Sprite):
         self.character_talking: EventCharacter = None
 
         self.voice_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
-        self.voice_player.set_volume(0.75)
+        self.voice_player.set_volume(0.5)
         self.voice_line = -1
 
         self.dialogue_sfx_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()

@@ -492,3 +492,9 @@ class EventEditor(generated.EventEditor):
              ["unk2", "uint", 0],
              ["unk2", "uint", 0]]
         ))
+
+    def add_wait_tap( self, event ):
+        self.add_command_panel(CommandRepr(
+            self.event.func_names["wait_tap"],
+            []
+        ))

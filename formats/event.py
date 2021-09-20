@@ -178,7 +178,8 @@ class Event:
         "bgm_fade_out": "Fade Out BG Music",
         "bgm_fade_in": "Fade In BG Music",
         "dialogue_sfx": "Set Dialogue SFX",
-        "dial": "Dialogue"
+        "dial": "Dialogue",
+        "wait_tap": "Wait Tap"
     }
 
     def convert_command(self, cmd: formats.gds.GDSCommand, for_code=True):
@@ -259,6 +260,8 @@ class Event:
         elif cmd.command == 0x62:
             func = "bg_music"
             param_names = ["Music ID", "Volume", "unk2"]
+        elif cmd.command == 0x69:
+            func = "wait_tap"
         elif cmd.command == 0x6a:
             func = "bg_shake"
         elif cmd.command == 0x8a:
@@ -415,6 +418,9 @@ class Event:
             command.params = params
         elif func == "bg_music" or func == self.func_names["bg_music"]:
             command.command = 0x62
+            command.params = params
+        elif func == "wait_tap" or func == self.func_names["wait_tap"]:
+            command.command = 0x69
             command.params = params
         elif func == "bg_shake" or func == self.func_names["bg_shake"]:
             command.command = 0x6a

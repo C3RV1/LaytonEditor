@@ -775,6 +775,9 @@ class EventEditor ( wx.Panel ):
 		self.m_bgMusicBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Play Background Music", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_bgMusicBtn, 0, wx.ALL|wx.EXPAND, 5 )
 
+		self.m_waitTapBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Wait Tap", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_waitTapBtn, 0, wx.ALL|wx.EXPAND, 5 )
+
 		self.m_bgShakeBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Shake Background", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_bgShakeBtn, 0, wx.ALL|wx.EXPAND, 5 )
 
@@ -910,6 +913,7 @@ class EventEditor ( wx.Panel ):
 		self.m_setVoiceBtn.Bind( wx.EVT_BUTTON, self.add_set_voice )
 		self.m_sfxSadBtn.Bind( wx.EVT_BUTTON, self.add_sfx_sad )
 		self.m_bgMusicBtn.Bind( wx.EVT_BUTTON, self.add_bg_music )
+		self.m_waitTapBtn.Bind( wx.EVT_BUTTON, self.add_wait_tap )
 		self.m_bgShakeBtn.Bind( wx.EVT_BUTTON, self.add_bg_shake )
 		self.m_sfxSedBtn.Bind( wx.EVT_BUTTON, self.add_sfx_sed )
 		self.m_bgmFadeOutBtn.Bind( wx.EVT_BUTTON, self.add_btm_fade_out )
@@ -979,6 +983,9 @@ class EventEditor ( wx.Panel ):
 		event.Skip()
 
 	def add_bg_music( self, event ):
+		event.Skip()
+
+	def add_wait_tap( self, event ):
 		event.Skip()
 
 	def add_bg_shake( self, event ):

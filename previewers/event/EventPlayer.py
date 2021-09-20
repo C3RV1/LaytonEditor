@@ -54,7 +54,11 @@ class EventPlayer(TwoScreenRenderer):
         self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue)
         self.dialogue.init_text(self.font_loader)
 
+        self.inp = pge.Input()
+        self.wait_tap = False
+
         self.run_events_until_busy()
+
 
     def run_events_until_busy(self):
         while True:
@@ -136,6 +140,8 @@ class EventPlayer(TwoScreenRenderer):
             self.event_sound.play_sadl(f"data_lt2/stream/ST_{str(command.params[0]).zfill(3)}.SAD")
         elif command.command == 0x62:
             self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD")
+        elif command.command == 0x69:
+            self.wait_tap = True
         elif command.command == 0x6a:
             self.btm_bg.shake()
         elif command.command == 0x71:
@@ -188,6 +194,9 @@ class EventPlayer(TwoScreenRenderer):
         for character in self.characters:
             if character:
                 character.animate(dt)
+        if self.wait_tap:
+            if self.inp.get_mouse_down(1):
+                self.wait_tap = False
         if not self.is_busy():
             self.run_events_until_busy()
 
@@ -213,4 +222,4 @@ class EventPlayer(TwoScreenRenderer):
         self.event_sound.stop_sadl()
 
     def is_busy(self):
-        return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy()
+        return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy() or self.wait_tap
