@@ -605,7 +605,6 @@ class FilesystemEditor(generated.FilesystemEditor):
                                    style=wx.PD_APP_MODAL) as progressDialog:
                 sadl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
                 sadl_file: sadl.SADL = load_sadl(sadl_file_path, self.rom)
-                sadl_file.decode()
                 wav_obj = sadl_file.to_wav()
                 with open(pathname, "wb") as f:
                     wav_obj.write_stream(f)
@@ -629,9 +628,6 @@ class FilesystemEditor(generated.FilesystemEditor):
                     wav_obj.read_stream(f)
                 print("Encoding")
                 sadl_obj.from_wav(wav_obj)
-                decoded_wav = sadl_obj.to_wav()
-                with open(pathname + ".tst.wav", "wb") as f:
-                    decoded_wav.write_stream(f)
                 print("Encoded")
                 sadl_obj.save()
 
