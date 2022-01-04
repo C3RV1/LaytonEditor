@@ -15,7 +15,13 @@ class StreamPlayerAbstract:
         self.current_fade_time = 0.0
         self.fade_time = 0.0
 
+        self.expected_buffer_position = 0
+        self.sample_rate = 0
+        self.playing = False
+
     def update_(self, delta_time):
+        if self.playing:
+            self.expected_buffer_position += self.sample_rate * delta_time
         if self.loading:
             self.add_samples()
         if self.fading:
@@ -36,6 +42,7 @@ class StreamPlayerAbstract:
     def stop(self):
         self.loading_finished = False
         self.loading = False
+        self.playing = False
         if self.sound_obj is not None:
             self.sound_obj.stop()
 
