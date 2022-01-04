@@ -28,7 +28,7 @@ for window users. For other users follow the instructions at
 Then, copy the library to `./custom_fluidsynth/fluidsynth/`. If the folder
 doesn't exist, create it. You also need the layton2.sf2 soundfont which is
 not available to the public at the moment. If you were to have it, copy it
-to `./pygame_utils/layton2.sf2`.
+to `./layton2.sf2`.
 
 ## Thanks to...
 

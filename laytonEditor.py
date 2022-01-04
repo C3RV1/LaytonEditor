@@ -1,6 +1,7 @@
 import sys
 
 import wx
+import os
 
 from gui import MainEditor
 
@@ -17,5 +18,6 @@ class LaytonEditor(wx.App):
 
 
 if __name__ == '__main__':
+    os.chdir(os.path.dirname(__file__))  # Ensure that the cwd is set correctly
     app = LaytonEditor(None)
     app.MainLoop()

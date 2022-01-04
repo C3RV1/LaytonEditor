@@ -16,7 +16,7 @@ class SoundPreview(TwoScreenRenderer):
         self.font_loader = RomSingleton().get_font_loader()
 
         self.now_playing_text = pge.Text(position=[0, -10], center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM],
-                                         scale=[0.7, 0.7])
+                                         scale=[1, 1])
         self.font_loader.load("font_event", 12, self.now_playing_text)
         self.now_playing_text.text = "Now playing:"
 
