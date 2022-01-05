@@ -166,7 +166,7 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x99:
             self.next_dialogue_sfx = command.params[0]
         else:
-            pge.Debug.log_warning(f"Command {hex(command.command)} not recognised (skipped). ", self)
+            print(f"[EventPlayer]    Command {hex(command.command)} not recognised (skipped). ")
 
     def execute_str_command(self, command):
         print(command)

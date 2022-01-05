@@ -132,11 +132,11 @@ class SMDLSequencer:
             event = track_br.read_uint8()
             if event == 0x98:
                 if self.loop_start[track_id] != -1 and self.loops:
-                    if self.DEBUG or True:
+                    if self.DEBUG:
                         print(f"{prefix}Looping to: {self.loop_start[track_id]}")
                     track_br.seek(self.loop_start[track_id])
                 else:
-                    if self.DEBUG or True:
+                    if self.DEBUG:
                         print(f"{prefix}Complete")
                     self.track_completed[track_id] = True
                     break
@@ -243,7 +243,7 @@ class SMDLSequencer:
                 # Loop does not work because of pygame
                 self.loop_start[track_id] = track_br.tell()
 
-                if self.DEBUG or True:
+                if self.DEBUG:
                     print(f"{prefix}Looping on: {self.loop_start[track_id]}")
             elif event == 0xa0:
                 self.octave[track_id] = track_br.read_uint8()

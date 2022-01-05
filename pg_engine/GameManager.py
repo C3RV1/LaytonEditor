@@ -1,7 +1,6 @@
 import pygame as pg
 import random
 import time
-from .Debug import Debug
 from .Screen import Screen
 from .Input import Input
 import os
@@ -74,7 +73,7 @@ class GameManager(object):
         self.input_manager.update_events(self._events)
 
         if self.log_fps:
-            Debug.log(f"FPS: { 1 / self._delta_time }", self)
+            print(f"[GameManager]    FPS: { 1 / self._delta_time }")
 
     @property
     def delta_time(self):

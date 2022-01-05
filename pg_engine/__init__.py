@@ -1,6 +1,5 @@
 from .Alignment import Alignment
 from .Camera import Camera
-from .Debug import Debug
 from .GameManager import GameManager, GameManagerConfig
 from .Input import Input
 from .Renderable import Renderable
