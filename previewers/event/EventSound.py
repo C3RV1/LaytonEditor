@@ -9,7 +9,6 @@ class EventSound:
         self.sadl_player.set_volume(0.5)
         self.bg_player = pg_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer()
         self.bg_player.set_volume(0.3)
-        self.loops = False
 
     def play_smdl(self, path):
         smd_obj, presets = load_smd(path)
@@ -21,7 +20,7 @@ class EventSound:
 
     def play_sadl(self, path):
         sadl = load_sadl(path)
-        self.sadl_player.start_sound(sadl, self.loops, loops=False)
+        self.sadl_player.start_sound(sadl, loops=False)
 
     def stop_sadl(self):
         self.sadl_player.stop()
