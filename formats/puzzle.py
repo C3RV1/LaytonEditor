@@ -14,15 +14,15 @@ from formats import conf
 
 class Puzzle:
     encoding = "cp1252"
-    UNUSED_0 = 0
+    MATCHSTICK_UNUSED = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
     MARK_ANSWER = 3
-    UNUSED_4 = 4
+    POSITION_TO_SOLVE_UNUSED = 4
     CIRCLE_ANSWER = 5
     DRAW_LINE_PLAZA = 6  # Maybe
-    UNUSED_7 = 7
-    UNUSED_8 = 8
+    CONNECT_TO_ANSWER_UNUSED = 7
+    CUPS_UNUSED = 8
     LINE_DIVIDE = 9
     SORT = 0xA
     WEATHER = 0xB
@@ -33,7 +33,7 @@ class Puzzle:
     INPUT_CHARACTERS = 0x10
     KNIGHT_TOUR = 0x11
     TILE_ROTATE = 0x12
-    UNUSED_13 = 0x13
+    POSITION_TO_SOLVE_UNUSED2 = 0x13
     UNUSED_14 = 0x14
     PUZZLES_172_202 = 0x15
     INPUT_NUMERIC = 0x16
@@ -58,7 +58,8 @@ class Puzzle:
         INPUT_NUMERIC: pz_gds.InputGDSParser,
         INPUT_ALTERNATIVE: pz_gds.InputGDSParser,
         INPUT_CHARACTERS: pz_gds.InputGDSParser,
-        MULTIPLE_CHOICE: pz_gds.MultipleChoiceGDSParser
+        MULTIPLE_CHOICE: pz_gds.MultipleChoiceGDSParser,
+        TILE_ROTATE_2: pz_gds.TileRotate2GDSParser
     }
 
     def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
