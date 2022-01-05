@@ -80,7 +80,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
             new_samples_remain -= new_samples_copy_length
             self.buffer_offset = buffer_end
 
-    def start_sound(self, snd_obj: smdl.SMDL, loops=0):
+    def start_sound(self, snd_obj: smdl.SMDL, loops=False):
         self.fading = False
         if not SMDLSequencer.get_dependencies_met():
             return
@@ -90,7 +90,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.buffer_size = self.SOUND_SECONDS * self.sample_rate
         self.load_size = self.LOAD_SECONDS * self.sample_rate
         self.expected_buffer_position = 0
-        self.smd_sequencer = SMDLSequencer(snd_obj, sample_rate=self.sample_rate)
+        self.smd_sequencer = SMDLSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
         self.smd_sequencer.create_program_map(self.preset_dict)
         self.smd_sequencer.reset()
         self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, 2), dtype=np.int16))

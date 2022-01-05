@@ -31,7 +31,7 @@ class SADLStreamPlayer(StreamPlayerAbstract):
         self.sound_buffer[self.buffer_offset:self.buffer_offset + copy_size] = new_samples[:copy_size]
         self.buffer_offset += copy_size
 
-    def start_sound(self, snd_obj: sadl.SADL, loops=0):
+    def start_sound(self, snd_obj: sadl.SADL, loops=False):
         if self.sound_obj is not None:
             self.sound_obj.stop()
         if self.sadl is not snd_obj:
@@ -45,4 +45,4 @@ class SADLStreamPlayer(StreamPlayerAbstract):
         if not self.loading_finished:
             self.loading = True
         self.sound_obj.set_volume(self.volume)
-        self.sound_obj.play(loops=loops)
+        self.sound_obj.play(loops=-1 if loops else 0)

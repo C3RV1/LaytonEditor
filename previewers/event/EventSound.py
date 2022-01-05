@@ -14,14 +14,14 @@ class EventSound:
     def play_smdl(self, path):
         smd_obj, presets = load_smd(path)
         self.bg_player.set_preset_dict(presets)
-        self.bg_player.start_sound(smd_obj)
+        self.bg_player.start_sound(smd_obj, loops=True)
 
     def stop_smdl(self):
         self.bg_player.stop()
 
     def play_sadl(self, path):
         sadl = load_sadl(path)
-        self.sadl_player.start_sound(sadl, self.loops)
+        self.sadl_player.start_sound(sadl, self.loops, loops=False)
 
     def stop_sadl(self):
         self.sadl_player.stop()

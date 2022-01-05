@@ -64,7 +64,7 @@ class StreamPlayerAbstract:
     def add_samples(self, first_init=False):
         pass
 
-    def start_sound(self, snd_obj, loops=0):
+    def start_sound(self, snd_obj, loops=False):
         pass
 
     @staticmethod

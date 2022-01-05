@@ -27,12 +27,12 @@ class SMDLSequencer:
     TRACK_SELECT = -1
     DEBUG = False
 
-    def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100):
+    def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100, loops=True):
         self.smd_obj: smdl.SMDL = smd_obj
 
         self.sample_rate = sample_rate
         sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
-        self.loops = False
+        self.loops = loops
 
         self.loop_start = [-1] * len(self.smd_obj.tracks)
         self.last_note_length = [0] * len(self.smd_obj.tracks)
@@ -131,7 +131,7 @@ class SMDLSequencer:
                 self.read_events(track_id1)
             event = track_br.read_uint8()
             if event == 0x98:
-                if self.loop_start[track_id] != -1:
+                if self.loop_start[track_id] != -1 and self.loops:
                     if self.DEBUG or True:
                         print(f"{prefix}Looping to: {self.loop_start[track_id]}")
                     track_br.seek(self.loop_start[track_id])

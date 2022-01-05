@@ -88,7 +88,7 @@ class EventDialogue(pge.Sprite):
         # If there is a voice line play it (first we stop it)
         if self.voice_line != -1:
             sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
-            self.voice_player.start_sound(sfx)
+            self.voice_player.start_sound(sfx, loops=False)
 
         if self.character_talking is not None:
             self.character_talking.set_talking()
@@ -161,7 +161,7 @@ class EventDialogue(pge.Sprite):
             self.text_left_to_do = self.text_left_to_do[2:]
             if self.dialogue_sfx_id != -1:
                 sadl = load_sadl(f"data_lt2/stream/ST_{str(self.dialogue_sfx_id).zfill(3)}.SAD")
-                self.dialogue_sfx_player.start_sound(sadl)
+                self.dialogue_sfx_player.start_sound(sadl, loops=False)
 
         # Move one character from self.text_left_to_do to current_text
         self.current_text += self.text_left_to_do[:1]

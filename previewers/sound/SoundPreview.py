@@ -72,7 +72,7 @@ class SoundPreview(TwoScreenRenderer):
         self.play_btn.set_tag("ON")
         if self.snd_obj and not self.playing:
             self.playing = True
-            self.player.start_sound(self.snd_obj)
+            self.player.start_sound(self.snd_obj, loops=True)
 
     def stop_sound(self):
         self.play_btn.set_tag("OFF")
