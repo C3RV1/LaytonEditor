@@ -40,11 +40,8 @@ class GDS(FileFormat):
                 self.params.append(rdr.read_string(rdr.read_uint16()))
             elif datatype == 0xc:
                 return
-        while rdr.c < file_length or True:
+        while rdr.c < file_length:
             self.commands.append(command := GDSCommand(rdr.read_uint16()))
-            if command.command == 0xc:
-                self.commands = self.commands[:-1]
-                return
             while rdr.c < file_length:
                 datatype = rdr.read_uint16()
                 if datatype == 0:

@@ -12,8 +12,8 @@ class TestGDS(unittest.TestCase):
         cls.rom = NintendoDSRom.fromFile(rom_path + "/../../test_rom.nds")
 
     def get_pzd(self):
-        gds_file = gds.GDS(filename="e10_040.gds", rom=self.rom.get_archive("data_lt2/event/ev_d10.plz"))
-        gds_original_file = self.rom.get_archive("data_lt2/event/ev_d10.plz").open("e10_040.gds", "rb")
+        gds_file = gds.GDS(filename="q3_param.gds", rom=self.rom.get_archive("data_lt2/script/puzzle.plz"))
+        gds_original_file = self.rom.get_archive("data_lt2/script/puzzle.plz").open("q3_param.gds", "rb")
         gds_original = gds_original_file.read()
         gds_original_file.close()
         return gds_file, gds_original
