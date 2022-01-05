@@ -257,7 +257,10 @@ class FilesystemEditor(generated.FilesystemEditor):
         elif name.endswith(".txt"):
             textfile = archive.open(name, "r")
             self.fp_text_edit.Clear()
-            text = textfile.read()
+            try:
+                text = textfile.read()
+            except UnicodeDecodeError:  # uses shift-jis
+                text = "Shift-jis text cannot be previewed for now"
             self.preview_data = (name, archive)
             self.fp_text_edit.WriteText(text)
             self.fp_formats_book.SetSelection(1)  # Text page

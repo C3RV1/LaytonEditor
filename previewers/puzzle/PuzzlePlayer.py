@@ -124,6 +124,7 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer()
+        self.puzzle_bg_music.set_volume(0.5)
         self.puzzle_bg_music.set_preset_dict(presets)
         self.puzzle_bg_music.start_sound(smd, loops=True)
 
