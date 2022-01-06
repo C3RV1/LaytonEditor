@@ -17,7 +17,7 @@ class ImaAdpcm:
         self.predicted_sample = 0
 
     def decompress(self, data: np.ndarray) -> np.ndarray:
-        result = np.zeros((data.shape[0] * 2,), dtype=np.uint16)
+        result = np.zeros((data.shape[0] * 2,), dtype=np.int16)
 
         index = self.index
         new_sample = self.new_sample
@@ -25,7 +25,7 @@ class ImaAdpcm:
             if i % 2 == 0:
                 d = data[i // 2] & 0x0f
             else:
-                d = data[i // 2] & 0xf0 >> 4
+                d = (data[i // 2] & 0xf0) >> 4
 
             step = ImaAdpcm.STEP_SIZE_TABLE[index]
             difference = step >> 3

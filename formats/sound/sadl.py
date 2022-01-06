@@ -125,15 +125,15 @@ class SADL(FileFormat):
         if self.coding == Coding.INT_IMA:
             if blocks == -1:
                 blocks = self.num_samples // 2 // 0x10 - self.blocks_done
-            decoded = np.zeros((self.channels, blocks * 32))
+            decoded = np.zeros((self.channels, blocks * 32), dtype=np.int16)
             for chan in range(self.channels):
                 for i in range(blocks):
                     if i + self.blocks_done == self.num_samples // 2 // 0x10:
                         continue
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
                     decoded_block = self.ima_decoders[chan].decompress(block)
-                    self.offset[chan] += 0x10 * self.channels
-                    decoded[chan][i:i+32] = decoded_block
+                    self.offset[chan] += 0x10
+                    decoded[chan][i*32:i*32+32] = decoded_block
             self.blocks_done += blocks
         elif self.coding == Coding.NDS_PROCYON:
             if blocks == -1:
