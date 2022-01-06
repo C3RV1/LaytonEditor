@@ -81,6 +81,9 @@ class SpriteEditor(generated.SpriteEditor):
     def ase_prop_image_index_spin_changed(self, event):
         animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
         frame_index = self.ase_frame_slider.GetValue()
+        if frame_index >= len(self._sprite.images):
+            self.ase_frame_slider.SetValue(frame_index - 1)
+            return
         animation.frames[frame_index].image_index = self.ase_prop_image_index_spin.GetValue()
 
         bitmap = self._sprite.extract_image_wx_bitmap(animation.frames[frame_index].image_index)

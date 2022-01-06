@@ -195,7 +195,7 @@ class AniSprite(FileFormat):
                         h, w = part.shape
                         bufpart = part.reshape((w * h))
                         part_4bit = np.zeros((h * w // 2), np.uint8)
-                        part_4bit[:] = np.ndarray = bufpart[0::2] & 0xf | bufpart[1::2] << 4
+                        part_4bit[:] = bufpart[0::2] & 0xf | bufpart[1::2] << 4
                         wtr.write(part_4bit.tobytes())
 
                     part_x += part_w
@@ -255,17 +255,23 @@ class AniSprite(FileFormat):
 
     def extract_image_wx_bitmap(self, image_index) -> wx.Bitmap:
         height, width = self.images[image_index].shape
-        return wx.Bitmap.FromBufferRGBA(width, height, self.palette[self.images[image_index]].astype(np.uint8))
+        image_array = self.palette[self.images[image_index]].astype(np.uint8)
+        return wx.Bitmap.FromBufferRGBA(width, height, image_array)
 
-    def replace_image_pil(self, image_index, image: Image.Image):
-        if image_index < 0:
-            image_index = len(self.images) + image_index
-        assert image_index < len(self.images)
+    def replace_image_pil(self, image_index, image: Image.Image):  # also used to recreate palette
+        # TODO: Change colordepth
+        if image_index is not None:
+            if image_index < 0:
+                image_index = len(self.images) + image_index
+            assert image_index < len(self.images)
 
-        image = image.convert("RGBA")
+            image = image.convert("RGBA")
         # Create the new palette by adding all the images together into 1 pil Image and then quantizing it.
         comb_w = max([img.shape[1] for img in self.images])
         comb_h = sum([img.shape[0] for img in self.images])
+        if image_index is not None:
+            comb_w = max(comb_w, image.width)
+            comb_h = comb_h + image.height
         comb = Image.new("RGBA", (comb_w, comb_h))
         comb_y = 0
         for i in range(len(self.images)):
@@ -296,14 +302,30 @@ class AniSprite(FileFormat):
             comb_y += h
 
     def append_image_pil(self, image: Image.Image):
-        self.images.append(np.ndarray((0,), np.uint8))
+        self.images.append(np.ndarray((0, 0), np.uint8))
         self.replace_image_pil(-1, image)
 
     def insert_image_pil(self, image_index, image: Image.Image):
-        self.images.insert(image_index, np.ndarray((0,), np.uint8))
+        self.images.insert(image_index, np.ndarray((0, 0), np.uint8))
+        for anim in self.animations:
+            for i, frame in enumerate(anim.frames):
+                if frame.image_index >= image_index:
+                    anim.frames[i].image_index += 1
         self.replace_image_pil(image_index, image)
 
-    # TODO: Function to recreate the palette and change colordepth
+    def remove_image(self, image_index):
+        self.images.pop(image_index)
+
+        for anim in self.animations:
+            frames_to_remove = []
+            for i, frame in enumerate(anim.frames):
+                if frame.image_index == image_index:
+                    frames_to_remove.append(frame)
+                elif frame.image_index > image_index:
+                    anim.frames[i].image_index -= 1
+            for frame in frames_to_remove:
+                anim.frames.remove(frame)
+        self.replace_image_pil(None, None)  # Recreate palette
 
     def __bytes__(self):
         return self.tobytes()

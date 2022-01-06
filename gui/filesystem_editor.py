@@ -151,7 +151,8 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_ani_menu, "Edit Sprite", self.fp_ani_edit_clicked)
         add_menu_item(self.fp_ani_menu, "Export Image", self.fp_ani_export_clicked)
         add_menu_item(self.fp_ani_menu, "Replace Image", self.fp_ani_replace_clicked)
-        add_menu_item(self.fp_ani_menu, "Add Image", self.fp_ani_add_clicked)
+        add_menu_item(self.fp_ani_menu, "Append Image", self.fp_ani_add_clicked)
+        add_menu_item(self.fp_ani_menu, "Insert (before) Image", self.fp_ani_insert_clicked)
         add_menu_item(self.fp_ani_menu, "Remove Image", self.fp_ani_remove_clicked)
 
         add_menu_item(self.fp_place_menu, "Edit Place", self.fp_place_edit_clicked)
@@ -259,11 +260,13 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_text_edit.Clear()
             try:
                 text = textfile.read()
+                self.preview_data = (name, archive)
+                self.fp_text_edit.WriteText(text)
+                self.fp_formats_book.SetSelection(1)  # Text page
             except UnicodeDecodeError:  # uses shift-jis
-                text = "Shift-jis text cannot be previewed for now"
-            self.preview_data = (name, archive)
-            self.fp_text_edit.WriteText(text)
-            self.fp_formats_book.SetSelection(1)  # Text page
+                print("Shift-jis text cannot be previewed for now")
+            finally:
+                textfile.close()
         elif res := self.PUZZLE_REGEX.search(name):
             puzzle = Puzzle(self.rom, id_=res.group(1))
             self.preview_data = puzzle
@@ -432,12 +435,27 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_ani_imageindex.SetValue(len(self.preview_data.images) - 1)
         self.preview_save = True
 
+    def fp_ani_insert_clicked(self, _event):
+        self.preview_data: AniSprite
+        with wx.FileDialog(self, "Open image", wildcard="PNG file (*.png)|*.png",
+                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            if pathname:
+                image = PIL.Image.open(pathname)
+        self.preview_data.insert_image_pil(self.fp_ani_imageindex.GetValue(), image)
+        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(self.fp_ani_imageindex.GetValue()))
+        self.fp_ani_imageindex.SetMax(len(self.preview_data.images) - 1)
+        self.preview_save = True
+
     def fp_ani_remove_clicked(self, _):
-        # TODO: Completely remove, and fix animation indexes
         self.preview_data: AniSprite
         image_index = self.fp_ani_imageindex.GetValue()
-        self.preview_data.images[image_index] = np.ndarray((1, 1), np.uint8)
-        self.fp_ani_viewimage_scaled.load_bitmap(image_index)
+        self.preview_data.remove_image(image_index)
+        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(0))
+        self.fp_ani_imageindex.SetValue(0)
+        self.fp_ani_imageindex.SetMax(len(self.preview_data.images) - 1)
         self.preview_save = True
 
     def fp_samplebank_play_clicked(self, _):
