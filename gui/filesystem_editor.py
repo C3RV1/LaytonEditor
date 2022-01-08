@@ -14,6 +14,8 @@ from formats.place import Place
 from formats.puzzle import Puzzle
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
 from formats.sound import wav, sadl
+from formats.sound.SMDLMidiSequencer import SMDLMidiSequencer
+import mido
 from gui import generated
 from gui.place_editor import PlaceEditor
 
@@ -129,6 +131,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
         self.fp_stream_menu = wx.Menu()
+        self.fp_sequenced_menu = wx.Menu()
 
         def add_menu_item(menu, title, handler):
             fs_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
@@ -168,6 +171,8 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
+
+        add_menu_item(self.fp_sequenced_menu, "Export to MID", self.fp_sequenced_export_mid)
 
         self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
 
@@ -317,6 +322,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.previewer.start_renderer(sound_previewer)
             set_previewer = True
             self.fp_formats_book.SetSelection(0)
+            self.fp_menus_loaded.append("Sequenced")
+            self.GetGrandParent().add_menu(self.fp_sequenced_menu, "Sequenced")
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
@@ -653,6 +660,22 @@ class FilesystemEditor(generated.FilesystemEditor):
                 sadl_obj.save()
 
                 self.refresh_preview()
+                progressDialog.Update(100, "Completed")
+
+    def fp_sequenced_export_mid(self, _):
+        with wx.FileDialog(self, "Export to MID", wildcard="MID Files (*.mid)|*.mid", style=wx.FD_SAVE) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+
+            with wx.ProgressDialog("Exporting to MID", "This could take several minutes.", parent=self,
+                                   style=wx.PD_APP_MODAL) as progressDialog:
+                smdl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+                smdl, presets = load_smd(smdl_file_path, self.rom)
+                smdl_seq = SMDLMidiSequencer(smdl)
+                smdl_seq.create_program_map(presets)
+                mid: mido.MidiFile = smdl_seq.generate_mid()
+                mid.save(pathname)
                 progressDialog.Update(100, "Completed")
 
     def fp_open_event_editor(self, _event):

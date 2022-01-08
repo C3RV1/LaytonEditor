@@ -3,18 +3,10 @@ import io
 from queue import PriorityQueue
 from dataclasses import dataclass, field
 from typing import Any
-import os
 from formats.sound import smdl
 from formats.sound.soundtypes import Preset
 import numpy as np
 from typing import Dict
-
-try:
-    import custom_fluidsynth.custom_fluidsynth as fluidsynth
-except ImportError as e:
-    # Can still run without the synth
-    print(f"Error importing fluidsynth: {e}")
-    fluidsynth = None
 
 
 @dataclass(order=True)
@@ -31,7 +23,6 @@ class SMDLSequencer:
         self.smd_obj: smdl.SMDL = smd_obj
 
         self.sample_rate = sample_rate
-        sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
         self.loops = loops
 
         self.loop_start = [-1] * len(self.smd_obj.tracks)
@@ -48,13 +39,6 @@ class SMDLSequencer:
         self.completed = False
 
         self.PROGRAM_MAP = {}
-
-        if fluidsynth is None or not os.path.isfile(sf2_path):
-            self.fs = None
-            return
-        self.fs = fluidsynth.Synth(samplerate=self.sample_rate, gain=0.5)
-        self.sf_id = self.fs.sfload(sf2_path)
-        self.fs.program_select(0, self.sf_id, 0, 0)
 
         for track in self.smd_obj.tracks:
             track_br = binary.BinaryReader(io.BytesIO(track.track_content.event_bytes))
@@ -123,6 +107,45 @@ class SMDLSequencer:
             if mapped_preset is not None:
                 self.PROGRAM_MAP[preset_index] = mapped_preset
 
+    def note_on(self, channel, midi_note, velocity):
+        pass
+
+    def note_off(self, channel, midi_note):
+        pass
+
+    def start_loop(self, channel):
+        pass
+
+    def set_octave(self, channel, octave):
+        pass
+
+    def mod_octave(self, channel, octave_mod):
+        pass
+
+    def set_bpm(self, channel, bpm):
+        pass
+
+    def set_program(self, channel, program):
+        pass
+
+    def pitch_bend(self, channel, pitch_bend):
+        pass
+
+    def change_volume(self, channel, volume):
+        pass
+
+    def change_expression(self, channel, expression):
+        pass
+
+    def change_pan(self, channel, pan):
+        pass
+
+    def generate_samples_from_ticks(self, ticks) -> np.ndarray:
+        return np.zeros((self.ticks_to_samples(ticks), 2), dtype=np.int16)
+
+    def end_channel(self, channel):
+        pass
+
     def read_events(self, track_id):
         track_br = self.tracks_br[track_id]
         prefix = f"[Track {track_id} tick: {self.current_tick}]\t"
@@ -139,6 +162,7 @@ class SMDLSequencer:
                     if self.DEBUG:
                         print(f"{prefix}Complete")
                     self.track_completed[track_id] = True
+                    self.end_channel(track_id)
                     break
             elif 0x0 <= event <= 0x7F:  # Note
                 note_data = track_br.read_uint8()
@@ -165,12 +189,15 @@ class SMDLSequencer:
                 # notes are on even, pauses on odd (pauses after notes)
                 note_end = (self.current_tick + duration) * 2
                 if self.DEBUG:
-                    print(f"{prefix}Note {midi_note} with duration {duration}, ending on {note_end}")
+                    print(f"{prefix}Note on {midi_note} with duration {duration}, ending on {note_end}")
 
-                self.fs.noteon(track_id, midi_note, velocity)
+                self.note_on(track_id, midi_note, velocity)
 
                 def on_note_end(note1=midi_note, channel=track_id):
-                    self.fs.noteoff(channel, note1)
+                    self.note_off(channel, note1)
+                    prefix_ = f"[Track {channel} tick: {self.current_tick}]\t"
+                    if self.DEBUG:
+                        print(f"{prefix_}Note off {midi_note}")
 
                 queue_stop_object = PrioritizedItem(note_end, on_note_end)
                 self.event_queue.put(queue_stop_object)
@@ -242,22 +269,26 @@ class SMDLSequencer:
             elif event == 0x99:
                 # Loop does not work because of pygame
                 self.loop_start[track_id] = track_br.tell()
+                self.start_loop(track_id)
 
                 if self.DEBUG:
                     print(f"{prefix}Looping on: {self.loop_start[track_id]}")
             elif event == 0xa0:
                 self.octave[track_id] = track_br.read_uint8()
+                self.set_octave(track_id, self.octave[track_id])
 
                 if self.DEBUG:
                     print(f"{prefix}Setting octave to {self.octave[track_id]}")
             elif event == 0xa1:
                 octave_mod = track_br.read_uint8()
+                self.mod_octave(track_id, octave_mod)
                 self.octave[track_id] += octave_mod
 
                 if self.DEBUG:
                     print(f"{prefix}Modifying octave with {octave_mod} to {self.octave[track_id]}")
             elif event == 0xa4 or event == 0xa5:
                 self.bpm = track_br.read_uint8()
+                self.set_bpm(track_id, self.bpm)
 
                 if self.DEBUG:
                     print(f"{prefix}Set tempo: {self.bpm}")
@@ -269,7 +300,7 @@ class SMDLSequencer:
 
                 if program in self.PROGRAM_MAP.keys():
                     program = self.PROGRAM_MAP[program]
-                    self.fs.program_select(track_id, self.sf_id, 0, program)
+                    self.set_program(track_id, program)
                 else:
                     print(f"{prefix}PROGRAM {program} not in PROGRAM_MAP")
             elif event == 0xd7:
@@ -278,28 +309,28 @@ class SMDLSequencer:
                 if self.DEBUG:
                     print(f"{prefix}Bending note: {bend}")
 
-                self.fs.pitch_bend(track_id, bend)
+                self.pitch_bend(track_id, bend)
             elif event == 0xe0:  # Change volume
                 volume = track_br.read_uint8()
 
                 if self.DEBUG:
                     print(f"{prefix}Changing volume to {volume}")
 
-                self.fs.cc(track_id, 0x07, volume)
+                self.change_volume(track_id, volume)
             elif event == 0xe3:
                 expression = track_br.read_uint8()
 
                 if self.DEBUG:
                     print(f"{prefix}Changing expression to {expression}")
 
-                self.fs.cc(track_id, 0x0B, expression)
+                self.change_expression(track_id, expression)
             elif event == 0xe8:  # pan
                 pan = track_br.read_uint8()
 
                 if self.DEBUG:
                     print(f"{prefix}Changing pan to {pan}")
 
-                self.fs.cc(track_id, 0x0a, pan)
+                self.change_pan(track_id, pan)
             elif event in [0xAB,  # Should remain here
                            # Unknown
                            0x95, 0x9C, 0xA9, 0xAA, 0xB1, 0xB2, 0xB3,
@@ -329,8 +360,6 @@ class SMDLSequencer:
                     print(f"[Track {track_id} tick: {self.current_tick}]\tEvent5: {hex(event)} Value: {v}")
 
     def reset(self):
-        if not self.fs:
-            return
         for track_br in self.tracks_br:
             track_br.seek(0)
         self.current_tick = 0
@@ -340,9 +369,9 @@ class SMDLSequencer:
         self.bpm = 120
         self.completed = False
 
-    def generate_samples2(self, ticks_to_create=0):
+    def generate_samples(self, ticks_to_create=0):
         samples = np.zeros((0, 2), dtype=np.int16)
-        if self.fs is None:
+        if not self.get_dependencies_met():
             return samples
         start_tick = self.current_tick
         if self.event_queue.empty() and not self.completed:
@@ -357,18 +386,16 @@ class SMDLSequencer:
             task_function = task.item
             ticks_to_do = (task_start // 2) - self.current_tick
             if ticks_to_do > 0:
-                array = self.fs.get_samples(self.ticks_to_samples(ticks_to_do))
-                array = np.swapaxes(array, 0, 1)
+                array = self.generate_samples_from_ticks(ticks_to_do)
                 samples = np.append(samples, array, axis=0)
                 self.current_tick = task_start // 2
             if callable(task_function):
                 task_function()
-            if self.current_tick - start_tick >= ticks_to_create > 0:
+            if self.current_tick - start_tick >= ticks_to_create > 0 and not (ticks_to_create == -1 and not self.loops):
                 return samples
-        if self.current_tick - start_tick < ticks_to_create:
+        if self.current_tick - start_tick < ticks_to_create and not (ticks_to_create == -1 and not self.loops):
             ticks_to_do = (start_tick + ticks_to_create) - self.current_tick
-            array = self.fs.get_samples(self.ticks_to_samples(ticks_to_do))
-            array = np.swapaxes(array, 0, 1)
+            array = self.generate_samples_from_ticks(ticks_to_do)
             samples = np.append(samples, array, axis=0)
             self.current_tick = start_tick + ticks_to_create
         self.completed = True
@@ -376,5 +403,7 @@ class SMDLSequencer:
 
     @staticmethod
     def get_dependencies_met():
-        sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
-        return fluidsynth is not None and os.path.isfile(sf2_path)
+        return True
+
+
+

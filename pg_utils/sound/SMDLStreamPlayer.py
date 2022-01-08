@@ -3,7 +3,7 @@ import numpy as np
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound.soundtypes import Preset
 from typing import Dict
-from formats.sound.smdl_sequencer import SMDLSequencer
+from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
 
 import pygame as pg
 
@@ -35,7 +35,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
 
     def __init__(self):
         super(SMDLStreamPlayer, self).__init__()
-        self.smd_sequencer: SMDLSequencer = None
+        self.smd_sequencer: SMDLFluidSynthSequencer = None
         self.preset_dict: Dict[int, Preset] = {}
         self.buffer_size = 0
         self.load_size = 0
@@ -49,7 +49,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         ticks_to_do = self.smd_sequencer.samples_to_ticks(samples_to_do)
         if ticks_to_do <= 0:
             return
-        new_samples = self.smd_sequencer.generate_samples2(ticks_to_do)
+        new_samples = self.smd_sequencer.generate_samples(ticks_to_do)
         if new_samples.shape[0] == 0:
             return
         new_samples_pos = 0
@@ -82,7 +82,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
 
     def start_sound(self, snd_obj: smdl.SMDL, loops=False):
         self.fading = False
-        if not SMDLSequencer.get_dependencies_met():
+        if not SMDLFluidSynthSequencer.get_dependencies_met():
             return
         if self.sound_obj is not None:
             self.sound_obj.stop()
@@ -90,7 +90,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.buffer_size = self.SOUND_SECONDS * self.sample_rate
         self.load_size = self.LOAD_SECONDS * self.sample_rate
         self.expected_buffer_position = 0
-        self.smd_sequencer = SMDLSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
+        self.smd_sequencer = SMDLFluidSynthSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
         self.smd_sequencer.create_program_map(self.preset_dict)
         self.smd_sequencer.reset()
         self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, 2), dtype=np.int16))
@@ -106,4 +106,4 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
 
     @staticmethod
     def get_playable():
-        return SMDLSequencer.get_dependencies_met()
+        return SMDLFluidSynthSequencer.get_dependencies_met()
