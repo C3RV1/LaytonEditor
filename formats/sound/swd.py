@@ -1,5 +1,75 @@
 from .soundtypes import *
-from formats.binary import BinaryReader, SEEK_CUR
+from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
+from formats.filesystem import FileFormat
+
+
+class SWDHeader:
+    magic: bytes = b"swdl"
+    file_length: int
+    version: int = 0x415
+    is_sample_bank: bool
+    group: int
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+    second: int
+    centisecond: int
+    file_name: bytes
+    unk10: int
+    unk13: int
+
+    def read(self, br: BinaryReader):
+        br.seek(0)
+        self.magic = br.read(4)
+        if self.magic != b"swdl":
+            raise ValueError("SWDHeader does not start with magic value")
+        br.read_uint32()  # 0
+        self.file_length = br.read_uint32()
+        self.version = br.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SMDHeader does not have correct version")
+        self.is_sample_bank = br.read_bool()
+        self.group = br.read_uint8()
+        # 8 bytes of 0
+        br.read_uint32()
+        br.read_uint32()
+        self.year = br.read_uint16()
+        self.month = br.read_uint8()
+        self.day = br.read_uint8()
+        self.hour = br.read_uint8()
+        self.minute = br.read_uint8()
+        self.second = br.read_uint8()
+        self.centisecond = br.read_uint8()
+        self.file_name = br.read_string(16, encoding=None, pad=b"\xAA")
+        self.unk10 = br.read_uint32()
+        # 8 bytes of 0
+        br.read_uint32()
+        br.read_uint32()
+        self.unk13 = br.read_uint32()
+
+
+class SWDSections:
+    pass
+
+
+class SWDL(FileFormat):
+    swd_header: SWDHeader
+
+    def read_stream(self, stream):
+        if isinstance(stream, BinaryReader):
+            rdr = stream
+        else:
+            rdr = BinaryReader(stream)
+        self.swd_header = SWDHeader()
+        self.swd_header.read(rdr)
+
+    def write_stream(self, stream):
+        if isinstance(stream, BinaryWriter):
+            wtr = stream
+        else:
+            wtr = BinaryWriter(stream)
 
 
 def swd_read_sections(stream) -> Dict[str, Tuple[int, int]]:
