@@ -8,7 +8,7 @@ import io
 class SMDLHeader:
     magic: bytes = b"smdl"
     file_length: int
-    version: int = 0x1504
+    version: int = 0x415
     unk1: int
     unk2: int
     year: int
@@ -28,6 +28,8 @@ class SMDLHeader:
         br.read_uint32()  # 0
         self.file_length = br.read_uint32()
         self.version = br.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SMDHeader does not have correct version")
         self.unk1 = br.read_uint8()
         self.unk2 = br.read_uint8()
         # 8 bytes of 0
