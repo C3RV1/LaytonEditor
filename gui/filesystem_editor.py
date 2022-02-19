@@ -132,6 +132,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_event_menu = wx.Menu()
         self.fp_stream_menu = wx.Menu()
         self.fp_sequenced_menu = wx.Menu()
+        self.fp_text_menu = wx.Menu()
 
         def add_menu_item(menu, title, handler):
             fs_menu_item = wx.MenuItem(menu, wx.ID_ANY, title)
@@ -152,6 +153,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_bg_menu, "Import Image", self.fp_bg_import_clicked)
 
         add_menu_item(self.fp_ani_menu, "Edit Sprite", self.fp_ani_edit_clicked)
+        # Integrate this options into the sprite editor, they don't belong here
         add_menu_item(self.fp_ani_menu, "Export Image", self.fp_ani_export_clicked)
         add_menu_item(self.fp_ani_menu, "Replace Image", self.fp_ani_replace_clicked)
         add_menu_item(self.fp_ani_menu, "Append Image", self.fp_ani_add_clicked)
@@ -173,6 +175,8 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
 
         add_menu_item(self.fp_sequenced_menu, "Export to MID", self.fp_sequenced_export_mid)
+
+        add_menu_item(self.fp_text_menu, "Save", self.fp_text_save)
 
         self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
 
@@ -272,6 +276,8 @@ class FilesystemEditor(generated.FilesystemEditor):
                 print("Shift-jis text cannot be previewed for now")
             finally:
                 textfile.close()
+            self.fp_menus_loaded.append("Text")
+            self.GetGrandParent().add_menu(self.fp_place_menu, "Text")
         elif res := self.PUZZLE_REGEX.search(name):
             puzzle = Puzzle(self.rom, id_=res.group(1))
             self.preview_data = puzzle
@@ -331,13 +337,9 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.previewer.stop_renderer()
 
     def save_preview(self):
+        # TODO: Shouldn't save preview data by default, consistency w/ event & puzzle
         if isinstance(self.preview_data, FileFormat):
             self.preview_data.save()
-        elif isinstance(self.preview_data, tuple):
-            name, archive = self.preview_data
-            if name.endswith(".txt"):
-                with archive.open(name, "w+") as file:
-                    file.write(self.fp_text_edit.GetValue())
 
     def ft_filetree_selchanged(self, event: wx.TreeEvent):
         self.refresh_preview()
@@ -682,3 +684,8 @@ class FilesystemEditor(generated.FilesystemEditor):
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         filename = path.split("/")[-1]
         self.GetGrandParent().open_event_editor_page(self.preview_data, filename)
+
+    def fp_text_save(self):
+        name, archive = self.preview_data
+        with archive.open(name, "w+") as file:
+            file.write(self.fp_text_edit.GetValue())

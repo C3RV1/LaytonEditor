@@ -353,7 +353,10 @@ class BinaryWriter(_BaseBinaryWrapper):
             if len(string) < size:
                 self.write(pad * (size - len(string)))
         else:
-            if string[-1] != pad:
+            if len(string) > 0:
+                if string[-1] != pad:
+                    string += pad
+            else:
                 string += pad
             self.write(string)
 
