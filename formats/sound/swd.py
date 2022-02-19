@@ -1,6 +1,192 @@
+# Thanks to https://projectpokemon.org/docs/mystery-dungeon-nds/dse-swdl-format-r14/
+
 from .soundtypes import *
 from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
 from formats.filesystem import FileFormat
+
+
+class EodChunk:
+    magic: bytes = b"eod "
+    unk1: int = 0
+    unk2: int = 0x415
+    chunk_beg: int = 0x10
+    chunk_len: int = 0
+
+
+class SWDPcmdChunk:
+    magic: bytes = b"pcmd"
+    unk1: int = 0x0
+    unk2: int = 0x415
+    chunk_beg: int = 0x10
+    chunk_len: int
+    sample_data: List
+
+
+class KeyGroup:
+    key_group_id: int
+    polyphony: int
+    priority: int
+    voice_channel_low: int
+    voice_channel_hi: int
+    unk50: int
+    unk51: int
+
+
+class SWDKgprChunk:
+    magic: bytes = b"kgpr"
+    unk1: int
+    unk2: int = 0x415
+    chunk_beg: int = 0x10
+    chunk_len: int
+    key_groups: List[KeyGroup]
+
+
+class LFOEntry:
+    unk34: int = 0x0
+    unk52: int = 0x0
+    # Destination of the lfo output
+    # 0 - none/disabled
+    # 1 - pitch
+    # 2 - volume
+    # 3 - pan
+    # 4 - low pass / cut off filter
+    destination: int
+    # Shape of the waveform
+    # 1 - square
+    # 2 - triangle?
+    # 3 - sinus?
+    # 4 - ?
+    # 5 - Saw?
+    # 6 - Noise?
+    # 7 - Random
+    wshape: int
+    rate: int  # maybe hz
+    unk29: int  # feedback or resonance? (or maybe just don't touch it)
+    depth: int
+    delay: int  # milliseconds
+    unk32: int = 0x0  # possible fadeout
+    unk33: int = 0x0
+
+
+class SplitEntry:
+    unk10: int = 0
+    splits_table_id: int
+    unk11: int
+    unk25: int  # possibly bool
+    low_key: int = 0
+    hi_key: int = 0x7F
+    low_key2: int  # a copy of low_key?
+    hi_key2: int  # a copy of hi_key?
+    low_vel: int
+    hi_vel: int
+    low_vel2: int  # a copy of low_vel?
+    hi_vel2: int  # a copy of hi_vel?
+    unk16: int  # pad_byte?
+    unk17: int  # pad_byte?
+    unk17: int  # pad_byte?
+    sample_id: int  # id/index in the wavi chunk
+    fine_tune: int  # in cents
+    coarse_tune: int = -7
+    root_key: int
+    key_transpose: int  # diff between root key and 60?
+    sample_volume: int
+    sample_pan: int
+    key_group_id: int
+    unk22: int = 0x02
+    unk23: int = 0x0
+    unk24: int  # pad_byte?
+    envelope_on: int  # if is 0, envelope isn't processed
+    envelope_multiplier: int
+    unk37: int
+    unk38: int
+    unk39: int
+    unk40: int
+    attack_volume: int
+    attack: int
+    decay: int
+    sustain: int
+    hold: int
+    decay2: int
+    release: int
+    unk53: int
+
+
+class ProgramInfoEntry:
+    program_id: int
+    splits_count: int
+    program_volume: int
+    program_pan: int
+    unk3: int = 0
+    that_f_byte: int = 0x0F  # Naming at projectpokemon
+    unk4: int = 0x200
+    unk5: int = 0x00
+    lfo_count: int
+    pad_byte: int  # 0xAA or 0x00
+    unk7: int = 0x0
+    unk8: int = 0x0
+    unk9: int = 0x0
+    lfo_table: List[LFOEntry]
+    splits_table: List[SplitEntry]
+
+
+class SWDPrgiChunk:
+    magic: bytes = b"prgi"
+    unk1: int = 0
+    unk2: int = 0x415
+    chunk_beg: int = 0x10
+    chunk_len: int
+    program_ptr_table: List[int]
+    program_info_table: List[int]
+
+
+class SampleInfoEntry:
+    unk1: int = 0x1AA
+    id_: int
+    fine_tune: int
+    coarse_tune: int
+    root_key: int
+    key_transpose: int
+    volume: int
+    pan: int
+    unk5: int = 0
+    unk58: int = 0x02
+    unk6: int = 0
+    version: int = 0x415
+    sample_format: int
+    unk9: int
+    sample_loop: bool
+    unk10: int
+    unk11: int
+    unk12: int
+    unk13: int = 0
+    sample_rate: int
+    sample_pos: int
+    loop_beginning: int
+    loop_length: int
+    envelope: int
+    envelope_multiplier: int
+    unk19: int
+    unk20: int
+    unk21: int
+    unk22: int
+    attack_volume: int
+    attack: int
+    decay: int
+    sustain: int
+    hold: int
+    decay2: int
+    release: int
+    unk57: int
+
+
+class SWDWaviChunk:
+    magic: bytes = b"wavi"
+    unk1: int
+    version: int = 0x415
+    chunk_beg: int = 0x10
+    chunk_len: int
+    wav_table: List[int]
+    sample_info_table: List[SampleInfoEntry]
 
 
 class SWDHeader:
@@ -19,6 +205,12 @@ class SWDHeader:
     file_name: bytes
     unk10: int
     unk13: int
+    pcmdlen: int
+    unk14: int
+    wavi_slot_count: int
+    prgi_slot_count: int
+    unk17: int
+    wavi_len: int  # len of wavi chunk
 
     def read(self, br: BinaryReader):
         br.seek(0)
@@ -48,6 +240,12 @@ class SWDHeader:
         br.read_uint32()
         br.read_uint32()
         self.unk13 = br.read_uint32()
+        self.pcmdlen = br.read_uint32()
+        self.unk14 = br.read_uint32()
+        self.wavi_slot_count = br.read_uint16()
+        self.prgi_slot_count = br.read_uint16()
+        self.unk17 = br.read_uint16()
+        self.wavi_len = br.read_uint32()
 
 
 class SWDSections:
