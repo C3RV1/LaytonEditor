@@ -10,10 +10,7 @@ from formats.graphics.ani import AniSprite
 from formats.graphics.bg import BGImage
 from formats.nftr import NFTR
 import numpy as np
-
-
-def set_extension(path, ext):
-    return os.path.splitext(path)[0] + ext
+from utility.path import set_extension
 
 
 class SpriteLoaderROM(pge.SpriteLoaderOS):

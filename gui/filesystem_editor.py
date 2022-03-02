@@ -21,7 +21,7 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
-from pg_utils.rom.loaders import set_extension
+from utility.path import set_extension
 from previewers.event.EventPlayer import EventPlayer
 from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 from previewers.sound.SoundPreview import SoundPreview

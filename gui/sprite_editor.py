@@ -2,7 +2,7 @@ import wx
 import wx.dataview
 
 from formats.graphics.ani import AniSprite, Animation
-from pg_utils.rom.loaders import set_extension
+from utility.path import set_extension
 from gui import generated
 import PIL.Image
 
