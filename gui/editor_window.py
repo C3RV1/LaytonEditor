@@ -146,10 +146,15 @@ class MainEditor(generated.MainEditor):
 
     def le_page_close(self, event: wx.aui.AuiNotebookEvent):
         page = self.le_editor_pages.GetPage(event.GetOldSelection())
-        page.exit()
+        if not page.close():
+            event.Veto()  # Cancel the event as we cannot close the page
 
-    def close_window(self, event):
-        self.pygame_previewer.loop_lock.acquire()
-        self.pygame_previewer.gm.exit()
-        self.pygame_previewer.loop_lock.release()
-        self.Destroy()
+    def close_window(self, _event):
+        dialog = wx.MessageDialog(self, "Are you sure you want to exit?\nAll unsaved changes won't be saved.",
+                                  style=wx.OK | wx.CANCEL)
+        result = dialog.ShowModal()
+        if result == wx.ID_OK:
+            self.pygame_previewer.loop_lock.acquire()
+            self.pygame_previewer.gm.exit()
+            self.pygame_previewer.loop_lock.release()
+            self.Destroy()

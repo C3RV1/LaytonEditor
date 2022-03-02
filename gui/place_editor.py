@@ -190,3 +190,6 @@ class PlaceEditor(gui.generated.PlaceEditor):
 
     def exit(self):
         pass
+
+    def close(self):
+        return True

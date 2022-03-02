@@ -110,6 +110,7 @@ class CommandPanel(wx.Panel):
         self.delete_btn.Bind(wx.EVT_BUTTON, self.delete)
         self.property_grid.AddActionTrigger(wx.propgrid.PG_ACTION_NEXT_PROPERTY, wx.WXK_DOWN)
         self.property_grid.AddActionTrigger(wx.propgrid.PG_ACTION_PREV_PROPERTY, wx.WXK_UP)
+        self.property_grid.Bind(wx.propgrid.EVT_PG_CHANGED, self.pg_changed)
         self.property_grid.DedicateKey(wx.WXK_DOWN)
         self.property_grid.DedicateKey(wx.WXK_UP)
 
@@ -123,17 +124,26 @@ class CommandPanel(wx.Panel):
 
     def move_up(self, _):
         self.GetGrandParent().move_up(self)
+        self.modified()
 
     def move_down(self, _):
         self.GetGrandParent().move_down(self)
+        self.modified()
 
     def delete(self, _):
         self.GetGrandParent().delete(self)
+        self.modified()
+
+    def pg_changed(self, _event):
+        self.modified()
 
     def scroll_pg(self, event):
         parent: wx.EvtHandler = self.GetParent().GetEventHandler()
         parent.ProcessEvent(event)
         event.Skip()
+
+    def modified(self):
+        pass
 
 
 class EventEditor(generated.EventEditor):
@@ -143,6 +153,7 @@ class EventEditor(generated.EventEditor):
         self.event: [Event] = None
         self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
         self.command_panels: List[CommandPanel] = []
+        self.modified = False
         main_editor = self.GetGrandParent()
 
         def add_menu_item(menu, title, handler):
@@ -254,6 +265,7 @@ class EventEditor(generated.EventEditor):
             self.add_command_panel(CommandRepr.from_gds(command, self.event))
         self.event_commands.Layout()
         self.Layout()
+        self.modified = False
 
     def apply_changes(self, _):
         sizer: wx.Sizer = self.event_commands.GetSizer()
@@ -271,6 +283,7 @@ class EventEditor(generated.EventEditor):
     def save_changes(self, _event):
         self.apply_changes(None)
         self.event.save_to_rom()
+        self.modified = False
 
     def move_up(self, command_panel: CommandPanel):
         sizer: wx.Sizer = self.event_commands.GetSizer()
@@ -319,8 +332,26 @@ class EventEditor(generated.EventEditor):
     def enter(self):
         self.GetGrandParent().add_menu(self.menu, "Event")
 
+    def do_modify(self):
+        self.modified = True
+
     def exit(self):
         self.GetGrandParent().remove_menu("Event")
+
+    def close(self):
+        if self.modified:
+            dialog = wx.MessageDialog(self, "Save changes before exiting?", style=wx.YES_NO | wx.CANCEL)
+            result = dialog.ShowModal()
+            if result == wx.ID_YES:
+                self.save_changes(None)
+                self.exit()
+                return True
+            elif result == wx.ID_NO:
+                self.exit()
+                return True
+            return False
+        self.exit()
+        return True
 
     def add_dialogue(self, _):
         self.add_command_panel(CommandRepr(
@@ -332,6 +363,7 @@ class EventEditor(generated.EventEditor):
              ["Sound Pitch?", "uint", 2],
              ["Text", "long_str", ""]]
         ))
+        self.do_modify()
 
     def add_fade(self, _):
         self.add_command_panel(CommandRepr(
@@ -340,6 +372,7 @@ class EventEditor(generated.EventEditor):
              ["Fade Screen", "uint", 0],
              ["Fade Frames", "int", -1]]
         ))
+        self.do_modify()
 
     def add_bg_load(self, _):
         self.add_command_panel(CommandRepr(
@@ -347,54 +380,63 @@ class EventEditor(generated.EventEditor):
             [["Path", "str", ""],
              ["Screen", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_set_mode(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_mode"],
             [["Mode", "str", ""]]
         ))
+        self.do_modify()
 
     def add_set_next_mode(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_next_mode"],
             [["Mode", "str", ""]]
         ))
+        self.do_modify()
 
     def add_set_movie(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_movie"],
             [["Movie ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_set_event(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_event"],
             [["Event ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_set_puzzle(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_puzzle"],
             [["Puzzle ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_set_room(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_room"],
             [["Room ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_chr_show(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["chr_show"],
             [["Character Index", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_chr_hide(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["chr_hide"],
             [["Character Index", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_chr_visibility(self, _):
         self.add_command_panel(CommandRepr(
@@ -402,6 +444,7 @@ class EventEditor(generated.EventEditor):
             [["Character Index", "uint", 0],
              ["Visibility", "bool", False]]
         ))
+        self.do_modify()
 
     def add_chr_slot(self, _):
         self.add_command_panel(CommandRepr(
@@ -409,6 +452,7 @@ class EventEditor(generated.EventEditor):
             [["Character Index", "uint", 0],
              ["Slot", "int", 0]]
         ))
+        self.do_modify()
 
     def add_chr_anim(self, _):
         self.add_command_panel(CommandRepr(
@@ -416,18 +460,21 @@ class EventEditor(generated.EventEditor):
             [["Character ID", "uint", 0],
              ["Animation", "str", "NONE"]]
         ))
+        self.do_modify()
 
     def add_show_chapter(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["show_chapter"],
             [["Chapter Number", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_wait(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["wait"],
             [["Wait Frames", "uint", 180]]
         ))
+        self.do_modify()
 
     def add_bg_opacity(self, _):
         self.add_command_panel(CommandRepr(
@@ -437,18 +484,21 @@ class EventEditor(generated.EventEditor):
              ["unk2", "uint", 0],
              ["Opacity", "uint", 120]]
         ))
+        self.do_modify()
 
     def add_set_voice(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["set_voice"],
             [["Voice ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_sfx_sad(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["sfx_sad"],
             [["SFX ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_bg_music(self, _):
         self.add_command_panel(CommandRepr(
@@ -457,18 +507,21 @@ class EventEditor(generated.EventEditor):
              ["Volume", "float", 1.0],
              ["unk2", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_bg_shake(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["bg_shake"],
             [["unk0", "uint", 30]]
         ))
+        self.do_modify()
 
     def add_sfx_sed(self, _):
         self.add_command_panel(CommandRepr(
             self.event.func_names["sfx_sed"],
             [["SFX ID", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_btm_fade_out(self, _):
         self.add_command_panel(CommandRepr(
@@ -476,6 +529,7 @@ class EventEditor(generated.EventEditor):
             [["unk0", "float", 0],
              ["unk1", "uint", 320]]
         ))
+        self.do_modify()
 
     def add_btm_fade_in(self, _):
         self.add_command_panel(CommandRepr(
@@ -483,6 +537,7 @@ class EventEditor(generated.EventEditor):
             [["unk0", "float", 1.0],
              ["unk1", "uint", 320]]
         ))
+        self.do_modify()
 
     def add_dialogue_sfx(self, _):
         self.add_command_panel(CommandRepr(
@@ -492,9 +547,11 @@ class EventEditor(generated.EventEditor):
              ["unk2", "uint", 0],
              ["unk2", "uint", 0]]
         ))
+        self.do_modify()
 
     def add_wait_tap( self, event ):
         self.add_command_panel(CommandRepr(
             self.event.func_names["wait_tap"],
             []
         ))
+        self.do_modify()

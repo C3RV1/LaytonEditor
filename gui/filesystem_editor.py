@@ -1,5 +1,4 @@
 import PIL.Image
-import numpy as np
 import sounddevice as sd
 import wx
 import wx.stc
@@ -22,6 +21,7 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
+from pg_utils.rom.loaders import set_extension
 from previewers.event.EventPlayer import EventPlayer
 from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 from previewers.sound.SoundPreview import SoundPreview
@@ -47,10 +47,6 @@ gds_cmd_help = {
     "load_bg_top": "(str) filename, (int) mode?",
     "play_st_stream": "(int) index, (float) volume?"
 }
-
-
-def replace_extension(filename, extension):
-    return ".".join(filename.split(".")[:-1]) + extension
 
 
 def skip_event_dat(archive: str, filename: str):
@@ -93,7 +89,7 @@ def treenode_import_from_nds_folder(tree: wx.TreeCtrl, treenode: wx.TreeItemId,
 
 
 def tree_import_from_nds_folder(tree: wx.TreeCtrl, folder: Folder, rom: NintendoDSRom,
-                                root_name="root") -> wx.TreeItemId:
+                                root_name="root") -> None:
     tree.DeleteAllItems()
     root = tree.AddRoot(root_name)
     treenode_import_from_nds_folder(tree, root, folder, rom)
@@ -153,12 +149,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_bg_menu, "Import Image", self.fp_bg_import_clicked)
 
         add_menu_item(self.fp_ani_menu, "Edit Sprite", self.fp_ani_edit_clicked)
-        # Integrate this options into the sprite editor, they don't belong here
-        add_menu_item(self.fp_ani_menu, "Export Image", self.fp_ani_export_clicked)
-        add_menu_item(self.fp_ani_menu, "Replace Image", self.fp_ani_replace_clicked)
-        add_menu_item(self.fp_ani_menu, "Append Image", self.fp_ani_add_clicked)
-        add_menu_item(self.fp_ani_menu, "Insert (before) Image", self.fp_ani_insert_clicked)
-        add_menu_item(self.fp_ani_menu, "Remove Image", self.fp_ani_remove_clicked)
 
         add_menu_item(self.fp_place_menu, "Edit Place", self.fp_place_edit_clicked)
 
@@ -198,8 +188,9 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.GetGrandParent().remove_menu(menu_title)
         self.GetGrandParent().remove_menu("Filesystem")
 
-        # TODO: Version checking
-        pass
+    def close(self):
+        # Filesystem can't be closed
+        return False
 
     def refresh_preview(self):
         try:
@@ -401,72 +392,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         filename = path.split("/")[-1]
         self.GetGrandParent().open_sprite_editor_page(self.preview_data, filename)
 
-    def fp_ani_export_clicked(self, _):
-        self.preview_data: AniSprite
-        image_index = self.fp_ani_imageindex.GetValue()
-        image = self.preview_data.extract_image_pil(image_index)
-        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-        with wx.FileDialog(self, "Save image", wildcard="PNG file (*.png)|*.png",
-                           defaultFile=replace_extension(path.split("/")[-1] + str(image_index), ".png"),
-                           style=wx.FD_SAVE) as fileDialog:
-            if fileDialog.ShowModal() == wx.ID_CANCEL:
-                return
-            pathname = fileDialog.GetPath()
-            if pathname:
-                image.save(pathname)
-
-    def fp_ani_replace_clicked(self, _event):
-        self.preview_data: AniSprite
-        image_index = self.fp_ani_imageindex.GetValue()
-        with wx.FileDialog(self, "Open image", wildcard="PNG file (*.png)|*.png",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
-            if fileDialog.ShowModal() == wx.ID_CANCEL:
-                return
-            pathname = fileDialog.GetPath()
-            if pathname:
-                image = PIL.Image.open(pathname)
-        self.preview_data.replace_image_pil(image_index, image)
-        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(image_index))
-        self.preview_save = True
-
-    def fp_ani_add_clicked(self, _event):
-        self.preview_data: AniSprite
-        with wx.FileDialog(self, "Open image", wildcard="PNG file (*.png)|*.png",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
-            if fileDialog.ShowModal() == wx.ID_CANCEL:
-                return
-            pathname = fileDialog.GetPath()
-            if pathname:
-                image = PIL.Image.open(pathname)
-        self.preview_data.append_image_pil(image)
-        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(-1))
-        self.fp_ani_imageindex.SetMax(len(self.preview_data.images) - 1)
-        self.fp_ani_imageindex.SetValue(len(self.preview_data.images) - 1)
-        self.preview_save = True
-
-    def fp_ani_insert_clicked(self, _event):
-        self.preview_data: AniSprite
-        with wx.FileDialog(self, "Open image", wildcard="PNG file (*.png)|*.png",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
-            if fileDialog.ShowModal() == wx.ID_CANCEL:
-                return
-            pathname = fileDialog.GetPath()
-            if pathname:
-                image = PIL.Image.open(pathname)
-        self.preview_data.insert_image_pil(self.fp_ani_imageindex.GetValue(), image)
-        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(self.fp_ani_imageindex.GetValue()))
-        self.fp_ani_imageindex.SetMax(len(self.preview_data.images) - 1)
-        self.preview_save = True
-
-    def fp_ani_remove_clicked(self, _):
-        self.preview_data: AniSprite
-        image_index = self.fp_ani_imageindex.GetValue()
-        self.preview_data.remove_image(image_index)
-        self.fp_ani_viewimage_scaled.load_bitmap(self.preview_data.extract_image_wx_bitmap(0))
-        self.fp_ani_imageindex.SetValue(0)
-        self.fp_ani_imageindex.SetMax(len(self.preview_data.images) - 1)
-        self.preview_save = True
-
     def fp_samplebank_play_clicked(self, _):
         index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
         sample = self.preview_data.samples[index]
@@ -539,7 +464,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         image = self.preview_data.extract_image_pil()
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
         with wx.FileDialog(self, "Save image", wildcard="PNG file (*.png)|*.png",
-                           defaultFile=replace_extension(path.split("/")[-1], ".png"),
+                           defaultFile=set_extension(path.split("/")[-1], ".png"),
                            style=wx.FD_SAVE) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return
