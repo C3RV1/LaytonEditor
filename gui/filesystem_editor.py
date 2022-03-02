@@ -205,9 +205,6 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.GetGrandParent().remove_menu(menu_title)
         self.fp_menus_loaded = []
 
-        if self.preview_save:
-            self.save_preview()
-        self.preview_save = False
         self.preview_data = None
 
         set_previewer = False
@@ -326,11 +323,6 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         if not set_previewer:
             self.previewer.stop_renderer()
-
-    def save_preview(self):
-        # TODO: Shouldn't save preview data by default, consistency w/ event & puzzle
-        if isinstance(self.preview_data, FileFormat):
-            self.preview_data.save()
 
     def ft_filetree_selchanged(self, event: wx.TreeEvent):
         self.refresh_preview()
@@ -509,9 +501,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.exit()
         editor_window.le_editor_pages.ChangeSelection(editor_window.le_editor_pages.GetPageIndex(page))
         page.enter()
-
-    def fp_text_edit_changed(self, _):
-        self.preview_save = True
 
     def fp_puzzle_apply_mods(self, _):
         puzzle_data = self.preview_data
