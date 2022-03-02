@@ -170,8 +170,6 @@ class SADL(FileFormat):
             self.sample_rate = 32728
         wav.change_channels(self.channels)
         wav.change_sample_rate(self.sample_rate)
-        with open("test_change_sample_rate.wav", "wb") as f:
-            wav.write_stream(f)
         decoded = wav.data.data
         self.encode(decoded)
 
