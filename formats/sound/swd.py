@@ -252,6 +252,7 @@ class SWDSections:
     pass
 
 
+# TODO: Finish new SWD format for consistency
 class SWDL(FileFormat):
     swd_header: SWDHeader
 
@@ -260,8 +261,6 @@ class SWDL(FileFormat):
             rdr = stream
         else:
             rdr = BinaryReader(stream)
-        self.swd_header = SWDHeader()
-        self.swd_header.read(rdr)
 
     def write_stream(self, stream):
         if isinstance(stream, BinaryWriter):
