@@ -58,7 +58,7 @@ class EventCharacter(pge.Sprite):
         self.update_child()
 
     def update_child(self):
-        mouth_offset = [self._active_tag.vars_["child_x"], self._active_tag.vars_["child_y"]]
+        mouth_offset = [self._active_tag.child_x, self._active_tag.child_y]
         world_rect = self.get_world_rect()
         if self.character_mouth is not None:
             if self.orientation == EventCharacter.FACING_RIGHT:
@@ -72,8 +72,8 @@ class EventCharacter(pge.Sprite):
             self.character_mouth.position[0] = world_rect.x + mouth_offset[0]
             self.character_mouth.position[1] = self.position[1] - world_rect.h + mouth_offset[1]
             self.character_mouth.center[1] = pge.Alignment.TOP
-            self.character_mouth.set_tag_by_num(self._active_tag.vars_["child_index"])
-            if self._active_tag.vars_["child_index"] == 0:
+            self.character_mouth.set_tag_by_num(self._active_tag.child_index)
+            if self._active_tag.child_index == 0:
                 self.character_mouth.visible = False
             elif self.visible and not self.character_mouth.visible:
                 self.character_mouth.visible = True

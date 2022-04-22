@@ -36,7 +36,9 @@ class Tag:
     name: str
     frames: List[int]
     frame_durations: List[float]
-    vars_: dict = field(default_factory=dict)
+    child_x: int = 0
+    child_y: int = 0
+    child_index: int = 0
 
 
 class Sprite(Renderable):

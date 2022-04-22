@@ -28,3 +28,4 @@ venv
 _test*
 data_extracted
 data_permanent/fonts
+exported

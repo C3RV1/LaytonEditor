@@ -56,7 +56,9 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
                     animation.name,
                     [f.image_index for f in animation.frames],
                     [f.duration / 60.0 for f in animation.frames],
-                    vars_=vars_tag
+                    child_x=animation.child_image_x,
+                    child_y=animation.child_image_y,
+                    child_index=animation.child_image_animation_index
                 ))
 
             vars_.update(ani_sprite.variables)
