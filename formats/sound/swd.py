@@ -68,7 +68,7 @@ class LFOEntry:
     unk33: int = 0x0
 
 
-class SplitEntry:
+class SplitEntry_:
     unk10: int = 0
     splits_table_id: int
     unk11: int

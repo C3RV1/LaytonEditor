@@ -141,9 +141,9 @@ class EventDialogue(pge.Sprite):
             self.pause()
             self.text_left_to_do = self.text_left_to_do[2:]
             return
-        elif self.text_left_to_do.startswith("\n\n"):  # Next page
+        elif self.text_left_to_do.startswith("@c\n"):  # Next page
             self.reset_texts()
-            self.text_left_to_do = self.text_left_to_do[2:]
+            self.text_left_to_do = self.text_left_to_do[3:]
             return
         elif self.text_left_to_do.startswith("&"):
             command = ""
