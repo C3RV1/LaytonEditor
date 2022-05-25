@@ -26,5 +26,5 @@ class TestEventData(unittest.TestCase):
         pz_data2 = self.get_ev()
         assert pz_data.from_readable(readable)[0] is True
         assert pz_data.write(None) == pz_data.original
-        assert repr(pz_data.event_gds.params) == repr(pz_data2.event_gds.params)
-        assert repr(pz_data.event_gds.commands) == repr(pz_data2.event_gds.commands)
+        assert repr(pz_data.gds.params) == repr(pz_data2.gds.params)
+        assert repr(pz_data.gds.commands) == repr(pz_data2.gds.commands)

@@ -261,7 +261,7 @@ class EventEditor(generated.EventEditor):
 
         sizer: wx.Sizer = self.event_commands.GetSizer()
         sizer.Clear(True)
-        for i, command in enumerate(self.event.event_gds.commands):
+        for i, command in enumerate(self.event.gds.commands):
             self.add_command_panel(CommandRepr.from_gds(command, self.event))
         self.event_commands.Layout()
         self.Layout()
@@ -272,12 +272,12 @@ class EventEditor(generated.EventEditor):
         self.get_event_info()
         self.event.clear_event_texts()
         command_panels = [child.GetWindow() for child in sizer.GetChildren()]
-        self.event.event_gds.commands.clear()
+        self.event.gds.commands.clear()
         for command_panel in command_panels:
             command_panel: CommandPanel
             command_repr = command_panel.get_command_repr()
             command = command_repr.to_gds(self.event)
-            self.event.event_gds.commands.append(command)
+            self.event.gds.commands.append(command)
         self.previewer.start_renderer(EventPlayer(self.event))
 
     def save_changes(self, _event):

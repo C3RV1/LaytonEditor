@@ -1,8 +1,11 @@
 # Ported from shortbrim
+import re
+
 import formats.binary as binary
 import formats.gds
 import formats.filesystem as fs
-import formats.dcc_parser as dcc
+import formats.dcc as dcc
+import formats.event_script as event_script
 import utility.replace_substitutions as subs
 from typing import Optional
 
@@ -14,8 +17,9 @@ class Event:
         self.rom = rom
         self.event_id = 0
 
-        self.event_gds: formats.gds.GDS = formats.gds.GDS()
-        self.event_texts: Optional[fs.PlzArchive] = None
+        self.gds: formats.gds.GDS = formats.gds.GDS()
+        self.texts_archive: Optional[fs.PlzArchive] = None
+        self.texts = {}
 
         self.map_top_id = 0
         self.map_bottom_id = 0
@@ -61,6 +65,8 @@ class Event:
         self.write(binary.BinaryWriter(file))
         file.close()
         self.save_gds()
+        self.clear_event_texts()
+        self.save_texts()
 
     def load(self, data: bytes):
         self.original = data
@@ -108,29 +114,70 @@ class Event:
         return wtr.data
 
     def load_gds(self):
+        if self.rom is None:
+            return
         prefix, postfix, complete = self.resolve_event_id()
         events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
-        self.event_gds = formats.gds.GDS(f"e{prefix}_{postfix}.gds", rom=events_packed)
+        self.gds = formats.gds.GDS(f"e{prefix}_{postfix}.gds", rom=events_packed)
 
     def save_gds(self):
+        if self.rom is None:
+            return
         prefix, postfix, complete = self.resolve_event_id()
         events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
         gds_file = events_packed.open(f"e{prefix}_{postfix}.gds", "wb+")
-        self.event_gds.write_stream(gds_file)
+        self.gds.write_stream(gds_file)
         gds_file.close()
 
     def load_texts(self):
+        if self.rom is None:
+            return
         prefix, postfix, complete = self.resolve_event_id()
-        self.event_texts = self.rom.get_archive(f"data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
+        self.texts_archive = self.rom.get_archive(f"data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
+        self.texts = {}
+        event_texts = self.list_event_texts()
+        for dial_id, filename in event_texts.items():
+            self.texts[dial_id] = formats.gds.GDS(filename=filename, rom=self.texts_archive)
+
+    def save_texts(self):
+        prefix, postfix, complete = self.resolve_event_id()
+        for dial_id, text in self.texts.items():
+            text: formats.gds.GDS
+            text.save(filename=f"e{prefix}_{postfix}_{dial_id}.gds", rom=self.texts_archive)
 
     def get_text(self, text_num):
-        prefix, postfix, complete = self.resolve_event_id()
-        if f"t{prefix}_{postfix}_{text_num}.gds" not in self.event_texts.filenames:
+        if self.rom is None:
             return formats.gds.GDS()
-        return formats.gds.GDS(f"t{prefix}_{postfix}_{text_num}.gds", rom=self.event_texts)
+        return self.texts[text_num]
+
+    def from_event_script(self, data: str):
+        try:
+            parser = event_script.EventScriptParser(data, self)
+            parser.parse()
+        except Exception as e:
+            return False, str(e)
+        return True, ""
+
+    def list_event_texts(self):
+        if self.rom is None:
+            return
+        list = {}
+        dial_files = self.texts_archive.filenames
+        prefix, postfix, complete = self.resolve_event_id()
+        for filename in dial_files:
+            if match := re.match(f"t{prefix}_{postfix}_([0-9]+).gds", filename):
+                list[int(match.group(1))] = filename
+        return list
+
+    def clear_event_texts(self):
+        if self.rom is None:
+            return
+        dial_files = self.list_event_texts()
+        for filename in dial_files.values():
+            self.texts_archive.remove_file(filename)
 
     def to_readable(self):
-        parser = dcc.Parser()
+        parser = dcc.DCCParser()
         parser.reset()
         parser.get_path("evdat", create=True)
         parser.set_named("evdat.map_top_id", self.map_top_id)
@@ -143,7 +190,7 @@ class Event:
             parser.set_named(f"evdat.char{i}.anim", self.characters_anim_index[i])
 
         parser.get_path("evs", create=True)
-        for cmd in self.event_gds.commands:
+        for cmd in self.gds.commands:
             func, params, _param_names = self.convert_command(cmd, for_code=True)
             parser["evs::calls"].append({
                 "func": func,
@@ -289,15 +336,8 @@ class Event:
             func = self.func_names[func]
         return func, params, param_names
 
-    def clear_event_texts(self):
-        dial_files = self.event_texts.filenames
-        prefix, postfix, complete = self.resolve_event_id()
-        for filename in dial_files:
-            if filename.startswith(f"e{prefix}_{postfix}"):
-                self.event_texts.remove_file(filename)
-
     def from_readable(self, readable):
-        parser = dcc.Parser()
+        parser = dcc.DCCParser()
         try:
             parser.parse(readable)
         except Exception as e:
@@ -321,14 +361,14 @@ class Event:
             self.characters_shown[i] = parser[f"evdat.char{i}.shown"]
             self.characters_anim_index[i] = parser[f"evdat.char{i}.anim"]
 
-        self.clear_event_texts()
+        self.texts = {}
 
-        self.event_gds.commands = []
+        self.gds.commands = []
         for call in parser["evs::calls"]:
             func = call["func"]
             params = call["parameters"]
             command = self.revert_command(func, params)
-            self.event_gds.commands.append(command)
+            self.gds.commands.append(command)
         return True, ""
 
     def revert_command(self, func, params):
@@ -442,10 +482,7 @@ class Event:
             dial_gds.params = params[1:]
             dial_gds.params[4] = subs.convert_substitutions(dial_gds.params[4])
 
-            prefix, postfix, complete = self.resolve_event_id()
-            dial_gds_file = self.event_texts.open(f"t{prefix}_{postfix}_{params[0]}.gds", "wb+")
-            dial_gds.write_stream(dial_gds_file)
-            dial_gds_file.close()
+            self.texts[params[0]] = dial_gds
         elif func.startswith("gds_"):
             command.command = int(func[4:], 16)
             command.params = params

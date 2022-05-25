@@ -27,7 +27,7 @@ def is_hex(var):
         return False
 
 
-class Parser:
+class DCCParser:
     def __init__(self):
         self.code: typing.Union[str, dict] = ""
         self.converted_paths = []
@@ -167,7 +167,7 @@ class Parser:
                 elif "$" == token[0]:
                     token_value = token[1:]
                     if token_value not in self.imported:
-                        new_parser = Parser()
+                        new_parser = DCCParser()
                         file_to_imp = open(token_value, "r")
                         new_parser.parse(file_to_imp.read())
                         file_to_imp.close()
@@ -220,7 +220,7 @@ class Parser:
 
         for imported_file in imported:
             if imported_file not in self.imported:
-                new_parser = Parser()
+                new_parser = DCCParser()
                 imported_code = open(imported_file, "r")
                 new_parser.parse(imported_code.read())
                 imported_code.close()
@@ -235,7 +235,7 @@ class Parser:
             self.code.insert(0, f"${imported_file}")
 
     @staticmethod
-    def convert_variable(value, self=None):
+    def convert_variable(value, self=None, strings_unquoted=False):
         if value.startswith('"') and value.endswith('"'):
             value = value[1:-1]
             value = value.replace("\\n", "\n").replace('\\"', '"')
@@ -257,6 +257,8 @@ class Parser:
                 if value not in self.converted_paths:
                     self.convert_path(".".join(value.split(".")[:-1]))
                 return self.get_path(value)
+        elif isinstance(value, str) and strings_unquoted:
+            return value
         raise ValueError(f"{value} is not recognised as a valid value")
 
     def convert_path(self, path):
@@ -366,14 +368,3 @@ class Parser:
         if self.get_path(path) is not None:
             return True
         return False
-
-
-"""if __name__ == "__main__":
-    file = open("event_example.dcc")
-    code = file.read()
-    file.close()
-    parser = Parser()
-    parser.parse(code)
-    # parser.serialize()
-    # parser.parse()
-    print(parser.code)"""

@@ -4,7 +4,7 @@ import formats.filesystem
 import formats.gds
 import formats.graphics.bg
 import formats.dlz
-import formats.dcc_parser
+import formats.dcc
 import formats.gds_parser as pz_gds
 from formats.binary import BinaryReader, BinaryWriter
 
@@ -249,7 +249,7 @@ class Puzzle:
         return pz_gds.GDSParser()
 
     def to_readable(self):
-        parser = formats.dcc_parser.Parser()
+        parser = formats.dcc.DCCParser()
         parser.reset()
         parser.get_path("pzd", create=True)
         parser.set_named("pzd.title", self.title)
@@ -287,7 +287,7 @@ class Puzzle:
         return parser.serialize()
 
     def from_readable(self, readable):
-        parser = formats.dcc_parser.Parser()
+        parser = formats.dcc.DCCParser()
         try:
             parser.parse(readable)
         except Exception as e:
