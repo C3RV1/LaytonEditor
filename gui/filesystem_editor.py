@@ -21,6 +21,7 @@ from gui.place_editor import PlaceEditor
 from gui.PygamePreviewer import PygamePreviewer
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
+from previewers.place.PlacePreview import PlacePreview
 from utility.path import set_extension
 from previewers.event.EventPlayer import EventPlayer
 from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
@@ -249,6 +250,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_formats_book.SetSelection(7)  # Info page
         elif name.startswith("n_place"):
             place = Place(name, rom=archive)
+            self.previewer.start_renderer(PlacePreview(place))
+            set_previewer = True
             self.fp_place_viewer.load_place(place, self.rom)
             self.fp_place_viewer.Refresh()
             self.fp_formats_book.SetSelection(5)  # Placeviewer page

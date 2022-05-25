@@ -6,7 +6,7 @@ from pg_engine import Sprite
 from pg_engine.sprite.Sprite import Frame, Tag
 import pygame as pg
 from formats.filesystem import NintendoDSRom
-from formats.graphics.ani import AniSprite
+from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
 from formats.nftr import NFTR
 import numpy as np
@@ -24,7 +24,10 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
         if self._base_path_rom is not None:
             path = os.path.join(self._base_path_rom, path).replace("\\", "/")
         path = path.replace("?", conf.LANG)
-        path = set_extension(path, ".arc")
+        if path.endswith(".arj"):
+            path = set_extension(path, ".arj")
+        else:
+            path = set_extension(path, ".arc")
         if path not in self.rom.filenames:
             super().load(path + ".png", sprite, sprite_sheet=sprite_sheet, convert_alpha=convert_alpha,
                          do_copy=do_copy)
@@ -33,7 +36,10 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
         tags = []
         vars_ = {}
         if sprite_sheet:
-            ani_sprite = AniSprite(path, rom=self.rom)
+            if path.endswith(".arj"):
+                ani_sprite = AniSubSprite(path, rom=self.rom)
+            else:
+                ani_sprite = AniSprite(path, rom=self.rom)
             w, h = 0, 0
             for img in ani_sprite.images:
                 img_h, img_w = img.shape
