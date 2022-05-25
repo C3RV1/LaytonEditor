@@ -366,15 +366,19 @@ class AniSubSprite(AniSprite):
                     part[1::2] = bufpart >> 4
                     part = part.reshape((part_h, part_w))
                 part.resize((part_h // 8, part_w // 8, 8, 8))
-                if part_x + part_w > img_w:
-                    part_w = img_w - part_x
-                if part_y + part_h > img_h:
-                    part_h = img_h - part_y
+                part_w = min(img_w - part_x, part_w)
+                part_h = min(img_h - part_y, part_h)
                 for yt, yslice in enumerate(part):
                     for xt, xslice in enumerate(yslice):
-                        img[part_y + yt * 8:min(part_y + yt * 8 + 8, part_y + part_h),
-                            part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)] = \
-                            xslice[:part_h - 8 * yt, :part_w - 8 * xt]
+                        offset_y = part_y + yt * 8
+                        offset_x = part_x + xt * 8
+                        end_y = min(part_y + yt * 8 + 8, part_y + part_h)
+                        end_x = min(part_x + xt * 8 + 8, part_x + part_w)
+                        copy_h = max(end_y - offset_y, 0)
+                        copy_w = max(end_x - offset_x, 0)
+                        img[offset_y:end_y,
+                            offset_x:end_x] = \
+                            xslice[:copy_h, :copy_w]
 
             self.images.append(img)
 

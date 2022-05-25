@@ -59,7 +59,6 @@ class EventPlayer(TwoScreenRenderer):
 
         self.run_events_until_busy()
 
-
     def run_events_until_busy(self):
         while True:
             if self.current_command >= len(self.event.gds.commands):
