@@ -1,4 +1,4 @@
-# Data and Code Container (DCC) format by Cervi
+# Data and Code Container (DCC) format
 
 import typing
 

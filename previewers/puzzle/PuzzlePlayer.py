@@ -114,7 +114,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         for i in range(3):
             hint_select = pge.Button(position=[current_x, -192 // 2 + 4],
                                      center=[pge.Alignment.LEFT, pge.Alignment.TOP], not_pressed_tag="OFF",
-                                     pressed_tag="ON")
+                                     pressed_tag="ON", pressed_counter=0)
             hint_select.visible = False
             self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select, sprite_sheet=True)
             current_x += hint_select.get_world_rect().w + 1

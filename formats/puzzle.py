@@ -106,7 +106,6 @@ class Puzzle:
         self.tutorial_id = rdr.read_uint8()
         for i in range(3):
             self.picarat_decay[i] = rdr.read_uint8()
-        print(rdr.tell())
         self._flags = rdr.read_uint8()
         self.location_id = rdr.read_uint8()
         self.type = rdr.read_uint8()
@@ -115,7 +114,6 @@ class Puzzle:
         self.bg_top_id = rdr.read_uint8()
         self.reward_id = rdr.read_uint8()
 
-        print(rdr.tell())
         puzzle_text_offset = 0x70 + rdr.read_uint32()
         puzzle_correct_answer_offset = 0x70 + rdr.read_uint32()
         puzzle_incorrect_answer_offset = 0x70 + rdr.read_uint32()

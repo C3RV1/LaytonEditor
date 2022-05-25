@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class Button(Sprite):
-    def __init__(self, *args, pressed_tag=None, not_pressed_tag=None, pressed_counter=0.1, **kwargs):
+    def __init__(self, *args, pressed_tag=None, not_pressed_tag=None, pressed_counter=0.08, **kwargs):
         super(Button, self).__init__(*args, **kwargs)
         self._pressed_tag = pressed_tag
         self._not_pressed_tag = not_pressed_tag
