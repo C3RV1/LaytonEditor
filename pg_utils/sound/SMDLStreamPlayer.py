@@ -2,6 +2,7 @@ from formats.sound import smdl
 import numpy as np
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound.soundtypes import Preset
+from formats.sound import sample_transform
 from typing import Dict
 from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
 
@@ -39,6 +40,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.preset_dict: Dict[int, Preset] = {}
         self.buffer_size = 0
         self.load_size = 0
+        self.channels = 0
 
     def set_preset_dict(self, preset_dict: Dict[int, Preset]):
         self.preset_dict = preset_dict
@@ -50,6 +52,9 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         if ticks_to_do <= 0:
             return
         new_samples = self.smd_sequencer.generate_samples(ticks_to_do)
+        new_samples = new_samples.swapaxes(0, 1)
+        new_samples = sample_transform.change_channels(new_samples, self.channels)
+        new_samples = new_samples.swapaxes(0, 1)
         if new_samples.shape[0] == 0:
             return
         new_samples_pos = 0
@@ -87,13 +92,14 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         if self.sound_obj is not None:
             self.sound_obj.stop()
         self.sample_rate = pg.mixer.get_init()[0]
+        self.channels = pg.mixer.get_init()[2]
         self.buffer_size = self.SOUND_SECONDS * self.sample_rate
         self.load_size = self.LOAD_SECONDS * self.sample_rate
         self.expected_buffer_position = 0
         self.smd_sequencer = SMDLFluidSynthSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
         self.smd_sequencer.create_program_map(self.preset_dict)
         self.smd_sequencer.reset()
-        self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, 2), dtype=np.int16))
+        self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, self.channels), dtype=np.int16))
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)
         self.loading_finished = False  # Because of looping smdls we never stop loading
         self.buffer_offset = 0
