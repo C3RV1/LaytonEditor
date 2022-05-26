@@ -185,6 +185,9 @@ class EventPlayer(TwoScreenRenderer):
                 character.set_anim(command_split[2].replace("_", " "))
 
     def update(self, dt: float):
+        for character in self.characters:
+            if character is not None:
+                character.update_fade(dt)
         self.waiter.update_(dt)
         self.event_sound.update_(dt)
         self.top_bg.update_(dt)
@@ -221,4 +224,8 @@ class EventPlayer(TwoScreenRenderer):
         self.event_sound.stop_sadl()
 
     def is_busy(self):
+        for character in self.characters:
+            if character is not None:
+                if character.busy():
+                    return True
         return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy() or self.wait_tap

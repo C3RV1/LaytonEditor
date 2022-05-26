@@ -298,8 +298,8 @@ class Sprite(Renderable):
         if not self._transformed_surf.get_flags() & pg.SRCALPHA:
             if self._color_key:
                 self._transformed_surf.set_colorkey(self._color_key)
-            if self._alpha is not None:
-                self._transformed_surf.set_alpha(int(self._alpha))
+        if self._alpha is not None:
+            self._transformed_surf.set_alpha(int(self._alpha))
 
     @property
     def color_key(self):
@@ -311,7 +311,7 @@ class Sprite(Renderable):
             return
         self._color_key = v
         if self._transformed_surf:
-            if self._transformed_surf.get_flags() & pg.SRCALPHA:
+            if not self._transformed_surf.get_flags() & pg.SRCALPHA:
                 self._transformed_surf.set_colorkey(self._color_key)
 
     @property
@@ -324,8 +324,7 @@ class Sprite(Renderable):
             return
         self._alpha = v
         if self._transformed_surf:
-            if self._transformed_surf.get_flags() & pg.SRCALPHA:
-                self._transformed_surf.set_alpha(int(self._alpha))
+            self._transformed_surf.set_alpha(int(self._alpha))
 
     def get_world_rect(self) -> pg.Rect:
         return pg.Rect(self.position[0] - self._real_size[0] * self.center[0],

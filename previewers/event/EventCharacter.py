@@ -1,4 +1,5 @@
 import pg_engine as pge
+from pg_utils.ScreenFader import ScreenFader
 
 
 class EventCharacter(pge.Sprite):
@@ -12,6 +13,8 @@ class EventCharacter(pge.Sprite):
                    6: 0}
     SLOT_ON_LEFT = [0, 3, 4]  # Verified against game binary
     SLOT_ON_RIGHT = [1, 2, 5, 6]
+
+    FADE_TIME = 0.2
 
     def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
         super(EventCharacter, self).__init__(*args, **kwargs)
@@ -27,7 +30,11 @@ class EventCharacter(pge.Sprite):
 
         self.load_character(loader)
         self.set_tag_by_num(anim_num)
-        self.set_visibility(visibility)
+        self.update_visibility(visibility)
+
+        self.fading = False
+        self.fade_in = ScreenFader.FADING_IN
+        self.current_fade_time = 0
 
     def set_tag(self, name: str):
         super(EventCharacter, self).set_tag(name)
@@ -78,26 +85,40 @@ class EventCharacter(pge.Sprite):
             elif self.visible and not self.character_mouth.visible:
                 self.character_mouth.visible = True
 
-    def show(self):
-        if not self.visible:
-            self.visible = True
+    def update_visibility(self, visible):
+        if visible != self.visible:
+            self.visible = visible
             if self.character_mouth is not None:
-                self.character_mouth.visible = True
+                self.character_mouth.visible = visible
+
+    def show(self):
+        self.update_visibility(True)
 
     def hide(self):
-        if self.visible:
-            self.visible = False
-            if self.character_mouth is not None:
-                self.character_mouth.visible = False
+        self.update_visibility(False)
 
     def set_visibility(self, visibility):
-        if visibility:
-            self.show()
-        else:
-            self.hide()
+        self.fade_in = ScreenFader.FADING_IN if visibility else ScreenFader.FADING_OUT
+        self.current_fade_time = self.FADE_TIME
+        self.update_fade(0)
+        self.update_visibility(True)
+
+    def update_fade(self, dt: float):
+        if self.current_fade_time > 0:
+            self.current_fade_time -= dt
+            alpha = int(255 * max(self.current_fade_time / self.FADE_TIME, 0.0))
+            if self.fade_in == ScreenFader.FADING_IN:
+                alpha = 255 - alpha
+            self.alpha = alpha
+            if self.character_mouth is not None:
+                self.character_mouth.alpha = alpha
+
+    def busy(self):
+        return self.current_fade_time > 0.0
 
     def set_slot(self, slot):
         self.slot = slot
+        self.update_()
 
     def set_anim(self, anim: str):
         anim = anim.replace("surprise", "suprise")

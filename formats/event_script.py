@@ -143,12 +143,14 @@ class EventScriptParser:
     def script_mode(self, line):
         line_split = split_quoted(line)
         if line_split[0] == "fade":
-            if not match_syntax(line_split, ("fade", ("in", "out"), ("bottom", "btm", "top", "both"), "in", None,
-                                             ("frames", "seconds"))):
+            if not match_syntax(line_split, ("fade", ("in", "out"), ("bottom", "btm", "top", "both")), (("in", None,
+                                             ("frames", "seconds")),)):
                 raise SyntaxError(f"Fade does not match syntax (line {self.line_num})")
             fade_in = True if line_split[1] == "in" else False
             fade_screen = {"bottom": 0, "btm": 0, "top": 1, "both": 2}[line_split[2]]
-            if line_split[4] == "default":
+            if len(line_split) == 3:
+                fade_frames = None
+            elif line_split[4] == "default":
                 fade_frames = None
             else:
                 try:
@@ -305,7 +307,7 @@ class EventScriptParser:
             if line_split[1] == "fade":
                 if not match_syntax(line_split, ("bgm", "fade", ("in", "out")), ((None,),)):
                     raise SyntaxError(f"Bgm fade does not match syntax (line {self.line_num})")
-                args = [0, 2] if line_split[2] == "out" else [1, 253]
+                args = [0.0, 2] if line_split[2] == "out" else [1.0, 253]
                 if len(line_split) == 4:
                     args_str = split_quoted(line_split[3])
                     if not match_syntax(args_str, (None, None)):
