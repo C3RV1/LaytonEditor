@@ -219,20 +219,17 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.preview_data = background
             self.fp_menus_loaded.append("Background")
             self.GetGrandParent().add_menu(self.fp_bg_menu, "Background")
-        elif name.endswith(".arc") and name.split("/")[1] == "ani":
+        elif name.endswith(".arc") or name.endswith(".arj") and name.split("/")[1] == "ani":
             self.fp_formats_book.SetSelection(4)  # Animation page
-            sprite = AniSprite(name, rom=archive)
+            if name.endswith(".arc"):
+                sprite = AniSprite(name, rom=archive)
+            else:
+                sprite = AniSubSprite(name, rom=archive)
             self.preview_data = sprite
             self.fp_ani_viewimage_scaled.load_bitmap(sprite.extract_image_wx_bitmap(0))
             self.fp_ani_imageindex.SetMax(len(sprite.images) - 1)
             self.fp_menus_loaded.append("Sprite")
             self.GetGrandParent().add_menu(self.fp_ani_menu, "Sprite")
-        elif name.endswith(".arj") and name.split("/")[1] == "ani":
-            sprite = AniSubSprite(name, rom=archive)
-            self.preview_data = sprite
-            self.fp_ani_viewimage_scaled.load_bitmap(sprite.extract_image_wx_bitmap(0))
-            self.fp_ani_imageindex.SetMax(len(sprite.images) - 1)
-            self.fp_formats_book.SetSelection(4)  # Animation page
         elif name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
             self.fp_samplebank_list.Clear()
             samplebank = swd_read_samplebank(archive.open(name))
