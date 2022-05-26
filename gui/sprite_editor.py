@@ -1,7 +1,7 @@
 import wx
 import wx.dataview
 
-from formats.graphics.ani import AniSprite, Animation
+from formats.graphics.ani import AniSprite, Animation, AnimationFrame
 from utility.path import set_extension
 from gui import generated
 import PIL.Image
@@ -28,10 +28,11 @@ class SpriteEditor(generated.SpriteEditor):
         add_menu_item(self.ase_menu, "Add Animation", self.ase_add_animation_clicked)
         add_menu_item(self.ase_menu, "Remove Animation", self.ase_remove_animation_clicked)
         self.ase_menu.AppendSeparator()
-        # add_menu_item(self.ase_menu, "Add Frame", self.ase_add_frame_clicked)
-        # add_menu_item(self.ase_menu, "Remove Frame", self.ase_remove_frame_clicked)
-        # add_menu_item(self.ase_menu, "Move Frame Forward", self.ase_move_frame_forward_clicked)
-        # add_menu_item(self.ase_menu, "Move Frame Back", self.ase_move_frame_back_clicked)
+        add_menu_item(self.ase_menu, "Add Frame", self.ase_add_frame_clicked)
+        add_menu_item(self.ase_menu, "Insert Frame", self.ase_insert_frame_clicked)
+        add_menu_item(self.ase_menu, "Remove Frame", self.ase_remove_frame_clicked)
+        add_menu_item(self.ase_menu, "Move Frame Forward", self.ase_move_frame_forward_clicked)
+        add_menu_item(self.ase_menu, "Move Frame Back", self.ase_move_frame_back_clicked)
         self.ase_menu.AppendSeparator()
         add_menu_item(self.ase_menu, "Append Image", self.ase_add_image_clicked)
         add_menu_item(self.ase_menu, "Replace Image", self.ase_replace_image_clicked)
@@ -51,7 +52,7 @@ class SpriteEditor(generated.SpriteEditor):
         self.ase_frame_slider.SetMax(0)
         self.modified = False
 
-    def save_sprite(self):
+    def save_sprite(self, _):
         self._sprite.save()
         self.modified = False
 
@@ -122,6 +123,53 @@ class SpriteEditor(generated.SpriteEditor):
         index = self.ase_animations_list.GetFirstSelected()
         self.ase_animations_list.DeleteItem(index)
         del self._sprite.animations[index]
+        self.modified = True
+
+    def ase_add_frame_clicked(self, _event):
+        animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
+        animation.frames.append(AnimationFrame(len(animation.frames), 0, 0))
+        self.ase_frame_slider.SetMax(len(animation.frames) - 1)
+        self.ase_frame_slider.SetValue(len(animation.frames) - 1)
+        self.ase_frame_slider_changed(None)
+        self.modified = True
+
+    def ase_insert_frame_clicked(self, _event):
+        animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
+        animation.frames.insert(self.ase_frame_slider.GetValue(), AnimationFrame(len(animation.frames), 0, 0))
+        self.ase_frame_slider.SetMax(len(animation.frames) - 1)
+        self.ase_frame_slider_changed(None)
+        self.modified = True
+
+    def ase_remove_frame_clicked(self, _event):
+        animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
+        if len(animation.frames) == 0:
+            return
+        animation.frames.pop(self.ase_frame_slider.GetValue())
+        self.ase_frame_slider.SetMax(len(animation.frames) - 1)
+        self.ase_frame_slider.SetValue(max(self.ase_frame_slider.GetValue() - 1, 0))
+        self.ase_frame_slider_changed(None)
+        self.modified = True
+
+    def ase_move_frame_forward_clicked(self, event):
+        animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
+        if len(animation.frames) - 1 >= self.ase_frame_slider.GetValue():
+            return
+        i = self.ase_frame_slider.GetValue()
+        frames = animation.frames
+        frames[i + 1], frames[i] = frames[i], frames[i + 1]
+        self.ase_frame_slider.SetValue(self.ase_frame_slider.GetValue() + 1)
+        self.ase_frame_slider_changed(None)
+        self.modified = True
+
+    def ase_move_frame_back_clicked(self, event):
+        animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
+        if 0 <= self.ase_frame_slider.GetValue():
+            return
+        i = self.ase_frame_slider.GetValue()
+        frames = animation.frames
+        frames[i - 1], frames[i] = frames[i], frames[i - 1]
+        self.ase_frame_slider.SetValue(self.ase_frame_slider.GetValue() - 1)
+        self.ase_frame_slider_changed(None)
         self.modified = True
 
     def ase_remove_image_clicked(self, _event):
@@ -204,10 +252,10 @@ class SpriteEditor(generated.SpriteEditor):
 
     def close(self):
         if self.modified:
-            dialog = wx.MessageDialog(self, "Save changes before exiting?", style=wx.YES_NO|wx.CANCEL)
+            dialog = wx.MessageDialog(self, "Save changes before exiting?", style=wx.YES_NO | wx.CANCEL)
             result = dialog.ShowModal()
             if result == wx.ID_YES:
-                self.save_sprite()
+                self.save_sprite(None)
                 self.exit()
                 return True
             elif result == wx.ID_NO:
