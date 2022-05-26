@@ -71,6 +71,8 @@ class MainEditor(generated.MainEditor):
         self.open_filesystem_page("Rom FS")
 
     def save_rom(self, filename):
+        if self.rom is None:
+            return
         self.rom.saveToFile(filename)
         self.rom_last_filename = filename
 
@@ -118,11 +120,15 @@ class MainEditor(generated.MainEditor):
                 self.open_rom(pathname)
 
     def le_menu_file_save_OnMenuSelection(self, event):
+        if self.rom is None:
+            return
         if not self.rom_last_filename:
             return self.le_menu_file_saveas_OnMenuSelection(event)
         self.save_rom(self.rom_last_filename)
 
     def le_menu_file_saveas_OnMenuSelection(self, event):
+        if self.rom is None:
+            return
         with wx.FileDialog(self, "Save NDS ROM", wildcard="NDS files (*.nds)|*.nds",
                            style=wx.FD_SAVE) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
