@@ -158,9 +158,9 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_puzzle_menu, "Apply changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
-        add_menu_item(self.fp_event_menu, "Apply changes", self.fp_event_apply_changes)
+        add_menu_item(self.fp_event_menu, "Apply changes DCC", self.fp_event_apply_changes)
         add_menu_item(self.fp_event_menu, "Apply changes EventScript", self.fp_event_apply_changes_evscript)
-        add_menu_item(self.fp_event_menu, "Save changes", self.fp_event_save_changes)
+        add_menu_item(self.fp_event_menu, "Save changes DCC", self.fp_event_save_changes)
         add_menu_item(self.fp_event_menu, "Save changes EventScript", self.fp_event_save_changes_evscript)
         add_menu_item(self.fp_event_menu, "Edit Visually", self.fp_open_event_editor)
 
@@ -267,7 +267,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             finally:
                 textfile.close()
             self.fp_menus_loaded.append("Text")
-            self.GetGrandParent().add_menu(self.fp_place_menu, "Text")
+            self.GetGrandParent().add_menu(self.fp_text_menu, "Text")
         elif res := self.PUZZLE_REGEX.search(name):
             puzzle = Puzzle(self.rom, id_=res.group(1))
             self.preview_data = puzzle
@@ -620,7 +620,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         filename = path.split("/")[-1]
         self.GetGrandParent().open_event_editor_page(self.preview_data, filename)
 
-    def fp_text_save(self):
+    def fp_text_save(self, _event):
         name, archive = self.preview_data
         with archive.open(name, "w+") as file:
             file.write(self.fp_text_edit.GetValue())
