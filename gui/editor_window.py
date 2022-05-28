@@ -52,6 +52,10 @@ class MainEditor(generated.MainEditor):
                 error_dialog.ShowModal()
                 return
         else:
+            warning_game_dialog = wx.MessageDialog(self, "Warning: LaytonEditor is specifically made to edit "
+                                                         "Layton 2, and support with other games is not guaranteed.",
+                                                   style=wx.ICON_WARNING | wx.OK)
+            warning_game_dialog.ShowModal()
             conf.LANG = "en"
 
         # After checking language
