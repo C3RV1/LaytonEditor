@@ -270,7 +270,7 @@ class EventEditor(generated.EventEditor):
     def apply_changes(self, _):
         sizer: wx.Sizer = self.event_commands.GetSizer()
         self.get_event_info()
-        self.event.clear_event_texts()
+        self.event.texts = {}
         command_panels = [child.GetWindow() for child in sizer.GetChildren()]
         self.event.gds.commands.clear()
         for command_panel in command_panels:

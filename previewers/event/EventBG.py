@@ -46,19 +46,6 @@ class EventBG:
     def set_opacity(self, opacity):
         self.translucent.alpha = opacity
 
-    def set_fade_max_opacity(self, opacity):
-        self.fader.max_fade = opacity
-
-    def wake(self):
-        self.bg.visible = True
-        self.fader.visible = True
-        self.translucent.visible = True
-
-    def kill(self):
-        self.bg.visible = False
-        self.fader.visible = False
-        self.translucent.visible = False
-
     def unload(self):
         self.bg.unload()
         self.fader.unload()

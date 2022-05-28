@@ -171,6 +171,3 @@ class EventCharacter(pge.Sprite):
     def draw(self, cam: pge.Camera):
         super(EventCharacter, self).draw(cam)
         self.character_mouth.draw(cam)
-
-    def get_visibility(self):
-        return self.visible

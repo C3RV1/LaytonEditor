@@ -11,9 +11,6 @@ class EventWaiter:
     def busy(self):
         return self.current_wait_time > 0
 
-    def stop(self):
-        self.current_wait_time = 0
-
     def update_(self, dt: float):
         if self.current_wait_time > 0:
             self.current_wait_time -= dt
