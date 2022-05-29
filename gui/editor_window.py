@@ -45,7 +45,10 @@ class MainEditor(generated.MainEditor):
             lang_address = 0x02000d3c-arm9.ramAddress
             lang_id = rom.arm9[lang_address]
             lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
-            conf.LANG = lang_table[lang_id]
+            try:
+                conf.LANG = lang_table[lang_id]
+            except IndexError:  # US version?
+                conf.LANG = "en"
             print(f"Game language: {conf.LANG}")
             if conf.LANG == "jp":
                 error_dialog = wx.MessageDialog(self, "Japanese is not currently supported", style=wx.ICON_ERROR | wx.OK)
