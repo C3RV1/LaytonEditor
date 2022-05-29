@@ -143,7 +143,7 @@ class Event:
         prefix, postfix, complete = self.resolve_event_id()
         for dial_id, text in self.texts.items():
             text: formats.gds.GDS
-            text.save(filename=f"e{prefix}_{postfix}_{dial_id}.gds", rom=self.texts_archive)
+            text.save(filename=f"t{prefix}_{postfix}_{dial_id}.gds", rom=self.texts_archive)
 
     def get_text(self, text_num):
         if self.rom is None:
@@ -373,7 +373,7 @@ class Event:
         return True, ""
 
     def revert_command(self, func, params):
-        return self.revert_command_(func, params, self)
+        return self.revert_command_(func, params, ev=self)
 
     @staticmethod
     def revert_command_(func, params, ev=None):
