@@ -1,4 +1,3 @@
-import hashlib
 from typing import BinaryIO
 
 from formats.filesystem import FileFormat
@@ -25,8 +24,8 @@ class BGImage(FileFormat):
             f.write(rdr.read())
         rdr.seek(0)
 
-        palette_lenght = rdr.read_uint32()
-        for color_i in range(palette_lenght):
+        palette_length = rdr.read_uint32()
+        for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
                 self.palette[color_i, 3] = 255

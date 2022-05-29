@@ -48,10 +48,12 @@ class MainEditor(generated.MainEditor):
             try:
                 conf.LANG = lang_table[lang_id]
             except IndexError:  # US version?
+                # TODO: Figure out how to read it properly
                 conf.LANG = "en"
             print(f"Game language: {conf.LANG}")
             if conf.LANG == "jp":
-                error_dialog = wx.MessageDialog(self, "Japanese is not currently supported", style=wx.ICON_ERROR | wx.OK)
+                error_dialog = wx.MessageDialog(self, "Japanese is not currently supported",
+                                                style=wx.ICON_ERROR | wx.OK)
                 error_dialog.ShowModal()
                 return
         else:
