@@ -1,3 +1,4 @@
+import hashlib
 from typing import BinaryIO
 
 from formats.filesystem import FileFormat
@@ -49,7 +50,6 @@ class BGImage(FileFormat):
                 self.image[img_y:img_y + 8, img_x:img_x + 8] = tiles[rdr.read_uint16()]
 
     def write_stream(self, stream: BinaryIO):
-        # TODO: Fix image writing
         if isinstance(stream, BinaryWriter):
             wtr = stream
         else:
@@ -63,14 +63,20 @@ class BGImage(FileFormat):
         img_h, img_w = self.image.shape
         map_h, map_w = img_h // 8, img_w // 8
 
-        tiles: np.ndarray = np.unique(self.image.reshape((map_h * map_w, 8, 8)))
+        tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for x in range(map_w) for y in range(map_h)])
+        tiles: np.ndarray = np.unique(tiles, axis=0)
         wtr.write_uint32(len(tiles))
         wtr.write(tiles.tobytes())
 
         wtr.write_uint16(map_w)
         wtr.write_uint16(map_h)
-        for tile in self.image.reshape((map_h * map_w, 8, 8)):
-            wtr.write_uint16(np.where(tiles[tiles == tile])[0][0])
+
+        for y in range(map_h):
+            for x in range(map_w):
+                tile = self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8]
+
+                tile_id = np.where(np.all(tile.reshape((64,)) == tiles.reshape(tiles.shape[0], 64), axis=1) == True)
+                wtr.write_uint16(tile_id[0][0])
 
     def extract_image_wx_bitmap(self) -> wx.Bitmap:
         height, width = self.image.shape
@@ -80,6 +86,8 @@ class BGImage(FileFormat):
         return Image.fromarray(self.palette[self.image].astype(np.uint8), "RGBA")
 
     def import_image_pil(self, image: Image.Image):
-        image = image.resize((256, 192)).quantize(256).convert("P")
-        self.palette[:] = np.frombuffer(image.palette.palette, np.uint8).reshape((-1, 4))
+        image = image.resize((256, 192)).convert("RGB").quantize(256, method=Image.MEDIANCUT)
+        for color, i in image.palette.colors.items():
+            self.palette[i][:3] = color[:3]
+            self.palette[i][3] = 255
         self.image[:] = np.asarray(image, np.uint8)

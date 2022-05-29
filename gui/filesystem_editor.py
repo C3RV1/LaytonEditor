@@ -494,6 +494,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             if pathname:
                 image = PIL.Image.open(pathname)
         self.preview_data.import_image_pil(image)
+        self.preview_data.save()
         self.fp_bg_viewimage_scaled.load_bitmap(
             self.preview_data.extract_image_wx_bitmap())
 
