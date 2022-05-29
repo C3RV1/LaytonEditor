@@ -96,6 +96,8 @@ class GDS(FileFormat):
         p = DCCParser()
         p.reset()
         p.get_path("script", create=True)
+        for param in self.params:
+            p["script::unnamed"].append(param)
         for cmd in self.commands:
             cmd_text, params, _ = Event.convert_command(cmd)
             p["script::calls"].append({
@@ -117,6 +119,9 @@ class GDS(FileFormat):
             return False, "Missing script"
 
         self.commands = []
+        self.params = []
+        for param in p["script::unnamed"]:
+            self.params.append(param)
         for call in p["script::calls"]:
             func = call["func"]
             params = call["parameters"]
