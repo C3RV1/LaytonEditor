@@ -3,7 +3,7 @@ import pygame as pg
 from formats.place import Place
 from pg_utils.rom.RomSingleton import RomSingleton
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
-from pg_utils.rom.rom_extract import load_smd
+# from pg_utils.rom.rom_extract import load_smd
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
 
@@ -71,18 +71,19 @@ class PlacePreview(TwoScreenRenderer):
             self.sprites.append(sprite)
 
         for object_obj in self.place.objects:
-            if object_obj.character_index == 0:
+            if object_obj.width <= 0:
                 continue
             obj = pge.Sprite(position=[object_obj.x - 256 // 2, object_obj.y - 192 // 2],
                              center=[pge.Alignment.LEFT, pge.Alignment.TOP],
                              color_key=pg.Color(0, 255, 0))
-            self.sprite_loader.load(f"data_lt2/ani/eventobj/obj_{object_obj.character_index}.arc", obj,
-                                    sprite_sheet=True, convert_alpha=False)
-            obj.set_tag("gfx")
+            if object_obj.character_index != 0:
+                self.sprite_loader.load(f"data_lt2/ani/eventobj/obj_{object_obj.character_index}.arc", obj,
+                                        sprite_sheet=True, convert_alpha=False)
+                obj.set_tag("gfx")
             self.objects.append(obj)
 
         for exit_obj in self.place.exits:
-            if exit_obj.width == 0:
+            if exit_obj.width <= 0:
                 continue
             exit_ = FadeInOutBtn(position=[exit_obj.x - 256 // 2, exit_obj.y - 192 // 2],
                                  center=[pge.Alignment.LEFT, pge.Alignment.TOP],
