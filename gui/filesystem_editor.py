@@ -2,7 +2,6 @@ import PIL.Image
 import wx
 import wx.stc
 
-import utility.gdstextscript
 from formats.filesystem import *
 from formats.gds import GDS
 from formats.event import Event
@@ -219,12 +218,12 @@ class FilesystemEditor(generated.FilesystemEditor):
         if name.endswith(".arc") and name.split("/")[1] == "bg":
             background = BGImage(name, rom=archive)
             self.fp_bg_viewimage_scaled.load_bitmap(background.extract_image_wx_bitmap())
-            self.fp_formats_book.SetSelection(3)  # Background page
+            self.fp_formats_book.SetSelection(2)  # Background page
             self.preview_data = background
             self.fp_menus_loaded.append("Background")
             self.GetGrandParent().add_menu(self.fp_bg_menu, "Background")
         elif name.endswith(".arc") or name.endswith(".arj") and name.split("/")[1] == "ani":
-            self.fp_formats_book.SetSelection(4)  # Animation page
+            self.fp_formats_book.SetSelection(3)  # Animation page
             if name.endswith(".arc"):
                 sprite = AniSprite(name, rom=archive)
             else:
@@ -241,21 +240,21 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.fp_samplebank_list.AppendItems(f"Sample {sample}")
             self.fp_menus_loaded.append("Samplebank")
             self.GetGrandParent().add_menu(self.fp_soundbank_menu, "Samplebank")
-            self.fp_formats_book.SetSelection(6)  # samplebank page
+            self.fp_formats_book.SetSelection(5)  # samplebank page
             self.preview_data = samplebank
         elif name.lower().endswith(".swd"):
             presetbank = swd_read_presetbank(archive.open(name))
             self.fp_info_text.Clear()
             text = "using samples: " + ", ".join([str(x) for x in presetbank.samples_info.keys()])
             self.fp_info_text.WriteText(text)
-            self.fp_formats_book.SetSelection(7)  # Info page
+            self.fp_formats_book.SetSelection(6)  # Info page
         elif name.startswith("n_place"):
             place = Place(name, rom=archive)
             self.previewer.start_renderer(PlacePreview(place))
             set_previewer = True
             self.fp_place_viewer.load_place(place, self.rom)
             self.fp_place_viewer.Refresh()
-            self.fp_formats_book.SetSelection(5)  # Placeviewer page
+            self.fp_formats_book.SetSelection(4)  # Placeviewer page
             self.fp_menus_loaded.append("Place")
             self.GetGrandParent().add_menu(self.fp_place_menu, "Place")
         elif name.endswith(".txt"):
@@ -281,7 +280,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             set_previewer = True
             self.dcc_editor.SetText(puzzle.to_readable())
             self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
-            self.fp_formats_book.SetSelection(8)  # DCC Page
+            self.fp_formats_book.SetSelection(7)  # DCC Page
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
         elif name.endswith(".gds"):
@@ -295,7 +294,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 set_previewer = True
                 self.dcc_editor.SetText(event.to_readable())
                 self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
-                self.fp_formats_book.SetSelection(8)  # DCC Page
+                self.fp_formats_book.SetSelection(7)  # DCC Page
                 self.fp_menus_loaded.append("Event")
                 self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:
@@ -303,7 +302,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.preview_data = gds
                 self.dcc_editor.SetText(gds.to_readable())
                 self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
-                self.fp_formats_book.SetSelection(8)  # DCC Page
+                self.fp_formats_book.SetSelection(7)  # DCC Page
                 self.fp_menus_loaded.append("GDS Script")
                 self.GetGrandParent().add_menu(self.fp_gds_menu, "GDS Script")
         elif name.endswith(".plz"):
@@ -497,18 +496,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.preview_data.save()
         self.fp_bg_viewimage_scaled.load_bitmap(
             self.preview_data.extract_image_wx_bitmap())
-
-    def fp_gds_stc_updateui(self, event):
-        command = self.fp_gds_stc.GetCurLine()[0].split(" ")[0]
-        if self.fp_gds_stc_last_command != command:
-            if command in utility.gdstextscript.command_names:
-                self.fp_gds_stc_last_command = command
-                self.fp_gds_cmd_name.SetLabel(command)
-                self.fp_gds_cmd_help.SetLabel(gds_cmd_help[command] if command in gds_cmd_help else "(params unknown)")
-                self.fp_gds_cmd_help.GetParent().Layout()
-            else:
-                self.fp_gds_cmd_name.SetLabel("")
-                self.fp_gds_cmd_help.SetLabel("")
 
     def fp_place_edit_clicked(self, _):
         # TODO: Cleanup with utility functions in editor window

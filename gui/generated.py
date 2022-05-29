@@ -7,7 +7,6 @@
 ## PLEASE DO *NOT* EDIT THIS FILE!
 ###########################################################################
 
-from gui.previews.gds_stc import GdsSTC
 from gui.previews.scaledimage import ScaledImage
 from gui.previews.placeviewer import PlaceViewer
 import wx
@@ -147,69 +146,6 @@ class FilesystemEditor ( wx.Panel ):
 		self.fp_text.Layout()
 		fp_text_layout.Fit( self.fp_text )
 		self.fp_formats_book.AddPage( self.fp_text, u"a page", False )
-		self.fp_gds = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		fp_gds_layout = wx.BoxSizer( wx.VERTICAL )
-
-		self.fp_gds_stc = GdsSTC( self.fp_gds, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
-		self.fp_gds_stc.SetUseTabs ( True )
-		self.fp_gds_stc.SetTabWidth ( 4 )
-		self.fp_gds_stc.SetIndent ( 4 )
-		self.fp_gds_stc.SetTabIndents( True )
-		self.fp_gds_stc.SetBackSpaceUnIndents( True )
-		self.fp_gds_stc.SetViewEOL( False )
-		self.fp_gds_stc.SetViewWhiteSpace( False )
-		self.fp_gds_stc.SetMarginWidth( 2, 0 )
-		self.fp_gds_stc.SetIndentationGuides( True )
-		self.fp_gds_stc.SetReadOnly( False )
-		self.fp_gds_stc.SetMarginType ( 1, wx.stc.STC_MARGIN_SYMBOL )
-		self.fp_gds_stc.SetMarginMask ( 1, wx.stc.STC_MASK_FOLDERS )
-		self.fp_gds_stc.SetMarginWidth ( 1, 16)
-		self.fp_gds_stc.SetMarginSensitive( 1, True )
-		self.fp_gds_stc.SetProperty ( "fold", "1" )
-		self.fp_gds_stc.SetFoldFlags ( wx.stc.STC_FOLDFLAG_LINEBEFORE_CONTRACTED | wx.stc.STC_FOLDFLAG_LINEAFTER_CONTRACTED )
-		self.fp_gds_stc.SetMarginType( 0, wx.stc.STC_MARGIN_NUMBER )
-		self.fp_gds_stc.SetMarginWidth( 0, self.fp_gds_stc.TextWidth( wx.stc.STC_STYLE_LINENUMBER, "_99999" ) )
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDER, wx.stc.STC_MARK_BOXPLUS )
-		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDER, wx.BLACK)
-		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDER, wx.WHITE)
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.stc.STC_MARK_BOXMINUS )
-		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.BLACK )
-		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPEN, wx.WHITE )
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERSUB, wx.stc.STC_MARK_EMPTY )
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEREND, wx.stc.STC_MARK_BOXPLUS )
-		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEREND, wx.BLACK )
-		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEREND, wx.WHITE )
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUS )
-		self.fp_gds_stc.MarkerSetBackground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.BLACK)
-		self.fp_gds_stc.MarkerSetForeground( wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.WHITE)
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_EMPTY )
-		self.fp_gds_stc.MarkerDefine( wx.stc.STC_MARKNUM_FOLDERTAIL, wx.stc.STC_MARK_EMPTY )
-		self.fp_gds_stc.SetSelBackground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT ) )
-		self.fp_gds_stc.SetSelForeground( True, wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT ) )
-		fp_gds_layout.Add( self.fp_gds_stc, 1, wx.EXPAND, 5 )
-
-		fp_gds_cmd_layout = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.fp_gds_cmd_name = wx.StaticText( self.fp_gds, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.fp_gds_cmd_name.Wrap( -1 )
-
-		self.fp_gds_cmd_name.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
-
-		fp_gds_cmd_layout.Add( self.fp_gds_cmd_name, 0, wx.TOP|wx.BOTTOM|wx.LEFT, 5 )
-
-		self.fp_gds_cmd_help = wx.StaticText( self.fp_gds, wx.ID_ANY, u"g", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.fp_gds_cmd_help.Wrap( -1 )
-
-		fp_gds_cmd_layout.Add( self.fp_gds_cmd_help, 0, wx.ALL, 5 )
-
-
-		fp_gds_layout.Add( fp_gds_cmd_layout, 0, wx.EXPAND, 5 )
-
-
-		self.fp_gds.SetSizer( fp_gds_layout )
-		self.fp_gds.Layout()
-		fp_gds_layout.Fit( self.fp_gds )
-		self.fp_formats_book.AddPage( self.fp_gds, u"a page", False )
 		self.fp_bg = wx.Panel( self.fp_formats_book, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		fp_bg_layout = wx.BoxSizer( wx.VERTICAL )
 
@@ -341,7 +277,6 @@ class FilesystemEditor ( wx.Panel ):
 		self.ft_filetree.Bind( wx.EVT_TREE_KEY_DOWN, self.ft_filetree_keydown )
 		self.ft_filetree.Bind( wx.EVT_TREE_SEL_CHANGED, self.ft_filetree_selchanged )
 		self.fp_text_edit.Bind( wx.EVT_TEXT, self.fp_text_edit_changed )
-		self.fp_gds_stc.Bind( wx.EVT_UPDATE_UI, self.fp_gds_stc_updateui )
 		self.fp_ani_imageindex.Bind( wx.EVT_SLIDER, self.fp_ani_imageindex_on_slider )
 
 	def __del__( self ):
@@ -362,9 +297,6 @@ class FilesystemEditor ( wx.Panel ):
 		event.Skip()
 
 	def fp_text_edit_changed( self, event ):
-		event.Skip()
-
-	def fp_gds_stc_updateui( self, event ):
 		event.Skip()
 
 	def fp_ani_imageindex_on_slider( self, event ):
