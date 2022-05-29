@@ -1,5 +1,4 @@
 import PIL.Image
-import sounddevice as sd
 import wx
 import wx.stc
 
@@ -12,7 +11,9 @@ from formats.graphics.bg import BGImage
 from formats.place import Place
 from formats.puzzle import Puzzle
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
-from formats.sound import wav, sadl
+from formats.sound import wav, sadl, sample_transform
+import numpy as np
+import pygame as pg
 from formats.sound.SMDLMidiSequencer import SMDLMidiSequencer
 import mido
 from gui import generated
@@ -389,7 +390,17 @@ class FilesystemEditor(generated.FilesystemEditor):
     def fp_samplebank_play_clicked(self, _):
         index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
         sample = self.preview_data.samples[index]
-        sd.play(sample.pcm, sample.samplerate)
+        sample_pcm = np.reshape(sample.pcm, (1, sample.pcm.shape[0]))
+        target_rate = pg.mixer.get_init()[0]
+        target_channels = pg.mixer.get_init()[2]
+        sample_pcm = sample_transform.change_sample_rate(sample_pcm, sample.samplerate, target_rate)
+        sample_pcm = sample_transform.change_channels(sample_pcm, target_channels)
+        sample_pcm = sample_pcm.swapaxes(0, 1)
+        sample_pcm = np.ascontiguousarray(sample_pcm)
+        sound = pg.sndarray.make_sound(sample_pcm)
+        sound.set_volume(0.5)
+        sound.play()
+        # sd.play(sample.pcm, sample.samplerate)
 
     def fs_replace_clicked(self, _event):  # TODO: Connect with MenuItem
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
