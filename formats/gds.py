@@ -4,6 +4,7 @@ from typing import List, Union
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.filesystem import FileFormat
+from formats.dcc import DCCParser
 
 
 @dataclass
@@ -89,3 +90,36 @@ class GDS(FileFormat):
         wtr.write_uint16(0xc)
         wtr.seek(0)
         wtr.write_uint32(len(wtr.data) - 4)
+
+    def to_readable(self):
+        from formats.event import Event
+        p = DCCParser()
+        p.reset()
+        p.get_path("script", create=True)
+        for cmd in self.commands:
+            cmd_text, params, _ = Event.convert_command(cmd)
+            p["script::calls"].append({
+                "func": cmd_text,
+                "parameters": params
+            })
+
+        return p.serialize()
+
+    def from_readable(self, data):
+        from formats.event import Event
+        p = DCCParser()
+        try:
+            p.parse(data)
+        except Exception as e:
+            return False, str(e)
+
+        if not p.exists("script"):
+            return False, "Missing script"
+
+        self.commands = []
+        for call in p["script::calls"]:
+            func = call["func"]
+            params = call["parameters"]
+            command = Event.revert_command_(func, params)
+            self.commands.append(command)
+        return True, ""

@@ -128,6 +128,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_soundbank_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
+        self.fp_gds_menu = wx.Menu()
         self.fp_stream_menu = wx.Menu()
         self.fp_sequenced_menu = wx.Menu()
         self.fp_text_menu = wx.Menu()
@@ -165,6 +166,8 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_event_menu, "Save changes EventScript", self.fp_event_save_changes_evscript)
         add_menu_item(self.fp_event_menu, "Edit Visually", self.fp_open_event_editor)
 
+        add_menu_item(self.fp_gds_menu, "Save", self.fp_gds_save_changes)
+
         add_menu_item(self.fp_stream_menu, "Export to WAV", self.fp_stream_export_wav)
         add_menu_item(self.fp_stream_menu, "Replace with WAV", self.fp_stream_import_wav)
 
@@ -174,7 +177,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         self.previewer: PygamePreviewer = PygamePreviewer.INSTANCE
 
-        self.puzzle_scintilla.SetEOLMode(wx.stc.STC_EOL_LF)
+        self.dcc_editor.SetEOLMode(wx.stc.STC_EOL_LF)
 
     def set_folder_and_rom(self, folder: Folder, rom: NintendoDSRom):
         self.base_folder = folder
@@ -276,8 +279,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             puzzle.load_from_rom()
             self.previewer.start_renderer(PuzzlePlayer(puzzle))
             set_previewer = True
-            self.puzzle_scintilla.SetText(puzzle.to_readable())
-            self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
+            self.dcc_editor.SetText(puzzle.to_readable())
+            self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
             self.fp_formats_book.SetSelection(8)  # DCC Page
             self.fp_menus_loaded.append("Puzzle")
             self.GetGrandParent().add_menu(self.fp_puzzle_menu, "Puzzle")
@@ -290,15 +293,19 @@ class FilesystemEditor(generated.FilesystemEditor):
                 event.load_from_rom()
                 self.previewer.start_renderer(EventPlayer(event))
                 set_previewer = True
-                self.puzzle_scintilla.SetText(event.to_readable())
-                self.puzzle_scintilla.ConvertEOLs(wx.stc.STC_EOL_LF)
+                self.dcc_editor.SetText(event.to_readable())
+                self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
                 self.fp_formats_book.SetSelection(8)  # DCC Page
                 self.fp_menus_loaded.append("Event")
                 self.GetGrandParent().add_menu(self.fp_event_menu, "Event")
             else:
                 gds = GDS(name, rom=archive)
-                self.fp_gds_stc.load_gds(gds)
-                self.fp_formats_book.SetSelection(2)  # GDS page
+                self.preview_data = gds
+                self.dcc_editor.SetText(gds.to_readable())
+                self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
+                self.fp_formats_book.SetSelection(8)  # DCC Page
+                self.fp_menus_loaded.append("GDS Script")
+                self.GetGrandParent().add_menu(self.fp_gds_menu, "GDS Script")
         elif name.endswith(".plz"):
             if name not in self.opened_archives:
                 self.opened_archives.append(name)
@@ -517,7 +524,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_puzzle_apply_mods(self, _):
         puzzle_data = self.preview_data
-        successful, error_msg = puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        successful, error_msg = puzzle_data.from_readable(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
@@ -526,7 +533,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_puzzle_save(self, _):
         puzzle_data = self.preview_data
-        successful, error_msg = puzzle_data.from_readable(self.puzzle_scintilla.GetText())
+        successful, error_msg = puzzle_data.from_readable(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
@@ -535,7 +542,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_event_apply_changes(self, _):
         event_data = self.preview_data
-        successful, error_msg = event_data.from_readable(self.puzzle_scintilla.GetText())
+        successful, error_msg = event_data.from_readable(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
@@ -544,7 +551,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_event_save_changes(self, _):
         event_data = self.preview_data
-        successful, error_msg = event_data.from_readable(self.puzzle_scintilla.GetText())
+        successful, error_msg = event_data.from_readable(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
@@ -554,7 +561,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_event_apply_changes_evscript(self, _):
         event_data: Event = self.preview_data
-        successful, error_msg = event_data.from_event_script(self.puzzle_scintilla.GetText())
+        successful, error_msg = event_data.from_event_script(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
@@ -563,13 +570,22 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_event_save_changes_evscript(self, _):
         event_data = self.preview_data
-        successful, error_msg = event_data.from_event_script(self.puzzle_scintilla.GetText())
+        successful, error_msg = event_data.from_event_script(self.dcc_editor.GetText())
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
             event_data.save_to_rom()
             self.previewer.start_renderer(EventPlayer(event_data))
+
+    def fp_gds_save_changes(self, _):
+        gds: GDS = self.preview_data
+        successful, error_msg = gds.from_readable(self.dcc_editor.GetText())
+        if not successful:
+            error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
+            error_dialog.ShowModal()
+        else:
+            gds.save()
 
     def fp_stream_export_wav(self, _):
         with wx.FileDialog(self, "Export to WAV", wildcard="WAV Files (*.wav)|*.wav", style=wx.FD_SAVE) as fileDialog:

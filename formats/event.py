@@ -191,7 +191,7 @@ class Event:
 
         parser.get_path("evs", create=True)
         for cmd in self.gds.commands:
-            func, params, _param_names = self.convert_command(cmd, for_code=True)
+            func, params, _param_names = self.convert_command(cmd, for_code=True, ev=self)
             parser["evs::calls"].append({
                 "func": func,
                 "parameters": params
@@ -229,7 +229,8 @@ class Event:
         "wait_tap": "Wait Tap"
     }
 
-    def convert_command(self, cmd: formats.gds.GDSCommand, for_code=True):
+    @staticmethod
+    def convert_command(cmd: formats.gds.GDSCommand, for_code=True, ev=None):
         func = f"gds_{hex(cmd.command)}"
         params = cmd.params.copy()
         param_names = [f"unk{i}" for i in range(len(params))]
@@ -322,18 +323,18 @@ class Event:
             func = "dial"
             param_names = ["Text GDS Number", "Character ID", "Start Animation",
                            "End Animation", "Sound Pitch?", "Text"]
-            if len(params) == 0:
+            if len(params) == 0 or ev is None:
                 params = [0, 0, "NONE", "NONE", 2, ""]
             else:
-                dial_gds = self.get_text(params[0])
+                dial_gds = ev.get_text(params[0])
                 params = [params[0]]
                 if len(dial_gds.params) == 0:
                     params.extend([0, "NONE", "NONE", 2, ""])
                 else:
                     params.extend(dial_gds.params[:4])
                     params.append(subs.replace_substitutions(dial_gds.params[4]))
-        if not for_code and func in self.func_names:
-            func = self.func_names[func]
+        if not for_code and func in Event.func_names:
+            func = Event.func_names[func]
         return func, params, param_names
 
     def from_readable(self, readable):
@@ -372,9 +373,13 @@ class Event:
         return True, ""
 
     def revert_command(self, func, params):
+        return self.revert_command_(func, params, self)
+
+    @staticmethod
+    def revert_command_(func, params, ev=None):
         command = formats.gds.GDSCommand(0)
         params = params.copy()
-        if func == "fade" or func == self.func_names["fade"]:
+        if func == "fade" or func == Event.func_names["fade"]:
             if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
                 if params[1] == 2:  # [0x2, 0x80]
                     if params[2] is None or params[2] == -1:  # [0x2]
@@ -401,80 +406,80 @@ class Event:
                         params[2] = 42
             if command.command in [0x72, 0x80, 0x87, 0x88]:
                 command.params = params[2:]
-        elif func == "set_room" or func == self.func_names["set_room"]:
+        elif func == "set_room" or func == Event.func_names["set_room"]:
             command.command = 0x5
             command.params = params
-        elif func == "set_mode" or func == self.func_names["set_mode"]:
+        elif func == "set_mode" or func == Event.func_names["set_mode"]:
             command.command = 0x6
             command.params = params
-        elif func == "set_next_mode" or func == self.func_names["set_next_mode"]:
+        elif func == "set_next_mode" or func == Event.func_names["set_next_mode"]:
             command.command = 0x7
             command.params = params
-        elif func == "set_movie" or func == self.func_names["set_movie"]:
+        elif func == "set_movie" or func == Event.func_names["set_movie"]:
             command.command = 0x8
             command.params = params
-        elif func == "set_event" or func == self.func_names["set_event"]:
+        elif func == "set_event" or func == Event.func_names["set_event"]:
             command.command = 0x9
             command.params = params
-        elif func == "set_puzzle" or func == self.func_names["set_puzzle"]:
+        elif func == "set_puzzle" or func == Event.func_names["set_puzzle"]:
             command.command = 0xb
             command.params = params
-        elif func == "bg_load" or func == self.func_names["bg_load"]:
+        elif func == "bg_load" or func == Event.func_names["bg_load"]:
             command.command = 0x21 if params[-1] == 0 else 0x22
             command.params = [params[0], 3]
-        elif func == "chr_show" or func == self.func_names["chr_show"]:
+        elif func == "chr_show" or func == Event.func_names["chr_show"]:
             command.command = 0x2a
             command.params = params
-        elif func == "chr_hide" or func == self.func_names["chr_hide"]:
+        elif func == "chr_hide" or func == Event.func_names["chr_hide"]:
             command.command = 0x2b
             command.params = params
-        elif func == "chr_visibility" or func == self.func_names["chr_visibility"]:
+        elif func == "chr_visibility" or func == Event.func_names["chr_visibility"]:
             command.command = 0x2c
             params[1] = 2.0 if params[1] else -2.0
             command.params = params
-        elif func == "show_chapter" or func == self.func_names["show_chapter"]:
+        elif func == "show_chapter" or func == Event.func_names["show_chapter"]:
             command.command = 0x2d
             command.params = params
-        elif func == "chr_slot" or func == self.func_names["chr_slot"]:
+        elif func == "chr_slot" or func == Event.func_names["chr_slot"]:
             command.command = 0x30
             command.params = params
-        elif func == "wait" or func == self.func_names["wait"]:
+        elif func == "wait" or func == Event.func_names["wait"]:
             command.command = 0x31
             command.params = params
-        elif func == "bg_opacity" or func == self.func_names["bg_opacity"]:
+        elif func == "bg_opacity" or func == Event.func_names["bg_opacity"]:
             command.command = 0x37
             command.params = params
-        elif func == "chr_anim" or func == self.func_names["chr_anim"]:
+        elif func == "chr_anim" or func == Event.func_names["chr_anim"]:
             command.command = 0x3f
             command.params = params
-        elif func == "set_voice" or func == self.func_names["set_voice"]:
+        elif func == "set_voice" or func == Event.func_names["set_voice"]:
             command.command = 0x5c
             command.params = params
-        elif func == "sfx_sad" or func == self.func_names["sfx_sad"]:
+        elif func == "sfx_sad" or func == Event.func_names["sfx_sad"]:
             command.command = 0x5d
             command.params = params
-        elif func == "sfx_sed" or func == self.func_names["sfx_sed"]:
+        elif func == "sfx_sed" or func == Event.func_names["sfx_sed"]:
             command.command = 0x5e
             command.params = params
-        elif func == "bg_music" or func == self.func_names["bg_music"]:
+        elif func == "bg_music" or func == Event.func_names["bg_music"]:
             command.command = 0x62
             command.params = params
-        elif func == "wait_tap" or func == self.func_names["wait_tap"]:
+        elif func == "wait_tap" or func == Event.func_names["wait_tap"]:
             command.command = 0x69
             command.params = params
-        elif func == "bg_shake" or func == self.func_names["bg_shake"]:
+        elif func == "bg_shake" or func == Event.func_names["bg_shake"]:
             command.command = 0x6a
             command.params = params
-        elif func == "bgm_fade_out" or func == self.func_names["bgm_fade_out"]:
+        elif func == "bgm_fade_out" or func == Event.func_names["bgm_fade_out"]:
             command.command = 0x8a
             command.params = params
-        elif func == "bgm_fade_in" or func == self.func_names["bgm_fade_in"]:
+        elif func == "bgm_fade_in" or func == Event.func_names["bgm_fade_in"]:
             command.command = 0x8b
             command.params = params
-        elif func == "dialogue_sfx" or func == self.func_names["dialogue_sfx"]:
+        elif func == "dialogue_sfx" or func == Event.func_names["dialogue_sfx"]:
             command.command = 0x99
             command.params = params
-        elif func == "dial" or func == self.func_names["dial"]:
+        elif func == "dial" or func == Event.func_names["dial"]:
             command.command = 0x4
             command.params = [params[0]]
 
@@ -482,7 +487,8 @@ class Event:
             dial_gds.params = params[1:]
             dial_gds.params[4] = subs.convert_substitutions(dial_gds.params[4])
 
-            self.texts[params[0]] = dial_gds
+            if ev:
+                ev.texts[params[0]] = dial_gds
         elif func.startswith("gds_"):
             command.command = int(func[4:], 16)
             command.params = params

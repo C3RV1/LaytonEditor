@@ -23,7 +23,7 @@ class CommandRepr:
 
     @staticmethod
     def from_gds(gds_command: GDSCommand, event: Event):
-        name, params, param_names = event.convert_command(gds_command, for_code=False)
+        name, params, param_names = event.convert_command(gds_command, for_code=False, ev=event)
         param_dict = []
         for i in range(len(params)):
             param_dict.append([param_names[i], type(params[i]).__name__, params[i]])
