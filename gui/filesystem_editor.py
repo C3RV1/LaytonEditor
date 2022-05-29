@@ -157,11 +157,11 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_soundbank_menu, "Play Selected", self.fp_samplebank_play_clicked)
 
-        add_menu_item(self.fp_puzzle_menu, "Apply changes", self.fp_puzzle_apply_mods)
+        add_menu_item(self.fp_puzzle_menu, "Preview changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
 
-        add_menu_item(self.fp_event_menu, "Apply changes DCC", self.fp_event_apply_changes)
-        add_menu_item(self.fp_event_menu, "Apply changes EventScript", self.fp_event_apply_changes_evscript)
+        add_menu_item(self.fp_event_menu, "Preview changes DCC", self.fp_event_apply_changes)
+        add_menu_item(self.fp_event_menu, "Preview changes EventScript", self.fp_event_apply_changes_evscript)
         add_menu_item(self.fp_event_menu, "Save changes DCC", self.fp_event_save_changes)
         add_menu_item(self.fp_event_menu, "Save changes EventScript", self.fp_event_save_changes_evscript)
         add_menu_item(self.fp_event_menu, "Edit Visually", self.fp_open_event_editor)

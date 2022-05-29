@@ -161,7 +161,7 @@ class EventEditor(generated.EventEditor):
             menu.Append(ase_menu_item)
             main_editor.Bind(wx.EVT_MENU, handler, id=ase_menu_item.GetId())
 
-        add_menu_item(self.menu, "Apply", self.apply_changes)
+        add_menu_item(self.menu, "Preview", self.apply_changes)
         add_menu_item(self.menu, "Save", self.save_changes)
 
     def add_command_panel(self, command_repr: CommandRepr):
