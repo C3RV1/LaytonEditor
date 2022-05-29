@@ -185,13 +185,6 @@ class EventScriptParser:
             if char_name not in self.defined_characters:
                 raise ValueError(f"Show: Character {char_name} does not exist (line {self.line_num})")
             self.ev.gds.commands.append(self.ev.revert_command("chr_show", [self.defined_characters.index(char_name)]))
-        elif line_split[0] == "show":
-            if not match_syntax(line_split, ("show", None)):
-                raise SyntaxError(f"Show does not match syntax (line {self.line_num})")
-            char_name = line_split[1]
-            if char_name not in self.defined_characters:
-                raise ValueError(f"Show: Character {char_name} does not exist (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_show", [self.defined_characters.index(char_name)]))
         elif line_split[0] == "hide":
             if not match_syntax(line_split, ("hide", None)):
                 raise SyntaxError(f"Hide does not match syntax (line {self.line_num})")
