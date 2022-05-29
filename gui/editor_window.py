@@ -19,6 +19,8 @@ class MainEditor(generated.MainEditor):
     rom_last_filename: str = ""
     last_page: int = -1
 
+    ASK_BEFORE_OPENING = True
+
     def __init__(self, *args, **kwargs):
         self.pygame_previewer = PygamePreviewer()
         self.pygame_previewer.start()
@@ -119,7 +121,16 @@ class MainEditor(generated.MainEditor):
 
     # Menu : File
     def le_menu_file_open_OnMenuSelection(self, event):
-        # Todo: Ask for saving currently opened rom
+        if self.rom is not None and self.ASK_BEFORE_OPENING:
+            ask_to_save_dialog = wx.MessageDialog(self, "Do you want to save the currently opened ROM?",
+                                                  style=wx.YES_NO | wx.CANCEL)
+            v = ask_to_save_dialog.ShowModal()
+            if v == wx.ID_YES:
+                self.le_menu_file_save_OnMenuSelection(event)
+            elif v == wx.ID_NO:
+                pass
+            else:
+                return
         with wx.FileDialog(self, "Open NDS rom", wildcard="NDS rom (*.nds)|*.nds",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:

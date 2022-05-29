@@ -358,5 +358,3 @@ class Sprite(Renderable):
 
     def set_loader(self, loader: 'SpriteLoader'):
         self._loader = loader
-
-    # TODO: Implement some sort of unload? or does python automatically collect it correctly?
