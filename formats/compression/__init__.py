@@ -1,3 +1,4 @@
+import logging
 from typing import *
 import ndspy.lz10 as lz10
 from formats.compression import rle, huffman
@@ -21,7 +22,7 @@ def compress(data: bytes, compression_type=LZ10, double_typed: bool = False) -> 
     if not data:
         return b""
     if double_typed is None:
-        print("Warning: compressing file without knowing if it's double typed, defaulting to not.")
+        logging.warning("Compressing file without knowing if it's double typed, defaulting to not.")
         double_typed = False
     other_type = struct.pack("<I", SECOND_TYPES[compression_type]) if double_typed else b""
     if compression_type == LZ10:

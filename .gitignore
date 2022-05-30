@@ -24,6 +24,7 @@ tests/
 *.dll
 *.pdb
 *.SMD
+*.log
 venv
 _test*
 data_extracted

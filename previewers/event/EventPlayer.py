@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 import pg_engine as pge
@@ -165,10 +166,10 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x99:
             self.next_dialogue_sfx = command.params[0]
         else:
-            print(f"[EventPlayer]    Command {hex(command.command)} not recognised (skipped). ")
+            logging.info(f"[EventPlayer]    Command {hex(command.command)} not recognised (skipped). ")
 
     def execute_str_command(self, command):
-        print(command)
+        logging.debug(f"[EventPlayer]    String command {command}")
         command_split = command.split(" ")
         if command_split[0] == "setani":
             try:

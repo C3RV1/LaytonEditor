@@ -1,3 +1,4 @@
+import logging
 import os
 from formats.sound import smdl
 from formats.sound.SMDLSequencer import SMDLSequencer
@@ -8,7 +9,7 @@ try:
     import custom_fluidsynth.custom_fluidsynth as fluidsynth
 except ImportError as e:
     # Can still run without the synth
-    print(f"Error importing fluidsynth: {e}")
+    logging.warning(f"Error importing fluidsynth: {e}")
     fluidsynth = None
 
 

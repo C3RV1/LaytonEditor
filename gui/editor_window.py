@@ -1,3 +1,4 @@
+import logging
 from typing import BinaryIO, Union
 
 import ndspy.rom
@@ -51,8 +52,9 @@ class MainEditor(generated.MainEditor):
                 conf.LANG = lang_table[lang_id]
             except IndexError:  # US version?
                 # TODO: Figure out how to read it properly
+                logging.warning(f"Game language not recognized: assuming US")
                 conf.LANG = "en"
-            print(f"Game language: {conf.LANG}")
+            logging.info(f"Game language: {conf.LANG}")
             if conf.LANG == "jp":
                 error_dialog = wx.MessageDialog(self, "Japanese is not currently supported",
                                                 style=wx.ICON_ERROR | wx.OK)

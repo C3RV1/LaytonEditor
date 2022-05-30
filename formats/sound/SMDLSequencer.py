@@ -1,3 +1,5 @@
+import logging
+
 from formats import binary
 import io
 from queue import PriorityQueue
@@ -103,7 +105,7 @@ class SMDLSequencer:
         for preset_index in presets.keys():
             mapped_preset = self.map_preset(presets[preset_index])
             if self.DEBUG:
-                print(f"Preset {preset_index} mapped to {mapped_preset}")
+                logging.debug(f"Preset {preset_index} mapped to {mapped_preset}")
             if mapped_preset is not None:
                 self.PROGRAM_MAP[preset_index] = mapped_preset
 
@@ -156,11 +158,11 @@ class SMDLSequencer:
             if event == 0x98:
                 if self.loop_start[track_id] != -1 and self.loops:
                     if self.DEBUG:
-                        print(f"{prefix}Looping to: {self.loop_start[track_id]}")
+                        logging.debug(f"{prefix}Looping to: {self.loop_start[track_id]}")
                     track_br.seek(self.loop_start[track_id])
                 else:
                     if self.DEBUG:
-                        print(f"{prefix}Complete")
+                        logging.debug(f"{prefix}Complete")
                     self.track_completed[track_id] = True
                     self.end_channel(track_id)
                     break
@@ -189,7 +191,7 @@ class SMDLSequencer:
                 # notes are on even, pauses on odd (pauses after notes)
                 note_end = (self.current_tick + duration) * 2
                 if self.DEBUG:
-                    print(f"{prefix}Note on {midi_note} with duration {duration}, ending on {note_end}")
+                    logging.debug(f"{prefix}Note on {midi_note} with duration {duration}, ending on {note_end}")
 
                 self.note_on(track_id, midi_note, velocity)
 
@@ -197,7 +199,7 @@ class SMDLSequencer:
                     self.note_off(channel, note1)
                     prefix_ = f"[Track {channel} tick: {self.current_tick}]\t"
                     if self.DEBUG:
-                        print(f"{prefix_}Note off {midi_note}")
+                        logging.debug(f"{prefix_}Note off {midi_note}")
 
                 queue_stop_object = PrioritizedItem(note_end, on_note_end)
                 self.event_queue.put(queue_stop_object)
@@ -209,7 +211,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + pause_time) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 1 ending on {pause_end}")
+                    logging.debug(f"{prefix}Pause 1 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -218,7 +220,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 2 ending on {pause_end}")
+                    logging.debug(f"{prefix}Pause 2 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -228,7 +230,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 3 ending on {pause_end}")
+                    logging.debug(f"{prefix}Pause 3 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -238,7 +240,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 4 ending on {pause_end}, {self.last_delay[track_id]}")
+                    logging.debug(f"{prefix}Pause 4 ending on {pause_end}, {self.last_delay[track_id]}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -249,7 +251,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 5 ending on {pause_end}")
+                    logging.debug(f"{prefix}Pause 5 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -261,7 +263,7 @@ class SMDLSequencer:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
                 if self.DEBUG:
-                    print(f"{prefix}Pause 6 ending on {pause_end}")
+                    logging.debug(f"{prefix}Pause 6 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
                 self.event_queue.put(queue_stop_object)
@@ -272,63 +274,63 @@ class SMDLSequencer:
                 self.start_loop(track_id)
 
                 if self.DEBUG:
-                    print(f"{prefix}Looping on: {self.loop_start[track_id]}")
+                    logging.debug(f"{prefix}Looping on: {self.loop_start[track_id]}")
             elif event == 0xa0:
                 self.octave[track_id] = track_br.read_uint8()
                 self.set_octave(track_id, self.octave[track_id])
 
                 if self.DEBUG:
-                    print(f"{prefix}Setting octave to {self.octave[track_id]}")
+                    logging.debug(f"{prefix}Setting octave to {self.octave[track_id]}")
             elif event == 0xa1:
                 octave_mod = track_br.read_uint8()
                 self.mod_octave(track_id, octave_mod)
                 self.octave[track_id] += octave_mod
 
                 if self.DEBUG:
-                    print(f"{prefix}Modifying octave with {octave_mod} to {self.octave[track_id]}")
+                    logging.debug(f"{prefix}Modifying octave with {octave_mod} to {self.octave[track_id]}")
             elif event == 0xa4 or event == 0xa5:
                 self.bpm = track_br.read_uint8()
                 self.set_bpm(track_id, self.bpm)
 
                 if self.DEBUG:
-                    print(f"{prefix}Set tempo: {self.bpm}")
+                    logging.debug(f"{prefix}Set tempo: {self.bpm}")
             elif event == 0xac:
                 program = track_br.read_uint8()
 
                 if self.DEBUG:
-                    print(f"{prefix}Program select: {program}")
+                    logging.debug(f"{prefix}Program select: {program}")
 
                 if program in self.PROGRAM_MAP.keys():
                     program = self.PROGRAM_MAP[program]
                     self.set_program(track_id, program)
                 else:
-                    print(f"{prefix}PROGRAM {program} not in PROGRAM_MAP")
+                    logging.debug(f"{prefix}PROGRAM {program} not in PROGRAM_MAP")
             elif event == 0xd7:
                 bend = track_br.read_uint16()
 
                 if self.DEBUG:
-                    print(f"{prefix}Bending note: {bend}")
+                    logging.debug(f"{prefix}Bending note: {bend}")
 
                 self.pitch_bend(track_id, bend)
             elif event == 0xe0:  # Change volume
                 volume = track_br.read_uint8()
 
                 if self.DEBUG:
-                    print(f"{prefix}Changing volume to {volume}")
+                    logging.debug(f"{prefix}Changing volume to {volume}")
 
                 self.change_volume(track_id, volume)
             elif event == 0xe3:
                 expression = track_br.read_uint8()
 
                 if self.DEBUG:
-                    print(f"{prefix}Changing expression to {expression}")
+                    logging.debug(f"{prefix}Changing expression to {expression}")
 
                 self.change_expression(track_id, expression)
             elif event == 0xe8:  # pan
                 pan = track_br.read_uint8()
 
                 if self.DEBUG:
-                    print(f"{prefix}Changing pan to {pan}")
+                    logging.debug(f"{prefix}Changing pan to {pan}")
 
                 self.change_pan(track_id, pan)
             elif event in [0xAB,  # Should remain here
@@ -339,25 +341,25 @@ class SMDLSequencer:
                            0xE9, 0xEF, 0xF6]:
                 v = track_br.read_char_array(1)
                 if self.DEBUG:
-                    print(f"[Track {track_id} tick: {self.current_tick}]\tEvent1: {hex(event)} Value: {v}")
+                    logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent1: {hex(event)} Value: {v}")
             elif event in [0xCB, 0xF8,  # Should remain here
                            # Unknown
                            0xA8, 0xB4, 0xD5, 0xD6, 0xD8, 0xF2]:
                 v = track_br.read_char_array(2)
                 if self.DEBUG:
-                    print(f"[Track {track_id} tick: {self.current_tick}]\tEvent2: {hex(event)} Value: {v}")
+                    logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent2: {hex(event)} Value: {v}")
             elif event in [0xAF, 0xD4, 0xE2, 0xEA, 0xF3]:  # Unknown
                 v = track_br.read_char_array(3)
                 if self.DEBUG:
-                    print(f"[Track {track_id} tick: {self.current_tick}]\tEvent3: {hex(event)} Value: {v}")
+                    logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent3: {hex(event)} Value: {v}")
             elif event in [0xDD, 0xE5, 0xED, 0xF1]:  # Unknown
                 v = track_br.read_char_array(4)
                 if self.DEBUG:
-                    print(f"[Track {track_id} tick: {self.current_tick}]\tEvent4: {hex(event)} Value: {v}")
+                    logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent4: {hex(event)} Value: {v}")
             elif event in [0xDC, 0xE4, 0xEC, 0xF0]:  # Unknown
                 v = track_br.read_char_array(5)
                 if self.DEBUG:
-                    print(f"[Track {track_id} tick: {self.current_tick}]\tEvent5: {hex(event)} Value: {v}")
+                    logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent5: {hex(event)} Value: {v}")
 
     def reset(self):
         for track_br in self.tracks_br:

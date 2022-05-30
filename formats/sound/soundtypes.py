@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import *
@@ -19,7 +20,7 @@ class Sample:
         elif type(data) == bytes:
             self._adpcm = data
         else:
-            print(data)
+            logging.error(f"Unknown format of Sample ({type(data)})")
 
     def __repr__(self):
         if self._pcm:

@@ -1,3 +1,4 @@
+import logging
 import math
 
 from formats.binary import BinaryReader, BinaryWriter
@@ -185,7 +186,7 @@ class SADL(FileFormat):
             self.procyon_decoders.append(procyon.Procyon())
             self.offset.append(0)
 
-        print(f"Encoding {self.num_samples} samples")
+        logging.debug(f"Encoding {self.num_samples} samples")
 
         for chan in range(self.channels):
             buffer_off = 0
@@ -194,7 +195,7 @@ class SADL(FileFormat):
                 destination = self.buffer[chan][buffer_off:buffer_off + 0x10]
                 self.procyon_decoders[chan].encode_block(block, destination)
                 if i % 200*30 == 0 and i != 0:
-                    print(f"Blocks done: {i // 30} of {self.num_samples // 30}")
+                    logging.debug(f"Blocks done: {i // 30} of {self.num_samples // 30}")
                 buffer_off += 0x10
             self.procyon_decoders[chan].reset()
             self.offset[chan] = 0

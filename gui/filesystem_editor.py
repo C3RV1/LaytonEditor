@@ -266,7 +266,8 @@ class FilesystemEditor(generated.FilesystemEditor):
                 self.fp_text_edit.WriteText(text)
                 self.fp_formats_book.SetSelection(1)  # Text page
             except UnicodeDecodeError:  # uses shift-jis
-                print("Shift-jis text cannot be previewed for now")
+                self.fp_formats_book.SetSelection(6)
+                self.fp_info_text.WriteText("Shift-jis text cannot be previewed for now")
             finally:
                 textfile.close()
             self.fp_menus_loaded.append("Text")
@@ -600,15 +601,15 @@ class FilesystemEditor(generated.FilesystemEditor):
 
             with wx.ProgressDialog("Importing WAV...", "This could take several minutes.", parent=self,
                                    style=wx.PD_APP_MODAL | wx.PD_REMAINING_TIME | wx.PD_CAN_ABORT) as progressDialog:
-                print("Loading sadl")
+                logging.info("Loading sadl")
                 sadl_obj: sadl.SADL = load_sadl(sadl_file_path)
-                print("Importing")
+                logging.info("Importing")
                 with open(pathname, "rb") as f:
                     wav_obj = wav.WAV()
                     wav_obj.read_stream(f)
-                print("Encoding")
+                logging.info("Encoding")
                 sadl_obj.from_wav(wav_obj)
-                print("Encoded")
+                logging.info("Encoded")
                 sadl_obj.save()
 
                 self.refresh_preview()
