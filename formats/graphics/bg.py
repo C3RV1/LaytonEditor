@@ -87,8 +87,8 @@ class BGImage(FileFormat):
         return Image.fromarray(self.palette[self.image].astype(np.uint8), "RGBA")
 
     def import_image_pil(self, image: Image.Image):
-        # Find out why palette breaks close to 256 colors (keeping at 240 colors for precaution)
-        image = image.resize((256, 192)).convert("RGB").quantize(240, method=Image.MEDIANCUT)
+        # Find out why palette breaks close to 256 colors (keeping at 200 colors for consistency w/ the game)
+        image = image.resize((256, 192)).convert("RGB").quantize(200, method=Image.MEDIANCUT)
         self.palette = np.zeros((len(image.palette.colors.keys()), 4), np.uint8)
         for color, i in image.palette.colors.items():
             self.palette[i][:3] = color[:3]

@@ -37,7 +37,7 @@ def set_up_logger():
     else:
         # Normal python instance
         filepath = "./laytonEditor.log"
-    logging.basicConfig(filename=filepath, level=logging.INFO, filemode="w")
+    logging.basicConfig(filename=filepath, level=logging.INFO, filemode="w", force=True)
     logging.getLogger().addHandler(logging.StreamHandler())
     sys.excepthook = sys_exception
     threading.excepthook = threading_exception
