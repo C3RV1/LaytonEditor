@@ -20,11 +20,10 @@ class BGImage(FileFormat):
             rdr = stream
         else:
             rdr = BinaryReader(stream)
-        with open("test.bin", "wb+") as f:
-            f.write(rdr.read())
         rdr.seek(0)
 
         palette_length = rdr.read_uint32()
+        self.palette = np.zeros((palette_length, 4), np.uint8)
         for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
@@ -54,16 +53,19 @@ class BGImage(FileFormat):
         else:
             wtr = BinaryWriter(stream)
 
-        wtr.write_uint32(256)
-        for color_i in range(256):
+        wtr.write_uint32(len(self.palette))
+        for color_i in range(len(self.palette)):
             self.palette[color_i]: np.ndarray
+            self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
+            self.palette[color_i, 3] = 255
 
         img_h, img_w = self.image.shape
         map_h, map_w = img_h // 8, img_w // 8
 
-        tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for x in range(map_w) for y in range(map_h)])
-        tiles: np.ndarray = np.unique(tiles, axis=0)
+        tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for y in range(map_h) for x in range(map_w) ])
+        _, idx = np.unique(tiles, return_index=True, axis=0)
+        tiles = tiles[np.sort(idx)]
         wtr.write_uint32(len(tiles))
         wtr.write(tiles.tobytes())
 
@@ -85,7 +87,9 @@ class BGImage(FileFormat):
         return Image.fromarray(self.palette[self.image].astype(np.uint8), "RGBA")
 
     def import_image_pil(self, image: Image.Image):
-        image = image.resize((256, 192)).convert("RGB").quantize(256, method=Image.MEDIANCUT)
+        # Find out why palette breaks close to 256 colors (keeping at 240 colors for precaution)
+        image = image.resize((256, 192)).convert("RGB").quantize(240, method=Image.MEDIANCUT)
+        self.palette = np.zeros((len(image.palette.colors.keys()), 4), np.uint8)
         for color, i in image.palette.colors.items():
             self.palette[i][:3] = color[:3]
             self.palette[i][3] = 255
