@@ -7,7 +7,7 @@ import os
 from utility.logger import set_up_logger
 from gui import MainEditor
 
-VERSION = "v0.4.2"
+VERSION = "v0.4.3-pre1"
 
 class LaytonEditor(wx.App):
     editor: MainEditor
