@@ -107,15 +107,22 @@ class EventPlayer(TwoScreenRenderer):
             self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg, sprite_sheet=False)
             self.top_bg.set_opacity(0)
         elif command.command == 0x2a:
-            self.characters[command.params[0]].show()
+            if 0 <= command.params[0] <= 7:
+                if char := self.characters[command.params[0]]:
+                    char.show()
         elif command.command == 0x2b:
-            self.characters[command.params[0]].hide()
+            if 0 <= command.params[0] <= 7:
+                if char := self.characters[command.params[0]]:
+                    char.hide()
         elif command.command == 0x2c:
             # Still not clue about why it works like this
-            if command.params[0] < 8:
-                self.characters[command.params[0]].set_visibility(command.params[1] > 0)
+            if 0 <= command.params[0] <= 7:
+                if char := self.characters[command.params[0]]:
+                    char.set_visibility(command.params[1] > 0)
         elif command.command == 0x30:
-            self.characters[command.params[0]].set_slot(command.params[1])
+            if 0 <= command.params[0] <= 7:
+                if char := self.characters[command.params[0]]:
+                    char.set_slot(command.params[1])
         elif command.command == 0x31:
             self.waiter.wait(command.params[0])
         elif command.command == 0x32:
