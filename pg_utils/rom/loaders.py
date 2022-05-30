@@ -140,6 +140,7 @@ class FontLoaderROM(pge.FontLoaderOS):
         color_commands = {
             "r": pg.Color(255, 0, 0),
             "x": pg.Color(0, 0, 0),
+            "w": pg.Color(255, 255, 255),
             "g": pg.Color(0, 255, 0)
         }
 
