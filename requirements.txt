@@ -4,3 +4,4 @@ ndspy~=3.0.0
 Pillow~=8.3.2
 numpy~=1.21.2
 mido~=1.2.10
+pyFluidSynth~=1.3.0

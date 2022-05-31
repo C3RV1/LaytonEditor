@@ -1,7 +1,7 @@
 from typing import List
 
-from formats.sound.SMDLSequencer import SMDLSequencer
-from formats.sound import smdl
+from formats.sound.smdl.SMDLSequencer import SMDLSequencer
+from formats.sound.smdl import smdl
 import mido
 
 

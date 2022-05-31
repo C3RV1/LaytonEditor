@@ -1,4 +1,4 @@
-from formats.sound import smdl
+from formats.sound.smdl import smdl
 from formats import binary
 from formats.filesystem import NintendoDSRom
 import unittest

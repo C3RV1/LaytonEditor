@@ -1,8 +1,9 @@
 import logging
 import os
-from formats.sound import smdl
-from formats.sound.SMDLSequencer import SMDLSequencer
+from formats.sound.smdl import smdl
+from formats.sound.smdl.SMDLSequencer import SMDLSequencer
 import numpy as np
+import sys
 
 
 try:
@@ -17,11 +18,14 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
     def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100, loops=True):
         super(SMDLFluidSynthSequencer, self).__init__(smd_obj, sample_rate=sample_rate, loops=loops)
 
-        sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
+        if getattr(sys, "frozen", False):
+            sf2_path = os.path.join(os.path.dirname(sys.executable), "layton2.sf2")
+        else:
+            sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
         if fluidsynth is None or not os.path.isfile(sf2_path):
             self.fs = None
             return
-        self.fs = fluidsynth.Synth(samplerate=self.sample_rate, gain=0.5)
+        self.fs = fluidsynth.ModifiedSynth(samplerate=self.sample_rate, gain=0.5)
         self.sf_id = self.fs.sfload(sf2_path)
         self.fs.program_select(0, self.sf_id, 0, 0)
 

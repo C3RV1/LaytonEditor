@@ -1,4 +1,4 @@
-from formats.sound import smdl
+from formats.sound.smdl import smdl
 import numpy as np
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound.soundtypes import Preset

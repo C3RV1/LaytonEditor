@@ -13,7 +13,7 @@ from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
 from formats.sound import wav, sadl, sample_transform
 import numpy as np
 import pygame as pg
-from formats.sound.SMDLMidiSequencer import SMDLMidiSequencer
+from formats.sound.smdl.SMDLMidiSequencer import SMDLMidiSequencer
 import mido
 from gui import generated
 from gui.place_editor import PlaceEditor

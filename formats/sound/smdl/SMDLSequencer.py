@@ -5,7 +5,7 @@ import io
 from queue import PriorityQueue
 from dataclasses import dataclass, field
 from typing import Any
-from formats.sound import smdl
+from formats.sound.smdl import smdl
 from formats.sound.soundtypes import Preset
 import numpy as np
 from typing import Dict
