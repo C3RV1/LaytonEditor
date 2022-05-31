@@ -18,10 +18,7 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
     def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100, loops=True):
         super(SMDLFluidSynthSequencer, self).__init__(smd_obj, sample_rate=sample_rate, loops=loops)
 
-        if getattr(sys, "frozen", False):
-            sf2_path = os.path.join(os.path.dirname(sys.executable), "layton2.sf2")
-        else:
-            sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
+        sf2_path = SMDLFluidSynthSequencer.get_sf2_path()
         if fluidsynth is None or not os.path.isfile(sf2_path):
             self.fs = None
             return
@@ -71,6 +68,14 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
         pass
 
     @staticmethod
+    def get_sf2_path():
+        if getattr(sys, "frozen", False):
+            sf2_path = os.path.join(os.path.dirname(sys.executable), "layton2.sf2")
+        else:
+            sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
+        return sf2_path
+
+    @staticmethod
     def get_dependencies_met():
-        sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
+        sf2_path = SMDLFluidSynthSequencer.get_sf2_path()
         return fluidsynth is not None and os.path.isfile(sf2_path)
