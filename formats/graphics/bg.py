@@ -1,3 +1,4 @@
+import logging
 from typing import BinaryIO
 
 from formats.filesystem import FileFormat
@@ -63,7 +64,7 @@ class BGImage(FileFormat):
         img_h, img_w = self.image.shape
         map_h, map_w = img_h // 8, img_w // 8
 
-        tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for y in range(map_h) for x in range(map_w) ])
+        tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for y in range(map_h) for x in range(map_w)])
         _, idx = np.unique(tiles, return_index=True, axis=0)
         tiles = tiles[np.sort(idx)]
         wtr.write_uint32(len(tiles))
@@ -90,6 +91,8 @@ class BGImage(FileFormat):
         # Find out why palette breaks close to 256 colors (keeping at 200 colors for consistency w/ the game)
         image = image.resize((256, 192)).convert("RGB").quantize(200, method=Image.MEDIANCUT)
         self.palette = np.zeros((min(len(image.palette.colors.keys()), 200), 4), np.uint8)
+        logging.info(f"Replacing background {self._last_filename} with image of size {image.size} and palette of "
+                     f"length {len(self.palette)}")
         for color, i in image.palette.colors.items():
             if i >= 200:
                 break

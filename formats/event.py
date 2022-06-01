@@ -161,13 +161,13 @@ class Event:
     def list_event_texts(self):
         if self.rom is None:
             return
-        list = {}
+        text_lst = {}
         dial_files = self.texts_archive.filenames
         prefix, postfix, complete = self.resolve_event_id()
         for filename in dial_files:
             if match := re.match(f"t{prefix}_{postfix}_([0-9]+).gds", filename):
-                list[int(match.group(1))] = filename
-        return list
+                text_lst[int(match.group(1))] = filename
+        return text_lst
 
     def clear_event_texts(self):
         if self.rom is None:

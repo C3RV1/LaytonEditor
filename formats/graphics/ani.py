@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from io import BytesIO
 from math import floor, ceil, log
@@ -100,8 +101,8 @@ class AniSprite(FileFormat):
 
             self.images.append(img)
 
-        self.palette = np.zeros((256, 4), np.uint8)
         palette_length = rdr.read_uint32()
+        self.palette = np.zeros((palette_length, 4), np.uint8)
         for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
@@ -201,10 +202,12 @@ class AniSprite(FileFormat):
                     part_x += part_w
                 part_y += part_h
 
-        wtr.write_uint32(256 if self.colordepth == 8 else 16)
-        for color_i in range(256 if self.colordepth == 8 else 16):
+        wtr.write_uint32(len(self.palette))
+        for color_i in range(len(self.palette)):
             self.palette[color_i]: np.ndarray
+            self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
+            self.palette[color_i, 3] = 255
 
         wtr.write_zeros(0x1e)
         wtr.write_uint32(len(self.animations))
@@ -258,14 +261,17 @@ class AniSprite(FileFormat):
         image_array = self.palette[self.images[image_index]].astype(np.uint8)
         return wx.Bitmap.FromBufferRGBA(width, height, image_array)
 
-    def replace_image_pil(self, image_index, image: Image.Image):  # also used to recreate palette
+    def replace_image_pil(self, image_index, image: Optional[Image.Image]):  # also used to recreate palette
         # TODO: Change colordepth
         if image_index is not None:
+            logging.info(f"Animation {self._last_filename} replacing image {image_index} to image of size {image.size}")
             if image_index < 0:
                 image_index = len(self.images) + image_index
             assert image_index < len(self.images)
 
             image = image.convert("RGBA")
+        else:
+            logging.info(f"Animation {self._last_filename} reworking palette")
         # Create the new palette by adding all the images together into 1 pil Image and then quantizing it.
         comb_w = max([img.shape[1] for img in self.images])
         comb_h = sum([img.shape[0] for img in self.images])
@@ -293,6 +299,7 @@ class AniSprite(FileFormat):
             if a < 128:
                 indexes[indexes == i] = 0  # transparent color, change to the transparent type
 
+        self.palette = np.zeros((len(colors), 4), np.uint8)
         self.palette[:len(colors)] = colors
 
         comb_y = 0
@@ -302,10 +309,12 @@ class AniSprite(FileFormat):
             comb_y += h
 
     def append_image_pil(self, image: Image.Image):
+        logging.info(f"Animation {self._last_filename} appending image of size {image.size}")
         self.images.append(np.ndarray((0, 0), np.uint8))
         self.replace_image_pil(-1, image)
 
     def insert_image_pil(self, image_index, image: Image.Image):
+        logging.info(f"Animation {self._last_filename} inserting image of size {image.size} to idx {image_index}")
         self.images.insert(image_index, np.ndarray((0, 0), np.uint8))
         for anim in self.animations:
             for i, frame in enumerate(anim.frames):
@@ -314,6 +323,7 @@ class AniSprite(FileFormat):
         self.replace_image_pil(image_index, image)
 
     def remove_image(self, image_index):
+        logging.info(f"Animation {self._last_filename} removing image of idx {image_index}")
         self.images.pop(image_index)
 
         for anim in self.animations:

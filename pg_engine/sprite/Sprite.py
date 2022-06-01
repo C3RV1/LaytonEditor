@@ -1,3 +1,4 @@
+import logging
 import math
 from dataclasses import dataclass, field
 from typing import List, TYPE_CHECKING, Tuple
@@ -126,10 +127,14 @@ class Sprite(Renderable):
                     if len(tag.frames) > 0:
                         self.set_frame(tag.frames[0])
                 return
+        logging.warning(f"Sprite tag not found (num: {name}, "
+                        f"tags: {[tag.name for tag in self._tag_info]})")
         return
 
     def set_tag_by_num(self, num: int):
         if num >= len(self._tag_info):
+            logging.warning(f"Sprite tag num bigger than number of animations (num: {num}, "
+                            f"count: {len(self._tag_info)})")
             return
         self.set_tag(self._tag_info[num].name)
 
