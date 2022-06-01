@@ -8,7 +8,7 @@ VERSION = "v0.4.3-pre2"
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # Ensure that the cwd is set correctly
     set_up_logger()  # Set logger up before importing to log import errors
-    logging.info(f"Layton Editor {VERSION} running in python version {sys.version}")
+    logging.info(f"Layton Editor {VERSION} running in python version {sys.version}\n\n")
 
 import wx
 from gui import MainEditor
