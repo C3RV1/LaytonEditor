@@ -3,7 +3,7 @@ from utility.logger import set_up_logger
 import sys
 import os
 
-VERSION = "v0.4.3-pre1"
+VERSION = "v0.4.3-pre2"
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # Ensure that the cwd is set correctly
