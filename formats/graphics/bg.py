@@ -47,7 +47,7 @@ class BGImage(FileFormat):
 
                 self.image[img_y:img_y + 8, img_x:img_x + 8] = tiles[rdr.read_uint16()]
 
-    def write_stream(self, stream: BinaryIO):
+    def write_stream(self, stream):
         if isinstance(stream, BinaryWriter):
             wtr = stream
         else:
@@ -89,8 +89,10 @@ class BGImage(FileFormat):
     def import_image_pil(self, image: Image.Image):
         # Find out why palette breaks close to 256 colors (keeping at 200 colors for consistency w/ the game)
         image = image.resize((256, 192)).convert("RGB").quantize(200, method=Image.MEDIANCUT)
-        self.palette = np.zeros((len(image.palette.colors.keys()), 4), np.uint8)
+        self.palette = np.zeros((min(len(image.palette.colors.keys()), 200), 4), np.uint8)
         for color, i in image.palette.colors.items():
+            if i >= 200:
+                break
             self.palette[i][:3] = color[:3]
             self.palette[i][3] = 255
         self.image[:] = np.asarray(image, np.uint8)
