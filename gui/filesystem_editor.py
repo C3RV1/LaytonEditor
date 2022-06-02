@@ -5,8 +5,10 @@ import wx.stc
 from formats.filesystem import *
 from formats.gds import GDS
 from formats.event import Event
+from formats.parsers import gds_parser
 from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
+from formats.parsers.dcc import DCCParser
 from formats.place import Place
 from formats.puzzle import Puzzle
 from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
@@ -301,7 +303,9 @@ class FilesystemEditor(generated.FilesystemEditor):
             else:
                 gds = GDS(name, rom=archive)
                 self.preview_data = gds
-                self.dcc_editor.SetText(gds.to_readable())
+                dcc_parser = DCCParser().reset()
+                gds_parser.EventGDSParser().parse_into_dcc(gds, dcc_parser)
+                self.dcc_editor.SetText(dcc_parser.serialize())
                 self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
                 self.fp_formats_book.SetSelection(7)  # DCC Page
                 self.fp_menus_loaded.append("GDS Script")
@@ -569,7 +573,13 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_gds_save_changes(self, _):
         gds: GDS = self.preview_data
-        successful, error_msg = gds.from_readable(self.dcc_editor.GetText())
+        dcc_parser = DCCParser()
+        try:
+            dcc_parser.parse(self.dcc_editor.GetText())
+            successful, error_msg = gds_parser.EventGDSParser().parse_from_dcc(gds, dcc_parser)
+        except Exception as e:
+            successful = False
+            error_msg = str(e)
         if not successful:
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()

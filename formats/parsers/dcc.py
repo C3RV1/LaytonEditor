@@ -359,6 +359,7 @@ class DCCParser:
 
     def reset(self):
         self.code = {"unnamed": [], "named": {}, "calls": []}
+        return self
 
     def set_named(self, path, value):
         path_obj = self.get_path(path, index=-1, create=True)

@@ -4,6 +4,7 @@ from typing import List
 from gui import generated
 from formats.event import Event
 from formats.gds import GDSCommand
+from formats.parsers import gds_parser
 import wx
 import wx.propgrid
 
@@ -23,7 +24,8 @@ class CommandRepr:
 
     @staticmethod
     def from_gds(gds_command: GDSCommand, event: Event):
-        name, params, param_names = event.convert_command(gds_command, for_code=False, ev=event)
+        name, params, param_names = gds_parser.EventGDSParser(ev=event)\
+            .parse_command_name(gds_command, is_code=False)
         param_dict = []
         for i in range(len(params)):
             param_dict.append([param_names[i], type(params[i]).__name__, params[i]])
@@ -35,7 +37,8 @@ class CommandRepr:
         return command_repr
 
     def to_gds(self, event: Event):
-        command = event.revert_command(self.command_name, [param[2] for param in self.params])
+        command = gds_parser.EventGDSParser(ev=event)\
+            .reverse_command_name(self.command_name, [param[2] for param in self.params], is_code=False)
         return command
 
 
@@ -367,7 +370,7 @@ class EventEditor(generated.EventEditor):
 
     def add_fade(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["fade"],
+            gds_parser.EventGDSParser().parse_cmd("fade"),
             [["Fade In", "bool", False],
              ["Fade Screen", "uint", 0],
              ["Fade Frames", "int", -1]]
@@ -376,7 +379,7 @@ class EventEditor(generated.EventEditor):
 
     def add_bg_load(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bg_load"],
+            gds_parser.EventGDSParser().parse_cmd("bg_load"),
             [["Path", "str", ""],
              ["Screen", "uint", 0]]
         ))
@@ -384,63 +387,63 @@ class EventEditor(generated.EventEditor):
 
     def add_set_mode(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_mode"],
+            gds_parser.EventGDSParser().parse_cmd("set_mode"),
             [["Mode", "str", ""]]
         ))
         self.do_modify()
 
     def add_set_next_mode(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_next_mode"],
+            gds_parser.EventGDSParser().parse_cmd("set_next_mode"),
             [["Mode", "str", ""]]
         ))
         self.do_modify()
 
     def add_set_movie(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_movie"],
+            gds_parser.EventGDSParser().parse_cmd("set_movie"),
             [["Movie ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_set_event(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_event"],
+            gds_parser.EventGDSParser().parse_cmd("set_event"),
             [["Event ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_set_puzzle(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_puzzle"],
+            gds_parser.EventGDSParser().parse_cmd("set_puzzle"),
             [["Puzzle ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_set_room(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_room"],
+            gds_parser.EventGDSParser().parse_cmd("set_room"),
             [["Room ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_chr_show(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["chr_show"],
+            gds_parser.EventGDSParser().parse_cmd("chr_show"),
             [["Character Index", "uint", 0]]
         ))
         self.do_modify()
 
     def add_chr_hide(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["chr_hide"],
+            gds_parser.EventGDSParser().parse_cmd("chr_hide"),
             [["Character Index", "uint", 0]]
         ))
         self.do_modify()
 
     def add_chr_visibility(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["chr_visibility"],
+            gds_parser.EventGDSParser().parse_cmd("chr_visibility"),
             [["Character Index", "uint", 0],
              ["Visibility", "bool", False]]
         ))
@@ -448,7 +451,7 @@ class EventEditor(generated.EventEditor):
 
     def add_chr_slot(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["chr_slot"],
+            gds_parser.EventGDSParser().parse_cmd("chr_slot"),
             [["Character Index", "uint", 0],
              ["Slot", "int", 0]]
         ))
@@ -456,7 +459,7 @@ class EventEditor(generated.EventEditor):
 
     def add_chr_anim(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["chr_anim"],
+            gds_parser.EventGDSParser().parse_cmd("chr_anim"),
             [["Character ID", "uint", 0],
              ["Animation", "str", "NONE"]]
         ))
@@ -464,21 +467,21 @@ class EventEditor(generated.EventEditor):
 
     def add_show_chapter(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["show_chapter"],
+            gds_parser.EventGDSParser().parse_cmd("show_chapter"),
             [["Chapter Number", "uint", 0]]
         ))
         self.do_modify()
 
     def add_wait(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["wait"],
+            gds_parser.EventGDSParser().parse_cmd("wait"),
             [["Wait Frames", "uint", 180]]
         ))
         self.do_modify()
 
     def add_bg_opacity(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bg_opacity"],
+            gds_parser.EventGDSParser().parse_cmd("bg_opacity"),
             [["unk0", "uint", 0],
              ["unk1", "uint", 0],
              ["unk2", "uint", 0],
@@ -488,21 +491,21 @@ class EventEditor(generated.EventEditor):
 
     def add_set_voice(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["set_voice"],
+            gds_parser.EventGDSParser().parse_cmd("set_voice"),
             [["Voice ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_sfx_sad(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["sfx_sad"],
+            gds_parser.EventGDSParser().parse_cmd("sfx_sad"),
             [["SFX ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_bg_music(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bg_music"],
+            gds_parser.EventGDSParser().parse_cmd("bg_music"),
             [["Music ID", "uint", 0],
              ["Volume", "float", 1.0],
              ["unk2", "uint", 0]]
@@ -511,21 +514,21 @@ class EventEditor(generated.EventEditor):
 
     def add_bg_shake(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bg_shake"],
+            gds_parser.EventGDSParser().parse_cmd("bg_shake"),
             [["unk0", "uint", 30]]
         ))
         self.do_modify()
 
     def add_sfx_sed(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["sfx_sed"],
+            gds_parser.EventGDSParser().parse_cmd("sfx_sed"),
             [["SFX ID", "uint", 0]]
         ))
         self.do_modify()
 
     def add_btm_fade_out(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bgm_fade_out"],
+            gds_parser.EventGDSParser().parse_cmd("bgm_fade_out"),
             [["unk0", "float", 0],
              ["unk1", "uint", 320]]
         ))
@@ -533,7 +536,7 @@ class EventEditor(generated.EventEditor):
 
     def add_btm_fade_in(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["bgm_fade_in"],
+            gds_parser.EventGDSParser().parse_cmd("bgm_fade_in"),
             [["unk0", "float", 1.0],
              ["unk1", "uint", 320]]
         ))
@@ -541,7 +544,7 @@ class EventEditor(generated.EventEditor):
 
     def add_dialogue_sfx(self, _):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["dialogue_sfx"],
+            gds_parser.EventGDSParser().parse_cmd("dialogue_sfx"),
             [["SAD SFX ID", "uint", 0],
              ["unk1", "float", 0.0],
              ["unk2", "uint", 0],
@@ -551,7 +554,7 @@ class EventEditor(generated.EventEditor):
 
     def add_wait_tap( self, event ):
         self.add_command_panel(CommandRepr(
-            self.event.func_names["wait_tap"],
+            gds_parser.EventGDSParser().parse_cmd("wait_tap"),
             []
         ))
         self.do_modify()

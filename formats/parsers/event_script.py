@@ -1,3 +1,4 @@
+from formats.parsers import gds_parser
 from .dcc import DCCParser
 import re
 
@@ -60,7 +61,7 @@ class EventScriptParser:
     def __init__(self, data: str, ev=None):
         self.ev = ev
         if self.ev is None:
-            from .event import Event
+            from ..event import Event
             self.ev = Event()
 
         self.lines = data.split("\n")
@@ -142,9 +143,10 @@ class EventScriptParser:
 
     def script_mode(self, line):
         line_split = split_quoted(line)
+        event_gds_parser = gds_parser.EventGDSParser(ev=self.ev)
         if line_split[0] == "fade":
-            if not match_syntax(line_split, ("fade", ("in", "out"), ("bottom", "btm", "top", "both")), (("in", None,
-                                             ("frames", "seconds")),)):
+            if not match_syntax(line_split, ("fade", ("in", "out"), ("bottom", "btm", "top", "both")),
+                                (("in", None, ("frames", "seconds")),)):
                 raise SyntaxError(f"Fade does not match syntax (line {self.line_num})")
             fade_in = True if line_split[1] == "in" else False
             fade_screen = {"bottom": 0, "btm": 0, "top": 1, "both": 2}[line_split[2]]
@@ -161,13 +163,17 @@ class EventScriptParser:
                     fade_frames = int(fade_frames)
                 elif line_split[5] == "seconds":
                     fade_frames = int(fade_frames * 60.0)
-            self.ev.gds.commands.append(self.ev.revert_command("fade", [fade_in, fade_screen, fade_frames]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("fade", [fade_in, fade_screen, fade_frames])
+            )
         elif line_split[0] == "load":
             if not match_syntax(line_split, ("load", ("bottom", "btm", "top"), None)):
                 raise SyntaxError(f"Load does not match syntax (line {self.line_num})")
             load_screen = 0 if line_split[1] in ("bottom", "btm") else 1
             load_path = line_split[2]
-            self.ev.gds.commands.append(self.ev.revert_command("bg_load", [load_path, load_screen]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("bg_load", [load_path, load_screen])
+            )
         elif line_split[0] == "set":
             if not match_syntax(line_split, ("set", ("room", "mode", "next_mode", "movie", "event", "puzzle"), None)):
                 raise SyntaxError(f"Set does not match syntax (line {self.line_num})")
@@ -177,37 +183,48 @@ class EventScriptParser:
                     set_value = int(set_value)
                 except ValueError:
                     raise TypeError(f"Set: Value type invalid (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command(f"set_{line_split[1]}", [set_value]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name(f"set_{line_split[1]}", [set_value])
+            )
         elif line_split[0] == "show":
             if not match_syntax(line_split, ("show", None)):
                 raise SyntaxError(f"Show does not match syntax (line {self.line_num})")
             char_name = line_split[1]
             if char_name not in self.defined_characters:
                 raise ValueError(f"Show: Character {char_name} does not exist (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_show", [self.defined_characters.index(char_name)]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_show", [self.defined_characters.index(char_name)])
+            )
         elif line_split[0] == "hide":
             if not match_syntax(line_split, ("hide", None)):
                 raise SyntaxError(f"Hide does not match syntax (line {self.line_num})")
             char_name = line_split[1]
             if char_name not in self.defined_characters:
                 raise ValueError(f"Hide: Character {char_name} does not exist (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_hide", [self.defined_characters.index(char_name)]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_hide", [self.defined_characters.index(char_name)])
+            )
         elif line_split[0] == "visible":
             if not match_syntax(line_split, ("visible", None)):
                 raise SyntaxError(f"Visible does not match syntax (line {self.line_num})")
             char_name = line_split[1]
             if char_name not in self.defined_characters:
                 raise ValueError(f"Visible: Character {char_name} does not exist (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_visibility",
-                                                               [self.defined_characters.index(char_name), True]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_visibility",
+                                                      [self.defined_characters.index(char_name),
+                                                       True])
+            )
         elif line_split[0] == "invisible":
             if not match_syntax(line_split, ("invisible", None)):
                 raise SyntaxError(f"Invisible does not match syntax (line {self.line_num})")
             char_name = line_split[1]
             if char_name not in self.defined_characters:
                 raise ValueError(f"Invisible: Character {char_name} does not exist (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_visibility",
-                                                               [self.defined_characters.index(char_name), False]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_visibility", [self.defined_characters.index(char_name),
+                                                                         False])
+            )
         elif line_split[0] == "chapter":
             if not match_syntax(line_split, ("chapter", None)):
                 raise SyntaxError(f"Chapter does not match syntax (line {self.line_num})")
@@ -215,7 +232,9 @@ class EventScriptParser:
                 chapter_num = int(line_split[1])
             except ValueError:
                 raise TypeError(f"Chapter: Invalid number type {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("show_chapter", [chapter_num]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("show_chapter", [chapter_num])
+            )
         elif line_split[0] in ("slot", "pos"):
             if not match_syntax(line_split, (("slot", "pos"), None, None)):
                 raise SyntaxError(f"Slot does not match syntax (line {self.line_num})")
@@ -226,8 +245,9 @@ class EventScriptParser:
                 slot_num = int(line_split[2])
             except ValueError:
                 raise TypeError(f"Slot: Invalid number (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("chr_slot",
-                                                               [self.defined_characters.index(char_name), slot_num]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_slot", [self.defined_characters.index(char_name), slot_num])
+            )
         elif line_split[0] == "animation":
             if not match_syntax(line_split, ("animation", None, None)):
                 raise SyntaxError(f"Animation does not match syntax (line {self.line_num})")
@@ -236,7 +256,9 @@ class EventScriptParser:
             if char_name not in self.defined_characters:
                 raise ValueError(f"Animation: Character {char_name} does not exist (line {self.line_num})")
             animation = line_split[2]
-            self.ev.gds.commands.append(self.ev.revert_command("chr_anim", [char_id, animation]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("chr_anim", [char_id, animation])
+            )
         elif line_split[0] == "wait":
             if not match_syntax(line_split, ("wait", None, ("frames", "seconds"))):
                 raise SyntaxError(f"Wait does not match syntax (line {self.line_num})")
@@ -248,7 +270,9 @@ class EventScriptParser:
                 wait_frames = int(wait_frames)
             elif line_split[2] == "seconds":
                 wait_frames = int(wait_frames * 60.0)
-            self.ev.gds.commands.append(self.ev.revert_command("wait", [wait_frames]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("wait", [wait_frames])
+            )
         elif line_split[0] == "opacity":
             if not match_syntax(line_split, ("opacity", None), ((None,),)):
                 raise SyntaxError(f"Opacity does not match syntax (line {self.line_num})")
@@ -266,7 +290,9 @@ class EventScriptParser:
                         optional[i] = int(optional_str[i])
                     except ValueError:
                         raise TypeError(f"Opacity: Invalid optional arguments (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("bg_opacity", optional + [opacity]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("bg_opacity", optional + [opacity])
+            )
         elif line_split[0] in self.defined_characters:
             line_split_dialogue = split_quoted(line, separator=":", remove_quotes=False)
             cmd = line_split_dialogue[0]
@@ -279,7 +305,9 @@ class EventScriptParser:
                     voice = int(line_split[5])
                 except ValueError:
                     raise TypeError(f"Dialogue: Voice invalid value (line {self.line_num})")
-                self.ev.gds.commands.append(self.ev.revert_command("set_voice", [voice]))
+                self.ev.gds.commands.append(
+                    event_gds_parser.reverse_command_name("set_voice", [voice])
+                )
             gds_number = self.text_gds_number
             self.text_gds_number += 100
             character_id = self.ev.characters[self.defined_characters.index(line_split[0])]
@@ -291,9 +319,10 @@ class EventScriptParser:
                 raise TypeError(f"Dialogue: Invalid sound pitch (line {self.line_num})")
             while self.peek_line().startswith("    "):
                 lines.append(self.get_line()[4:])
-            self.ev.gds.commands.append(self.ev.revert_command("dial",
-                                                               [gds_number, character_id, start_animation,
-                                                                end_animation, sound_pitch, "\n".join(lines)]))
+            self.ev.gds.commands.append(
+                event_gds_parser.reverse_command_name("dial", [gds_number, character_id, start_animation, end_animation,
+                                                               sound_pitch, "\n".join(lines)])
+            )
         elif line_split[0] == "bgm":
             if len(line_split) == 1:
                 raise SyntaxError(f"Bgm invalid (line {self.line_num})")
@@ -310,7 +339,7 @@ class EventScriptParser:
                         args[1] = int(args_str[1])
                     except ValueError:
                         raise TypeError(f"Bgm fade: Optional arguments invalid (line {self.line_num})")
-                self.ev.gds.commands.append(self.ev.revert_command(f"bgm_fade_{line_split[2]}", args))
+                self.ev.gds.commands.append(event_gds_parser.reverse_command_name(f"bgm_fade_{line_split[2]}", args))
             elif line_split[1] == "play":
                 if not match_syntax(line_split, ("bgm", "play", None, "at", "volume", None), ((None,),)):
                     raise SyntaxError(f"Bgm play does not match syntax (line {self.line_num})")
@@ -322,13 +351,13 @@ class EventScriptParser:
                         unk = int(line_split[6])
                 except ValueError:
                     raise TypeError(f"Bgm play: Invalid arguments (line {self.line_num})")
-                self.ev.gds.commands.append(self.ev.revert_command("bg_music", [bgm_id, volume, unk]))
+                self.ev.gds.commands.append(event_gds_parser.reverse_command_name("bg_music", [bgm_id, volume, unk]))
             else:
                 raise SyntaxError(f"Unknown bgm command (line {self.line_num})")
         elif line_split[0] == "tap":
             if not match_syntax(line_split, ("tap",)):
                 raise SyntaxError(f"Tap does not match syntax (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("wait_tap", []))
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name("wait_tap", []))
         elif line_split[0] == "shake":
             if not match_syntax(line_split, ("shake",), ((None,),)):
                 raise SyntaxError(f"Shake does not match syntax (line {self.line_num})")
@@ -338,7 +367,7 @@ class EventScriptParser:
                     default = int(line_split[2])
                 except ValueError:
                     raise TypeError(f"Shake: Invalid value (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("bg_shake", [default]))
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name("bg_shake", [default]))
         elif line_split[0] == "sfx":
             if not match_syntax(line_split, ("sfx", ("sad", "sed"), None)):
                 raise SyntaxError(f"Sfx does not match syntax (line {self.line_num})")
@@ -346,7 +375,7 @@ class EventScriptParser:
                 sfx_id = int(line_split[2])
             except ValueError:
                 raise TypeError(f"Sfx: Invalid sfx id (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command(f"sfx_{line_split[1]}", [sfx_id]))
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name(f"sfx_{line_split[1]}", [sfx_id]))
         elif line_split[0] == "dialogue":
             if not match_syntax(line_split, ("dialogue", "sfx", None), ((None,),)):
                 raise SyntaxError(f"Dialogue sfx does not match syntax (line {self.line_num})")
@@ -360,19 +389,19 @@ class EventScriptParser:
                     default[2] = int(default_str[2])
             except ValueError:
                 raise TypeError(f"Dialogue sfx: Invalid values (line {self.line_num})")
-            self.ev.gds.commands.append(self.ev.revert_command("dialogue_sfx", [sfx_id] + default))
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name("dialogue_sfx", [sfx_id] + default))
         elif re.match("^0x[0-9a-fA-F]{2}$", line_split[0]):
             args = line_split[1:]
             parsed = []
             for arg in args:
                 parsed.append(DCCParser.convert_variable(arg, strings_unquoted=True))
-            self.ev.gds.commands.append(self.ev.revert_command(f"gds_{line_split[0]}", parsed))
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name(f"gds_{line_split[0]}", parsed))
         else:
             raise SyntaxError(f"Unknown command (line {self.line_num})")
 
 
 if __name__ == '__main__':
-    with open("../e10_030.txt", "rb") as f:
+    with open("../../e10_030.txt", "rb") as f:
         p = EventScriptParser(f.read().decode("utf-8").replace("\r\n", "\n"))
         try:
             p.parse()

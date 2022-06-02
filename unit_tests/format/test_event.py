@@ -12,7 +12,7 @@ class TestEventData(unittest.TestCase):
 
     def get_ev(self):
         ev = evdat.Event(rom=self.rom)
-        ev.set_event_id(14230)
+        ev.set_event_id(10030)
         ev.load_from_rom()
         return ev
 

@@ -5,8 +5,8 @@ import formats.filesystem
 import formats.gds
 import formats.graphics.bg
 import formats.dlz
-import formats.dcc
-import formats.gds_parser as pz_gds
+import formats.parsers.dcc
+import formats.parsers.gds_parser as pz_gds
 from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
@@ -248,7 +248,7 @@ class Puzzle:
         return pz_gds.GDSParser()
 
     def to_readable(self):
-        parser = formats.dcc.DCCParser()
+        parser = formats.parsers.dcc.DCCParser()
         parser.reset()
         parser.get_path("pzd", create=True)
         parser.set_named("pzd.title", self.title)
@@ -276,17 +276,12 @@ class Puzzle:
         parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2, puzzle=True))
         parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3, puzzle=True))
 
-        parser.get_path("pzs", create=True)
         gds_parser = self.get_gds_parser()
-        for command in self.gds.commands:
-            parser["pzs::calls"].append({
-                "func": gds_parser.parse_command_name(command),
-                "parameters": command.params
-            })
+        gds_parser.parse_into_dcc(self.gds, parser)
         return parser.serialize()
 
     def from_readable(self, readable):
-        parser = formats.dcc.DCCParser()
+        parser = formats.parsers.dcc.DCCParser()
         try:
             parser.parse(readable)
         except Exception as e:
@@ -295,8 +290,7 @@ class Puzzle:
         required_paths = ["pzd.title", "pzd.type", "pzd.number", "pzd.text",  "pzd.correct_answer",
                           "pzd.incorrect_answer", "pzd.hint1", "pzd.hint2", "pzd.hint3", "pzd.tutorial_id",
                           "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_top_id", "pzd.judge_char", "pzd.flag_bit2",
-                          "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang",
-                          "pzs"]
+                          "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang"]
 
         for req_path in required_paths:
             if not parser.exists(req_path):
@@ -329,15 +323,8 @@ class Puzzle:
         self.ans_bg_lang = parser["pzd.ans_bg_lang"]
         self.gds.commands = []
         gds_parser = self.get_gds_parser()
-        for command_call in parser["pzs::calls"]:
-            try:
-                self.gds.commands.append(formats.gds.GDSCommand(
-                    command=gds_parser.reverse_command_name(command_call["func"]),
-                    params=command_call["parameters"]
-                ))
-            except Exception as e:
-                return False, str(e)
-        return True, ""
+        successful, error_msg = gds_parser.parse_from_dcc(self.gds, parser)
+        return successful, error_msg
 
     # FLAG PROPERTIES
 
