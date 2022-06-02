@@ -66,6 +66,7 @@ class GDSParser:
             gds.commands.append(command)
         return True, ""
 
+
 class InputGDSParser(GDSParser):
     def __init__(self):
         super(InputGDSParser, self).__init__()

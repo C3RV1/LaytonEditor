@@ -552,7 +552,7 @@ class EventEditor(generated.EventEditor):
         ))
         self.do_modify()
 
-    def add_wait_tap( self, event ):
+    def add_wait_tap(self, _):
         self.add_command_panel(CommandRepr(
             gds_parser.EventGDSParser().parse_cmd("wait_tap"),
             []

@@ -4,7 +4,6 @@ from typing import List, Union
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.filesystem import FileFormat
-from formats.parsers.dcc import DCCParser
 
 
 @dataclass
