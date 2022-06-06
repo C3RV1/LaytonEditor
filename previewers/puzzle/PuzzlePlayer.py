@@ -128,6 +128,8 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.memo_btn.animate(dt)
             self.submit_btn.animate(dt)
             self.on_win = self.win_screen.update(dt)
+            if not self.on_win:
+                self.puzzle_bg_music.fade(1, True)
         else:
             self.update_base(dt)
 
@@ -157,6 +159,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         if self.submit_btn.pressed(self.btm_camera, dt) or self.solution_submitted():
             self.win_screen.enter(self.check_solution())
             self.on_win = True
+            self.puzzle_bg_music.fade(1, False)
 
     def draw(self):
         self.top_bg.draw(self.top_camera)
