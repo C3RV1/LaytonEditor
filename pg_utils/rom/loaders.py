@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pg_engine as pge
@@ -29,6 +30,7 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
         else:
             path = set_extension(path, ".arc")
         if path not in self.rom.filenames:
+            logging.warning(f"Path {path} not found for loading sprite")
             super().load(path + ".png", sprite, sprite_sheet=sprite_sheet, convert_alpha=convert_alpha,
                          do_copy=do_copy)
             return
