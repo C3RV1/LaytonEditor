@@ -8,6 +8,7 @@ from pg_utils.rom.rom_extract import load_smd
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
 from .PuzzleHints import PuzzleHints
+from .PuzzleWinScreen import PuzzleWinScreen
 
 
 class PuzzlePlayer(TwoScreenRenderer):
@@ -86,6 +87,9 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False
 
+        self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader)
+        self.on_win = False
+
         smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer()
         self.puzzle_bg_music.set_volume(0.5)
@@ -113,13 +117,19 @@ class PuzzlePlayer(TwoScreenRenderer):
     def update(self, dt: float):
         self.puzzle_bg_music.update_(dt)
 
-        if not self.on_hints:
-            self.update_base(dt)
-        else:
+        if self.on_hints:
             self.on_hints = self.hints.update(dt)
             if not self.on_hints:
                 self.hints_btn.not_pressed_tag = f"{self.hints.used}_off"
                 self.hints_btn.pressed_tag = f"{self.hints.used}_on"
+        elif self.on_win:
+            self.hints_btn.animate(dt)
+            self.quit_btn.animate(dt)
+            self.memo_btn.animate(dt)
+            self.submit_btn.animate(dt)
+            self.on_win = self.win_screen.update(dt)
+        else:
+            self.update_base(dt)
 
     def update_base(self, dt: float):
         self.hints_btn.animate(dt)
@@ -144,7 +154,9 @@ class PuzzlePlayer(TwoScreenRenderer):
             return
         self.quit_btn.pressed(self.btm_camera, dt)
         self.memo_btn.pressed(self.btm_camera, dt)
-        self.submit_btn.pressed(self.btm_camera, dt)
+        if self.submit_btn.pressed(self.btm_camera, dt) or self.solution_submitted():
+            self.win_screen.enter(self.check_solution())
+            self.on_win = True
 
     def draw(self):
         self.top_bg.draw(self.top_camera)
@@ -152,10 +164,13 @@ class PuzzlePlayer(TwoScreenRenderer):
             header.draw(self.top_camera)
         self.top_text.draw(self.top_camera)
 
-        if not self.on_hints:
-            self.draw_base()
-        else:
+        if self.on_hints:
             self.hints.draw()
+        elif self.on_win:
+            self.draw_base()
+            self.win_screen.draw()
+        else:
+            self.draw_base()
 
     def draw_base(self):
         self.btm_bg.draw(self.btm_camera)
