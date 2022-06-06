@@ -1,5 +1,3 @@
-from typing import List
-
 from pg_utils.rom.RomSingleton import RomSingleton
 import formats.puzzle as pzd
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
@@ -9,17 +7,16 @@ import pygame as pg
 from pg_utils.rom.rom_extract import load_smd
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
+from .PuzzleHints import PuzzleHints
+
 
 class PuzzlePlayer(TwoScreenRenderer):
     def __init__(self, puzzle_data: pzd.Puzzle):
         super(PuzzlePlayer, self).__init__()
 
-        self.hints_used = 0
-        self.selected_hint = 0
         self.text_pos = 0
         self.between_letters = 0.017
         self.current_between_letters = 0.0
-        self.on_hints = False
         self.puzzle_data = puzzle_data
 
         self.inp = pge.Input()
@@ -60,8 +57,6 @@ class PuzzlePlayer(TwoScreenRenderer):
                 header_item.position = [-256 // 2 + 23 + i * 7, -192 // 2 + 5]
             self.header_top_left.append(header_item)
 
-        self.hint_bg = pge.Sprite()
-
         btn_off = "off"
         btn_on = "on"
 
@@ -88,39 +83,8 @@ class PuzzlePlayer(TwoScreenRenderer):
                                      pressed_tag=btn_on)
         self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn, sprite_sheet=True)
 
-        self.hint_back = pge.Button(position=[256 // 2, -192 // 2],
-                                    center=[pge.Alignment.RIGHT, pge.Alignment.TOP], not_pressed_tag=btn_off,
-                                    pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/modoru_memo.arc", self.hint_back, sprite_sheet=True)
-
-        self.hint_unlock = pge.Button(position=[-80, 40],
-                                      center=[pge.Alignment.LEFT, pge.Alignment.TOP], not_pressed_tag=btn_off,
-                                      pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.hint_unlock, sprite_sheet=True)
-
-        self.hint_no_unlock = pge.Button(position=[80, 40],
-                                         center=[pge.Alignment.RIGHT, pge.Alignment.TOP], not_pressed_tag=btn_off,
-                                         pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.hint_no_unlock, sprite_sheet=True)
-
-        self.hint_text = pge.Text(position=[-256 // 2 + 20, -192 // 2 + 42],
-                                  center=[pge.Alignment.LEFT, pge.Alignment.TOP],
-                                  color=pg.Color(0, 0, 0))
-        self.font_loader.load("fontq", 10, self.hint_text)
-
-        self.hint_selected: List[pge.Button] = []
-
-        current_x = -256 // 2 + 8
-        for i in range(3):
-            hint_select = pge.Button(position=[current_x, -192 // 2 + 4],
-                                     center=[pge.Alignment.LEFT, pge.Alignment.TOP], not_pressed_tag="OFF",
-                                     pressed_tag="ON", pressed_counter=0)
-            hint_select.visible = False
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select, sprite_sheet=True)
-            current_x += hint_select.get_world_rect().w + 1
-            self.hint_selected.append(hint_select)
-
-        self.view_hint(self.progress_hints(set_hint=0))
+        self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
+        self.on_hints = False
 
         smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer()
@@ -128,44 +92,41 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.puzzle_bg_music.set_preset_dict(presets)
         self.puzzle_bg_music.start_sound(smd, loops=True)
 
+        self.run_gds()
+
+    def run_gds_cmd(self, cmd):
+        pass
+
+    def run_gds(self):
+        for cmd in self.puzzle_data.gds.commands:
+            self.run_gds_cmd(cmd)
+
+    def solution_submitted(self):
+        return False
+
+    def check_solution(self):
+        return False
+
     def unload(self):
         self.puzzle_bg_music.stop()
 
-    def progress_hints(self, set_hint=None):
-        if set_hint is not None:
-            self.hints_used = set_hint
-        else:
-            self.hints_used += 1
-        self.hints_btn.not_pressed_tag = f"{self.hints_used}_off"
-        self.hints_btn.pressed_tag = f"{self.hints_used}_on"
-        if self.hints_used > 0:
-            hint_sprite = self.hint_selected[self.hints_used - 1]
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{self.hints_used}.arc", hint_sprite,
-                                    sprite_sheet=True)
-        if self.hints_used < 3:
-            hint_sprite = self.hint_selected[self.hints_used]
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hintlock{self.hints_used + 1}.arc", hint_sprite,
-                                    sprite_sheet=True)
-            hint_sprite.visible = True
-        return self.hints_used
-
-    def view_hint(self, hint_num):
-        self.selected_hint = hint_num
-        if self.hints_used > hint_num:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/system/?/hint_{hint_num + 1}.arc", self.hint_bg,
-                                    sprite_sheet=False)
-            if hint_num == 0:
-                self.hint_text.text = self.puzzle_data.hint1
-            elif hint_num == 1:
-                self.hint_text.text = self.puzzle_data.hint2
-            elif hint_num == 2:
-                self.hint_text.text = self.puzzle_data.hint3
-        else:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/system/?/jitenhint_{hint_num + 1}.arc", self.hint_bg,
-                                    sprite_sheet=False)
-
     def update(self, dt: float):
         self.puzzle_bg_music.update_(dt)
+
+        if not self.on_hints:
+            self.update_base(dt)
+        else:
+            self.on_hints = self.hints.update(dt)
+            if not self.on_hints:
+                self.hints_btn.not_pressed_tag = f"{self.hints.used}_off"
+                self.hints_btn.pressed_tag = f"{self.hints.used}_on"
+
+    def update_base(self, dt: float):
+        self.hints_btn.animate(dt)
+        self.quit_btn.animate(dt)
+        self.memo_btn.animate(dt)
+        self.submit_btn.animate(dt)
+
         if self.text_pos < len(self.puzzle_data.text):
             self.current_between_letters += dt
             while self.current_between_letters > self.between_letters:
@@ -175,46 +136,15 @@ class PuzzlePlayer(TwoScreenRenderer):
                 self.text_pos = len(self.puzzle_data.text)
             self.text_pos = min(self.text_pos, len(self.puzzle_data.text))
             self.top_text.text = self.puzzle_data.text[:self.text_pos]
+            return
 
-        if not self.on_hints:
-            self.update_base(dt)
-        else:
-            self.update_hints(dt)
-
-    def update_base(self, dt: float):
         if self.hints_btn.pressed(self.btm_camera, dt):
-            self.view_hint(min(2, self.hints_used))
+            self.hints.view_hint(min(2, self.hints.used))
             self.on_hints = True
             return
         self.quit_btn.pressed(self.btm_camera, dt)
         self.memo_btn.pressed(self.btm_camera, dt)
         self.submit_btn.pressed(self.btm_camera, dt)
-
-        self.hints_btn.animate(dt)
-        self.quit_btn.animate(dt)
-        self.memo_btn.animate(dt)
-        self.submit_btn.animate(dt)
-
-    def update_hints(self, dt: float):
-        if self.hint_back.pressed(self.btm_camera, dt):
-            self.on_hints = False
-            return
-        self.hint_back.animate(dt)
-
-        for i in range(min(3, self.hints_used + 1)):
-            if self.hint_selected[i].pressed(self.btm_camera, dt):
-                self.view_hint(i)
-            self.hint_selected[i].animate(dt)
-
-        if self.selected_hint == self.hints_used:
-            if self.hint_unlock.pressed(self.btm_camera, dt):
-                self.view_hint(self.progress_hints() - 1)
-            self.hint_unlock.animate(dt)
-
-            if self.hint_no_unlock.pressed(self.btm_camera, dt):
-                self.on_hints = False
-                return
-            self.hint_no_unlock.animate(dt)
 
     def draw(self):
         self.top_bg.draw(self.top_camera)
@@ -225,7 +155,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         if not self.on_hints:
             self.draw_base()
         else:
-            self.draw_hints()
+            self.hints.draw()
 
     def draw_base(self):
         self.btm_bg.draw(self.btm_camera)
@@ -233,14 +163,3 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.quit_btn.draw(self.btm_camera)
         self.memo_btn.draw(self.btm_camera)
         self.submit_btn.draw(self.btm_camera)
-
-    def draw_hints(self):
-        self.hint_bg.draw(self.btm_camera)
-        if self.selected_hint == self.hints_used:
-            self.hint_unlock.draw(self.btm_camera)
-            self.hint_no_unlock.draw(self.btm_camera)
-        else:
-            self.hint_text.draw(self.btm_camera)
-        self.hint_back.draw(self.btm_camera)
-        for hint_select in self.hint_selected:
-            hint_select.draw(self.btm_camera)
