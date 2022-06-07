@@ -83,7 +83,7 @@ class SoundPreview(TwoScreenRenderer):
         if self.play_btn.pressed(self.btm_camera, dt):
             self.toggle_sound()
         self.play_btn.animate(dt)
-        self.player.update_(dt)
+        self.player.update(dt)
 
     def draw(self):
         self.top_camera.surf.fill((40, 40, 40))

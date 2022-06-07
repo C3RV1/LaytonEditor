@@ -48,8 +48,8 @@ class EventDialogue(pge.Sprite):
         self.on_dialogue = False
 
     def update_(self, dt: float):
-        self.voice_player.update_(dt)
-        self.dialogue_sfx_player.update_(dt)
+        self.voice_player.update(dt)
+        self.dialogue_sfx_player.update(dt)
 
     def unload(self):
         self.voice_player.stop()

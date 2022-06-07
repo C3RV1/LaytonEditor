@@ -87,14 +87,15 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False
 
-        self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader, self.hints)
-        self.on_win = False
-
         smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer()
         self.puzzle_bg_music.set_volume(0.5)
         self.puzzle_bg_music.set_preset_dict(presets)
         self.puzzle_bg_music.start_sound(smd, loops=True)
+
+        self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader, self.hints,
+                                          self.puzzle_bg_music)
+        self.on_win = False
 
         self.run_gds()
 
@@ -117,7 +118,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.puzzle_bg_music.stop()
 
     def update(self, dt: float):
-        self.puzzle_bg_music.update_(dt)
+        self.puzzle_bg_music.update(dt)
 
         if self.on_hints:
             self.on_hints = self.hints.update(dt)
@@ -130,8 +131,6 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.memo_btn.animate(dt)
             self.submit_btn.animate(dt)
             self.on_win = self.win_screen.update(dt)
-            if not self.on_win:
-                self.puzzle_bg_music.fade(1, True)
         else:
             self.update_base(dt)
 

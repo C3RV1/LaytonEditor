@@ -26,8 +26,8 @@ class EventSound:
         self.sadl_player.stop()
 
     def update_(self, dt: float):
-        self.sadl_player.update_(dt)
-        self.bg_player.update_(dt)
+        self.sadl_player.update(dt)
+        self.bg_player.update(dt)
 
     def fade(self, is_fade_in, frames):
         time = frames / 1000.0

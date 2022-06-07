@@ -19,7 +19,7 @@ class StreamPlayerAbstract:
         self.sample_rate = 0
         self.playing = False
 
-    def update_(self, delta_time):
+    def update(self, delta_time):
         if self.playing:
             self.expected_buffer_position += self.sample_rate * delta_time
         if self.loading:
