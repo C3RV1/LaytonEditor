@@ -16,8 +16,6 @@ class Button(Sprite):
         self.pressed_counter = pressed_counter
         self._current_pressed_counter = 0
         self.input_manager = Input()
-        if self._not_pressed_tag:
-            self.set_tag(self._not_pressed_tag)
 
     def load_sprite(self, loader: 'SpriteLoader', surface: pg.Surface, frame_info, tag_info, vars_=None):
         super(Button, self).load_sprite(loader, surface, frame_info, tag_info, vars_=vars_)

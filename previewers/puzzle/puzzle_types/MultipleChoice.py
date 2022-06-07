@@ -24,8 +24,8 @@ class MultipleChoice(PuzzlePlayer):
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x14:  # add_button
             x, y, path, is_solution, _ = cmd.params
-            btn = MultipleChoiceButton(is_solution, position=[-256//2 + x, -192//2 + y])
-            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn)
+            btn = MultipleChoiceButton(is_solution == 1, position=[-256//2 + x, -192//2 + y])
+            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn, sprite_sheet=True)
             self.buttons.append(btn)
 
     def solution_submitted(self, dt):
