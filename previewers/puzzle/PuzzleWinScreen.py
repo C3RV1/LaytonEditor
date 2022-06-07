@@ -1,6 +1,7 @@
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from pg_utils.ScreenFader import ScreenFader
 import formats.puzzle as pzd
+from .PuzzleHints import PuzzleHints
 import pg_engine as pge
 import pygame as pg
 
@@ -15,12 +16,13 @@ class PuzzleWinScreen(TwoScreenRenderer):
     STATE_TEXT = 5
     STATE_FADE_OUT3 = 6
     STATE_FAIL_BTN = 7
-    STATE_RETURN = 7
+    STATE_HINTS = 8
 
-    def __init__(self, puzzle_data: pzd.Puzzle, spr_loader, fnt_loader):
+    def __init__(self, puzzle_data: pzd.Puzzle, spr_loader, fnt_loader, puzzle_hints):
         super(PuzzleWinScreen, self).__init__()
 
         self.puzzle_data = puzzle_data
+        self.hints: PuzzleHints = puzzle_hints
         self.inp = pge.Input()
 
         self.sprite_loader: pge.SpriteLoader = spr_loader
@@ -58,9 +60,14 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.bg_move_up_time = 0.4
         self.fade_in = False
 
-        self.retry_btn = pge.Button()
-        self.hints_btn = pge.Button()
-        self.quit_btn = pge.Button()
+        self.retry_btn = pge.Button(position=[0, -50], pressed_tag="on", not_pressed_tag="off")
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/retry.arc", self.retry_btn, sprite_sheet=True)
+
+        self.hints_btn = pge.Button(pressed_tag="on", not_pressed_tag="off")
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/viewhint.arc", self.hints_btn, sprite_sheet=True)
+
+        self.quit_btn = pge.Button(position=[0, 50], pressed_tag="on", not_pressed_tag="off")
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn, sprite_sheet=True)
 
     def enter(self, correct):
         self.enter_state(self.STATE_FADE_OUT)
@@ -91,6 +98,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.fader.fade_in(None)
             self.current_between_letters = 0
             self.text_pos = 0
+            self.btm_text.text = ""
             if self.is_correct:
                 self.text = self.puzzle_data.correct_answer
             else:
@@ -112,6 +120,8 @@ class PuzzleWinScreen(TwoScreenRenderer):
         elif self.stage == self.STATE_FAIL_BTN:
             self.sprite_loader.load(f"data_lt2/bg/nazo/system/jiten_seikai.arc", self.bg2, sprite_sheet=False)
             self.fader.fade_in(False)
+        elif self.stage == self.STATE_HINTS:
+            self.hints.view_hint(min(2, self.hints.used))
 
     def update(self, dt: float):
         if self.stage == self.STATE_FADE_OUT:
@@ -163,7 +173,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
                 if self.inp.get_mouse_down(1):
                     if self.text_pos == len(self.text):
                         if self.is_correct:
-                            self.enter_state(self.STATE_RETURN)
+                            return False
                         else:
                             self.enter_state(self.STATE_FADE_OUT3)
                     else:
@@ -173,8 +183,19 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.fader.update(dt)
             if not self.fader.fading:
                 self.enter_state(self.STATE_FAIL_BTN)
-        if self.stage == self.STATE_RETURN:
-            return False
+        if self.stage == self.STATE_FAIL_BTN:
+            self.fader.update(dt)
+            if not self.fader.fading:
+                if self.retry_btn.pressed(self.btm_camera, dt) or self.quit_btn.pressed(self.btm_camera, dt):
+                    return False
+                if self.hints_btn.pressed(self.btm_camera, dt):
+                    self.enter_state(self.STATE_HINTS)
+                self.retry_btn.animate(dt)
+                self.quit_btn.animate(dt)
+                self.hints_btn.animate(dt)
+        if self.stage == self.STATE_HINTS:
+            if not self.hints.update(dt):
+                return False
         return True
 
     def progress_bg(self):
@@ -236,4 +257,10 @@ class PuzzleWinScreen(TwoScreenRenderer):
         elif self.stage == self.STATE_FAIL_BTN:
             self.bg.draw(self.top_camera)
             self.bg2.draw(self.btm_camera)
+            self.retry_btn.draw(self.btm_camera)
+            self.hints_btn.draw(self.btm_camera)
+            self.quit_btn.draw(self.btm_camera)
             self.fader.draw(self.btm_camera)
+        elif self.stage == self.STATE_HINTS:
+            self.hints.draw()
+            self.bg.draw(self.top_camera)

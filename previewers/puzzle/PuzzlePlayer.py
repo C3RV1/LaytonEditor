@@ -87,7 +87,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False
 
-        self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader)
+        self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader, self.hints)
         self.on_win = False
 
         smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
@@ -111,7 +111,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         return False
 
     def check_solution(self):
-        return True
+        return self.inp.get_key(pg.K_y)
 
     def unload(self):
         self.puzzle_bg_music.stop()
