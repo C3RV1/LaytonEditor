@@ -56,6 +56,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         new_samples = sample_transform.change_channels(new_samples, self.channels)
         new_samples = new_samples.swapaxes(0, 1)
         if new_samples.shape[0] == 0:
+            self.loading = False
             return
         new_samples_pos = 0
         new_samples_remain = new_samples.shape[0]

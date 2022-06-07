@@ -100,7 +100,7 @@ class PlacePreview(TwoScreenRenderer):
             obj.animate(dt)
         for exit_ in self.exits:
             exit_.animate(dt)
-        self.bgm.update_(dt)
+        self.bgm.update(dt)
         if not self.move_mode:
             self.move_button.animate(dt)
             if self.move_button.pressed(self.btm_camera, dt):
