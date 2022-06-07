@@ -127,7 +127,7 @@ class Sprite(Renderable):
                     if len(tag.frames) > 0:
                         self.set_frame(tag.frames[0])
                 return
-        logging.warning(f"Sprite tag not found (num: {name}, "
+        logging.warning(f"Sprite tag not found (tag: {name}, "
                         f"tags: {[tag.name for tag in self._tag_info]})")
         return
 
