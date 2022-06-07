@@ -81,7 +81,7 @@ class Puzzle:
         self.title = ""
 
         self.bg_btm_id = 0
-        self.bg_top_id = 0
+        self.bg_location_id = 0
 
         self.gds = None  # type: Optional[formats.gds.GDS]
 
@@ -112,7 +112,7 @@ class Puzzle:
         self.type = rdr.read_uint8()
         self.bg_btm_id = rdr.read_uint8()
         rdr.read_uint16()
-        self.bg_top_id = rdr.read_uint8()
+        self.bg_location_id = rdr.read_uint8()
         self.reward_id = rdr.read_uint8()
 
         puzzle_text_offset = 0x70 + rdr.read_uint32()
@@ -163,7 +163,7 @@ class Puzzle:
         wtr.write_uint8(self.type)
         wtr.write_uint8(self.bg_btm_id)
         wtr.write(self.original[0x3c:0x3e])  # UnkSoundId
-        wtr.write_uint8(self.bg_top_id)
+        wtr.write_uint8(self.bg_location_id)
         wtr.write_uint8(self.reward_id)
 
         wtr.write_uint32(0)
@@ -258,7 +258,7 @@ class Puzzle:
         parser.set_named("pzd.tutorial_id", self.tutorial_id)
         parser.set_named("pzd.reward_id", self.reward_id)
         parser.set_named("pzd.bg_btm_id", self.bg_btm_id)
-        parser.set_named("pzd.bg_top_id", self.bg_top_id)
+        parser.set_named("pzd.bg_location_id", self.bg_location_id)
         parser.set_named("pzd.judge_char", self.judge_char)
         parser.set_named("pzd.flag_bit2", self.flag_bit2)
         parser.set_named("pzd.flag_bit5", self.flag_bit5)
@@ -289,7 +289,7 @@ class Puzzle:
 
         required_paths = ["pzd.title", "pzd.type", "pzd.number", "pzd.text",  "pzd.correct_answer",
                           "pzd.incorrect_answer", "pzd.hint1", "pzd.hint2", "pzd.hint3", "pzd.tutorial_id",
-                          "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_top_id", "pzd.judge_char", "pzd.flag_bit2",
+                          "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_location_id", "pzd.judge_char", "pzd.flag_bit2",
                           "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang"]
 
         for req_path in required_paths:
@@ -310,7 +310,7 @@ class Puzzle:
         self.tutorial_id = parser["pzd.tutorial_id"]
         self.reward_id = parser["pzd.reward_id"]
         self.bg_btm_id = parser["pzd.bg_btm_id"]
-        self.bg_top_id = parser["pzd.bg_top_id"]
+        self.bg_location_id = parser["pzd.bg_location_id"]
         self.judge_char = parser["pzd.judge_char"]
         self.flag_bit2 = parser["pzd.flag_bit2"]
         self.flag_bit5 = parser["pzd.flag_bit5"]

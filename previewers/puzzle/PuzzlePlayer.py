@@ -26,7 +26,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.font_loader: pge.FontLoader = RomSingleton().get_font_loader()
 
         self.top_bg = pge.Sprite()
-        self.sprite_loader.load(f"data_lt2/bg/nazo/system/nazo_text{puzzle_data.bg_top_id}.arc", self.top_bg,
+        self.sprite_loader.load(f"data_lt2/bg/nazo/system/nazo_text{puzzle_data.bg_location_id}.arc", self.top_bg,
                                 sprite_sheet=False)
 
         self.btm_bg = pge.Sprite()
@@ -105,11 +105,13 @@ class PuzzlePlayer(TwoScreenRenderer):
         for cmd in self.puzzle_data.gds.commands:
             self.run_gds_cmd(cmd)
 
-    def solution_submitted(self):
+    def solution_submitted(self, dt):
+        if self.submit_btn.pressed(self.btm_camera, dt):
+            return True
         return False
 
     def check_solution(self):
-        return False
+        return True
 
     def unload(self):
         self.puzzle_bg_music.stop()
@@ -156,7 +158,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             return
         self.quit_btn.pressed(self.btm_camera, dt)
         self.memo_btn.pressed(self.btm_camera, dt)
-        if self.submit_btn.pressed(self.btm_camera, dt) or self.solution_submitted():
+        if self.solution_submitted(dt):
             self.win_screen.enter(self.check_solution())
             self.on_win = True
             self.puzzle_bg_music.fade(1, False)
