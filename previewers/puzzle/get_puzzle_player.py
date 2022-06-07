@@ -1,10 +1,12 @@
 from formats.puzzle import Puzzle
 from .puzzle_types.NullPuzzle import NullPuzzle
 from .puzzle_types.MultipleChoice import MultipleChoice
+from .puzzle_types.OnOff import OnOff
 
 
 PUZZLE_TYPE_DICT = {
-    Puzzle.MULTIPLE_CHOICE: MultipleChoice
+    Puzzle.MULTIPLE_CHOICE: MultipleChoice,
+    Puzzle.ON_OFF: OnOff
 }
 
 
