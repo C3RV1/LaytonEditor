@@ -6,7 +6,6 @@ import formats.gds
 import formats.graphics.bg
 import formats.dlz
 import formats.parsers.dcc
-import formats.parsers.gds_parser as pz_gds
 from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
@@ -18,7 +17,7 @@ class Puzzle:
     MATCHSTICK_UNUSED = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
-    MARK_ANSWER = 3
+    ON_OFF = 3
     POSITION_TO_SOLVE_UNUSED = 4
     CIRCLE_ANSWER = 5
     DRAW_LINE_PLAZA = 6  # Maybe
@@ -51,17 +50,6 @@ class Puzzle:
     RICKETY_BRIDGE = 0x21
     FIND_SHAPE = 0x22
     INPUT_DATE = 0x23
-
-    INPUTS = [INPUT_DATE, INPUT_NUMERIC, INPUT_ALTERNATIVE, INPUT_CHARACTERS]
-
-    TYPE_TO_GDS_PARSER = {
-        INPUT_DATE: pz_gds.InputGDSParser,
-        INPUT_NUMERIC: pz_gds.InputGDSParser,
-        INPUT_ALTERNATIVE: pz_gds.InputGDSParser,
-        INPUT_CHARACTERS: pz_gds.InputGDSParser,
-        MULTIPLE_CHOICE: pz_gds.MultipleChoiceGDSParser,
-        TILE_ROTATE_2: pz_gds.TileRotate2GDSParser
-    }
 
     def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
         self.rom = rom
@@ -242,11 +230,6 @@ class Puzzle:
         self.gds.save()
         return True
 
-    def get_gds_parser(self):
-        if self.type in self.TYPE_TO_GDS_PARSER:
-            return self.TYPE_TO_GDS_PARSER[self.type]()
-        return pz_gds.GDSParser()
-
     def to_readable(self):
         parser = formats.parsers.dcc.DCCParser()
         parser.reset()
@@ -276,7 +259,8 @@ class Puzzle:
         parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2, puzzle=True))
         parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3, puzzle=True))
 
-        gds_parser = self.get_gds_parser()
+        from formats.parsers.gds_parsers import get_puzzle_gds_parser
+        gds_parser = get_puzzle_gds_parser(self)
         gds_parser.parse_into_dcc(self.gds, parser)
         return parser.serialize()
 
@@ -322,7 +306,9 @@ class Puzzle:
         self.bg_lang = parser["pzd.bg_lang"]
         self.ans_bg_lang = parser["pzd.ans_bg_lang"]
         self.gds.commands = []
-        gds_parser = self.get_gds_parser()
+
+        from formats.parsers.gds_parsers import get_puzzle_gds_parser
+        gds_parser = get_puzzle_gds_parser(self)
         successful, error_msg = gds_parser.parse_from_dcc(self.gds, parser)
         return successful, error_msg
 

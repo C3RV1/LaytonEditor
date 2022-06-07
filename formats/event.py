@@ -5,7 +5,7 @@ import formats.binary as binary
 import formats.gds
 import formats.filesystem as fs
 import formats.parsers.dcc as dcc
-from formats.parsers import gds_parser
+from formats.parsers.gds_parsers import EventGDSParser
 import formats.parsers.event_script as event_script
 from typing import Optional
 
@@ -189,7 +189,7 @@ class Event:
             parser.set_named(f"evdat.char{i}.shown", self.characters_shown[i])
             parser.set_named(f"evdat.char{i}.anim", self.characters_anim_index[i])
 
-        gds_parser.EventGDSParser(ev=self).parse_into_dcc(self.gds, parser)
+        EventGDSParser(ev=self).parse_into_dcc(self.gds, parser)
 
         return parser.serialize()
 
@@ -220,6 +220,6 @@ class Event:
 
         self.texts = {}
 
-        successful, error_msg = gds_parser.EventGDSParser(ev=self).parse_from_dcc(self.gds, parser)
+        successful, error_msg = EventGDSParser(ev=self).parse_from_dcc(self.gds, parser)
 
         return successful, error_msg
