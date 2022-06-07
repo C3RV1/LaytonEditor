@@ -26,7 +26,7 @@ from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 from previewers.place.PlacePreview import PlacePreview
 from utility.path import set_extension
 from previewers.event.EventPlayer import EventPlayer
-from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
+from previewers.puzzle.get_puzzle_player import get_puzzle_player
 from previewers.sound.SoundPreview import SoundPreview
 
 from pg_utils.rom.rom_extract import load_sadl, load_smd
@@ -279,7 +279,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.preview_data = puzzle
             puzzle.set_internal_id(int(res.group(1)))
             puzzle.load_from_rom()
-            self.previewer.start_renderer(PuzzlePlayer(puzzle))
+            self.previewer.start_renderer(get_puzzle_player(puzzle))
             set_previewer = True
             self.dcc_editor.SetText(puzzle.to_readable())
             self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
@@ -522,7 +522,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             error_dialog = wx.MessageDialog(self, error_msg, style=wx.ICON_ERROR | wx.OK)
             error_dialog.ShowModal()
         else:
-            self.previewer.start_renderer(PuzzlePlayer(self.preview_data))
+            self.previewer.start_renderer(get_puzzle_player(self.preview_data))
 
     def fp_puzzle_save(self, _):
         puzzle_data = self.preview_data
