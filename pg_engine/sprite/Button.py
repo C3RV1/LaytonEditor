@@ -25,7 +25,7 @@ class Button(Sprite):
 
     def pressed(self, cam: Camera, dt: float):
         if not self._pressed:
-            if self.input_manager.get_mouse_down(1):
+            if self.input_manager.get_mouse_down(1) and self.visible:
                 mouse_pos = self.input_manager.get_mouse_pos()
                 if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
                     self._pressed = True
