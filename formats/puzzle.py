@@ -352,14 +352,12 @@ class Puzzle:
 
     @property
     def judge_char(self):
-        return self._flags & 0x1
+        return self._flags & 0b11
 
     @judge_char.setter
     def judge_char(self, value):
-        if value > 0:
-            self._flags |= 0x1
-        else:
-            self._flags &= 0xFF - 0x1
+        self._flags &= 0xFF - 0b11
+        self._flags += value & 0b11
 
     @property
     def flag_bit2(self):

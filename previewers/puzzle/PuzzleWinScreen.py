@@ -1,9 +1,13 @@
+import random
+
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from pg_utils.ScreenFader import ScreenFader
 import formats.puzzle as pzd
 from .PuzzleHints import PuzzleHints
 import pg_engine as pge
 import pygame as pg
+from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer, StreamPlayerAbstract
+from pg_utils.rom.rom_extract import load_sadl
 
 
 class PuzzleWinScreen(TwoScreenRenderer):
@@ -18,11 +22,12 @@ class PuzzleWinScreen(TwoScreenRenderer):
     STATE_FAIL_BTN = 7
     STATE_HINTS = 8
 
-    def __init__(self, puzzle_data: pzd.Puzzle, spr_loader, fnt_loader, puzzle_hints):
+    def __init__(self, puzzle_data: pzd.Puzzle, spr_loader, fnt_loader, puzzle_hints, puzzle_music):
         super(PuzzleWinScreen, self).__init__()
 
         self.puzzle_data = puzzle_data
         self.hints: PuzzleHints = puzzle_hints
+        self.puzzle_music: StreamPlayerAbstract = puzzle_music
         self.inp = pge.Input()
 
         self.sprite_loader: pge.SpriteLoader = spr_loader
@@ -69,9 +74,14 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.quit_btn = pge.Button(position=[0, 50], pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn, sprite_sheet=True)
 
+        self.voice = SADLStreamPlayer()
+        self.voice.set_volume(0.5)
+        self.voice_base = 100
+
     def enter(self, correct):
         self.enter_state(self.STATE_FADE_OUT)
         self.is_correct = correct
+        self.voice_base = 100 + (5 if self.puzzle_data.judge_char == 2 else 0) + random.randrange(3)
         if self.is_correct:
             self.btm_text.position[1] = -192 // 2 + 23
         else:
@@ -86,14 +96,18 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.load_bg()
             self.bg_timer = self.bg_anim_time
             self.clearing = False
+            self.voice.start_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD"))
         elif self.stage == self.STATE_MOVE_UP:
             self.bg.position[1] = 192
             self.bg_timer = self.bg_move_up_time
             self.fader.fade_in(None)
         elif self.stage == self.STATE_PICARATS:
             self.fader.fade_in(None)
+            vid = self.voice_base + (10 if self.is_correct else 20)
+            self.voice.start_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{vid}.SAD"))
         elif self.stage == self.STATE_FADE_OUT2:
             self.fader.fade_out(None)
+            self.puzzle_music.fade(.2, True)
         elif self.stage == self.STATE_TEXT:
             self.fader.fade_in(None)
             self.current_between_letters = 0
@@ -124,6 +138,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.hints.view_hint(min(2, self.hints.used))
 
     def update(self, dt: float):
+        self.voice.update(dt)
         if self.stage == self.STATE_FADE_OUT:
             self.fader.update(dt)
             if not self.fader.fading:
@@ -156,7 +171,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
         if self.stage == self.STATE_PICARATS:
             self.fader.update(dt)
             if self.inp.get_mouse_down(1):
-                if not self.fader.fading:
+                if not self.fader.fading and not self.voice.playing:
                     self.enter_state(self.STATE_FADE_OUT2)
         if self.stage == self.STATE_FADE_OUT2:
             self.fader.update(dt)
@@ -215,7 +230,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
             bg_path = f"data_lt2/bg/nazo/hantei/?/"
         if not self.is_correct and bid >= 7:
             bid += 100
-        bg_name = f"judge_{'r' if self.puzzle_data.judge_char == 0 else 'l'}{bid}_bg.arc"
+        bg_name = f"judge_{'r' if self.puzzle_data.judge_char == 2 else 'l'}{bid}_bg.arc"
         self.sprite_loader.load(bg_path + bg_name, self.bg, sprite_sheet=False)
 
     def draw(self):
