@@ -19,7 +19,7 @@ class NullPuzzle(PuzzlePlayer):
 
         self.is_correct = False
 
-    def solution_submitted(self, dt):
+    def update_submitted(self, dt):
         if self.no_btn.pressed(self.btm_camera, dt):
             self.is_correct = False
             return True

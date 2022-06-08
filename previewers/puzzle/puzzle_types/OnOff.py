@@ -4,30 +4,25 @@ from formats.puzzle import Puzzle
 import pg_engine as pge
 
 
-class ToggleButton(pge.Sprite):
-    def __init__(self, *args, **kwargs):
-        super(ToggleButton, self).__init__(*args, **kwargs)
-        self.visible = False
-        self.inp = pge.Input()
-
-    def update(self, cam: pge.Camera):
-        if self.inp.get_mouse_down(1):
-            mouse_pos = self.inp.get_mouse_pos()
-            if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
-                self.visible = not self.visible
-
-
-class OnOffToggle(ToggleButton):
+class OnOffToggle(pge.Sprite):
     def __init__(self, is_solution, *args, **kwargs):
         super(OnOffToggle, self).__init__(*args, **kwargs)
         self.solution_set = is_solution
         self.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
         self.not_pressed_tag = "off"
         self.pressed_tag = "on"
+        self.visible = False
+        self.inp = pge.Input()
 
     def load_sprite(self, *args, **kwargs):
         super(OnOffToggle, self).load_sprite(*args, **kwargs)
         self.set_tag("gfx")
+
+    def update(self, cam: pge.Camera):
+        if self.inp.get_mouse_down(1):
+            mouse_pos = self.inp.get_mouse_pos()
+            if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
+                self.visible = not self.visible
 
 
 class OnOff(PuzzlePlayer):
@@ -49,11 +44,11 @@ class OnOff(PuzzlePlayer):
                 return False
         return True
 
-    def update_base(self, dt: float):
-        super(OnOff, self).update_base(dt)
+    def update_submitted(self, dt):
         for option in self.options:
             option: OnOffToggle
             option.update(self.btm_camera)
+        return super(OnOff, self).update_submitted(dt)
 
     def draw_base(self):
         super(OnOff, self).draw_base()

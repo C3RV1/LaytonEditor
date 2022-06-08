@@ -106,7 +106,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         for cmd in self.puzzle_data.gds.commands:
             self.run_gds_cmd(cmd)
 
-    def solution_submitted(self, dt):
+    def update_submitted(self, dt):
         if self.submit_btn.pressed(self.btm_camera, dt):
             return True
         return False
@@ -157,10 +157,11 @@ class PuzzlePlayer(TwoScreenRenderer):
             return
         self.quit_btn.pressed(self.btm_camera, dt)
         self.memo_btn.pressed(self.btm_camera, dt)
-        if self.solution_submitted(dt):
+        if self.update_submitted(dt):
             self.win_screen.enter(self.check_solution())
             self.on_win = True
             self.puzzle_bg_music.fade(1, False)
+            return
 
     def draw(self):
         self.top_bg.draw(self.top_camera)

@@ -28,7 +28,7 @@ class MultipleChoice(PuzzlePlayer):
             self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn, sprite_sheet=True)
             self.buttons.append(btn)
 
-    def solution_submitted(self, dt):
+    def update_submitted(self, dt):
         for button in self.buttons:
             if button.pressed(self.btm_camera, dt):
                 self.pressed_btn = button
