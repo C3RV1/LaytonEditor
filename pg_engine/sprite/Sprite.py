@@ -138,6 +138,10 @@ class Sprite(Renderable):
             return
         self.set_tag(self._tag_info[num].name)
 
+    @property
+    def tag_count(self):
+        return len(self._tag_info)
+
     def animate(self, dt: float):
         if not self._tag_info:
             pass
