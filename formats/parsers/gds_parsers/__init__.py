@@ -3,6 +3,7 @@ from .TileRotate2GDSParser import TileRotate2GDSParser
 from .MultipleChoiceGDSParser import MultipleChoiceGDSParser
 from .OnOffGDSParser import OnOffGDSParser
 from .EventGDSParser import EventGDSParser
+from .SortGDSParser import SortGDSParser
 from formats.puzzle import Puzzle
 from ..gds_parser import GDSParser
 
@@ -14,7 +15,8 @@ TYPE_TO_GDS_PARSER = {
     Puzzle.INPUT_CHARACTERS: InputGDSParser,
     Puzzle.ON_OFF: OnOffGDSParser,
     Puzzle.MULTIPLE_CHOICE: MultipleChoiceGDSParser,
-    Puzzle.TILE_ROTATE_2: TileRotate2GDSParser
+    Puzzle.TILE_ROTATE_2: TileRotate2GDSParser,
+    Puzzle.SORT: SortGDSParser
 }
 
 
