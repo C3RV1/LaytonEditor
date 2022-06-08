@@ -142,6 +142,18 @@ class Sprite(Renderable):
     def tag_count(self):
         return len(self._tag_info)
 
+    @property
+    def tag_names(self):
+        return [tag.name for tag in self._tag_info]
+
+    def get_tag(self):
+        return self._active_tag
+
+    def get_tag_num(self):
+        if self._active_tag not in self._tag_info:
+            return None
+        return self._tag_info.index(self._active_tag)
+
     def animate(self, dt: float):
         if not self._tag_info:
             pass
