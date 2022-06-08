@@ -87,6 +87,7 @@ class EventDialogue(pge.Sprite):
     def set_talking(self):
         # If there is a voice line play it (first we stop it)
         if self.voice_line != -1:
+            # USA workaround
             try:
                 sfx = load_sadl(f"data_lt2/stream/event/?/{str(self.voice_line).zfill(3)}_{self.current_pause}.SAD")
             except FileNotFoundError:

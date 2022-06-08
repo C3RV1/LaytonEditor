@@ -53,6 +53,9 @@ class MainEditor(generated.MainEditor):
             except IndexError:  # US version?
                 # TODO: Figure out how to read it properly
                 logging.warning(f"Game language not recognized: assuming US")
+                error_dialog = wx.MessageDialog(self, "USA is not fully supported",
+                                                style=wx.ICON_WARNING | wx.OK)
+                error_dialog.ShowModal()
                 conf.LANG = "en"
             logging.info(f"Game language: {conf.LANG}")
             if conf.LANG == "jp":
