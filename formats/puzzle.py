@@ -172,7 +172,7 @@ class Puzzle:
 
         plz: formats.filesystem.PlzArchive = rom.get_archive(f"data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
         if f"n{self.internal_id}.dat" not in plz.filenames:
-            logging.error(f"Nazo dat not found (internal id {self.internal_id}")
+            logging.error(f"Nazo dat not found (internal id {self.internal_id})")
             return None
 
         return plz.open(f"n{self.internal_id}.dat", mode)
