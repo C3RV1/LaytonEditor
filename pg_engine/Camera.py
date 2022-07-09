@@ -46,3 +46,7 @@ class Camera:
                 r[i+2] -= (r[i] + r[i+2]) - (self.viewport[i] + self.viewport[i+2])
         clip[2:4] = r[2:4]
         return clip
+
+    def set_surf_clip(self):
+        if self.surf.get_clip() != self.viewport:
+            self.surf.set_clip(self.viewport)
