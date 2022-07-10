@@ -1,12 +1,12 @@
-from pg_engine import Sprite, Camera, Alignment
+from k4pg import Sprite, Camera, Alignment
 import pygame as pg
 
-from pg_engine.font.Font import Font
+from k4pg.font.Font import Font
 
 
 class Text(Sprite):
     def __init__(self, *args, text: str = "", color: pg.Color = pg.Color(255, 255, 255),
-                 bg_color: [pg.Color, None] = None, font: Font=None, line_spacing: int = 0,
+                 bg_color: [pg.Color, None] = None, font: Font = None, line_spacing: int = 0,
                  align: int = Alignment.LEFT, **kwargs):
         super(Text, self).__init__(*args, **kwargs)
         self._text: str = text

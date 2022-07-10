@@ -1,4 +1,4 @@
-import pg_engine as pge
+import k4pg
 from .EventCharacter import EventCharacter
 import pygame as pg
 import pg_utils.sound.SADLStreamPlayer
@@ -10,21 +10,21 @@ if TYPE_CHECKING:
 from utility.replace_substitutions import replace_substitutions
 
 
-class EventDialogue(pge.Sprite):
+class EventDialogue(k4pg.Sprite):
     NUMBER_OF_LINES = 5
 
     def __init__(self, event_player: 'EventPlayer', *args, **kwargs):
         super(EventDialogue, self).__init__(*args, **kwargs)
-        self.gm = pge.GameManager()
+        self.gm = k4pg.GameManager()
 
         self.event_player: 'EventPlayer' = event_player
 
-        self.inner_text: pge.Text = pge.Text(center=[pge.Alignment.LEFT, pge.Alignment.TOP])
+        self.inner_text: k4pg.Text = k4pg.Text(center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
 
-        self.char_name = pge.Sprite()
-        self.char_name.center = [pge.Alignment.LEFT, pge.Alignment.BOTTOM]
+        self.char_name = k4pg.Sprite()
+        self.char_name.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.BOTTOM)
 
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
         self.current_line = 0
         self.current_pause = 0
@@ -66,7 +66,7 @@ class EventDialogue(pge.Sprite):
         self.inner_text.visible = False
         self.char_name.visible = False
 
-    def start_dialogue(self, character, chr_anim, text, voice, dialogue_sfx, loader: pge.SpriteLoader):
+    def start_dialogue(self, character, chr_anim, text, voice, dialogue_sfx, loader: k4pg.SpriteLoader):
         self.character_talking = character
         self.reset_all()
         if chr_anim is not None and self.character_talking is not None:
@@ -101,17 +101,15 @@ class EventDialogue(pge.Sprite):
         if self.character_talking is not None:
             self.character_talking.set_not_talking()
 
-    def init_text(self, font_loader: pge.FontLoader):
+    def init_text(self, font_loader: k4pg.FontLoader):
         # Init dialogue positions
         font_loader.load("fontevent", 12, self.inner_text)
-        self.inner_text.position[0] = (- 256 // 2) + 10
-        self.inner_text.position[1] = self.get_world_rect().y + 19
-        self.inner_text.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
+        self.inner_text.position.update((- 256 // 2) + 10, self.get_world_rect().y + 19)
+        self.inner_text.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.inner_text.line_spacing = 3
-        self.char_name.position[1] = self.get_world_rect().y + 12
-        self.char_name.position[0] = - 256 // 2 + 2
+        self.char_name.position.update(- 256 // 2 + 2, self.get_world_rect().y + 12)
 
-    def interact(self, cam: pge.Camera, dt: float):
+    def interact(self, cam: k4pg.Camera, dt: float):
         self.update_(dt)
         if self.finished and not self.paused:
             self.on_dialogue = False
@@ -197,7 +195,7 @@ class EventDialogue(pge.Sprite):
         self.reset_texts()
 
     # Init character name sprite
-    def init_char_name(self, loader: pge.SpriteLoader):
+    def init_char_name(self, loader: k4pg.SpriteLoader):
         loader.load(f"data_lt2/ani/eventchr/?/chr{self.character_talking.char_id}_n.arc", self.char_name,
                     sprite_sheet=True)
 
@@ -219,7 +217,7 @@ class EventDialogue(pge.Sprite):
     def busy(self):
         return self.on_dialogue
 
-    def draw(self, cam: pge.Camera):
+    def draw(self, cam: k4pg.Camera):
         if not self.visible:
             return
         super(EventDialogue, self).draw(cam)

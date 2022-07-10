@@ -1,13 +1,14 @@
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
 from formats.gds import GDSCommand
-import pg_engine as pge
+import k4pg
+import pygame as pg
 
 
-class MultipleChoiceButton(pge.Button):
+class MultipleChoiceButton(k4pg.ButtonSprite):
     def __init__(self, is_solution, *args, **kwargs):
         super(MultipleChoiceButton, self).__init__(*args, **kwargs)
-        self.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
+        self.center.update(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.is_solution: bool = is_solution
         self.not_pressed_tag = "off"
         self.pressed_tag = "on"
@@ -24,13 +25,13 @@ class MultipleChoice(PuzzlePlayer):
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x14:  # add_button
             x, y, path, is_solution, _ = cmd.params
-            btn = MultipleChoiceButton(is_solution == 1, position=[-256//2 + x, -192//2 + y])
+            btn = MultipleChoiceButton(is_solution == 1, position=pg.Vector2(-256//2 + x, -192//2 + y))
             self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn, sprite_sheet=True)
             self.buttons.append(btn)
 
     def update_submitted(self, dt):
         for button in self.buttons:
-            if button.pressed(self.btm_camera, dt):
+            if button.get_pressed(self.btm_camera, dt):
                 self.pressed_btn = button
                 button.animate(dt)
                 return True

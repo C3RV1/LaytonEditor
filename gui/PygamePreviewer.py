@@ -1,5 +1,5 @@
 import threading
-import pg_engine as pge
+import k4pg
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from typing import Any
 import pygame as pg
@@ -9,12 +9,12 @@ import gc
 class PreviewerDefaultRenderer(TwoScreenRenderer):
     def __init__(self):
         super(PreviewerDefaultRenderer, self).__init__()
-        sprite_loader = pge.SpriteLoaderOS(base_path_os="data_permanent/sprites")
-        font_loader = pge.FontLoaderOS(base_path_os="data_permanent/fonts", fall_back_font_os="../font_default.json")
-        self.tth_logo = pge.Sprite()
+        sprite_loader = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
+        font_loader = k4pg.FontLoaderOS(base_path_os="data_permanent/fonts", fall_back_font_os="../font_default.json")
+        self.tth_logo = k4pg.Sprite()
         sprite_loader.load("team_top_hat_logo.png", self.tth_logo)
         self.tth_logo.set_size([128, 128], conserve_ratio=True, ratio_type=self.tth_logo.SNAP_MIN)
-        self.previewer_text = pge.Text(text="Game Previewer", color=pg.Color(240, 240, 240))
+        self.previewer_text = k4pg.Text(text="Game Previewer", color=pg.Color(240, 240, 240))
         font_loader.load("consolas", 24, self.previewer_text)
 
     def unload(self):
@@ -32,7 +32,7 @@ class PygamePreviewer(threading.Thread):
 
     def __init__(self):
         super(PygamePreviewer, self).__init__()
-        self.gm = pge.GameManager(pge.GameManagerConfig(
+        self.gm = k4pg.GameManager(k4pg.GameManagerConfig(
             screen_size=(256*TwoScreenRenderer.SCALE, 192*2*TwoScreenRenderer.SCALE),
             full_screen=False, window_name="Layton Editor Previewer",
             screen_pos=(100, 100)

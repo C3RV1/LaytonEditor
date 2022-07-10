@@ -1,8 +1,9 @@
 import pygame as pg
 import random
 import time
+from .Debug import Debug
 from .Screen import Screen
-from .Input import Input
+from .input.Input import Input
 import os
 from dataclasses import dataclass
 
@@ -20,6 +21,7 @@ class GameManagerConfig:
 class GameManager(object):
     __instance = None
     __inited = False
+    version = "k4pg v1.0.8"
 
     @staticmethod
     def __new__(cls, *args, **kwargs):
@@ -32,6 +34,14 @@ class GameManager(object):
 
     def __init__(self, gm_config: GameManagerConfig = None):
         if not GameManager.__inited and gm_config:
+            print(f"Starting {self.version} with config {gm_config}")
+            # Set screen position
+            if gm_config.screen_pos is not None:
+                os.environ["SDL_VIDEO_WINDOW_POS"] = f"{gm_config.screen_pos[0]},{gm_config.screen_pos[1]}"
+
+            # Initialize pygame
+            pg.init()
+            pg.mixer.init()
 
             self._running: bool = True
             self._delta_time: float = 1.0
@@ -41,14 +51,6 @@ class GameManager(object):
             self.fps_cap: int = gm_config.fps_limit
             self.input_manager: Input = Input()
             self._events: list = []
-
-            # Set screen position
-            if gm_config.screen_pos is not None:
-                os.environ["SDL_VIDEO_WINDOW_POS"] = f"{gm_config.screen_pos[0]},{gm_config.screen_pos[1]}"
-
-            # Initialize pygame
-            pg.init()
-            pg.mixer.init()
 
             # Create screen
             flags = pg.HWSURFACE | pg.DOUBLEBUF
@@ -73,7 +75,7 @@ class GameManager(object):
         self.input_manager.update_events(self._events)
 
         if self.log_fps:
-            print(f"[GameManager]    FPS: { 1 / self._delta_time }")
+            Debug.log(f"FPS: { 1 / self._delta_time }", self)
 
     @property
     def delta_time(self):

@@ -1,4 +1,7 @@
-from pg_engine import Sprite, Input, Camera, Alignment
+from .Sprite import Sprite
+from ..input.Input import Input
+from ..Camera import Camera
+from ..Alignment import Alignment
 
 
 class Slider(Sprite):
@@ -12,9 +15,9 @@ class Slider(Sprite):
 
     def update_child_pos(self):
         world_rect = self.get_world_rect()
-        self.child.position[0] = (self.percentage * world_rect.w) + world_rect.x
-        self.child.position[1] = world_rect.y + world_rect.h / 2
-        self.child.center = [Alignment.CENTER, Alignment.CENTER]
+        self.child.position.x = (self.percentage * world_rect.w) + world_rect.x
+        self.child.position.y = world_rect.y + world_rect.h / 2
+        self.child.center.update(Alignment.CENTER, Alignment.CENTER)
         self.child.visible = self.visible
 
     def get_value(self, cam: Camera):

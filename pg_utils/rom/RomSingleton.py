@@ -1,5 +1,5 @@
 import formats.filesystem
-import pg_engine as pge
+import k4pg
 from pg_utils.rom import loaders
 
 
@@ -19,13 +19,13 @@ class RomSingleton:
         elif rom_path is not None:
             self.rom = formats.filesystem.NintendoDSRom.fromFile(rom_path)
 
-    def get_sprite_loader(self) -> pge.SpriteLoader:
+    def get_sprite_loader(self) -> k4pg.SpriteLoader:
         if self.rom is None:
-            return pge.SpriteLoaderOS()
+            return k4pg.SpriteLoaderOS()
         else:
             return loaders.SpriteLoaderROM(self.rom, base_path_rom="")
 
-    def get_font_loader(self) -> pge.FontLoader:
+    def get_font_loader(self) -> k4pg.FontLoader:
         return loaders.FontLoaderROM(self.rom, base_path_rom="data_lt2/font",
                                      fall_back_font_os="../font_default.json", base_path_os="data_permanent/fonts",
                                      fall_back_font_sys="arial")

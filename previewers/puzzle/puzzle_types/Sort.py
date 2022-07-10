@@ -1,18 +1,19 @@
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
 from formats.gds import GDSCommand
-import pg_engine as pge
+import k4pg
+import pygame as pg
 
 
-class SortTile(pge.Sprite):
+class SortTile(k4pg.Sprite):
     def __init__(self, initial_tag, solution_tag, *args, **kwargs):
         super(SortTile, self).__init__(*args, **kwargs)
-        self.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
+        self.center.update(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.current_tag = initial_tag
         self.solution_tag = solution_tag
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
-    def update(self, cam: pge.Camera):
+    def update(self, cam: k4pg.Camera):
         if self.inp.get_mouse_down(1):
             mouse_pos = self.inp.get_mouse_pos()
             if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
@@ -35,7 +36,7 @@ class Sort(PuzzlePlayer):
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x2e:
             x, y, path, initial, solution = cmd.params
-            tile = SortTile(str(initial), solution, position=[-256//2 + x, -192//2 + y])
+            tile = SortTile(str(initial), solution, position=pg.Vector2(-256//2 + x, -192//2 + y))
             self.sprite_loader.load(f"data_lt2/ani/nazo/touch/{path}", tile, sprite_sheet=True)
             self.tiles.append(tile)
 

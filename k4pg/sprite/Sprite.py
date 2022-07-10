@@ -1,7 +1,7 @@
 import logging
 import math
-from dataclasses import dataclass, field
-from typing import List, TYPE_CHECKING, Tuple
+from dataclasses import dataclass
+from typing import List, TYPE_CHECKING, Tuple, Dict
 
 import pygame as pg
 
@@ -46,8 +46,9 @@ class Sprite(Renderable):
     SNAP_MAX = 0
     SNAP_MIN = 1
 
-    def __init__(self, rotation=0, scale=None, flipped=None, special_flags=0, color_key=None, alpha=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, rotation=0, scale=None, flipped=None, special_flags=0, color_key=None, alpha=None,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
         if scale is None:
             scale = [1, 1]
         if flipped is None:
@@ -59,29 +60,29 @@ class Sprite(Renderable):
         self._cropped_surf: [pg.Surface] = None
         self._scale = scale
         self._rotation = rotation
-        self._transformed_surf: [pg.Surface] = None
+        self.transformed_surf: Dict[int, pg.Surface] = {}
 
         self._frame_info: List[Frame] = []
-        self._active_frame: Frame = None
+        self._active_frame: [Frame] = None
 
         self._tag_info: List[Tag] = []
-        self._active_tag: Tag = None
+        self._active_tag: [Tag] = None
         self._tag_time: float = 0.0
         self._tag_frame: int = 0
 
-        self._transform_needed = True
-        self._cam_zoom = [1, 1]
+        self._transform_needed = {}
+        self._cam_zoom: Dict[int, List[int]] = {}
         self._flipped = flipped
         self.special_flags = special_flags
         self._color_key = color_key
         self._alpha = alpha
 
-        self._loader = None
+        self.loader = None
 
         self.vars = {}
 
     def load_sprite(self, loader: 'SpriteLoader', surface: pg.Surface, frame_info, tag_info, vars_=None):
-        self._loader = loader
+        self.loader = loader
         if vars_ is None:
             self.vars = {}
         else:
@@ -90,13 +91,13 @@ class Sprite(Renderable):
         # Surface or cropped surface size depending on whether is sprite sheet or not
         self._size: tuple = surface.get_size()
         self._cropped_surf: [pg.Surface] = None
-        self._transformed_surf: [pg.Surface] = None
+        self.transformed_surf: Dict[pg.Surface] = {}
         self._frame_info: List[Frame] = frame_info
         self._active_frame: [Frame] = None
         self._tag_info: List[Tag] = tag_info
         self._active_tag: [Tag] = None
-        self._cam_zoom = [1, 1]
-        self._transform_needed = True
+        self._cam_zoom: Dict[List[int]] = {}
+        self._force_transform(False)
 
         # Set frame if in sprite sheet
         self.set_frame(0)
@@ -109,7 +110,7 @@ class Sprite(Renderable):
         self._cropped_surf.blit(self._surf, (0, 0), area=self._active_frame.rect)
         self._size = self._cropped_surf.get_size()
         self.predict_real_size()
-        self._transform_needed = True
+        self._force_transform(False)
 
     def set_frame(self, num: int):
         if num < len(self._frame_info):
@@ -180,11 +181,14 @@ class Sprite(Renderable):
         if v == self._rotation:
             return
         self._rotation = v
-        self._transform_needed = True
+        self._rotation %= 360
+        self._force_transform(False)
         self.predict_real_size()
 
     def predict_real_size(self):
         w, h = self._size
+        w *= self._scale[0]
+        h *= self._scale[1]
         if self._rotation != 0:
             rotation = self._rotation % 180
             if rotation >= 90:
@@ -195,7 +199,7 @@ class Sprite(Renderable):
             new_h = math.ceil(w * math.sin(rotation_rad) + h * math.cos(rotation_rad))
             self._real_size = [new_w, new_h]
         else:
-            self._real_size = self._size
+            self._real_size = [w, h]
 
     @property
     def scale(self):
@@ -208,7 +212,7 @@ class Sprite(Renderable):
         self._scale[0] = v[0]
         self._scale[1] = v[1]
         self.predict_real_size()
-        self._transform_needed = True
+        self._force_transform(False)
 
     def set_size(self, new_size: list, conserve_ratio=False, ratio_type=SNAP_MAX):
         if self._size[0] == 0 or self._size[1] == 0:
@@ -226,10 +230,10 @@ class Sprite(Renderable):
             self._scale[scale_axis] = new_size[scale_axis] / self._size[scale_axis]
             self._scale[1 - scale_axis] = self._scale[scale_axis]
         self.predict_real_size()
-        self._transform_needed = True
+        self._force_transform(False)
 
     @property
-    def surf(self):
+    def surf(self) -> pg.Surface:
         return self._surf
 
     @surf.setter
@@ -241,7 +245,7 @@ class Sprite(Renderable):
         self.predict_real_size()
         # update cropped if sprite_sheet
         self._update_cropped()
-        self._transform_needed = True
+        self._force_transform(False)
 
     @property
     def flipped(self):
@@ -253,7 +257,7 @@ class Sprite(Renderable):
             return
         self._flipped[0] = v[0]
         self._flipped[1] = v[1]
-        self._transform_needed = True
+        self._force_transform(False)
 
     # TRUTH TABLE
     # FLIP  FLIPPED     NEXT
@@ -266,23 +270,28 @@ class Sprite(Renderable):
         self._flipped[1] = self._flipped[1] ^ y
 
     def _force_transform(self, calculate=False):
-        self._transform_needed = True
+        for cam_id in self._transform_needed:
+            self._transform_needed[cam_id] = True
         if calculate:
-            self._update_transforms(None)
+            self.update_transforms(None)
 
-    def _update_transforms(self, cam: [Camera]):
+    def update_transforms(self, cam: [Camera]):
         if self._surf is None:
             self.visible = False
-            self._transform_needed = False
-        if not self._transform_needed:
-            if cam:
-                if cam.zoom == self._cam_zoom:
+            self._transform_needed[id(cam)] = False
+        if id(cam) in self._transform_needed:
+            if not self._transform_needed[id(cam)]:
+                if cam:
+                    if id(cam) in self._cam_zoom:
+                        if cam.zoom == self._cam_zoom[id(cam)]:
+                            return
+                else:
                     return
-            else:
-                return
+        if id(cam) not in self._cam_zoom:
+            self._cam_zoom[id(cam)] = [1, 1]
         if cam:
-            self._cam_zoom[0] = cam.zoom[0]
-            self._cam_zoom[1] = cam.zoom[1]
+            self._cam_zoom[id(cam)][0] = cam.zoom[0]
+            self._cam_zoom[id(cam)][1] = cam.zoom[1]
 
         surf = self._cropped_surf.copy() if self._cropped_surf else self._surf.copy()
 
@@ -305,22 +314,25 @@ class Sprite(Renderable):
         if self._rotation != 0:
             surf = pg.transform.rotate(surf, self._rotation)
 
-        _real_size = list(surf.get_size())
-        if cam:
-            _real_size[0] /= cam.zoom[0]
-            _real_size[1] /= cam.zoom[1]
-            self._real_size = _real_size
+        # _real_size = list(surf.get_size())
+        # if cam:
+        #     _real_size[0] /= cam.zoom[0]
+        #     _real_size[1] /= cam.zoom[1]
+        #     self._real_size = _real_size
+        self.predict_real_size()
 
         if not cam:
             return
-        self._transformed_surf = surf
-        self._transform_needed = False
+        transformed_surf = surf
+        self._transform_needed[id(cam)] = False
 
-        if not self._transformed_surf.get_flags() & pg.SRCALPHA:
+        if not transformed_surf.get_flags() & pg.SRCALPHA:
             if self._color_key:
-                self._transformed_surf.set_colorkey(self._color_key)
+                transformed_surf.set_colorkey(self._color_key)
         if self._alpha is not None:
-            self._transformed_surf.set_alpha(int(self._alpha))
+            transformed_surf.set_alpha(int(self._alpha))
+
+        self.transformed_surf[id(cam)] = transformed_surf
 
     @property
     def color_key(self):
@@ -331,9 +343,9 @@ class Sprite(Renderable):
         if v == self._color_key:
             return
         self._color_key = v
-        if self._transformed_surf:
-            if not self._transformed_surf.get_flags() & pg.SRCALPHA:
-                self._transformed_surf.set_colorkey(self._color_key)
+        for transformed_surf in self.transformed_surf.values():
+            if transformed_surf.get_flags() & pg.SRCALPHA:
+                transformed_surf.set_colorkey(self._color_key)
 
     @property
     def alpha(self):
@@ -344,12 +356,12 @@ class Sprite(Renderable):
         if v == self._alpha:
             return
         self._alpha = v
-        if self._transformed_surf:
-            self._transformed_surf.set_alpha(int(self._alpha))
+        for transformed_surf in self.transformed_surf.values():
+            transformed_surf.set_alpha(int(self._alpha))
 
     def get_world_rect(self) -> pg.Rect:
-        return pg.Rect(self.position[0] - self._real_size[0] * self.center[0],
-                       self.position[1] - self._real_size[1] * self.center[1],
+        return pg.Rect(self.position.x - self._real_size[0] * self.center.x,
+                       self.position.y - self._real_size[1] * self.center.y,
                        self._real_size[0], self._real_size[1])
 
     def get_screen_rect(self, cam: Camera, update_pos=True, do_clip=True) -> Tuple[pg.Rect, pg.Rect]:
@@ -358,8 +370,8 @@ class Sprite(Renderable):
         size[0] *= cam.zoom[0]
         size[1] *= cam.zoom[1]
         r = [self._screen_position[0], self._screen_position[1], size[0], size[1]]
-        r[0] -= size[0] * self.center[0]
-        r[1] -= size[1] * self.center[1]
+        r[0] -= size[0] * self.center.x
+        r[1] -= size[1] * self.center.y
         if do_clip:
             clip = cam.clip_rect(r)
         else:
@@ -372,10 +384,13 @@ class Sprite(Renderable):
         super(Sprite, self).draw(cam)
         if self._surf is None:
             return
-        self._update_transforms(cam)
+        self.update_transforms(cam)
         position, clip = self.get_screen_rect(cam, update_pos=False)
         if self.visible:
-            cam.surf.blit(self._transformed_surf, (position.x, position.y), area=clip, special_flags=self.special_flags)
+            cam.surf.blit(self.transformed_surf[id(cam)], (position.x, position.y), area=clip,
+                          special_flags=self.special_flags)
 
     def set_loader(self, loader: 'SpriteLoader'):
-        self._loader = loader
+        self.loader = loader
+
+    # TODO: Implement some sort of unload? or does python automatically collect it correctly?

@@ -1,6 +1,6 @@
 from pg_utils.ScreenShaker import ScreenShaker
 from pg_utils.ScreenFader import ScreenFader
-import pg_engine as pge
+import k4pg
 import pygame as pg
 
 
@@ -9,7 +9,7 @@ class EventBG:
         self.bg = ScreenShaker()
         self.fader = ScreenFader()
         self.fader.load_fader()
-        self.translucent = pge.Sprite()
+        self.translucent = k4pg.Sprite()
         surf = pg.Surface([256, 192])
         surf.fill(pg.Color(0, 0, 0))
         self.translucent.surf = surf
@@ -55,11 +55,11 @@ class EventBG:
         self.fader.update(dt)
         self.bg.update(dt)
 
-    def draw_back(self, cam: pge.Camera):
+    def draw_back(self, cam: k4pg.Camera):
         self.bg.draw(cam)
         self.translucent.draw(cam)
 
-    def draw_front(self, cam: pge.Camera):
+    def draw_front(self, cam: k4pg.Camera):
         self.fader.draw(cam)
 
     def busy(self):

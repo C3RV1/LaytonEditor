@@ -1,10 +1,10 @@
 import logging
 import os
 
-import pg_engine as pge
+import k4pg
 from formats import conf
-from pg_engine import Sprite
-from pg_engine.sprite.Sprite import Frame, Tag
+from k4pg import Sprite
+from k4pg.sprite.Sprite import Frame, Tag
 import pygame as pg
 from formats.filesystem import NintendoDSRom
 from formats.graphics.ani import AniSprite, AniSubSprite
@@ -14,7 +14,7 @@ import numpy as np
 from utility.path import set_extension
 
 
-class SpriteLoaderROM(pge.SpriteLoaderOS):
+class SpriteLoaderROM(k4pg.SpriteLoaderOS):
     def __init__(self, rom: NintendoDSRom, base_path_rom=None, base_path_os=None):
         super(SpriteLoaderROM, self).__init__(base_path_os=base_path_os)
         self._base_path_rom = base_path_rom
@@ -82,13 +82,13 @@ class SpriteLoaderROM(pge.SpriteLoaderOS):
         sprite.color_key = color_key
 
 
-class FontLoaderROM(pge.FontLoaderOS):
+class FontLoaderROM(k4pg.FontLoaderOS):
     def __init__(self, rom, *args, base_path_rom=None, **kwargs):
         super(FontLoaderROM, self).__init__(*args, **kwargs)
         self.rom = rom
         self.base_path_rom = base_path_rom
 
-    def load(self, path: str, size: int, text: pge.Text):
+    def load(self, path: str, size: int, text: k4pg.Text):
         rom_path = path
         if self.base_path_rom is not None:
             rom_path = os.path.join(self.base_path_rom, path).replace("\\", "/")
@@ -132,7 +132,7 @@ class FontLoaderROM(pge.FontLoaderOS):
                 if width[tile] == 1:
                     total_width_ -= 1
 
-                char_map[char] = pge.CharMap(
+                char_map[char] = k4pg.CharMap(
                     tile,
                     width[tile],
                     left_spacing[tile],
@@ -146,7 +146,7 @@ class FontLoaderROM(pge.FontLoaderOS):
             "g": pg.Color(0, 255, 0)
         }
 
-        text.font = pge.FontMap(
+        text.font = k4pg.FontMap(
             tileset, 16, encoding, char_map,
             current_color, mask_color, tile_w, tile_h,
             0, 1, color_commands

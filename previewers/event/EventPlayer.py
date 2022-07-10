@@ -1,7 +1,8 @@
 import logging
 from typing import List, Optional
 
-import pg_engine as pge
+import k4pg
+import pygame as pg
 from formats import gds
 from formats.event import Event
 from .EventCharacter import EventCharacter
@@ -50,12 +51,12 @@ class EventPlayer(TwoScreenRenderer):
             char = EventCharacter(char_id, slot, anim, visibility, self.sprite_loader)
             self.characters[i] = char
 
-        self.dialogue = EventDialogue(self, position=[0, 192//2 + 3],
-                                      center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM])
+        self.dialogue = EventDialogue(self, position=pg.Vector2(0, 192//2 + 3),
+                                      center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM))
         self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue)
         self.dialogue.init_text(self.font_loader)
 
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
         self.wait_tap = False
 
         self.run_events_until_busy()

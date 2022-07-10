@@ -1,24 +1,25 @@
 from formats.gds import GDSCommand
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
-import pg_engine as pge
+import k4pg
+import pygame as pg
 
 
-class OnOffToggle(pge.Sprite):
+class OnOffToggle(k4pg.Sprite):
     def __init__(self, is_solution, *args, **kwargs):
         super(OnOffToggle, self).__init__(*args, **kwargs)
         self.solution_set = is_solution
-        self.center = [pge.Alignment.LEFT, pge.Alignment.TOP]
+        self.center.update(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.not_pressed_tag = "off"
         self.pressed_tag = "on"
         self.visible = False
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
     def load_sprite(self, *args, **kwargs):
         super(OnOffToggle, self).load_sprite(*args, **kwargs)
         self.set_tag("gfx")
 
-    def update(self, cam: pge.Camera):
+    def update(self, cam: k4pg.Camera):
         if self.inp.get_mouse_down(1):
             mouse_pos = self.inp.get_mouse_pos()
             if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
@@ -33,7 +34,7 @@ class OnOff(PuzzlePlayer):
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x14:
             x, y, path, solution_set, _ = cmd.params
-            option = OnOffToggle(solution_set == 1, position=[-256//2 + x, -192//2 + y])
+            option = OnOffToggle(solution_set == 1, position=pg.Vector2(-256//2 + x, -192//2 + y))
             self.sprite_loader.load(f"data_lt2/ani/nazo/onoff/{path}", option, sprite_sheet=True)
             self.options.append(option)
 

@@ -1,7 +1,7 @@
-import pg_engine as pge
+import k4pg
 
 
-class ScreenShaker(pge.Sprite):
+class ScreenShaker(k4pg.Sprite):
     def __init__(self, *args, **kwargs):
         super(ScreenShaker, self).__init__(*args, **kwargs)
         self.shaking = False

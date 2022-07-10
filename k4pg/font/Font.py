@@ -12,7 +12,7 @@ class Font:
         lines = text.split("\n")
         alpha = bg_color is None
         if alpha:
-            bg_color = pg.Color(255-color.r, 255-color.g, 255-color.b)
+            bg_color = pg.Color(255 - color.r, 255 - color.g, 255 - color.b)
         self._set_color(color)
         self._set_bg_color(bg_color)
         widths, heights = list(), list()
@@ -78,9 +78,9 @@ class FontMap(Font):
     MASKING_COLOR = pg.Color(0, 240, 0)
 
     def __init__(self, font_surface: pg.Surface, font_surface_tile_width: int, encoding: str,
-                 char_map: Dict[int, CharMap], current_color: pg.Color, mask_color: pg.Color, tile_width: int, tile_height: int,
-                 separator_size: int, character_spacing: int,
-                 color_commands: Dict[str, pg.Color], color_command_prefix="#"):
+                 char_map: Dict[int, CharMap], current_color: pg.Color, mask_color: pg.Color, tile_width: int,
+                 tile_height: int, separator_size: int, character_spacing: int, color_commands: Dict[str, pg.Color],
+                 color_command_prefix="#"):
         self._font_surface = font_surface
         self._font_surface_tile_width = font_surface_tile_width
         self._tile_width = tile_width
@@ -102,7 +102,7 @@ class FontMap(Font):
     def _encode_char(self, char: str):
         try:
             return int.from_bytes(char.encode(self._encoding), "big")
-        except:
+        except Exception:
             return -1
 
     def _get_line_size(self, line: str) -> tuple:

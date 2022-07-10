@@ -1,8 +1,8 @@
-import pg_engine as pge
+import k4pg
 import pygame as pg
 
 
-class ScreenFader(pge.Sprite):
+class ScreenFader(k4pg.Sprite):
     FADING_OUT = 1
     FADING_IN = 2
     DEFAULT_FADE_TIME = .7

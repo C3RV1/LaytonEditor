@@ -4,7 +4,7 @@ from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from pg_utils.ScreenFader import ScreenFader
 import formats.puzzle as pzd
 from .PuzzleHints import PuzzleHints
-import pg_engine as pge
+import k4pg
 import pygame as pg
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer, StreamPlayerAbstract
 from pg_utils.rom.rom_extract import load_sadl
@@ -28,10 +28,10 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.puzzle_data = puzzle_data
         self.hints: PuzzleHints = puzzle_hints
         self.puzzle_music: StreamPlayerAbstract = puzzle_music
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
-        self.sprite_loader: pge.SpriteLoader = spr_loader
-        self.font_loader: pge.FontLoader = fnt_loader
+        self.sprite_loader: k4pg.SpriteLoader = spr_loader
+        self.font_loader: k4pg.FontLoader = fnt_loader
 
         self.fader = ScreenFader()
         self.fader.fade_time = .2
@@ -46,14 +46,14 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.bg_hold_time = 36 / 60
         self.bg_clear_time = 10 / 60
         self.clearing = False
-        self.bg = pge.Sprite()
-        self.bg2 = pge.Sprite()
+        self.bg = k4pg.Sprite()
+        self.bg2 = k4pg.Sprite()
 
-        self.picarats_bg = pge.Sprite()
+        self.picarats_bg = k4pg.Sprite()
         self.sprite_loader.load("data_lt2/bg/nazo/system/?/picarat_get.arc", self.picarats_bg, sprite_sheet=False)
 
-        self.btm_text = pge.Text(position=[-256//2 + 8, -192 // 2 + 15],
-                                 center=[pge.Alignment.LEFT, pge.Alignment.TOP],
+        self.btm_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 15),
+                                 center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                  color=pg.Color(0, 0, 0),
                                  line_spacing=2)
         self.text = ""
@@ -65,13 +65,13 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.bg_move_up_time = 0.4
         self.fade_in = False
 
-        self.retry_btn = pge.Button(position=[0, -50], pressed_tag="on", not_pressed_tag="off")
+        self.retry_btn = k4pg.ButtonSprite(position=pg.Vector2(0, -50), pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load("data_lt2/ani/nazo/system/?/retry.arc", self.retry_btn, sprite_sheet=True)
 
-        self.hints_btn = pge.Button(pressed_tag="on", not_pressed_tag="off")
+        self.hints_btn = k4pg.ButtonSprite(pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load("data_lt2/ani/nazo/system/?/viewhint.arc", self.hints_btn, sprite_sheet=True)
 
-        self.quit_btn = pge.Button(position=[0, 50], pressed_tag="on", not_pressed_tag="off")
+        self.quit_btn = k4pg.ButtonSprite(position=pg.Vector2(0, 50), pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn, sprite_sheet=True)
 
         self.voice = SADLStreamPlayer()
@@ -83,9 +83,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.is_correct = correct
         self.voice_base = 100 + (5 if self.puzzle_data.judge_char == 2 else 0) + random.randrange(3)
         if self.is_correct:
-            self.btm_text.position[1] = -192 // 2 + 23
+            self.btm_text.position.y = -192 // 2 + 23
         else:
-            self.btm_text.position[1] = -192 // 2 + 15
+            self.btm_text.position.y = -192 // 2 + 15
 
     def enter_state(self, state):
         self.stage = state
@@ -98,7 +98,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.clearing = False
             self.voice.start_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD"))
         elif self.stage == self.STATE_MOVE_UP:
-            self.bg.position[1] = 192
+            self.bg.position.y = 192
             self.bg_timer = self.bg_move_up_time
             self.fader.fade_in(None)
         elif self.stage == self.STATE_PICARATS:
@@ -201,9 +201,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
         if self.stage == self.STATE_FAIL_BTN:
             self.fader.update(dt)
             if not self.fader.fading:
-                if self.retry_btn.pressed(self.btm_camera, dt) or self.quit_btn.pressed(self.btm_camera, dt):
+                if self.retry_btn.get_pressed(self.btm_camera, dt) or self.quit_btn.get_pressed(self.btm_camera, dt):
                     return False
-                if self.hints_btn.pressed(self.btm_camera, dt):
+                if self.hints_btn.get_pressed(self.btm_camera, dt):
                     self.enter_state(self.STATE_HINTS)
                 self.retry_btn.animate(dt)
                 self.quit_btn.animate(dt)
@@ -243,9 +243,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
         elif self.stage == self.STATE_MOVE_UP:
             self.clear()
             self.bg.draw(self.top_camera)
-            self.bg.position[1] -= 192
+            self.bg.position.y -= 192
             self.bg.draw(self.btm_camera)
-            self.bg.position[1] += 192
+            self.bg.position.y += 192
             self.fader.draw(self.btm_camera)
         elif self.stage == self.STATE_PICARATS:
             self.bg.draw(self.top_camera)

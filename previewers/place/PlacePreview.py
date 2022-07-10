@@ -1,4 +1,4 @@
-import pg_engine as pge
+import k4pg
 import pygame as pg
 from formats.place import Place
 from pg_utils.rom.RomSingleton import RomSingleton
@@ -7,7 +7,7 @@ from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
 
-class FadeInOutBtn(pge.Button):
+class FadeInOutBtn(k4pg.ButtonSprite):
     def __init__(self, *args, **kwargs):
         super(FadeInOutBtn, self).__init__(*args, **kwargs)
         self.current_time = 0.0
@@ -33,23 +33,23 @@ class PlacePreview(TwoScreenRenderer):
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
         self.font_loader = RomSingleton().get_font_loader()
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
-        self.top_bg = pge.Sprite()
+        self.top_bg = k4pg.Sprite()
         self.sprite_loader.load(f"data_lt2/bg/map/map{self.place.map_image_index}", self.top_bg,
                                 sprite_sheet=False, convert_alpha=False)
-        self.btm_bg = pge.Sprite()
+        self.btm_bg = k4pg.Sprite()
         self.sprite_loader.load(f"data_lt2/bg/map/main{self.place.background_image_index}", self.btm_bg,
                                 sprite_sheet=False, convert_alpha=False)
-        self.map_icon = pge.Sprite(position=[self.place.map_x - 256 // 2, self.place.map_y - 192 // 2],
-                                   center=[pge.Alignment.LEFT, pge.Alignment.TOP])
+        self.map_icon = k4pg.Sprite(position=pg.Vector2(self.place.map_x - 256 // 2, self.place.map_y - 192 // 2),
+                                   center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
         self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon, sprite_sheet=True,
                                 convert_alpha=False)
 
         self.move_mode = False
-        self.move_button = pge.Button(position=[256 // 2 - 3, 192 // 2 - 3],
-                                      center=[pge.Alignment.RIGHT, pge.Alignment.BOTTOM],
-                                      pressed_tag="on", not_pressed_tag="off")
+        self.move_button = k4pg.ButtonSprite(position=pg.Vector2(256 // 2 - 3, 192 // 2 - 3),
+                                             center=[k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM],
+                                             pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button, sprite_sheet=True,
                                 convert_alpha=False)
 
@@ -62,8 +62,8 @@ class PlacePreview(TwoScreenRenderer):
         for sprite_obj in self.place.sprites:
             if sprite_obj.filename == "":
                 continue
-            sprite = pge.Sprite(position=[sprite_obj.x - 256 // 2, sprite_obj.y - 192 // 2],
-                                center=[pge.Alignment.LEFT, pge.Alignment.TOP],
+            sprite = k4pg.Sprite(position=pg.Vector2(sprite_obj.x - 256 // 2, sprite_obj.y - 192 // 2),
+                                center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                 color_key=pg.Color(0, 255, 0))
             self.sprite_loader.load(f"data_lt2/ani/bgani/{sprite_obj.filename}", sprite,
                                     sprite_sheet=True, convert_alpha=False)
@@ -73,8 +73,8 @@ class PlacePreview(TwoScreenRenderer):
         for object_obj in self.place.objects:
             if object_obj.width <= 0:
                 continue
-            obj = pge.Sprite(position=[object_obj.x - 256 // 2, object_obj.y - 192 // 2],
-                             center=[pge.Alignment.LEFT, pge.Alignment.TOP],
+            obj = k4pg.Sprite(position=pg.Vector2(object_obj.x - 256 // 2, object_obj.y - 192 // 2),
+                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                              color_key=pg.Color(0, 255, 0))
             if object_obj.character_index != 0:
                 self.sprite_loader.load(f"data_lt2/ani/eventobj/obj_{object_obj.character_index}.arc", obj,
@@ -85,8 +85,8 @@ class PlacePreview(TwoScreenRenderer):
         for exit_obj in self.place.exits:
             if exit_obj.width <= 0:
                 continue
-            exit_ = FadeInOutBtn(position=[exit_obj.x - 256 // 2, exit_obj.y - 192 // 2],
-                                 center=[pge.Alignment.LEFT, pge.Alignment.TOP],
+            exit_ = FadeInOutBtn(position=pg.Vector2(exit_obj.x - 256 // 2, exit_obj.y - 192 // 2),
+                                 center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                  color_key=pg.Color(0, 255, 0),
                                  pressed_tag="gfx2", not_pressed_tag="gfx")
             self.sprite_loader.load(f"data_lt2/ani/map/exit_{exit_obj.image_index}.arc", exit_,
@@ -103,11 +103,11 @@ class PlacePreview(TwoScreenRenderer):
         self.bgm.update(dt)
         if not self.move_mode:
             self.move_button.animate(dt)
-            if self.move_button.pressed(self.btm_camera, dt):
+            if self.move_button.get_pressed(self.btm_camera, dt):
                 self.move_mode = True
         else:
             for exit_ in self.exits:
-                if exit_.pressed(self.btm_camera, dt):
+                if exit_.get_pressed(self.btm_camera, dt):
                     break
                 if exit_._pressed:
                     break

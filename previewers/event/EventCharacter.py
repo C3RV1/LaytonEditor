@@ -1,8 +1,9 @@
-import pg_engine as pge
+import k4pg
+import pygame as pg
 from pg_utils.ScreenFader import ScreenFader
 
 
-class EventCharacter(pge.Sprite):
+class EventCharacter(k4pg.Sprite):
     FACING_LEFT = 1
     FACING_RIGHT = 2
 
@@ -19,10 +20,10 @@ class EventCharacter(pge.Sprite):
     def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
         super(EventCharacter, self).__init__(*args, **kwargs)
         self.orientation = EventCharacter.FACING_RIGHT
-        self.center[1] = pge.Alignment.BOTTOM
-        self.position[1] = 192 // 2
+        self.center.y = k4pg.Alignment.BOTTOM
+        self.position.y = 192 // 2
         self.slot = slot
-        self.character_mouth: pge.Sprite = pge.Sprite()
+        self.character_mouth: k4pg.Sprite = k4pg.Sprite()
 
         self.char_id = character_id
 
@@ -57,11 +58,11 @@ class EventCharacter(pge.Sprite):
 
         if self.orientation == EventCharacter.FACING_RIGHT:
             offset = EventCharacter.SLOT_OFFSET[self.slot] - 256 // 2
-            self.center[0] = pge.Alignment.LEFT
+            self.center.x = k4pg.Alignment.LEFT
         else:
             offset = (256 // 2) - EventCharacter.SLOT_OFFSET[self.slot]
-            self.center[0] = pge.Alignment.RIGHT
-        self.position[0] = offset
+            self.center.x = k4pg.Alignment.RIGHT
+        self.position.x = offset
         self.update_child()
 
     def update_child(self):
@@ -70,15 +71,15 @@ class EventCharacter(pge.Sprite):
         if self.character_mouth is not None:
             if self.orientation == EventCharacter.FACING_RIGHT:
                 mouth_offset[0] = world_rect.w - mouth_offset[0]
-                self.character_mouth.center[0] = pge.Alignment.RIGHT
+                self.character_mouth.center.x = k4pg.Alignment.RIGHT
                 self.character_mouth.flipped = [True, False]
             else:
-                self.character_mouth.center[0] = pge.Alignment.LEFT
+                self.character_mouth.center.x = k4pg.Alignment.LEFT
                 self.character_mouth.flipped = [False, False]
 
-            self.character_mouth.position[0] = world_rect.x + mouth_offset[0]
-            self.character_mouth.position[1] = self.position[1] - world_rect.h + mouth_offset[1]
-            self.character_mouth.center[1] = pge.Alignment.TOP
+            self.character_mouth.position.update(world_rect.x + mouth_offset[0],
+                                                 self.position.y - world_rect.h + mouth_offset[1])
+            self.character_mouth.center[1] = k4pg.Alignment.TOP
             self.character_mouth.set_tag_by_num(self._active_tag.child_index)
             if self._active_tag.child_index == 0:
                 self.character_mouth.visible = False
@@ -128,12 +129,11 @@ class EventCharacter(pge.Sprite):
         else:
             self.set_not_talking()
 
-    def load_character(self, loader: pge.SpriteLoader):
+    def load_character(self, loader: k4pg.SpriteLoader):
         if loader:
             loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, sprite_sheet=True)
         if (drawoff := self.vars.get("drawoff", None)) is not None:
-            self.position[0] += drawoff[0]
-            self.position[1] += drawoff[1]
+            self.position += pg.Vector2(drawoff[:2])
         if self.vars.get('child_image', "") != "" and loader:
             loader.load(f"data_lt2/ani/sub/{self.vars['child_image']}", self.character_mouth, sprite_sheet=True)
         self.set_tag_by_num(1)
@@ -168,6 +168,6 @@ class EventCharacter(pge.Sprite):
     def __repr__(self):
         return f"<Character {self.char_id}>"
 
-    def draw(self, cam: pge.Camera):
+    def draw(self, cam: k4pg.Camera):
         super(EventCharacter, self).draw(cam)
         self.character_mouth.draw(cam)

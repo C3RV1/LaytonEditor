@@ -1,7 +1,7 @@
 from typing import Any
 
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
-import pg_engine as pge
+import k4pg
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from pg_utils.rom.RomSingleton import RomSingleton
 import pygame as pg
@@ -12,31 +12,32 @@ class SoundPreview(TwoScreenRenderer):
         super(SoundPreview, self).__init__()
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
-        self.sprite_loader_os = pge.SpriteLoaderOS(base_path_os="data_permanent/sprites")
+        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.font_loader = RomSingleton().get_font_loader()
 
-        self.now_playing_text = pge.Text(position=[0, -10], center=[pge.Alignment.CENTER, pge.Alignment.BOTTOM],
-                                         scale=[1, 1])
+        self.now_playing_text = k4pg.Text(position=pg.Vector2(0, -10),
+                                          center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM))
         self.font_loader.load("font_event", 12, self.now_playing_text)
         self.now_playing_text.text = "Now playing:"
 
-        self.track_name = pge.Text(position=[0, 10], center=[pge.Alignment.CENTER, pge.Alignment.TOP])
+        self.track_name = k4pg.Text(position=pg.Vector2(0, 10),
+                                    center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.TOP))
         self.font_loader.load("font_event", 12, self.track_name)
         self.track_name.text = name.replace("\\", "/").split("/")[-1]
 
-        self.explanation_text = pge.Text(position=[0, -50])
+        self.explanation_text = k4pg.Text(position=pg.Vector2(0, -50))
         self.font_loader.load("font_event", 12, self.explanation_text)
         self.explanation_text.text = "Touch the headphones to play"
 
-        self.play_btn = pge.Button(pressed_counter=0.09)
+        self.play_btn = k4pg.ButtonSprite(pressed_counter=0.09)
         self.sprite_loader_os.load("headphones_play.png", self.play_btn, sprite_sheet=True, convert_alpha=False)
         self.play_btn.color_key = pg.Color(0, 255, 0)
 
-        self.volume_slider = pge.Slider(min_value=0, max_value=1, start_value=0.5)
+        self.volume_slider = k4pg.Slider(min_value=0, max_value=1, start_value=0.5)
         self.sprite_loader_os.load("slider_main.png", self.volume_slider, sprite_sheet=False)
         self.sprite_loader_os.load("slider_ball.png", self.volume_slider.child, sprite_sheet=False)
-        self.volume_slider.center = [pge.Alignment.CENTER, pge.Alignment.BOTTOM]
-        self.volume_slider.position[1] = 192 // 2 - 20
+        self.volume_slider.center.update(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM)
+        self.volume_slider.position.y = 192 // 2 - 20
 
         self.player: StreamPlayerAbstract = player
         self.player.set_volume(0.5)
@@ -80,7 +81,7 @@ class SoundPreview(TwoScreenRenderer):
         self.player.stop()
 
     def update(self, dt: float):
-        if self.play_btn.pressed(self.btm_camera, dt):
+        if self.play_btn.get_pressed(self.btm_camera, dt):
             self.toggle_sound()
         self.play_btn.animate(dt)
         self.player.update(dt)

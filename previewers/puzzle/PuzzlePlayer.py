@@ -1,7 +1,7 @@
 from pg_utils.rom.RomSingleton import RomSingleton
 import formats.puzzle as pzd
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
-import pg_engine as pge
+import k4pg
 import pygame as pg
 
 from pg_utils.rom.rom_extract import load_smd
@@ -20,67 +20,67 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.current_between_letters = 0.0
         self.puzzle_data = puzzle_data
 
-        self.inp = pge.Input()
+        self.inp = k4pg.Input()
 
-        self.sprite_loader: pge.SpriteLoader = RomSingleton().get_sprite_loader()
-        self.font_loader: pge.FontLoader = RomSingleton().get_font_loader()
+        self.sprite_loader: k4pg.SpriteLoader = RomSingleton().get_sprite_loader()
+        self.font_loader: k4pg.FontLoader = RomSingleton().get_font_loader()
 
-        self.top_bg = pge.Sprite()
+        self.top_bg = k4pg.Sprite()
         self.sprite_loader.load(f"data_lt2/bg/nazo/system/nazo_text{puzzle_data.bg_location_id}.arc", self.top_bg,
                                 sprite_sheet=False)
 
-        self.btm_bg = pge.Sprite()
+        self.btm_bg = k4pg.Sprite()
         if not puzzle_data.bg_lang:
             self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.internal_id}.arc", self.btm_bg, sprite_sheet=False)
         else:
             self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.internal_id}.arc", self.btm_bg,
                                     sprite_sheet=False)
 
-        self.top_text = pge.Text(position=[-256//2 + 8, -192 // 2 + 23],
-                                 center=[pge.Alignment.LEFT, pge.Alignment.TOP],
+        self.top_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 23),
+                                 center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                  color=pg.Color(0, 0, 0),
                                  line_spacing=2)
         self.font_loader.load("fontq", 10, self.top_text)
 
         self.header_top_left = []
         for i in range(4):
-            header_item = pge.Sprite(center=[pge.Alignment.TOP, pge.Alignment.LEFT])
+            header_item = k4pg.Sprite(center=pg.Vector2(k4pg.Alignment.TOP, k4pg.Alignment.LEFT))
             self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_item, sprite_sheet=True)
             if i == 0:
                 header_item.set_tag("nazo")
-                header_item.position = [-256 // 2 + 5, -192 // 2 + 4]
+                header_item.position.update(-256 // 2 + 5, -192 // 2 + 4)
             else:
                 i -= 1
                 p_num = puzzle_data.number
                 for a in range(2 - i):
                     p_num //= 10
                 header_item.set_tag(str(p_num % 10))
-                header_item.position = [-256 // 2 + 23 + i * 7, -192 // 2 + 5]
+                header_item.position.update(-256 // 2 + 23 + i * 7, -192 // 2 + 5)
             self.header_top_left.append(header_item)
 
         btn_off = "off"
         btn_on = "on"
 
         current_y = -192 // 2
-        self.hints_btn = pge.Button(center=[pge.Alignment.RIGHT, pge.Alignment.TOP],
-                                    position=[256 // 2, current_y], not_pressed_tag="0_off",
+        self.hints_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
+                                    position=pg.Vector2(256 // 2, current_y), not_pressed_tag="0_off",
                                     pressed_tag="0_on")
         self.sprite_loader.load("data_lt2/ani/system/btn/?/hint.arc", self.hints_btn, sprite_sheet=True)
 
         current_y += self.hints_btn.get_world_rect().h
-        self.quit_btn = pge.Button(center=[pge.Alignment.RIGHT, pge.Alignment.TOP],
-                                   position=[256 // 2, current_y], not_pressed_tag=btn_off,
+        self.quit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
+                                   position=pg.Vector2(256 // 2, current_y), not_pressed_tag=btn_off,
                                    pressed_tag=btn_on)
         self.sprite_loader.load("data_lt2/ani/system/btn/?/atode.arc", self.quit_btn, sprite_sheet=True)
 
         current_y += self.quit_btn.get_world_rect().h
-        self.memo_btn = pge.Button(center=[pge.Alignment.RIGHT, pge.Alignment.TOP],
-                                   position=[256//2, current_y], not_pressed_tag=btn_off,
+        self.memo_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
+                                   position=pg.Vector2(256//2, current_y), not_pressed_tag=btn_off,
                                    pressed_tag=btn_on)
         self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn, sprite_sheet=True)
 
-        self.submit_btn = pge.Button(center=[pge.Alignment.RIGHT, pge.Alignment.BOTTOM],
-                                     position=[256//2, 192//2], not_pressed_tag=btn_off,
+        self.submit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
+                                     position=pg.Vector2(256//2, 192//2), not_pressed_tag=btn_off,
                                      pressed_tag=btn_on)
         self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn, sprite_sheet=True)
 
@@ -107,7 +107,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.run_gds_cmd(cmd)
 
     def update_submitted(self, dt):
-        if self.submit_btn.pressed(self.btm_camera, dt):
+        if self.submit_btn.get_pressed(self.btm_camera, dt):
             return True
         return False
 
@@ -151,12 +151,12 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.top_text.text = self.puzzle_data.text[:self.text_pos]
             return
 
-        if self.hints_btn.pressed(self.btm_camera, dt):
+        if self.hints_btn.get_pressed(self.btm_camera, dt):
             self.hints.view_hint(min(2, self.hints.used))
             self.on_hints = True
             return
-        self.quit_btn.pressed(self.btm_camera, dt)
-        self.memo_btn.pressed(self.btm_camera, dt)
+        self.quit_btn.get_pressed(self.btm_camera, dt)
+        self.memo_btn.get_pressed(self.btm_camera, dt)
         if self.update_submitted(dt):
             self.win_screen.enter(self.check_solution())
             self.on_win = True
