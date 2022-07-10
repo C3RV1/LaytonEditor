@@ -1,6 +1,5 @@
 from .Alignment import Alignment
 from .Camera import Camera
-from .Debug import Debug
 from .GameManager import GameManager, GameManagerConfig
 from .input.Input import Input, JOYSTICK_BUTTONS, JOYSTICK_AXIS, JOYSTICK_HATS
 from .input.Controls import Controls, KeyBoardControls, JoystickControls

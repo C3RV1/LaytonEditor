@@ -53,9 +53,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.sprite_loader.load("data_lt2/bg/nazo/system/?/picarat_get.arc", self.picarats_bg, sprite_sheet=False)
 
         self.btm_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 15),
-                                 center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
-                                 color=pg.Color(0, 0, 0),
-                                 line_spacing=2)
+                                  center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
+                                  color=pg.Color(0, 0, 0),
+                                  line_spacing=2)
         self.text = ""
         self.text_pos = 0
         self.between_letters = 0.017

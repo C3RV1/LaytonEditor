@@ -42,7 +42,7 @@ class PlacePreview(TwoScreenRenderer):
         self.sprite_loader.load(f"data_lt2/bg/map/main{self.place.background_image_index}", self.btm_bg,
                                 sprite_sheet=False, convert_alpha=False)
         self.map_icon = k4pg.Sprite(position=pg.Vector2(self.place.map_x - 256 // 2, self.place.map_y - 192 // 2),
-                                   center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
+                                    center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
         self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon, sprite_sheet=True,
                                 convert_alpha=False)
 
@@ -63,8 +63,8 @@ class PlacePreview(TwoScreenRenderer):
             if sprite_obj.filename == "":
                 continue
             sprite = k4pg.Sprite(position=pg.Vector2(sprite_obj.x - 256 // 2, sprite_obj.y - 192 // 2),
-                                center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
-                                color_key=pg.Color(0, 255, 0))
+                                 center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
+                                 color_key=pg.Color(0, 255, 0))
             self.sprite_loader.load(f"data_lt2/ani/bgani/{sprite_obj.filename}", sprite,
                                     sprite_sheet=True, convert_alpha=False)
             sprite.set_tag("gfx")
@@ -74,8 +74,8 @@ class PlacePreview(TwoScreenRenderer):
             if object_obj.width <= 0:
                 continue
             obj = k4pg.Sprite(position=pg.Vector2(object_obj.x - 256 // 2, object_obj.y - 192 // 2),
-                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
-                             color_key=pg.Color(0, 255, 0))
+                              center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
+                              color_key=pg.Color(0, 255, 0))
             if object_obj.character_index != 0:
                 self.sprite_loader.load(f"data_lt2/ani/eventobj/obj_{object_obj.character_index}.arc", obj,
                                         sprite_sheet=True, convert_alpha=False)

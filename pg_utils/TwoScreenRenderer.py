@@ -10,13 +10,13 @@ class TwoScreenRenderer:
 
         screen = k4pg.Screen.screen()
         self.top_camera = k4pg.Camera(screen, viewport=pg.rect.Rect(0, 0, 256 * TwoScreenRenderer.SCALE,
-                                                                   192 * TwoScreenRenderer.SCALE),
-                                     zoom=pg.Vector2(TwoScreenRenderer.SCALE, TwoScreenRenderer.SCALE))
+                                                                    192 * TwoScreenRenderer.SCALE),
+                                      zoom=pg.Vector2(TwoScreenRenderer.SCALE, TwoScreenRenderer.SCALE))
 
         self.btm_camera = k4pg.Camera(screen, viewport=pg.rect.Rect(0, 192 * TwoScreenRenderer.SCALE,
-                                                                   256 * TwoScreenRenderer.SCALE,
-                                                                   192 * TwoScreenRenderer.SCALE),
-                                     zoom=pg.Vector2(TwoScreenRenderer.SCALE, TwoScreenRenderer.SCALE))
+                                                                    256 * TwoScreenRenderer.SCALE,
+                                                                    192 * TwoScreenRenderer.SCALE),
+                                      zoom=pg.Vector2(TwoScreenRenderer.SCALE, TwoScreenRenderer.SCALE))
 
         self.running = True
 
