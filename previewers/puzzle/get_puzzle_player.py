@@ -3,12 +3,14 @@ from .puzzle_types.NullPuzzle import NullPuzzle
 from .puzzle_types.MultipleChoice import MultipleChoice
 from .puzzle_types.OnOff import OnOff
 from .puzzle_types.Sort import Sort
+from .puzzle_types.Slide import Slide
 
 
 PUZZLE_TYPE_DICT = {
     Puzzle.MULTIPLE_CHOICE: MultipleChoice,
     Puzzle.ON_OFF: OnOff,
-    Puzzle.SORT: Sort
+    Puzzle.SORT: Sort,
+    Puzzle.SLIDE: Slide
 }
 
 
