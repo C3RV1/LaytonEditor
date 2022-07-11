@@ -11,12 +11,12 @@ class NullPuzzle(PuzzlePlayer):
 
         self.no_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                         position=pg.Vector2(256//2, 192//2), pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_btn)
 
         self.yes_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                          position=pg.Vector2(256//2, 192//2 - self.no_btn.get_world_rect().h),
                                          pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.yes_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.yes_btn)
 
         self.is_correct = False
 

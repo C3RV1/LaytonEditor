@@ -24,6 +24,7 @@ class SpriteLoaderROM(k4pg.SpriteLoaderOS):
         # sprite_sheet and convert_alpha are ignored
         if self._base_path_rom is not None:
             path = os.path.join(self._base_path_rom, path).replace("\\", "/")
+        sprite_sheet = path.startswith("data_lt2/ani")
         path = path.replace("?", conf.LANG)
         if path.endswith(".arj"):
             path = set_extension(path, ".arj")

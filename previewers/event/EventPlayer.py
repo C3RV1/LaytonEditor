@@ -101,11 +101,11 @@ class EventPlayer(TwoScreenRenderer):
             self.next_dialogue_sfx = -1
         elif command.command == 0x21:
             bg_path = command.params[0]
-            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg, sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg)
             self.btm_bg.set_opacity(0)
         elif command.command == 0x22:
             bg_path = command.params[0]
-            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg, sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg)
             self.top_bg.set_opacity(0)
         elif command.command == 0x2a:
             if 0 <= command.params[0] <= 7:

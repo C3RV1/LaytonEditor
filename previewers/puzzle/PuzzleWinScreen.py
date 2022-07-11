@@ -50,7 +50,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.bg2 = k4pg.Sprite()
 
         self.picarats_bg = k4pg.Sprite()
-        self.sprite_loader.load("data_lt2/bg/nazo/system/?/picarat_get.arc", self.picarats_bg, sprite_sheet=False)
+        self.sprite_loader.load("data_lt2/bg/nazo/system/?/picarat_get.arc", self.picarats_bg)
 
         self.btm_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 15),
                                   center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
@@ -66,13 +66,13 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.fade_in = False
 
         self.retry_btn = k4pg.ButtonSprite(position=pg.Vector2(0, -50), pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/nazo/system/?/retry.arc", self.retry_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/retry.arc", self.retry_btn)
 
         self.hints_btn = k4pg.ButtonSprite(pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/nazo/system/?/viewhint.arc", self.hints_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/viewhint.arc", self.hints_btn)
 
         self.quit_btn = k4pg.ButtonSprite(position=pg.Vector2(0, 50), pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn)
 
         self.voice = SADLStreamPlayer()
         self.voice.set_volume(0.5)
@@ -125,14 +125,14 @@ class PuzzleWinScreen(TwoScreenRenderer):
                 else:
                     ans_bg_path = "data_lt2/bg/nazo/"
                 ans_filename = f"q{self.puzzle_data.internal_id}a.arc"
-                self.sprite_loader.load(ans_bg_path + ans_filename, self.bg, sprite_sheet=False)
+                self.sprite_loader.load(ans_bg_path + ans_filename, self.bg)
             else:
                 filename = f"nazo_fail{self.puzzle_data.bg_location_id}.arc"
-            self.sprite_loader.load(f"data_lt2/bg/nazo/system/{filename}", self.bg2, sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/system/{filename}", self.bg2)
         elif self.stage == self.STATE_FADE_OUT3:
             self.fader.fade_out(False)
         elif self.stage == self.STATE_FAIL_BTN:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/system/jiten_seikai.arc", self.bg2, sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/system/jiten_seikai.arc", self.bg2)
             self.fader.fade_in(False)
         elif self.stage == self.STATE_HINTS:
             self.hints.view_hint(min(2, self.hints.used))
@@ -231,7 +231,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
         if not self.is_correct and bid >= 7:
             bid += 100
         bg_name = f"judge_{'r' if self.puzzle_data.judge_char == 2 else 'l'}{bid}_bg.arc"
-        self.sprite_loader.load(bg_path + bg_name, self.bg, sprite_sheet=False)
+        self.sprite_loader.load(bg_path + bg_name, self.bg)
 
     def draw(self):
         if self.stage == self.STATE_FADE_OUT:

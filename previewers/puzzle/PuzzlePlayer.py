@@ -31,7 +31,7 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         self.btm_bg = k4pg.Sprite()
         if not puzzle_data.bg_lang:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.internal_id}.arc", self.btm_bg, sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.internal_id}.arc", self.btm_bg)
         else:
             self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.internal_id}.arc", self.btm_bg,
                                     sprite_sheet=False)
@@ -45,7 +45,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.header_top_left = []
         for i in range(4):
             header_item = k4pg.Sprite(center=pg.Vector2(k4pg.Alignment.TOP, k4pg.Alignment.LEFT))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_item, sprite_sheet=True)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_item)
             if i == 0:
                 header_item.set_tag("nazo")
                 header_item.position.update(-256 // 2 + 5, -192 // 2 + 4)
@@ -65,24 +65,24 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                            position=pg.Vector2(256 // 2, current_y), not_pressed_tag="0_off",
                                            pressed_tag="0_on")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/hint.arc", self.hints_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/hint.arc", self.hints_btn)
 
         current_y += self.hints_btn.get_world_rect().h
         self.quit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           position=pg.Vector2(256 // 2, current_y), not_pressed_tag=btn_off,
                                           pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/atode.arc", self.quit_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/atode.arc", self.quit_btn)
 
         current_y += self.quit_btn.get_world_rect().h
         self.memo_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           position=pg.Vector2(256//2, current_y), not_pressed_tag=btn_off,
                                           pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn)
 
         self.submit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                             position=pg.Vector2(256//2, 192//2), not_pressed_tag=btn_off,
                                             pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn)
 
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False

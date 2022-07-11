@@ -43,14 +43,14 @@ class PlacePreview(TwoScreenRenderer):
                                 sprite_sheet=False, convert_alpha=False)
         self.map_icon = k4pg.Sprite(position=pg.Vector2(self.place.map_x - 256 // 2, self.place.map_y - 192 // 2),
                                     center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
-        self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon, sprite_sheet=True,
+        self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon,
                                 convert_alpha=False)
 
         self.move_mode = False
         self.move_button = k4pg.ButtonSprite(position=pg.Vector2(256 // 2 - 3, 192 // 2 - 3),
                                              center=[k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM],
                                              pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button, sprite_sheet=True,
+        self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button,
                                 convert_alpha=False)
 
         self.bgm = SMDLStreamPlayer()

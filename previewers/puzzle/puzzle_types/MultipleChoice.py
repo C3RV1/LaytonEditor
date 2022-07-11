@@ -33,7 +33,7 @@ class MultipleChoice(PuzzlePlayer):
         if cmd.command == 0x14:  # add_button
             x, y, path, is_solution, _ = cmd.params
             btn = MultipleChoiceButton(is_solution == 1, position=pg.Vector2(-256//2 + x, -192//2 + y))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn, sprite_sheet=True)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn)
             self.buttons.append(btn)
 
     def update_submitted(self, dt):

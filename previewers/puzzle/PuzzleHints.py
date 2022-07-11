@@ -25,17 +25,17 @@ class PuzzleHints(TwoScreenRenderer):
         self.back_btn = k4pg.ButtonSprite(position=pg.Vector2(256 // 2, -192 // 2),
                                           center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/modoru_memo.arc", self.back_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/modoru_memo.arc", self.back_btn)
 
         self.unlock_btn = k4pg.ButtonSprite(position=pg.Vector2(-80, 40),
                                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                             not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.unlock_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.unlock_btn)
 
         self.no_unlock_btn = k4pg.ButtonSprite(position=pg.Vector2(80, 40),
                                                center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                                not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_unlock_btn, sprite_sheet=True)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_unlock_btn)
 
         self.text = k4pg.Text(position=pg.Vector2(-256 // 2 + 20, -192 // 2 + 42),
                               center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
@@ -50,7 +50,7 @@ class PuzzleHints(TwoScreenRenderer):
                                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                             not_pressed_tag=btn_off, pressed_tag=btn_on)
             hint_select.visible = False
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select, sprite_sheet=True)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select)
             current_x += hint_select.get_world_rect().w + 1
             self.selected_btns.append(hint_select)
 
