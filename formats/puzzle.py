@@ -71,7 +71,7 @@ class Puzzle:
         self.bg_btm_id = 0
         self.bg_location_id = 0
 
-        self.gds = None  # type: Optional[formats.gds.GDS]
+        self.gds = formats.gds.GDS()  # type: Optional[formats.gds.GDS]
 
         self._flags = 0
 
@@ -221,10 +221,10 @@ class Puzzle:
         gds_filename = f"q{self.internal_id}_param.gds"
 
         if gds_filename not in gds_plz_file.filenames:
-            return False
+            logging.error(f"GDS for puzzle {self.internal_id} not found")
+            return
 
         self.gds = formats.gds.GDS(gds_filename, rom=gds_plz_file)
-        return True
 
     def save_gds(self):
         self.gds.save()
