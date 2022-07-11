@@ -6,18 +6,17 @@ import k4pg
 import pygame as pg
 
 
-# TODO: CHECK PUZZLE 80 (internal id)
-
-
 class SortTile(k4pg.Sprite):
     def __init__(self, initial_tag, solution_tag, *args, **kwargs):
         super(SortTile, self).__init__(*args, **kwargs)
         self.center.update(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.current_tag = initial_tag
         self.solution_tag = solution_tag
+        self.loop_tag = False
         self.inp = k4pg.Input()
 
-    def update(self, cam: k4pg.Camera):
+    def update(self, cam: k4pg.Camera, dt: float):
+        self.animate(dt)
         if self.inp.get_mouse_down(1):
             mouse_pos = self.inp.get_mouse_pos()
             if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
@@ -52,7 +51,7 @@ class Sort(PuzzlePlayer):
     def update_submitted(self, dt):
         for tile in self.tiles:
             tile: SortTile
-            tile.update(self.btm_camera)
+            tile.update(self.btm_camera, dt)
         return super(Sort, self).update_submitted(dt)
 
     def draw_base(self):
