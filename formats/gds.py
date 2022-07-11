@@ -33,7 +33,7 @@ class GDS(FileFormat):
             if datatype == 0:
                 break
             elif datatype == 1:
-                self.params.append(rdr.read_uint32())
+                self.params.append(rdr.read_int32())
             elif datatype == 2:
                 self.params.append(rdr.read_float())
             elif datatype == 3:
@@ -47,7 +47,7 @@ class GDS(FileFormat):
                 if datatype == 0:
                     break
                 if datatype == 1:
-                    command.params.append(rdr.read_uint32())
+                    command.params.append(rdr.read_int32())
                 elif datatype == 2:
                     command.params.append(rdr.read_float())
                 elif datatype == 3:
