@@ -1,3 +1,5 @@
+from typing import Union, List, Tuple
+
 import pygame as pg
 
 from k4pg import Alignment
@@ -26,7 +28,7 @@ class Camera:
             self.viewport = pg.Rect(0, 0, surf.get_width(), surf.get_height())
         self.surf = surf
 
-    def to_screen(self, point: pg.Vector2, use_world=True):
+    def to_screen(self, point: Union[pg.Vector2, List, Tuple], use_world=True) -> pg.Vector2:
         point = pg.Vector2(point)
         if use_world:
             point -= self.world_position
@@ -35,12 +37,13 @@ class Camera:
         point += pg.Vector2(self.viewport[2], self.viewport[3]) * self.alignment.elementwise()
         return point
 
-    def from_screen(self, point: pg.Vector2):
+    def from_screen(self, point: Union[pg.Vector2, List, Tuple], use_world=True) -> pg.Vector2:
         point = pg.Vector2(point)
         point -= pg.Vector2(self.viewport[2], self.viewport[3]) * self.alignment.elementwise()
         point -= pg.Vector2(self.viewport[0], self.viewport[1])
         point /= self.zoom.elementwise()
-        point += self.world_position
+        if use_world:
+            point += self.world_position
         return point
 
     def clip_rect(self, r):
