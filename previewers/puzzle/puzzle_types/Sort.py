@@ -46,7 +46,7 @@ class Sort(PuzzlePlayer):
         if cmd.command == 0x2e:
             x, y, path, initial, solution = cmd.params
             tile = SortTile(str(initial), solution, position=pg.Vector2(-256//2 + x, -192//2 + y))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/touch/{path}", tile, sprite_sheet=True)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/touch/{path}", tile)
             self.tiles.append(tile)
 
     def update_submitted(self, dt):
