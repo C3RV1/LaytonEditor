@@ -3,6 +3,7 @@ from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
 import k4pg
 import pygame as pg
+from formats import conf
 
 
 class OnOffToggle(k4pg.Sprite):
@@ -24,6 +25,11 @@ class OnOffToggle(k4pg.Sprite):
             mouse_pos = self.inp.get_mouse_pos()
             if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
                 self.visible = not self.visible
+
+    def draw(self, cam: k4pg.Camera):
+        super(OnOffToggle, self).draw(cam)
+        if conf.DEBUG:
+            k4pg.draw.rect(cam, pg.Color(0, 255, 0), self.get_world_rect(), width=2)
 
 
 class OnOff(PuzzlePlayer):

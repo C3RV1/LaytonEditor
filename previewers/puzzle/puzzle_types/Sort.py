@@ -1,8 +1,12 @@
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
 from formats.gds import GDSCommand
+from formats import conf
 import k4pg
 import pygame as pg
+
+
+# TODO: CHECK PUZZLE 80 (internal id)
 
 
 class SortTile(k4pg.Sprite):
@@ -26,6 +30,11 @@ class SortTile(k4pg.Sprite):
     def load_sprite(self, *args, **kwargs):
         super(SortTile, self).load_sprite(*args, **kwargs)
         self.set_tag(self.current_tag)
+
+    def draw(self, cam: k4pg.Camera):
+        super(SortTile, self).draw(cam)
+        if conf.DEBUG:
+            k4pg.draw.rect(cam, pg.Color(0, 255, 0), self.get_world_rect(), width=2)
 
 
 class Sort(PuzzlePlayer):

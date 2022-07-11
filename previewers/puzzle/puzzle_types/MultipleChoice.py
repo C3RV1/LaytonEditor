@@ -3,6 +3,7 @@ from formats.puzzle import Puzzle
 from formats.gds import GDSCommand
 import k4pg
 import pygame as pg
+from formats import conf
 
 
 class MultipleChoiceButton(k4pg.ButtonSprite):
@@ -12,6 +13,12 @@ class MultipleChoiceButton(k4pg.ButtonSprite):
         self.is_solution: bool = is_solution
         self.not_pressed_tag = "off"
         self.pressed_tag = "on"
+
+    def draw(self, cam: k4pg.Camera):
+        super(MultipleChoiceButton, self).draw(cam)
+        if conf.DEBUG:
+            k4pg.draw.rect(cam, pg.Color(0, 255, 0), self.get_world_rect(), width=2)
+
 
 
 class MultipleChoice(PuzzlePlayer):
