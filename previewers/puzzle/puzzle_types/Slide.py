@@ -66,7 +66,7 @@ class SlideTile(k4pg.Sprite):
             self.move_steps(mouse_pos + self.interact_off, dt)
 
             # Internal position does already interpolate here
-            self.position.update(self.internal_pos.x, self.internal_pos.y)
+            self.position.update(self.internal_pos)
 
             # Check if we should stop interaction
             if self.inp.get_mouse_up(1):

@@ -10,15 +10,15 @@ class Camera:
                  viewport: [pg.Rect, list, tuple] = None, zoom: pg.Vector2 = None):
         self.world_position = pg.Vector2(0, 0)
         if world_position is not None:
-            self.world_position.update(world_position.x, world_position.y)
+            self.world_position.update(world_position)
 
         self.alignment = pg.Vector2(Alignment.CENTER, Alignment.CENTER)
         if alignment is not None:
-            self.alignment.update(alignment.x, alignment.y)
+            self.alignment.update(alignment)
 
         self.zoom = pg.Vector2(1, 1)
         if zoom is not None:
-            self.zoom.update(zoom.x, zoom.y)
+            self.zoom.update(zoom)
 
         if viewport is not None:
             self.viewport = viewport

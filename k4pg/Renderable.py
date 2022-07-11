@@ -10,16 +10,16 @@ class Renderable:
         super(Renderable, self).__init__(*args, **kwargs)
         self.position = pg.Vector2(0, 0)
         if position is not None:
-            self.position.update(position.x, position.y)
+            self.position.update(position)
         self.use_world = use_world
         self._screen_position = pg.Vector2(0, 0)
         self.center = pg.Vector2(Alignment.CENTER, Alignment.CENTER)
         if center is not None:
-            self.center.update(center.x, center.y)
+            self.center.update(center)
         self.visible = True
 
     def _position_to_screen(self, cam: Camera):
-        self._screen_position.update(self.position.x, self.position.y)
+        self._screen_position.update(self.position)
         self._screen_position = cam.to_screen(self._screen_position, use_world=self.use_world)
 
     def draw(self, cam: Camera):
