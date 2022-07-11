@@ -61,6 +61,7 @@ class Sprite(Renderable):
         self._scale = scale
         self._rotation = rotation
         self.transformed_surf: Dict[int, pg.Surface] = {}
+        self.loop_tag = True
 
         self._frame_info: List[Frame] = []
         self._active_frame: [Frame] = None
@@ -167,7 +168,10 @@ class Sprite(Renderable):
         duration = tag.frame_durations[self._tag_frame]
         while self._tag_time > duration != 0:
             self._tag_frame += 1
-            self._tag_frame %= len(tag.frames)
+            if self.loop_tag:
+                self._tag_frame %= len(tag.frames)
+            else:
+                self._tag_frame = min(self._tag_frame, len(tag.frames) - 1)
             self._tag_time -= duration
             duration = tag.frame_durations[self._tag_frame]
         self.set_frame(tag.frames[self._tag_frame])
