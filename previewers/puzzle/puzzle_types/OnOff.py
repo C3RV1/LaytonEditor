@@ -36,6 +36,7 @@ class OnOff(PuzzlePlayer):
     def __init__(self, puzzle_data: Puzzle):
         self.options = []
         super(OnOff, self).__init__(puzzle_data)
+        self.reset_btn.visible = False
         
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x14:

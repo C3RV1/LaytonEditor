@@ -79,6 +79,12 @@ class PuzzlePlayer(TwoScreenRenderer):
                                           pressed_tag=btn_on)
         self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn)
 
+        current_y += self.memo_btn.get_world_rect().h
+        self.reset_btn = k4pg.ButtonSprite(position=pg.Vector2(256 // 2, current_y),
+                                           center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
+                                           not_pressed_tag="off", pressed_tag="on")
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/reset.arc", self.reset_btn)
+
         self.submit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                             position=pg.Vector2(256//2, 192//2), not_pressed_tag=btn_off,
                                             pressed_tag=btn_on)
@@ -139,6 +145,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.quit_btn.animate(dt)
         self.memo_btn.animate(dt)
         self.submit_btn.animate(dt)
+        self.reset_btn.animate(dt)
 
         if self.text_pos < len(self.puzzle_data.text):
             self.current_between_letters += dt
@@ -157,11 +164,17 @@ class PuzzlePlayer(TwoScreenRenderer):
             return
         self.quit_btn.get_pressed(self.btm_camera, dt)
         self.memo_btn.get_pressed(self.btm_camera, dt)
+        if self.reset_btn.get_pressed(self.btm_camera, dt):
+            self.restart()
+            return
         if self.update_submitted(dt):
             self.win_screen.enter(self.check_solution())
             self.on_win = True
             self.puzzle_bg_music.fade(1, False)
             return
+
+    def restart(self):
+        pass
 
     def draw(self):
         self.top_bg.draw(self.top_camera)
@@ -183,3 +196,4 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.quit_btn.draw(self.btm_camera)
         self.memo_btn.draw(self.btm_camera)
         self.submit_btn.draw(self.btm_camera)
+        self.reset_btn.draw(self.btm_camera)

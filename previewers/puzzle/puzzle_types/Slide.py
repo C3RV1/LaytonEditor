@@ -176,12 +176,6 @@ class Slide(PuzzlePlayer):
             move_counter_digit.set_tag("0")
             current_x += 6
             self.move_counters.append(move_counter_digit)
-
-        pos = pg.Vector2(self.memo_btn.get_world_rect().bottomleft)
-        self.reset_btn = k4pg.ButtonSprite(position=pos, center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
-                                           not_pressed_tag="off", pressed_tag="on")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/reset.arc", self.reset_btn)
-
     def update_move_counter(self):
         move_count_copy = self.move_count
         for i in range(4):
@@ -235,18 +229,14 @@ class Slide(PuzzlePlayer):
     def check_solution(self):
         return True
 
-    def update_base(self, dt: float):
-        self.reset_btn.animate(dt)
-        super(Slide, self).update_base(dt)
-        if self.reset_btn.get_pressed(self.btm_camera, dt):
-            for tile in self.board.tiles:
-                tile.reset()
-                self.move_count = 0
-                self.update_move_counter()
+    def restart(self):
+        for tile in self.board.tiles:
+            tile.reset()
+            self.move_count = 0
+            self.update_move_counter()
 
     def draw_base(self):
         super(Slide, self).draw_base()
-        self.reset_btn.draw(self.btm_camera)
         for tile in self.board.tiles:
             tile.draw(self.btm_camera)
         for move_counter in self.move_counters:

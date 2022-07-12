@@ -28,6 +28,7 @@ class MultipleChoice(PuzzlePlayer):
 
         super(MultipleChoice, self).__init__(puzzle_data)
         self.submit_btn.visible = False
+        self.reset_btn.visible = False
 
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x14:  # add_button

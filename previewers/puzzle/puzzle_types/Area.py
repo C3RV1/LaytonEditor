@@ -74,6 +74,12 @@ class Area(PuzzlePlayer):
                     tile.update(self.btm_camera)
         return super(Area, self).update_submitted(dt)
 
+    def restart(self):
+        for tile_col in self.tiles:
+            for tile in tile_col:
+                if tile:
+                    tile.visible = False
+
     def check_solution(self):
         for x, tile_col in enumerate(self.tiles):
             for y, tile in enumerate(tile_col):
