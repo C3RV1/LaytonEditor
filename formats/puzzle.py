@@ -30,26 +30,26 @@ class Puzzle:
     PILES_OF_PANCAKES = 0xD
     UNUSED_E = 0xE
     LINE_DIVIDE_LIMITED = 0xF
-    INPUT_CHARACTERS = 0x10
+    WRITE_CHARS = 0x10
     KNIGHT_TOUR = 0x11
     TILE_ROTATE = 0x12
     POSITION_TO_SOLVE_UNUSED2 = 0x13
     UNUSED_14 = 0x14
     PUZZLES_172_202 = 0x15
-    INPUT_NUMERIC = 0x16
+    WRITE_NUM = 0x16
     AREA = 0x17
     ROSES = 0x18
     SLIDE = 0x19
     TILE_ROTATE_2 = 0x1A
     SLIPPERY_CROSSINGS = 0x1B
-    INPUT_ALTERNATIVE = 0x1C
+    WRITE_ALT = 0x1C
     DISAPPEARING_ACT = 0x1D
     JARS_AND_CANS = 0x1E
     LIGHT_THE_WAY = 0x1F
     PUZZLE_173 = 0x20
     RICKETY_BRIDGE = 0x21
     FIND_SHAPE = 0x22
-    INPUT_DATE = 0x23
+    WRITE_DATE = 0x23
 
     def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
         self.rom = rom

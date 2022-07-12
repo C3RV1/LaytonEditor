@@ -1,9 +1,9 @@
 from ..gds_parser import GDSParser
 
 
-class InputGDSParser(GDSParser):
+class WriteGDSParser(GDSParser):
     def __init__(self):
-        super(InputGDSParser, self).__init__()
+        super(WriteGDSParser, self).__init__()
         self.command_name_table = {
             0x43: ["load_input_bg", "Load Input Background"],
             0x42: ["set_answer", "Set Answer"],

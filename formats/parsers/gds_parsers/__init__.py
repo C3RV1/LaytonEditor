@@ -1,4 +1,4 @@
-from .InputGDSParser import InputGDSParser
+from .WriteGDSParser import WriteGDSParser
 from .TileRotate2GDSParser import TileRotate2GDSParser
 from .MultipleChoiceGDSParser import MultipleChoiceGDSParser
 from .OnOffGDSParser import OnOffGDSParser
@@ -11,10 +11,10 @@ from ..gds_parser import GDSParser
 
 
 TYPE_TO_GDS_PARSER = {
-    Puzzle.INPUT_DATE: InputGDSParser,
-    Puzzle.INPUT_NUMERIC: InputGDSParser,
-    Puzzle.INPUT_ALTERNATIVE: InputGDSParser,
-    Puzzle.INPUT_CHARACTERS: InputGDSParser,
+    Puzzle.WRITE_DATE: WriteGDSParser,
+    Puzzle.WRITE_NUM: WriteGDSParser,
+    Puzzle.WRITE_ALT: WriteGDSParser,
+    Puzzle.WRITE_CHARS: WriteGDSParser,
     Puzzle.ON_OFF: OnOffGDSParser,
     Puzzle.MULTIPLE_CHOICE: MultipleChoiceGDSParser,
     Puzzle.TILE_ROTATE_2: TileRotate2GDSParser,
