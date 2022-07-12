@@ -388,9 +388,9 @@ class Sprite(Renderable):
         super(Sprite, self).draw(cam)
         if self._surf is None:
             return
-        self.update_transforms(cam)
         position, clip = self.get_screen_rect(cam, update_pos=False)
         if self.visible:
+            self.update_transforms(cam)
             cam.surf.blit(self.transformed_surf[id(cam)], (position.x, position.y), area=clip,
                           special_flags=self.special_flags)
 
