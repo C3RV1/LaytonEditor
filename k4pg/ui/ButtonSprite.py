@@ -1,5 +1,6 @@
 from ..sprite.Sprite import Sprite
 from ..ui.Button import Button
+from ..Camera import Camera
 import pygame as pg
 from ..sprite.SpriteLoader import SpriteLoader
 
@@ -17,12 +18,12 @@ class ButtonSprite(Button, Sprite):
 
     def get_hover(self, cam):
         mouse_pos = self.inp.get_mouse_pos()
-        if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
+        if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]) and self.visible:
             return True
         return False
 
     def get_press(self):
-        if self.inp.get_mouse_down(1):
+        if self.inp.get_mouse_down(1) and self.visible:
             return True
         return False
 
