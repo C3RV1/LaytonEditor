@@ -209,6 +209,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             return
 
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        logging.info(f"Opening {name}")
         for menu_title in self.fp_menus_loaded:
             self.GetGrandParent().remove_menu(menu_title)
         self.fp_menus_loaded = []
