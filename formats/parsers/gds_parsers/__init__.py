@@ -5,6 +5,7 @@ from .OnOffGDSParser import OnOffGDSParser
 from .EventGDSParser import EventGDSParser
 from .SortGDSParser import SortGDSParser
 from .SlideGDSParser import SlideGDSParser
+from .AreaGDSParser import AreaGDSParser
 from formats.puzzle import Puzzle
 from ..gds_parser import GDSParser
 
@@ -18,7 +19,8 @@ TYPE_TO_GDS_PARSER = {
     Puzzle.MULTIPLE_CHOICE: MultipleChoiceGDSParser,
     Puzzle.TILE_ROTATE_2: TileRotate2GDSParser,
     Puzzle.SORT: SortGDSParser,
-    Puzzle.SLIDE: SlideGDSParser
+    Puzzle.SLIDE: SlideGDSParser,
+    Puzzle.AREA: AreaGDSParser
 }
 
 
