@@ -87,7 +87,8 @@ class SoundPreview(TwoScreenRenderer):
         self.player.update(dt)
 
     def draw(self):
-        self.top_camera.surf.fill((40, 40, 40))
+        self.top_camera.clear(pg.Color(40, 40, 40))
+        self.btm_camera.clear(pg.Color(40, 40, 40))
         self.now_playing_text.draw(self.top_camera)
         self.track_name.draw(self.top_camera)
         self.play_btn.draw(self.btm_camera)

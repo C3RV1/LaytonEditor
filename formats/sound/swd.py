@@ -1,8 +1,11 @@
 # Thanks to https://projectpokemon.org/docs/mystery-dungeon-nds/dse-swdl-format-r14/
+from typing import List, Optional
 
-from .soundtypes import *
-from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
+import numpy as np
+
+from formats.binary import BinaryReader
 from formats.filesystem import FileFormat
+from formats.sound.sadl_compression.ima_adpcm import ImaAdpcm
 
 
 class EodChunk:
@@ -30,7 +33,7 @@ class PcmdChunk:
     version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int
-    sample_data: bytes
+    sample_data: np.ndarray
 
     def read(self, rdr: BinaryReader):
         self.magic = rdr.read(4)
@@ -42,7 +45,7 @@ class PcmdChunk:
             raise ValueError("SWDPcmdChunk does not have correct version")
         self.chunk_beg = rdr.read_uint32()
         self.chunk_len = rdr.read_uint32()
-        self.sample_data = rdr.read(self.chunk_len)
+        self.sample_data = np.frombuffer(rdr.read(self.chunk_len), dtype=np.uint8)
 
 
 class KeyGroup:
@@ -64,8 +67,8 @@ class KeyGroup:
         self.unk51 = rdr.read_uint8()
 
 
-class KgprChunk:
-    magic: bytes = b"kgpr"
+class KgrpChunk:
+    magic: bytes = b"kgrp"
     unk1: int
     version: int = 0x415
     chunk_beg: int = 0x10
@@ -74,7 +77,7 @@ class KgprChunk:
 
     def read(self, rdr: BinaryReader):
         self.magic = rdr.read(4)
-        if self.magic != b"kgpr":
+        if self.magic != b"kgrp":
             raise ValueError("SWDKgprChunk does not start with magic value")
         self.unk1 = rdr.read_uint16()
         self.version = rdr.read_uint16()
@@ -129,7 +132,7 @@ class LFOEntry:
         self.unk33 = rdr.read_uint16()
 
 
-class SplitEntry_:
+class SplitEntry:
     unk10: int = 0
     splits_table_id: int
     unk11: int
@@ -145,7 +148,7 @@ class SplitEntry_:
     unk16: int  # pad_byte?
     unk17: int  # pad_byte?
     unk17: int  # pad_byte?
-    sample_id: int  # id/index in the wavi chunk
+    sample_info: 'SampleInfoEntry'  # id/index in the wavi chunk
     fine_tune: int  # in cents
     coarse_tune: int = -7
     root_key: int
@@ -171,7 +174,7 @@ class SplitEntry_:
     release: int
     unk53: int
 
-    def read(self, rdr: BinaryReader):
+    def read(self, rdr: BinaryReader, swdl: 'SWDL'):
         self.unk10 = rdr.read_uint8()
         self.splits_table_id = rdr.read_uint8()
         self.unk11 = rdr.read_uint8()
@@ -186,7 +189,7 @@ class SplitEntry_:
         self.hi_vel2 = rdr.read_int8()
         self.unk16 = rdr.read_uint32()
         self.unk17 = rdr.read_uint16()
-        self.sample_id = rdr.read_uint16()
+        self.sample_info = swdl.get_sample_info(rdr.read_uint16())
         self.fine_tune = rdr.read_int8()
         self.coarse_tune = rdr.read_int8()
         self.root_key = rdr.read_int8()
@@ -219,7 +222,7 @@ class ProgramInfoEntry:
     program_volume: int
     program_pan: int
     unk3: int = 0
-    that_f_byte: int = 0x0F  # Naming at projectpokemon
+    that_f_byte: int = 0x0F  # Naming at project pokemon
     unk4: int = 0x200
     unk5: int = 0x00
     lfo_count: int
@@ -228,9 +231,9 @@ class ProgramInfoEntry:
     unk8: int = 0x0
     unk9: int = 0x0
     lfo_table: List[LFOEntry]
-    splits_table: List[SplitEntry_]
+    splits_table: List[SplitEntry]
 
-    def read(self, rdr: BinaryReader):
+    def read(self, rdr: BinaryReader, swdl: 'SWDL'):
         self.program_id = rdr.read_uint16()
         self.splits_count = rdr.read_uint16()
         self.program_volume = rdr.read_int8()
@@ -252,8 +255,8 @@ class ProgramInfoEntry:
         rdr.read(16)
         self.splits_table = []
         for _ in range(self.splits_count):
-            split_entry = SplitEntry_()
-            split_entry.read(rdr)
+            split_entry = SplitEntry()
+            split_entry.read(rdr, swdl)
             self.splits_table.append(split_entry)
 
 
@@ -266,7 +269,7 @@ class PrgiChunk:
     program_ptr_table: List[int]
     program_info_table: List[ProgramInfoEntry]
 
-    def read(self, rdr: BinaryReader, header: 'SWDHeader'):
+    def read(self, rdr: BinaryReader, swdl: 'SWDL'):
         self.magic = rdr.read(4)
         if self.magic != b"prgi":
             raise ValueError("SWDPrgiChunk does not start with magic value")
@@ -278,13 +281,13 @@ class PrgiChunk:
         self.chunk_len = rdr.read_uint32()
         pos = rdr.c
         self.program_ptr_table = []
-        for _ in range(header.prgi_slot_count):
+        for _ in range(swdl.swd_header.prgi_slot_count):
             self.program_ptr_table.append(rdr.read_uint16())
         rdr.align(16)
         self.program_info_table = []
         while rdr.c != pos + self.chunk_len:
             sample_info_entry = ProgramInfoEntry()
-            sample_info_entry.read(rdr)
+            sample_info_entry.read(rdr, swdl)
             self.program_info_table.append(sample_info_entry)
 
 
@@ -300,10 +303,15 @@ class SampleInfoEntry:
     unk5: int = 0
     unk58: int = 0x02
     unk6: int = 0
+    unk7: int = 0
     version: int = 0x415
     sample_format: int
+    # 0 - 8 bits pcm?
+    # 0x100 - 16 bits pcm
+    # 0x200 - 4 bits adpcm
+    # 0x300 - psg?
     unk9: int
-    sample_loop: bool
+    loop_enabled: bool
     unk10: int
     unk11: int
     unk12: int
@@ -339,12 +347,13 @@ class SampleInfoEntry:
         self.unk5 = rdr.read_uint8()
         self.unk58 = rdr.read_uint8()
         self.unk6 = rdr.read_uint16()
+        self.unk7 = rdr.read_uint16()
         self.version = rdr.read_uint16()
         if self.version != 0x415:
             raise ValueError("SampleInfoEntry does not have correct version")
         self.sample_format = rdr.read_uint16()
         self.unk9 = rdr.read_uint8()
-        self.sample_loop = rdr.read_bool()
+        self.loop_enabled = rdr.read_bool()
         self.unk10 = rdr.read_uint16()
         self.unk11 = rdr.read_uint16()
         self.unk12 = rdr.read_uint16()
@@ -451,7 +460,7 @@ class SWDHeader:
         rdr.read_uint32()
         self.unk13 = rdr.read_uint32()
         self.pcmdlen = rdr.read_uint32()
-        self.unk14 = rdr.read_uint32()
+        self.unk14 = rdr.read_uint16()
         self.wavi_slot_count = rdr.read_uint16()
         self.prgi_slot_count = rdr.read_uint16()
         self.unk17 = rdr.read_uint16()
@@ -463,179 +472,88 @@ class SWDL(FileFormat):
     swd_header: SWDHeader
     wavi_chunk: WaviChunk
     prgi_chunk: PrgiChunk
-    kgpr_chunk: KgprChunk
-    pcmd_chunk: PcmdChunk
+    kgrp_chunk: KgrpChunk
+    pcmd_chunk: PcmdChunk = None
     eod_chunk: EodChunk
 
+    ima_compressor: ImaAdpcm
+
     def read_stream(self, stream):
+        self.ima_compressor = ImaAdpcm()
         if isinstance(stream, BinaryReader):
             rdr = stream
         else:
             rdr = BinaryReader(stream)
-        self.swd_header = SWDHeader()
-        self.wavi_chunk = WaviChunk()
-        self.prgi_chunk = PrgiChunk()
-        self.kgpr_chunk = KgprChunk()
-        self.pcmd_chunk = PcmdChunk()
-        self.eod_chunk = EodChunk()
         while True:
+            rdr.align(0x10)
             pos = rdr.c
             chunk_name = rdr.read(4)
             rdr.seek(pos)
             if chunk_name == b"swdl":
+                self.swd_header = SWDHeader()
                 self.swd_header.read(rdr)
             elif chunk_name == b"wavi":
+                self.wavi_chunk = WaviChunk()
                 self.wavi_chunk.read(rdr, self.swd_header)
             elif chunk_name == b"prgi":
-                self.prgi_chunk.read(rdr, self.swd_header)
-            elif chunk_name == b"kgpr":
-                self.kgpr_chunk.read(rdr)
+                self.prgi_chunk = PrgiChunk()
+                self.prgi_chunk.read(rdr, self)
+            elif chunk_name == b"kgrp":
+                self.kgrp_chunk = KgrpChunk()
+                self.kgrp_chunk.read(rdr)
             elif chunk_name == b"pcmd":
+                self.pcmd_chunk = PcmdChunk()
                 self.pcmd_chunk.read(rdr)
             elif chunk_name == b"eod ":
+                self.eod_chunk = EodChunk()
                 self.eod_chunk.read(rdr)
                 break
 
     def write_stream(self, stream):
-        if isinstance(stream, BinaryWriter):
-            wtr = stream
+        raise NotImplementedError('saving swd still not implemented')
+
+    def get_sample_list(self):
+        res = []
+        for sample_entry in self.wavi_chunk.sample_info_table:
+            res.append(sample_entry.id_)
+        return res
+
+    def get_sample_info(self, sample_id) -> Optional[SampleInfoEntry]:
+        for sample_entry in self.wavi_chunk.sample_info_table:
+            if sample_entry.id_ == sample_id:
+                return sample_entry
         else:
-            wtr = BinaryWriter(stream)
+            return None
 
+    def get_sample(self, sample_id):
+        for sample_entry in self.wavi_chunk.sample_info_table:
+            if sample_entry.id_ == sample_id:
+                break
+        else:
+            return None
+        sample_entry: SampleInfoEntry
+        sample_length = (sample_entry.loop_beginning + sample_entry.loop_length) * 4
+        sample_data = self.pcmd_chunk.sample_data[sample_entry.sample_pos:sample_entry.sample_pos + sample_length]
+        if sample_entry.sample_format == 0x100:  # is already 16 bit pcm
+            dt = np.dtype(np.int16).newbyteorder("<")
+            sample_data: np.ndarray = np.frombuffer(sample_data, dtype=dt)
+        elif sample_entry.sample_format == 0x200:
+            self.ima_compressor.reset()
+            sample_data = self.ima_compressor.decompress(sample_data)
+        else:
+            raise NotImplementedError(f"Sample format {sample_entry.sample_format} not implemented")
+        sample_data = sample_data.reshape((sample_data.shape[0], 1))
+        return sample_data
 
-def swd_read_sections(stream) -> Dict[str, Tuple[int, int]]:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x50)  # goto the start of the sections
-    sections: Dict[str, Tuple[int, int]] = {}  # dict of the name of the section and then the start and length.
-    while rdr.tell() < len(rdr):
-        header_start = rdr.tell()
-        name = rdr.read_string(4)
-        rdr.seek(4, SEEK_CUR)
-        header_length = rdr.read_uint32()
-        start = header_start + header_length
-        length = rdr.read_uint32()
-        sections[name] = (start, length)
-        rdr.seek(start + length)
-        rdr.align(0x10)
-    return sections
+    def get_program_list(self):
+        res = []
+        for program_entry in self.prgi_chunk.program_info_table:
+            res.append(program_entry.program_id)
+        return res
 
-
-def swd_read_samples(stream) -> Dict[int, Sample]:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x46)
-    n_wavi_slots = rdr.read_uint16()
-    sections = swd_read_sections(stream)
-    wavi_offset, wavi_len = sections["wavi"]
-    pcmd_offset, pcmd_len = sections["pcmd"]
-    samples: Dict[int, Sample] = {}
-    rdr.seek(wavi_offset)
-    for sample_index, sample_info_offset in enumerate(rdr.read_uint16_array(n_wavi_slots)):
-        if not sample_info_offset:
-            continue
-        rdr.seek(wavi_offset + sample_info_offset + 0x20)
-        samplerate = rdr.read_uint32()
-        adpcm_pos = rdr.read_uint32()
-        adpcm_loop_position = rdr.read_uint32() * 4
-        adpcm_loop_lenght = rdr.read_uint32() * 4
-        adpcm_lenght = (adpcm_loop_position + adpcm_loop_lenght)
-
-        rdr.seek(pcmd_offset + adpcm_pos)
-        samples[sample_index] = Sample(samplerate, rdr.read(adpcm_lenght))
-
-    return samples
-
-
-def swd_read_samples_info(stream) -> Dict[int, SampleInfo]:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x46)
-    n_wavi_slots = rdr.read_uint16()
-    sections = swd_read_sections(stream)
-    wavi_offset, wavi_len = sections["wavi"]
-    samples_info: Dict[int, SampleInfo] = {}
-    rdr.seek(wavi_offset)
-    for sample_index, sample_info_section_offset in enumerate(rdr.read_uint16_array(n_wavi_slots)):
-        if not sample_info_section_offset:
-            continue
-        sample_info_offset = wavi_offset + sample_info_section_offset
-        rdr.seek(sample_info_offset + 0x04)
-        tuning = rdr.read_int8()
-        rdr.seek(sample_info_offset + 0x15)
-        loop_enabled = rdr.read_bool()
-        rdr.seek(sample_info_offset + 0x28)
-        loop = rdr.read_uint32() * 8 - 9
-        samples_info[sample_index] = SampleInfo(sample_index, loop_enabled, loop, tuning)
-    return samples_info
-
-
-def swd_read_presets(stream, samples_info) -> Dict[int, Preset]:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x48)
-    n_prgi_slots = rdr.read_uint16()
-    sections = swd_read_sections(stream)
-    prgi_offset, prgi_len = sections["prgi"]
-    presets: Dict[int, Preset] = {}
-    rdr.seek(prgi_offset)
-    for preset_index, preset_section_offset in enumerate(rdr.read_uint16_array(n_prgi_slots)):
-        if not preset_section_offset:
-            continue
-        preset_offset = prgi_offset + preset_section_offset
-        rdr.seek(preset_offset)
-        assert rdr.read_uint16() == preset_index
-        n_splits = rdr.read_uint16()
-        rdr.seek(preset_offset + 0xb)
-        n_lfos = rdr.read_uint8()
-        rdr.seek(preset_offset + 0x10)
-        lfos = []
-        for lfo_index in range(n_lfos):
-            lfo_offset = rdr.tell()
-            rdr.seek(lfo_offset + 2)
-            destination = LFODestination(rdr.read_int8())
-            wave_shape = LFOWaveShape(rdr.read_int8())
-            rate = rdr.read_uint16()
-            depth = rdr.read_uint16()
-            delay = rdr.read_uint16()
-            lfos.append(LFO(destination, wave_shape, rate, depth, delay))
-        rdr.seek(preset_offset + 0x10 + 0x10 * n_lfos + 0x10)
-        splits = []
-        for split_index in range(n_splits):
-            split_offset = rdr.tell()
-            rdr.seek(split_offset + 0x04)
-            lowkey = rdr.read_int8()
-            highkey = rdr.read_int8()
-            rdr.seek(split_offset + 0x12)
-            sample_index = rdr.read_uint16()
-            tuning = rdr.read_int8()
-            rdr.seek(split_offset + 0x16)
-            rootkey = rdr.read_int8()
-            rdr.seek(split_offset + 0x30)
-            splits.append(
-                SplitEntry(highkey, lowkey, samples_info[sample_index], tuning, rootkey))
-        presets[preset_index] = Preset(splits, lfos)
-    return presets
-
-
-def swd_read_samplebank(stream) -> SampleBank:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x0c)
-    assert rdr.read_uint16() == 0x0415  # Correct version
-    assert rdr.read_bool()  # This is a SampleBank
-    group = rdr.read_uint8()
-    rdr.seek(0x20)
-    label = rdr.read_string(16, pad=b"\xaa")
-    samples = swd_read_samples(stream)
-    return SampleBank(label, group, samples)
-
-
-def swd_read_presetbank(stream) -> PresetBank:
-    rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-    rdr.seek(0x0c)
-    assert rdr.read_uint16() == 0x0415  # Correct version
-    assert not rdr.read_bool()  # This is not a SampleBank
-    group = rdr.read_ubyte()
-
-    rdr.seek(0x20)
-    label = rdr.read_string(16, pad=b"\xaa")
-
-    samples_info = swd_read_samples_info(stream)
-    presets = swd_read_presets(stream, samples_info)
-    return PresetBank(label, group, presets, samples_info)
+    def get_program(self, program_id) -> Optional[ProgramInfoEntry]:
+        for program_entry in self.prgi_chunk.program_info_table:
+            if program_entry.program_id == program_id:
+                return program_entry
+        else:
+            return None

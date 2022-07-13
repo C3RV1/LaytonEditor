@@ -1,7 +1,7 @@
 from formats.sound.smdl import smdl
 import numpy as np
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
-from formats.sound.soundtypes import Preset
+from formats.sound.swd import ProgramInfoEntry
 from formats.sound import sample_transform
 from typing import Dict, Optional
 from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
@@ -37,12 +37,12 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
         super(SMDLStreamPlayer, self).__init__()
         self.smd_sequencer: Optional[SMDLFluidSynthSequencer] = None
-        self.preset_dict: Dict[int, Preset] = {}
+        self.preset_dict: Dict[int, ProgramInfoEntry] = {}
         self.buffer_size = 0
         self.load_size = 0
         self.channels = 0
 
-    def set_preset_dict(self, preset_dict: Dict[int, Preset]):
+    def set_preset_dict(self, preset_dict: Dict[int, ProgramInfoEntry]):
         self.preset_dict = preset_dict
 
     def add_samples(self, first_init=False):

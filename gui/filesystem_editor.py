@@ -11,7 +11,7 @@ from formats.graphics.bg import BGImage
 from formats.parsers.dcc import DCCParser
 from formats.place import Place
 from formats.puzzle import Puzzle
-from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
+from formats.sound.swd import SWDL
 from formats.sound import wav, sadl, sample_transform
 import numpy as np
 import pygame as pg
@@ -113,7 +113,7 @@ class FilesystemEditor(generated.FilesystemEditor):
     fp_bg_menu: wx.Menu
     fp_ani_menu: wx.Menu
     fp_place_menu: wx.Menu
-    fp_soundbank_menu: wx.Menu
+    fp_sample_bank_menu: wx.Menu
     fp_menus_loaded: list
 
     def __init__(self, *args, **kwargs):
@@ -126,7 +126,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_bg_menu = wx.Menu()
         self.fp_ani_menu = wx.Menu()
         self.fp_place_menu = wx.Menu()
-        self.fp_soundbank_menu = wx.Menu()
+        self.fp_sample_bank_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
         self.fp_gds_menu = wx.Menu()
@@ -156,7 +156,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_place_menu, "Edit Place", self.fp_place_edit_clicked)
 
-        add_menu_item(self.fp_soundbank_menu, "Play Selected", self.fp_samplebank_play_clicked)
+        add_menu_item(self.fp_sample_bank_menu, "Play Selected", self.fp_sample_bank_play_clicked)
 
         add_menu_item(self.fp_puzzle_menu, "Preview changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
@@ -238,17 +238,17 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.GetGrandParent().add_menu(self.fp_ani_menu, "Sprite")
         elif name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
             self.fp_samplebank_list.Clear()
-            samplebank = swd_read_samplebank(archive.open(name))
-            for sample in samplebank.samples:
+            sample_bank = SWDL(filename=name, rom=archive)
+            for sample in sample_bank.get_sample_list():
                 self.fp_samplebank_list.AppendItems(f"Sample {sample}")
-            self.fp_menus_loaded.append("Samplebank")
-            self.GetGrandParent().add_menu(self.fp_soundbank_menu, "Samplebank")
-            self.fp_formats_book.SetSelection(5)  # samplebank page
-            self.preview_data = samplebank
+            self.fp_menus_loaded.append("Sample Bank")
+            self.GetGrandParent().add_menu(self.fp_sample_bank_menu, "Sample Bank")
+            self.fp_formats_book.SetSelection(5)  # sample_bank page
+            self.preview_data = sample_bank
         elif name.lower().endswith(".swd"):
-            presetbank = swd_read_presetbank(archive.open(name))
+            preset_bank = SWDL(filename=name, rom=archive)
             self.fp_info_text.Clear()
-            text = "using samples: " + ", ".join([str(x) for x in presetbank.samples_info.keys()])
+            text = "using samples: " + ", ".join([str(x) for x in preset_bank.get_sample_list()])
             self.fp_info_text.WriteText(text)
             self.fp_formats_book.SetSelection(6)  # Info page
         elif name.startswith("n_place"):
@@ -399,20 +399,21 @@ class FilesystemEditor(generated.FilesystemEditor):
         filename = path.split("/")[-1]
         self.GetGrandParent().open_sprite_editor_page(self.preview_data, filename)
 
-    def fp_samplebank_play_clicked(self, _):
-        index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
-        sample = self.preview_data.samples[index]
-        sample_pcm = np.reshape(sample.pcm, (1, sample.pcm.shape[0]))
+    def fp_sample_bank_play_clicked(self, _):
+        self.preview_data: SWDL
+        index = self.preview_data.get_sample_list()[self.fp_samplebank_list.GetSelection()]
+        sample: np.ndarray = self.preview_data.get_sample(index)
+        sample_info = self.preview_data.get_sample_info(index)
+        sample_pcm = np.reshape(sample, (1, sample.shape[0]))
         target_rate = pg.mixer.get_init()[0]
         target_channels = pg.mixer.get_init()[2]
-        sample_pcm = sample_transform.change_sample_rate(sample_pcm, sample.samplerate, target_rate)
+        sample_pcm = sample_transform.change_sample_rate(sample_pcm, sample_info.sample_rate, target_rate)
         sample_pcm = sample_transform.change_channels(sample_pcm, target_channels)
         sample_pcm = sample_pcm.swapaxes(0, 1)
         sample_pcm = np.ascontiguousarray(sample_pcm)
         sound = pg.sndarray.make_sound(sample_pcm)
         sound.set_volume(0.5)
         sound.play()
-        # sd.play(sample.pcm, sample.samplerate)
 
     def fs_replace_clicked(self, _event):  # TODO: Connect with MenuItem
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())

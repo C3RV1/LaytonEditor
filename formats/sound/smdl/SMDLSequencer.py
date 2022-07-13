@@ -6,7 +6,7 @@ from queue import PriorityQueue
 from dataclasses import dataclass, field
 from typing import Any
 from formats.sound.smdl import smdl
-from formats.sound.soundtypes import Preset
+from formats.sound.swd import ProgramInfoEntry
 import numpy as np
 from typing import Dict
 
@@ -94,15 +94,15 @@ class SMDLSequencer:
         106: [1229, 1230, 1231, 1232, 1233, 1234, 1235, 1236, 1237, 1238, 1239]  # Piano (Muted)
     }
 
-    def map_preset(self, preset: Preset):
-        for sample in preset.split_entries:
+    def map_preset(self, preset: ProgramInfoEntry):
+        for split_entry in preset.splits_table:
             for program in self.SAMPLE_TO_PROGRAM.keys():
-                if sample.sample_info.sample_index in self.SAMPLE_TO_PROGRAM[program]:
+                if split_entry.sample_info in self.SAMPLE_TO_PROGRAM[program]:
                     return program
         return None
 
-    def create_program_map(self, presets: Dict[int, Preset]):
-        for preset_index in presets.keys():
+    def create_program_map(self, presets: Dict[int, ProgramInfoEntry]):
+        for preset_index in presets:
             mapped_preset = self.map_preset(presets[preset_index])
             if self.DEBUG:
                 logging.debug(f"Preset {preset_index} mapped to {mapped_preset}")

@@ -1,5 +1,7 @@
 import os
 import shutil
+from typing import Dict
+
 import formats.sound.smdl.smdl as smdl
 import formats.sound.sadl as sadl
 import formats.sound.swd as swd
@@ -33,10 +35,11 @@ def load_smd(path: str, rom=None) -> tuple:
     smd_obj = smdl.SMDL(filename=path, rom=rom)
 
     swd_path = path.split(".")[0] + ".SWD"
-    swd_file = binary.BinaryReader(rom.open(swd_path, "rb"))
-    swd_presets = swd.swd_read_presetbank(swd_file).presets
-    swd_file.close()
-    return smd_obj, swd_presets
+    swd_file = swd.SWDL(swd_path, rom=rom)
+    programs: Dict[int, swd.ProgramInfoEntry] = {}
+    for program_id in swd_file.get_program_list():
+        programs[program_id] = swd_file.get_program(program_id)
+    return smd_obj, programs
 
 
 def clear_extracted():

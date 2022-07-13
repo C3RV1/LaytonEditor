@@ -22,7 +22,8 @@ class PreviewerDefaultRenderer(TwoScreenRenderer):
         self.previewer_text.unload()
 
     def draw(self):
-        self.top_camera.surf.fill(pg.Color(40, 40, 40))
+        self.top_camera.clear(pg.Color(40, 40, 40))
+        self.btm_camera.clear(pg.Color(40, 40, 40))
         self.tth_logo.draw(self.btm_camera)
         self.previewer_text.draw(self.top_camera)
 

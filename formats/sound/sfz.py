@@ -1,15 +1,17 @@
-from .soundtypes import *
+from typing import TextIO
 
-def sfz_write_preset(stream: TextIO, preset: Preset, sample_location=r"..\samples\sample_%04i.wav"):
-    for split in preset.split_entries:
+from .swd import ProgramInfoEntry
+
+
+def sfz_write_preset(stream: TextIO, preset: ProgramInfoEntry, sample_location=r"..\samples\sample_%04i.wav"):
+    for split in preset.splits_table:
         stream.writelines([
             f"<region>\n",
-            f"sample={sample_location % split.sample_info.sample_index}\n"
-            f"lokey={split.lowkey} hikey={split.highkey}\n"
-            f"pitch_keycenter={split.rootkey}\n"
+            f"sample={sample_location % split.sample_info.id_}\n"
+            f"lokey={split.low_key} hikey={split.hi_key}\n"
+            f"pitch_keycenter={split.root_key}\n"
             f"loop_mode={'loop_continuous' if split.sample_info.loop_enabled else 'no_loop'}\n",
-            f"tune={split.tuning}\n",
-            f"loop_start={split.sample_info.loop}\n",
+            f"tune={split.fine_tune}\n",
+            f"loop_start={split.sample_info.loop_beginning}\n",
             f"\n"
         ])
-
