@@ -152,6 +152,8 @@ class EventPlayer(TwoScreenRenderer):
             self.wait_tap = True
         elif command.command == 0x6a:
             self.btm_bg.shake()
+        elif command.command == 0x6b:
+            self.top_bg.shake()
         elif command.command == 0x71:
             # Something about mysteries -> hides all character
             for char in self.characters:

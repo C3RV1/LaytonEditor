@@ -40,7 +40,8 @@ class EventGDSParser(GDSParser):
             0x5e: ["sfx_sed", "Play SED SFX", ["SFX ID"]],
             0x62: ["bg_music", "Play Background Music", ["Music ID", "Volume", "unk2"]],
             0x69: ["wait_tap", "Wait Tap"],
-            0x6a: ["bg_shake", "Shake Background"],
+            0x6a: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
+            0x6b: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
             0x72: fade,
             0x80: fade,
             0x87: fade,
@@ -69,6 +70,8 @@ class EventGDSParser(GDSParser):
             params[-1] = 0 if command.command == 0x21 else 1
         elif command.command == 0x2c:
             params[1] = True if params[1] > 0 else False
+        elif command.command in [0x6a, 0x6b]:
+            params = [params[0], 0 if command.command == 0x6a else 1]
         elif command.command == 0x4:
             params = [params[0] if params else 0]
             if self.ev is not None and params:
@@ -122,6 +125,9 @@ class EventGDSParser(GDSParser):
             gds_cmd.params = [params[0], 3]
         elif command == "chr_visibility":
             gds_cmd.params[1] = 2.0 if params[1] else -2.0
+        elif command == "bg_shake":
+            gds_cmd.command = 0x6a if params[1] == 0 else 0x6b
+            gds_cmd.params = params[:1]
         elif command == "dial":
             gds_cmd.params = [params[0]]
 
