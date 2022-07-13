@@ -3,7 +3,8 @@ from .EventCharacter import EventCharacter
 import pygame as pg
 import pg_utils.sound.SADLStreamPlayer
 from pg_utils.rom.rom_extract import load_sadl
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
 if TYPE_CHECKING:
     from .EventPlayer import EventPlayer
 
@@ -35,7 +36,7 @@ class EventDialogue(k4pg.Sprite):
         self.current_time_between_progress = 0
         self.time_to_progress = 1/60
 
-        self.character_talking: EventCharacter = None
+        self.character_talking: Optional[EventCharacter] = None
 
         self.voice_player = pg_utils.sound.SADLStreamPlayer.SADLStreamPlayer()
         self.voice_player.set_volume(0.5)

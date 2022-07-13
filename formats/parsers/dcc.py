@@ -57,6 +57,26 @@ class DCCParser:
         in_string = False
         code_index = 0
         current_token = ""
+
+        # This code takes the DCC code and splits it into tokens such that:
+        # a: [
+        #     =0
+        #     ="ab c"
+        #     a: 2
+        #     c(0, "hello\"")
+        # ]
+        # becomes
+        # [
+        #     'a:[',
+        #     '=0',
+        #     '="ab c"',
+        #     'a:2',
+        #     'c(',
+        #     '0,"hello\\""',
+        #     ')',
+        #     ']'
+        # ]
+
         while code_index < len(self.code):
             if self.code[code_index] == "\n":
                 if not in_string:
@@ -124,6 +144,37 @@ class DCCParser:
 
     def create_structure(self):
         tokens = self.code
+
+        # This code takes the DCC split code and generates its structure such that:
+        # [
+        #     'a:[',
+        #     '=0',
+        #     '="ab c"',
+        #     'a:2',
+        #     'c(',
+        #     '0,"hello\\""',
+        #     ')',
+        #     ']'
+        # ]
+        # becomes
+        # {
+        #     "unnamed": [],
+        #     "named": {
+        #         "a": {
+        #             "unnamed": ['0', '"ab c"'],
+        #             "named": {
+        #                 "a": '2'
+        #             },
+        #             "calls": [
+        #                 {
+        #                     "func": "c",
+        #                     "params": ['0', '"hello\\""']
+        #                 }
+        #             ]
+        #         }
+        #     },
+        #     "calls": []
+        # }
 
         def convert_to_group(is_call=False):
             nonlocal tokens
@@ -262,6 +313,45 @@ class DCCParser:
         raise ValueError(f"{value} is not recognised as a valid value")
 
     def convert_path(self, path):
+        # This code takes the DCC structure code and converts its variables such that:
+        # {
+        #     "unnamed": [],
+        #     "named": {
+        #         "a": {
+        #             "unnamed": ['0', '"ab c"'],
+        #             "named": {
+        #                 "a": '2'
+        #             },
+        #             "calls": [
+        #                 {
+        #                     "func": "c",
+        #                     "params": ['0', '"hello\\""']
+        #                 }
+        #             ]
+        #         }
+        #     },
+        #     "calls": []
+        # }
+        # becomes
+        # {
+        #     "unnamed": [],
+        #     "named": {
+        #         "a": {
+        #             "unnamed": [0, "ab c"],
+        #             "named": {
+        #                 "a": 2
+        #             },
+        #             "calls": [
+        #                 {
+        #                     "func": "c",
+        #                     "params": [0, 'hello"']
+        #                 }
+        #             ]
+        #         }
+        #     },
+        #     "calls": []
+        # }
+
         path_obj = self.get_path(path)
         if path in self.converted_paths:
             return path_obj

@@ -1,9 +1,11 @@
+from typing import Optional
+
 import pygame as pg
 
 
 class StreamPlayerAbstract:
     def __init__(self):
-        self.sound_obj: pg.mixer.Sound = None
+        self.sound_obj: Optional[pg.mixer.Sound] = None
         self.sound_buffer = None
         self.loading = False
         self.loading_finished = False
@@ -35,7 +37,7 @@ class StreamPlayerAbstract:
         if not self.is_fade_in:
             percentage = 1 - percentage
         new_volume = self.volume * percentage
-        if self.sound_obj:
+        if self.sound_obj is not None:
             self.sound_obj.set_volume(new_volume)
         self.current_fade_time += delta_time
 

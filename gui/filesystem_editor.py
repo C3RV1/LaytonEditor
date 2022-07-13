@@ -5,7 +5,7 @@ import wx.stc
 from formats.filesystem import *
 from formats.gds import GDS
 from formats.event import Event
-from formats.parsers import gds_parser
+from formats.parsers.gds_parsers import EventGDSParser
 from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
 from formats.parsers.dcc import DCCParser
@@ -305,7 +305,7 @@ class FilesystemEditor(generated.FilesystemEditor):
                 gds = GDS(name, rom=archive)
                 self.preview_data = gds
                 dcc_parser = DCCParser().reset()
-                gds_parser.EventGDSParser().parse_into_dcc(gds, dcc_parser)
+                EventGDSParser().parse_into_dcc(gds, dcc_parser)
                 self.dcc_editor.SetText(dcc_parser.serialize())
                 self.dcc_editor.ConvertEOLs(wx.stc.STC_EOL_LF)
                 self.fp_formats_book.SetSelection(7)  # DCC Page
@@ -356,18 +356,18 @@ class FilesystemEditor(generated.FilesystemEditor):
         newname = self.ft_filetree.GetItemText(selection)
 
         if oldpath.endswith("/"):  # folder
-            *oldparents, oldname, noend = oldpath.split("/")
-            if noend:
-                oldparents.append(oldname)
-            oldparent = "/".join(oldparents) + "/"
-            newpath = oldparent + newname + "/"
-            self.rom.rename_folder(oldpath, newpath)
+            *old_parents, old_name, no_end = oldpath.split("/")
+            if no_end:
+                old_parents.append(old_name)
+            old_parent = "/".join(old_parents) + "/"
+            new_path = old_parent + newname + "/"
+            self.rom.rename_folder(oldpath, new_path)
         else:  # file
-            oldfolder, oldname = os.path.split(oldpath)
-            newpath = os.path.join(oldfolder, newname).replace("\\", "/")
-            archive.rename_file(oldpath, newpath)
+            old_folder, old_name = os.path.split(oldpath)
+            new_path = os.path.join(old_folder, newname).replace("\\", "/")
+            archive.rename_file(oldpath, new_path)
 
-        self.ft_filetree.SetItemData(selection, (newpath, archive))
+        self.ft_filetree.SetItemData(selection, (new_path, archive))
 
     def ft_filetree_keydown(self, event: wx.TreeEvent):
         if event.GetKeyCode() == wx.WXK_DELETE:
@@ -577,7 +577,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         dcc_parser = DCCParser()
         try:
             dcc_parser.parse(self.dcc_editor.GetText())
-            successful, error_msg = gds_parser.EventGDSParser().parse_from_dcc(gds, dcc_parser)
+            successful, error_msg = EventGDSParser().parse_from_dcc(gds, dcc_parser)
         except Exception as e:
             successful = False
             error_msg = str(e)

@@ -3,7 +3,7 @@ import numpy as np
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound.soundtypes import Preset
 from formats.sound import sample_transform
-from typing import Dict
+from typing import Dict, Optional
 from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
 
 import pygame as pg
@@ -36,7 +36,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
 
     def __init__(self):
         super(SMDLStreamPlayer, self).__init__()
-        self.smd_sequencer: SMDLFluidSynthSequencer = None
+        self.smd_sequencer: Optional[SMDLFluidSynthSequencer] = None
         self.preset_dict: Dict[int, Preset] = {}
         self.buffer_size = 0
         self.load_size = 0

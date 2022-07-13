@@ -1,6 +1,5 @@
 from ..sprite.Sprite import Sprite
 from ..ui.Button import Button
-from ..Camera import Camera
 import pygame as pg
 from ..sprite.SpriteLoader import SpriteLoader
 

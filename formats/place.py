@@ -55,6 +55,8 @@ class PlaceObject:
     character_index: int = 0
     event_index: int = 0
     unk: int = 0
+    # Unk: 4 means it is a puzzle that is activated through the camera
+    #      1 has something to do with the torn out photo pieces
 
 
 class Place(FileFormat):

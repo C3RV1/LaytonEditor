@@ -18,16 +18,16 @@ class Archive:
 
 
 class RomFile(io.BytesIO):
-    def __init__(self, archive, index: int, opperation: str = "w"):
-        if opperation not in ["r", "w", "a"]:
-            raise NotImplementedError(f"opperation: {opperation}")
+    def __init__(self, archive, index: int, operation: str = "w"):
+        if operation not in ["r", "w", "a"]:
+            raise NotImplementedError(f"operation: {operation}")
         self.archive = archive
         self.id = index
-        self.opp = opperation
+        self.opp = operation
         if self not in self.archive.opened_files:
             self.archive.opened_files.append(self)
-        super().__init__(self.archive.files[index] if opperation in ["r", "a"] else b"")
-        if opperation == "a":
+        super().__init__(self.archive.files[index] if operation in ["r", "a"] else b"")
+        if operation == "a":
             self.read()
 
     def writable(self) -> bool:
@@ -129,14 +129,14 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
             if not fileid:
                 raise FileNotFoundError(f"file '{file}' could not be opened")
 
-        romfile = RomFile(self, fileid, match[0][0])
+        rom_file = RomFile(self, fileid, match[0][0])
         if text:
-            return io.TextIOWrapper(romfile)
-        return romfile
+            return io.TextIOWrapper(rom_file)
+        return rom_file
 
     def add_file(self, file: str) -> Optional[int]:
-        foldername, filename = os.path.split(file)
-        folder_add = self.filenames[foldername]
+        folder_name, filename = os.path.split(file)
+        folder_add = self.filenames[folder_name]
         new_file_id = folder_add.firstID + len(folder_add.files)
 
         # Insert our new file into this ID
@@ -166,8 +166,8 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
         return new_file_id
 
     def remove_file(self, file: str):
-        foldername, filename = os.path.split(file)
-        folder: Folder = self.filenames[foldername]
+        folder_name, filename = os.path.split(file)
+        folder: Folder = self.filenames[folder_name]
         fileid = self.filenames.idOf(file)
         folder.files.remove(filename)
         del self.files[fileid]
@@ -222,23 +222,23 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
 
         parent.folders.remove((self.folder_split(path)[-1], folder))
 
-    def rename_folder(self, oldpath, newpath):
-        folder = self.filenames[oldpath]
+    def rename_folder(self, old_path, new_path):
+        folder = self.filenames[old_path]
 
         # get parents
-        oldparent = self.folder_get_parent(oldpath)
-        newparent = self.folder_get_parent(newpath)
+        old_parent = self.folder_get_parent(old_path)
+        new_parent = self.folder_get_parent(new_path)
 
         # generate folder items.
-        oldfolderitem = (self.folder_split(oldpath)[-1], folder)
-        newfolderitem = (self.folder_split(newpath)[-1], folder)
+        old_folder_item = (self.folder_split(old_path)[-1], folder)
+        new_folder_item = (self.folder_split(new_path)[-1], folder)
 
-        if oldparent != newparent:
-            oldparent.folders.remove(oldfolderitem)
-            newparent.folders.append(newfolderitem)
+        if old_parent != new_parent:
+            old_parent.folders.remove(old_folder_item)
+            new_parent.folders.append(new_folder_item)
         else:  # same parent, keep the folder index
-            index = oldparent.folders.index(oldfolderitem)
-            newparent.folders[index] = newfolderitem
+            index = old_parent.folders.index(old_folder_item)
+            new_parent.folders[index] = new_folder_item
 
 
 class FileFormat:
@@ -320,24 +320,24 @@ class PlzArchive(Archive, FileFormat):
         self.filenames = []
         self.files = []
 
-        headersize = rdr.read_uint32()
-        filesize = rdr.read_uint32()
+        header_size = rdr.read_uint32()
+        archive_file_size = rdr.read_uint32()
         assert rdr.read(4) == b"PCK2"
-        rdr.seek(headersize)
+        rdr.seek(header_size)
 
-        while rdr.c < filesize:
+        while rdr.c < archive_file_size:
             start_pos = rdr.c
 
-            fileheader_size = rdr.read_uint32()
-            filetotal_size = rdr.read_uint32()
+            file_header_size = rdr.read_uint32()
+            file_total_size = rdr.read_uint32()
             rdr.seek(4, io.SEEK_CUR)
             file_size = rdr.read_uint32()
 
             filename = rdr.read_string(encoding="shift-jis")
 
-            rdr.seek(start_pos + fileheader_size)
+            rdr.seek(start_pos + file_header_size)
             file = rdr.read(file_size)
-            rdr.seek(start_pos + filetotal_size)
+            rdr.seek(start_pos + file_total_size)
 
             self.filenames.append(filename)
             self.files.append(file)
@@ -349,32 +349,32 @@ class PlzArchive(Archive, FileFormat):
             wtr = BinaryWriter(stream)
 
         wtr.write_uint32(16)
-        wtr.write_uint32(0)  # placeholder filesize
+        wtr.write_uint32(0)  # placeholder file_size
         wtr.write(b"PCK2")
         wtr.write_uint32(0)
 
         for i in range(len(self.files)):
-            headersize = 16 + len(self.filenames[i]) + 1
-            headersize += 4 - headersize % 4
+            header_size = 16 + len(self.filenames[i]) + 1
+            header_size += 4 - header_size % 4
 
-            totalsize = headersize + len(self.files[i])
-            totalsize += 4 - totalsize % 4
+            total_size = header_size + len(self.files[i])
+            total_size += 4 - total_size % 4
             c = wtr.c
-            wtr.write_uint32(headersize)
-            wtr.write_uint32(totalsize)
+            wtr.write_uint32(header_size)
+            wtr.write_uint32(total_size)
             wtr.write_uint32(0)
             wtr.write_uint32(len(self.files[i]))
 
             wtr.write_string(self.filenames[i])
-            wtr.seek(c + headersize)
+            wtr.seek(c + header_size)
             wtr.write(self.files[i])
             # Seek while adding bytes
-            while wtr.c != c + totalsize:
+            while wtr.c != c + total_size:
                 wtr.write_uint8(0)
 
-        filesize = len(wtr)
+        file_size = len(wtr)
         wtr.seek(4)
-        wtr.write_uint32(filesize)
+        wtr.write_uint32(file_size)
 
     def open(self, file: Union[AnyStr, int], mode: str = "rb") -> Union[io.BytesIO, io.TextIOWrapper]:
         match = re.findall(r"^([rwa])(b?)(\+?)$", mode)
@@ -393,7 +393,7 @@ class PlzArchive(Archive, FileFormat):
         else:
             try:
                 fileid = self.filenames.index(file)
-            except:
+            except ValueError:
                 fileid = None
             if fileid is None and create:
                 fileid = self.add_file(file)
@@ -402,10 +402,10 @@ class PlzArchive(Archive, FileFormat):
             if fileid is None:
                 raise FileNotFoundError(f"file '{file}' could not be opened")
 
-        romfile = RomFile(self, fileid, match[0][0])
+        rom_file = RomFile(self, fileid, match[0][0])
         if text:
-            return io.TextIOWrapper(romfile)
-        return romfile
+            return io.TextIOWrapper(rom_file)
+        return rom_file
 
     def add_file(self, filename: str):
         new_file_id = len(self.files)

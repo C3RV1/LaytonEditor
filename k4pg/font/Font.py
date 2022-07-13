@@ -102,7 +102,7 @@ class FontMap(Font):
     def _encode_char(self, char: str):
         try:
             return int.from_bytes(char.encode(self._encoding), "big")
-        except Exception:
+        except UnicodeEncodeError:
             return -1
 
     def _get_line_size(self, line: str) -> tuple:

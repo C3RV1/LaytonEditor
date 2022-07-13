@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 from formats.sound import sadl
 from formats.sound import sample_transform
@@ -10,7 +11,7 @@ from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 class SADLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
         super(SADLStreamPlayer, self).__init__()
-        self.sadl: sadl.SADL = None
+        self.sadl: Optional[sadl.SADL] = None
 
         self.target_rate = pg.mixer.get_init()[0]
         self.target_channels = pg.mixer.get_init()[2]

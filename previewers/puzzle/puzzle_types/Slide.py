@@ -176,6 +176,7 @@ class Slide(PuzzlePlayer):
             move_counter_digit.set_tag("0")
             current_x += 6
             self.move_counters.append(move_counter_digit)
+
     def update_move_counter(self):
         move_count_copy = self.move_count
         for i in range(4):

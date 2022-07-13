@@ -1,6 +1,6 @@
 import wx
 from formats.place import Place
-from formats.filesystem import NintendoDSRom, PlzArchive
+from formats.filesystem import NintendoDSRom
 from formats.graphics.bg import BGImage
 from formats.graphics.ani import AniSprite
 

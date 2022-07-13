@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
 from formats.gds import GDSCommand
@@ -20,11 +22,10 @@ class MultipleChoiceButton(k4pg.ButtonSprite):
             k4pg.draw.rect(cam, pg.Color(0, 255, 0), self.get_world_rect(), width=2)
 
 
-
 class MultipleChoice(PuzzlePlayer):
     def __init__(self, puzzle_data: Puzzle):
         self.buttons = []
-        self.pressed_btn: MultipleChoiceButton = None
+        self.pressed_btn: Optional[MultipleChoiceButton] = None
 
         super(MultipleChoice, self).__init__(puzzle_data)
         self.submit_btn.visible = False

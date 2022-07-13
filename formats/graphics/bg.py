@@ -31,6 +31,7 @@ class BGImage(FileFormat):
                 self.palette[color_i, 3] = 255
 
         n_tiles = rdr.read_uint32()
+        # Read tiles and assemble image
         tiles = np.frombuffer(rdr.read(n_tiles * 0x40), np.uint8).reshape((n_tiles, 8, 8))
 
         map_w = rdr.read_uint16()
@@ -64,6 +65,7 @@ class BGImage(FileFormat):
         img_h, img_w = self.image.shape
         map_h, map_w = img_h // 8, img_w // 8
 
+        # Get all 8x8 unique tiles
         tiles = np.asarray([self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8] for y in range(map_h) for x in range(map_w)])
         _, idx = np.unique(tiles, return_index=True, axis=0)
         tiles = tiles[np.sort(idx)]
@@ -75,8 +77,10 @@ class BGImage(FileFormat):
 
         for y in range(map_h):
             for x in range(map_w):
+                # Get tile and write the index of the tile
                 tile = self.image[y * 8:y * 8 + 8, x * 8:x * 8 + 8]
 
+                # Get tile id (numpy magic lol)
                 tile_id = np.where(np.all(tile.reshape((64,)) == tiles.reshape(tiles.shape[0], 64), axis=1) == True)
                 wtr.write_uint16(tile_id[0][0])
 

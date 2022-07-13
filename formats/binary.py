@@ -21,7 +21,7 @@ class _BaseBinaryWrapper:
     def flush(self) -> None:
         return self.stream.flush()
 
-    def read(self, n: int = -1) -> AnyStr:
+    def read(self, n: int = -1) -> bytes:
         return self.stream.read(n)
 
     def readable(self) -> bool:

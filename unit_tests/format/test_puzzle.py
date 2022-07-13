@@ -32,7 +32,7 @@ class TestPuzzleData(unittest.TestCase):
         assert pz_data.reward_id == 255
         assert pz_data.bg_btm_id == 1
         assert pz_data.bg_location_id == 1
-        assert pz_data.judge_char == 0
+        assert pz_data.judge_char == 2
         assert pz_data.flag_bit2 is True
         assert pz_data.flag_bit5 is True
         assert pz_data.bg_lang is False

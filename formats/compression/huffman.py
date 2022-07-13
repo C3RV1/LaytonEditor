@@ -104,7 +104,7 @@ def compress(input_data: bytes, datablock_size=None) -> bytes:
     node_count = 0
     leaf_queue = []
     node_queue = []
-    leaves: List[HuffTreeNode] = [None for _ in range(0x100 if datablock_size == 8 else 0x10)]
+    leaves: List[Optional[HuffTreeNode]] = [None for _ in range(0x100 if datablock_size == 8 else 0x10)]
     for i in range(0x10 if datablock_size == 4 else 0x100):
         if frequencies[i] == 0:
             continue

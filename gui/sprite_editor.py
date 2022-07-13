@@ -150,7 +150,7 @@ class SpriteEditor(generated.SpriteEditor):
         self.ase_frame_slider_changed(None)
         self.modified = True
 
-    def ase_move_frame_forward_clicked(self, event):
+    def ase_move_frame_forward_clicked(self, _event):
         animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
         if len(animation.frames) - 1 >= self.ase_frame_slider.GetValue():
             return
@@ -161,7 +161,7 @@ class SpriteEditor(generated.SpriteEditor):
         self.ase_frame_slider_changed(None)
         self.modified = True
 
-    def ase_move_frame_back_clicked(self, event):
+    def ase_move_frame_back_clicked(self, _event):
         animation = self._sprite.animations[self.ase_animations_list.GetFirstSelected()]
         if 0 <= self.ase_frame_slider.GetValue():
             return

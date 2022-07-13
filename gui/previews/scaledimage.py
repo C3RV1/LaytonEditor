@@ -1,6 +1,4 @@
 import wx
-from formats.filesystem import NintendoDSRom
-from formats.graphics.bg import BGImage
 import time
 
 
@@ -72,26 +70,3 @@ class ScaledImage(wx.Panel):
                 self._last_click = 0
             else:
                 self._last_click = clicked_time
-
-class HelloFrame(wx.Frame):
-    image_viewer: ScaledImage
-    """
-    A Frame that says Hello World
-    """
-
-    def __init__(self, *args, **kw):
-        super(HelloFrame, self).__init__(*args, **kw)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.image_viewer = ScaledImage(self)
-        sizer.Add(self.image_viewer, 1, wx.EXPAND | wx.ALL, 0)
-        self.SetSizer(sizer)
-
-
-if __name__ == '__main__':
-    rom = NintendoDSRom.fromFile("../../../Base File.nds")
-    app = wx.App()
-    frm = HelloFrame(None, title='Hello World', size=(800, 600))
-    img = BGImage("data_lt2/bg/name/name_bg1.arc", rom=rom)
-    frm.image_viewer.load_bitmap(img.extract_image_wx_bitmap())
-    frm.Show()
-    app.MainLoop()
