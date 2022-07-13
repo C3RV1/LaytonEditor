@@ -172,7 +172,45 @@ class SplitEntry_:
     unk53: int
 
     def read(self, rdr: BinaryReader):
-        pass
+        self.unk10 = rdr.read_uint8()
+        self.splits_table_id = rdr.read_uint8()
+        self.unk11 = rdr.read_uint8()
+        self.unk25 = rdr.read_uint8()
+        self.low_key = rdr.read_int8()
+        self.hi_key = rdr.read_int8()
+        self.low_key2 = rdr.read_int8()
+        self.hi_key2 = rdr.read_int8()
+        self.low_vel = rdr.read_int8()
+        self.hi_vel = rdr.read_int8()
+        self.low_vel2 = rdr.read_int8()
+        self.hi_vel2 = rdr.read_int8()
+        self.unk16 = rdr.read_uint32()
+        self.unk17 = rdr.read_uint16()
+        self.sample_id = rdr.read_uint16()
+        self.fine_tune = rdr.read_int8()
+        self.coarse_tune = rdr.read_int8()
+        self.root_key = rdr.read_int8()
+        self.key_transpose = rdr.read_int8()
+        self.sample_volume = rdr.read_int8()
+        self.sample_pan = rdr.read_int8()
+        self.key_group_id = rdr.read_uint8()
+        self.unk22 = rdr.read_uint8()
+        self.unk23 = rdr.read_uint16()
+        self.unk24 = rdr.read_uint16()
+        self.envelope_on = rdr.read_uint8()
+        self.envelope_multiplier = rdr.read_uint8()
+        self.unk37 = rdr.read_uint8()
+        self.unk38 = rdr.read_uint8()
+        self.unk39 = rdr.read_uint16()
+        self.unk40 = rdr.read_uint16()
+        self.attack_volume = rdr.read_int8()
+        self.attack = rdr.read_int8()
+        self.decay = rdr.read_int8()
+        self.sustain = rdr.read_int8()
+        self.hold = rdr.read_int8()
+        self.decay2 = rdr.read_int8()
+        self.release = rdr.read_int8()
+        self.unk53 = rdr.read_int8()
 
 
 class ProgramInfoEntry:
@@ -386,7 +424,6 @@ class SWDHeader:
     wavi_len: int  # len of wavi chunk
 
     def read(self, rdr: BinaryReader):
-        rdr.seek(0)
         self.magic = rdr.read(4)
         if self.magic != b"swdl":
             raise ValueError("SWDHeader does not start with magic value")
@@ -436,17 +473,28 @@ class SWDL(FileFormat):
         else:
             rdr = BinaryReader(stream)
         self.swd_header = SWDHeader()
-        self.swd_header.read(rdr)
         self.wavi_chunk = WaviChunk()
-        self.wavi_chunk.read(rdr, self.swd_header)
         self.prgi_chunk = PrgiChunk()
-        self.prgi_chunk.read(rdr, self.swd_header)
         self.kgpr_chunk = KgprChunk()
-        self.kgpr_chunk.read(rdr)
         self.pcmd_chunk = PcmdChunk()
-        self.pcmd_chunk.read(rdr)
         self.eod_chunk = EodChunk()
-        self.eod_chunk.read(rdr)
+        while True:
+            pos = rdr.c
+            chunk_name = rdr.read(4)
+            rdr.seek(pos)
+            if chunk_name == b"swdl":
+                self.swd_header.read(rdr)
+            elif chunk_name == b"wavi":
+                self.wavi_chunk.read(rdr, self.swd_header)
+            elif chunk_name == b"prgi":
+                self.prgi_chunk.read(rdr, self.swd_header)
+            elif chunk_name == b"kgpr":
+                self.kgpr_chunk.read(rdr)
+            elif chunk_name == b"pcmd":
+                self.pcmd_chunk.read(rdr)
+            elif chunk_name == b"eod ":
+                self.eod_chunk.read(rdr)
+                break
 
     def write_stream(self, stream):
         if isinstance(stream, BinaryWriter):
