@@ -365,7 +365,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         else:  # file
             oldfolder, oldname = os.path.split(oldpath)
             newpath = os.path.join(oldfolder, newname).replace("\\", "/")
-            self.rom.rename_file(oldpath, newpath)
+            archive.rename_file(oldpath, newpath)
 
         self.ft_filetree.SetItemData(selection, (newpath, archive))
 

@@ -420,3 +420,10 @@ class PlzArchive(Archive, FileFormat):
         index = self.filenames.index(filename)
         self.files.pop(index)
         self.filenames.pop(index)
+
+    def rename_file(self, old, new):
+        with self.open(old, "rb") as f:
+            data = f.read()
+        self.remove_file(old)
+        with self.open(new, "wb+") as f:
+            f.write(data)
