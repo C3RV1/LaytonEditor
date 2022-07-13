@@ -1,4 +1,4 @@
-from formats.parsers import gds_parser
+from formats.parsers.gds_parsers import EventGDSParser
 from .dcc import DCCParser
 import re
 
@@ -143,7 +143,7 @@ class EventScriptParser:
 
     def script_mode(self, line):
         line_split = split_quoted(line)
-        event_gds_parser = gds_parser.EventGDSParser(ev=self.ev)
+        event_gds_parser = EventGDSParser(ev=self.ev)
         if line_split[0] == "fade":
             if not match_syntax(line_split, ("fade", ("in", "out"), ("bottom", "btm", "top", "both")),
                                 (("in", None, ("frames", "seconds")),)):
