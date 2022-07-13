@@ -18,16 +18,16 @@ class ImaAdpcm:
 
     def decompress(self, data: np.ndarray) -> np.ndarray:
         result = np.zeros((data.shape[0] * 2,), dtype=np.int16)
+        result[::2] = data[:] & 0x0f
+        result[1::2] = data[:] >> 4
 
         index = self.index
         new_sample = self.new_sample
+        step_size_table = ImaAdpcm.STEP_SIZE_TABLE
+        index_table = ImaAdpcm.INDEX_TABLE
         for i in range(0, data.shape[0] * 2):
-            if i % 2 == 0:
-                d = data[i // 2] & 0x0f
-            else:
-                d = (data[i // 2] & 0xf0) >> 4
-
-            step = ImaAdpcm.STEP_SIZE_TABLE[index]
+            d = int(result[i])
+            step = step_size_table[index]
             difference = step >> 3
             if d & 4:
                 difference += step
@@ -39,15 +39,13 @@ class ImaAdpcm:
             if d & 8 != 0:
                 difference = -difference
             new_sample += difference
-
             if new_sample > 32767:
                 new_sample = 32767
             elif new_sample < -32768:
                 new_sample = -32768
 
             result[i] = new_sample
-
-            index += ImaAdpcm.INDEX_TABLE[d]
+            index += index_table[d]
             if index < 0:
                 index = 0
             elif index > 88:
