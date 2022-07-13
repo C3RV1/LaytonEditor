@@ -8,11 +8,11 @@ from formats import conf
 
 class MultipleChoiceButton(k4pg.ButtonSprite):
     def __init__(self, is_solution, *args, **kwargs):
-        super(MultipleChoiceButton, self).__init__(*args, **kwargs)
+        super(MultipleChoiceButton, self).__init__(*args, **kwargs,
+                                                   not_pressed_tag="off",
+                                                   pressed_tag="on")
         self.center.update(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.is_solution: bool = is_solution
-        self.not_pressed_tag = "off"
-        self.pressed_tag = "on"
 
     def draw(self, cam: k4pg.Camera):
         super(MultipleChoiceButton, self).draw(cam)
