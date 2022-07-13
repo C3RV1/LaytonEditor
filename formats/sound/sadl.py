@@ -2,7 +2,7 @@ import logging
 import math
 
 from formats.binary import BinaryReader, BinaryWriter
-from formats.sound.sadl_compression import ima_adpcm, procyon
+from formats.sound.compression import adpcm, procyon
 from formats.sound.wav import WAV
 from formats.filesystem import FileFormat
 import numpy as np
@@ -33,7 +33,7 @@ class SADL(FileFormat):
 
     buffer: np.ndarray
 
-    ima_decoders: List[ima_adpcm.ImaAdpcm]
+    ima_decoders: List[adpcm.Adpcm]
     procyon_decoders: List[procyon.Procyon]
     blocks_done: int
     offset: List[int]
@@ -87,7 +87,7 @@ class SADL(FileFormat):
         self.ima_decoders = []
         self.procyon_decoders = []
         for i in range(self.channels):
-            self.ima_decoders.append(ima_adpcm.ImaAdpcm())
+            self.ima_decoders.append(adpcm.Adpcm())
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 

@@ -5,7 +5,7 @@ import numpy as np
 
 from formats.binary import BinaryReader
 from formats.filesystem import FileFormat
-from formats.sound.sadl_compression.ima_adpcm import ImaAdpcm
+from formats.sound.compression.adpcm import Adpcm
 
 
 class EodChunk:
@@ -476,10 +476,10 @@ class SWDL(FileFormat):
     pcmd_chunk: PcmdChunk = None
     eod_chunk: EodChunk
 
-    ima_compressor: ImaAdpcm
+    ima_compressor: Adpcm
 
     def read_stream(self, stream):
-        self.ima_compressor = ImaAdpcm()
+        self.ima_compressor = Adpcm()
         if isinstance(stream, BinaryReader):
             rdr = stream
         else:

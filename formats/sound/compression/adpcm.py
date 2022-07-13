@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class ImaAdpcm:
+class Adpcm:
     def __init__(self):
         self.index = 0
         self.step_size = 7
@@ -23,8 +23,8 @@ class ImaAdpcm:
 
         index = self.index
         new_sample = self.new_sample
-        step_size_table = ImaAdpcm.STEP_SIZE_TABLE
-        index_table = ImaAdpcm.INDEX_TABLE
+        step_size_table = Adpcm.STEP_SIZE_TABLE
+        index_table = Adpcm.INDEX_TABLE
         for i in range(0, data.shape[0] * 2):
             d = int(result[i])
             step = step_size_table[index]
@@ -61,7 +61,7 @@ class ImaAdpcm:
         index = self.index
         predicted_sample = self.predicted_sample
         for i in range(0, len(data)):
-            step = ImaAdpcm.STEP_SIZE_TABLE[index]
+            step = Adpcm.STEP_SIZE_TABLE[index]
             original_sample = data[i]
             different = original_sample - predicted_sample
 
@@ -102,7 +102,7 @@ class ImaAdpcm:
             else:
                 result[i // 2] += new_sample & 0xF << 4
 
-            index += ImaAdpcm.INDEX_TABLE[new_sample]
+            index += Adpcm.INDEX_TABLE[new_sample]
             if index < 0:
                 index = 0
             elif index > 88:
