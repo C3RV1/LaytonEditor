@@ -8,18 +8,41 @@ from formats.filesystem import FileFormat
 class EodChunk:
     magic: bytes = b"eod "
     unk1: int = 0
-    unk2: int = 0x415
+    version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int = 0
 
+    def read(self, rdr: BinaryReader):
+        self.magic = rdr.read(4)
+        if self.magic != b"eod ":
+            raise ValueError("SWDEodChunk does not start with magic value")
+        self.unk1 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SWDEodChunk does not have correct version")
+        self.chunk_beg = rdr.read_uint32()
+        self.chunk_len = rdr.read_uint32()
 
-class SWDPcmdChunk:
+
+class PcmdChunk:
     magic: bytes = b"pcmd"
     unk1: int = 0x0
-    unk2: int = 0x415
+    version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int
-    sample_data: List
+    sample_data: bytes
+
+    def read(self, rdr: BinaryReader):
+        self.magic = rdr.read(4)
+        if self.magic != b"pcmd":
+            raise ValueError("SWDPcmdChunk does not start with magic value")
+        self.unk1 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SWDPcmdChunk does not have correct version")
+        self.chunk_beg = rdr.read_uint32()
+        self.chunk_len = rdr.read_uint32()
+        self.sample_data = rdr.read(self.chunk_len)
 
 
 class KeyGroup:
@@ -31,14 +54,40 @@ class KeyGroup:
     unk50: int
     unk51: int
 
+    def read(self, rdr: BinaryReader):
+        self.key_group_id = rdr.read_uint16()
+        self.polyphony = rdr.read_uint8()
+        self.priority = rdr.read_uint8()
+        self.voice_channel_low = rdr.read_uint8()
+        self.voice_channel_hi = rdr.read_uint8()
+        self.unk50 = rdr.read_uint8()
+        self.unk51 = rdr.read_uint8()
 
-class SWDKgprChunk:
+
+class KgprChunk:
     magic: bytes = b"kgpr"
     unk1: int
-    unk2: int = 0x415
+    version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int
     key_groups: List[KeyGroup]
+
+    def read(self, rdr: BinaryReader):
+        self.magic = rdr.read(4)
+        if self.magic != b"kgpr":
+            raise ValueError("SWDKgprChunk does not start with magic value")
+        self.unk1 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SWDKgprChunk does not have correct version")
+        self.chunk_beg = rdr.read_uint32()
+        self.chunk_len = rdr.read_uint32()
+        pos = rdr.c
+        self.key_groups = []
+        while rdr.c < pos + self.chunk_len:
+            key_group = KeyGroup()
+            key_group.read(rdr)
+            self.key_groups.append(key_group)
 
 
 class LFOEntry:
@@ -66,6 +115,18 @@ class LFOEntry:
     delay: int  # milliseconds
     unk32: int = 0x0  # possible fadeout
     unk33: int = 0x0
+
+    def read(self, rdr: BinaryReader):
+        self.unk34 = rdr.read_uint8()
+        self.unk52 = rdr.read_uint8()
+        self.destination = rdr.read_uint8()
+        self.wshape = rdr.read_uint8()
+        self.rate = rdr.read_uint16()
+        self.unk29 = rdr.read_uint16()
+        self.depth = rdr.read_uint16()
+        self.delay = rdr.read_uint16()
+        self.unk32 = rdr.read_uint16()
+        self.unk33 = rdr.read_uint16()
 
 
 class SplitEntry_:
@@ -110,6 +171,9 @@ class SplitEntry_:
     release: int
     unk53: int
 
+    def read(self, rdr: BinaryReader):
+        pass
+
 
 class ProgramInfoEntry:
     program_id: int
@@ -126,17 +190,64 @@ class ProgramInfoEntry:
     unk8: int = 0x0
     unk9: int = 0x0
     lfo_table: List[LFOEntry]
-    splits_table: List[SplitEntry]
+    splits_table: List[SplitEntry_]
+
+    def read(self, rdr: BinaryReader):
+        self.program_id = rdr.read_uint16()
+        self.splits_count = rdr.read_uint16()
+        self.program_volume = rdr.read_int8()
+        self.program_pan = rdr.read_int8()
+        self.unk3 = rdr.read_uint8()
+        self.that_f_byte = rdr.read_uint8()
+        self.unk4 = rdr.read_uint16()
+        self.unk5 = rdr.read_uint8()
+        self.lfo_count = rdr.read_uint8()
+        self.pad_byte = rdr.read_uint8()
+        self.unk7 = rdr.read_uint8()
+        self.unk8 = rdr.read_uint8()
+        self.unk9 = rdr.read_uint8()
+        self.lfo_table = []
+        for _ in range(self.lfo_count):
+            lfo_entry = LFOEntry()
+            lfo_entry.read(rdr)
+            self.lfo_table.append(lfo_entry)
+        rdr.read(16)
+        self.splits_table = []
+        for _ in range(self.splits_count):
+            split_entry = SplitEntry_()
+            split_entry.read(rdr)
+            self.splits_table.append(split_entry)
 
 
-class SWDPrgiChunk:
+class PrgiChunk:
     magic: bytes = b"prgi"
     unk1: int = 0
-    unk2: int = 0x415
+    version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int
     program_ptr_table: List[int]
-    program_info_table: List[int]
+    program_info_table: List[ProgramInfoEntry]
+
+    def read(self, rdr: BinaryReader, header: 'SWDHeader'):
+        self.magic = rdr.read(4)
+        if self.magic != b"prgi":
+            raise ValueError("SWDPrgiChunk does not start with magic value")
+        self.unk1 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SWDPrgiChunk does not have correct version")
+        self.chunk_beg = rdr.read_uint32()
+        self.chunk_len = rdr.read_uint32()
+        pos = rdr.c
+        self.program_ptr_table = []
+        for _ in range(header.prgi_slot_count):
+            self.program_ptr_table.append(rdr.read_uint16())
+        rdr.align(16)
+        self.program_info_table = []
+        while rdr.c != pos + self.chunk_len:
+            sample_info_entry = ProgramInfoEntry()
+            sample_info_entry.read(rdr)
+            self.program_info_table.append(sample_info_entry)
 
 
 class SampleInfoEntry:
@@ -178,15 +289,77 @@ class SampleInfoEntry:
     release: int
     unk57: int
 
+    def read(self, rdr: BinaryReader):
+        self.unk1 = rdr.read_uint16()
+        self.id_ = rdr.read_uint16()
+        self.fine_tune = rdr.read_int8()
+        self.coarse_tune = rdr.read_int8()
+        self.root_key = rdr.read_int8()
+        self.key_transpose = rdr.read_int8()
+        self.volume = rdr.read_int8()
+        self.pan = rdr.read_int8()
+        self.unk5 = rdr.read_uint8()
+        self.unk58 = rdr.read_uint8()
+        self.unk6 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SampleInfoEntry does not have correct version")
+        self.sample_format = rdr.read_uint16()
+        self.unk9 = rdr.read_uint8()
+        self.sample_loop = rdr.read_bool()
+        self.unk10 = rdr.read_uint16()
+        self.unk11 = rdr.read_uint16()
+        self.unk12 = rdr.read_uint16()
+        self.unk13 = rdr.read_uint32()
+        self.sample_rate = rdr.read_uint32()
+        self.sample_pos = rdr.read_uint32()
+        self.loop_beginning = rdr.read_uint32()
+        self.loop_length = rdr.read_uint32()
+        self.envelope = rdr.read_uint8()
+        self.envelope_multiplier = rdr.read_uint8()
+        self.unk19 = rdr.read_uint8()
+        self.unk20 = rdr.read_uint8()
+        self.unk21 = rdr.read_uint16()
+        self.unk22 = rdr.read_uint16()
+        self.attack_volume = rdr.read_int8()
+        self.attack = rdr.read_int8()
+        self.decay = rdr.read_int8()
+        self.sustain = rdr.read_int8()
+        self.hold = rdr.read_int8()
+        self.decay2 = rdr.read_int8()
+        self.release = rdr.read_int8()
+        self.unk57 = rdr.read_int8()
 
-class SWDWaviChunk:
+
+class WaviChunk:
     magic: bytes = b"wavi"
     unk1: int
-    version: int = 0x415
+    version: int = 0x415  # maybe
     chunk_beg: int = 0x10
     chunk_len: int
     wav_table: List[int]
     sample_info_table: List[SampleInfoEntry]
+
+    def read(self, rdr: BinaryReader, header: 'SWDHeader'):
+        self.magic = rdr.read(4)
+        if self.magic != b"wavi":
+            raise ValueError("SWDWaviChunk does not start with magic value")
+        self.unk1 = rdr.read_uint16()
+        self.version = rdr.read_uint16()
+        if self.version != 0x415:
+            raise ValueError("SWDWaviChunk does not have correct version")
+        self.chunk_beg = rdr.read_uint32()
+        self.chunk_len = rdr.read_uint32()
+        pos = rdr.c
+        self.wav_table = []
+        for _ in range(header.wavi_slot_count):
+            self.wav_table.append(rdr.read_uint16())
+        rdr.align(16)
+        self.sample_info_table = []
+        while rdr.c != pos + self.chunk_len:
+            sample_info_entry = SampleInfoEntry()
+            sample_info_entry.read(rdr)
+            self.sample_info_table.append(sample_info_entry)
 
 
 class SWDHeader:
@@ -212,55 +385,68 @@ class SWDHeader:
     unk17: int
     wavi_len: int  # len of wavi chunk
 
-    def read(self, br: BinaryReader):
-        br.seek(0)
-        self.magic = br.read(4)
+    def read(self, rdr: BinaryReader):
+        rdr.seek(0)
+        self.magic = rdr.read(4)
         if self.magic != b"swdl":
             raise ValueError("SWDHeader does not start with magic value")
-        br.read_uint32()  # 0
-        self.file_length = br.read_uint32()
-        self.version = br.read_uint16()
+        rdr.read_uint32()  # 0
+        self.file_length = rdr.read_uint32()
+        self.version = rdr.read_uint16()
         if self.version != 0x415:
             raise ValueError("SMDHeader does not have correct version")
-        self.is_sample_bank = br.read_bool()
-        self.group = br.read_uint8()
+        self.is_sample_bank = rdr.read_bool()
+        self.group = rdr.read_uint8()
         # 8 bytes of 0
-        br.read_uint32()
-        br.read_uint32()
-        self.year = br.read_uint16()
-        self.month = br.read_uint8()
-        self.day = br.read_uint8()
-        self.hour = br.read_uint8()
-        self.minute = br.read_uint8()
-        self.second = br.read_uint8()
-        self.centisecond = br.read_uint8()
-        self.file_name = br.read_string(16, encoding=None, pad=b"\xAA")
-        self.unk10 = br.read_uint32()
+        rdr.read_uint32()
+        rdr.read_uint32()
+        self.year = rdr.read_uint16()
+        self.month = rdr.read_uint8()
+        self.day = rdr.read_uint8()
+        self.hour = rdr.read_uint8()
+        self.minute = rdr.read_uint8()
+        self.second = rdr.read_uint8()
+        self.centisecond = rdr.read_uint8()
+        self.file_name = rdr.read_string(16, encoding=None, pad=b"\xAA")
+        self.unk10 = rdr.read_uint32()
         # 8 bytes of 0
-        br.read_uint32()
-        br.read_uint32()
-        self.unk13 = br.read_uint32()
-        self.pcmdlen = br.read_uint32()
-        self.unk14 = br.read_uint32()
-        self.wavi_slot_count = br.read_uint16()
-        self.prgi_slot_count = br.read_uint16()
-        self.unk17 = br.read_uint16()
-        self.wavi_len = br.read_uint32()
-
-
-class SWDSections:
-    pass
+        rdr.read_uint32()
+        rdr.read_uint32()
+        self.unk13 = rdr.read_uint32()
+        self.pcmdlen = rdr.read_uint32()
+        self.unk14 = rdr.read_uint32()
+        self.wavi_slot_count = rdr.read_uint16()
+        self.prgi_slot_count = rdr.read_uint16()
+        self.unk17 = rdr.read_uint16()
+        self.wavi_len = rdr.read_uint32()
 
 
 # TODO: Finish new SWD format for consistency
 class SWDL(FileFormat):
     swd_header: SWDHeader
+    wavi_chunk: WaviChunk
+    prgi_chunk: PrgiChunk
+    kgpr_chunk: KgprChunk
+    pcmd_chunk: PcmdChunk
+    eod_chunk: EodChunk
 
     def read_stream(self, stream):
         if isinstance(stream, BinaryReader):
             rdr = stream
         else:
             rdr = BinaryReader(stream)
+        self.swd_header = SWDHeader()
+        self.swd_header.read(rdr)
+        self.wavi_chunk = WaviChunk()
+        self.wavi_chunk.read(rdr, self.swd_header)
+        self.prgi_chunk = PrgiChunk()
+        self.prgi_chunk.read(rdr, self.swd_header)
+        self.kgpr_chunk = KgprChunk()
+        self.kgpr_chunk.read(rdr)
+        self.pcmd_chunk = PcmdChunk()
+        self.pcmd_chunk.read(rdr)
+        self.eod_chunk = EodChunk()
+        self.eod_chunk.read(rdr)
 
     def write_stream(self, stream):
         if isinstance(stream, BinaryWriter):
