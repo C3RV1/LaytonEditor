@@ -10,7 +10,7 @@ class SMDLMidiSequencer(SMDLSequencer):
         super(SMDLMidiSequencer, self).__init__(smd_obj, loops=False)
 
         self.last_midi_tick = [0] * len(self.smd_obj.tracks)
-        self.midi_file = mido.MidiFile(type=2)
+        self.midi_file = mido.MidiFile(type=1)
         self.midi_file.ticks_per_beat = self.smd_obj.song_chunk.tpqn
         self.tracks: List[mido.MidiTrack] = []
         for i in range(len(self.smd_obj.tracks)):
