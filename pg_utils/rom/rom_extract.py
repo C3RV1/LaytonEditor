@@ -2,9 +2,9 @@ import os
 import shutil
 from typing import Dict
 
-import formats.sound.smdl.smdl as smdl
-import formats.sound.sadl as sadl
-import formats.sound.swd as swd
+from formats.sound.smdl import smdl
+from formats.sound import sadl
+from formats.sound import swdl
 import formats.binary as binary
 
 from formats import conf
@@ -35,8 +35,8 @@ def load_smd(path: str, rom=None) -> tuple:
     smd_obj = smdl.SMDL(filename=path, rom=rom)
 
     swd_path = path.split(".")[0] + ".SWD"
-    swd_file = swd.SWDL(swd_path, rom=rom)
-    programs: Dict[int, swd.ProgramInfoEntry] = {}
+    swd_file = swdl.SWDL(swd_path, rom=rom)
+    programs: Dict[int, swdl.ProgramInfoEntry] = {}
     for program_id in swd_file.get_program_list():
         programs[program_id] = swd_file.get_program(program_id)
     return smd_obj, programs

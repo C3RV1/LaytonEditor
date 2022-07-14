@@ -11,7 +11,7 @@ from formats.graphics.bg import BGImage
 from formats.parsers.dcc import DCCParser
 from formats.place import Place
 from formats.puzzle import Puzzle
-from formats.sound.swd import SWDL
+from formats.sound.swdl import SWDL
 from formats.sound import wav, sadl, sample_transform
 import numpy as np
 import pygame as pg

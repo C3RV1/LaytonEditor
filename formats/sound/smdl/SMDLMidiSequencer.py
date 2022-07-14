@@ -35,7 +35,9 @@ class SMDLMidiSequencer(SMDLSequencer):
         self.set_time_delta(channel)
 
     def start_loop(self, channel):
-        pass
+        track: mido.MidiTrack = self.tracks[channel]
+        track.append(mido.MetaMessage('text', text="start_loop"))
+        self.set_time_delta(channel)
 
     def set_octave(self, channel, octave):
         pass
@@ -79,3 +81,8 @@ class SMDLMidiSequencer(SMDLSequencer):
     def generate_mid(self) -> mido.MidiFile:
         self.generate_samples(-1)
         return self.midi_file
+
+    def end_channel(self, channel):
+        track: mido.MidiTrack = self.tracks[channel]
+        track.append(mido.MetaMessage('end_of_track'))
+        self.set_time_delta(channel)

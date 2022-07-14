@@ -44,11 +44,11 @@ class TestSADL(unittest.TestCase):
         exported_wav = sad_obj.to_wav()
         binary_writer = binary.BinaryWriter()
         exported_wav.write_stream(binary_writer)
-        assert hashlib.sha256(binary_writer.readall()).digest() == b'\xa1\xb3B\xed\xf2\xeb\x19\xc5\xc5\xe3\xd1\xfc\xde\xc4\xd5U:\x13x\x06!\xbay\xf0\x96\xb2\x8dwP\xc6\xcc\x86'
+        assert hashlib.sha256(binary_writer.readall()).hexdigest() == "a1b342edf2eb19c5c5e3d1fcdec4d5553a13780621ba79f096b28d7750c6cc86"
 
         sad_obj.from_wav(exported_wav)
         exported_wav = sad_obj.to_wav()
 
         binary_writer = binary.BinaryWriter()
         exported_wav.write_stream(binary_writer)
-        assert hashlib.sha256(binary_writer.readall()).digest() == b'\xf7\xcb\xf3\xe2\x1d\x19\xa0\x9f\x0cW\x87>\x176n\xf1\xa9\x9b\x11\xce\x1f\x10\x97\xa7\x11\xd7\xa1\x82\x97?\x11<'
+        assert hashlib.sha256(binary_writer.readall()).hexdigest() == "f7cbf3e21d19a09f0c57873e17366ef1a99b11ce1f1097a711d7a182973f113c"

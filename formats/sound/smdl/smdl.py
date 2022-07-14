@@ -78,16 +78,8 @@ class SongChunk:
     label: bytes = b"song"
     unk1: int
     tpqn: int = 0x30  # Ticks per quarter note
-    unk5: int
     num_tracks: int
     num_channels: int
-    unk6: int
-    unk7: int
-    unk8: int
-    unk9: int
-    unk10: int
-    unk11: int
-    unk12: int
 
     def read(self, br: BinaryReader):
         br.seek(0x40, io.SEEK_SET)
@@ -134,46 +126,42 @@ class SongChunk:
 
 class TrackChunkHeader:
     label: bytes = b"trk\x20"
-    param1: int
-    param2: int
     chunk_length = int
 
     def read(self, br: BinaryReader):
         self.label = br.read(4)
         if self.label != b"trk\x20":
             raise ValueError("TrackChunkHeader does not start with magic value")
-        self.param1 = br.read_uint32()
-        self.param2 = br.read_uint32()
+        br.read_uint32()
+        br.read_uint32()
         self.chunk_length = br.read_uint32()
 
     def write(self, bw: BinaryWriter):
         bw.write(self.label)
-        bw.write_uint32(self.param1)
-        bw.write_uint32(self.param2)
+        bw.write_uint32(0x01000000)
+        bw.write_uint32(0xFF04)
         bw.write_uint32(self.chunk_length)
 
 
 class TrackPreamble:
     track_id: int
     channel_id: int
-    unk1: int
-    unk2: int
 
     def read(self, br: BinaryReader):
         self.track_id = br.read_uint8()
         self.channel_id = br.read_uint8()
-        self.unk1 = br.read_uint8()
-        self.unk2 = br.read_uint8()
+        br.read_uint8()
+        br.read_uint8()
 
     def write(self, bw: BinaryWriter):
         bw.write_uint8(self.track_id)
         bw.write_uint8(self.channel_id)
-        bw.write_uint8(self.unk1)
-        bw.write_uint8(self.unk2)
+        bw.write_uint8(0)
+        bw.write_uint8(0)
 
 
 class TrackContent:
-    event_bytes: bytes
+    event_bytes: bytes = b""
 
     def read(self, br: BinaryReader, track_header: TrackChunkHeader):
         eb = br.read_char_array(track_header.chunk_length - 4)
@@ -190,11 +178,12 @@ class Track:
     track_preamble: TrackPreamble
     track_content: TrackContent
 
-    def read(self, br: BinaryReader):
+    def __init__(self):
         self.track_header = TrackChunkHeader()
         self.track_preamble = TrackPreamble()
         self.track_content = TrackContent()
 
+    def read(self, br: BinaryReader):
         self.track_header.read(br)
         self.track_preamble.read(br)
         self.track_content.read(br, self.track_header)
@@ -209,21 +198,19 @@ class Track:
 
 class EOCChunk:
     label: bytes = b"eoc\x20"
-    param1: int = 0x1
-    param2: int = 0x04FF0000
 
     def read(self, br: BinaryReader):
         self.label = br.read_string(4, encoding=None)
         if self.label != b"eoc\x20":
             raise ValueError(f"EOCChunk does not start with magic value ({repr(self.label)}")
-        self.param1 = br.read_uint32()
-        self.param2 = br.read_uint32()
+        br.read_uint32()
+        br.read_uint32()
         br.read_uint32()  # 0
 
     def write(self, bw: BinaryWriter):
         bw.write(self.label)
-        bw.write_uint32(self.param1)
-        bw.write_uint32(self.param2)
+        bw.write_uint32(0x01000000)
+        bw.write_uint32(0xFF04)
         bw.write_uint32(0)
 
 
