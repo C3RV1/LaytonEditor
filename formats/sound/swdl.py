@@ -115,7 +115,7 @@ class LFOEntry:
 
     def read(self, rdr: BinaryReader):
         assert rdr.read_uint8() == 0
-        self.unk1 = rdr.read_uint8()  # bool? GE_003.SWD/SI_012.SWD is 1
+        self.unk1 = rdr.read_uint8()  # bool? GE_003.SWD/SI_012.SWD is 1 (mostly 0)
         self.destination = rdr.read_uint8()
         self.wshape = rdr.read_uint8()
         self.rate = rdr.read_uint16()
@@ -342,7 +342,7 @@ class SampleInfoEntry:
 
 class WaviChunk:
     magic: bytes = b"wavi"
-    version: int = 0x415  # maybe
+    version: int = 0x415
     chunk_beg: int = 0x10
     chunk_len: int
     wav_table: List[int]
@@ -425,7 +425,7 @@ class SWDHeader:
         self.wavi_len = rdr.read_uint32()
 
 
-# TODO: Finish new SWD format for consistency
+# TODO: Write and figure out unknowns
 class SWDL(FileFormat):
     swd_header: SWDHeader
     wavi_chunk: WaviChunk
