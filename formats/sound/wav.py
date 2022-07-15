@@ -14,7 +14,6 @@ class WaveFormat:
 
 
 class FmtChunk:
-    chunk_id: bytes
     chunk_size: int
     audio_format: int
     num_channels: int
@@ -24,8 +23,8 @@ class FmtChunk:
     bits_per_sample: int
 
     def read(self, rdr: BinaryReader):
-        self.chunk_id = rdr.read(4)
-        self.chunk_size = rdr.read_uint32()
+        assert rdr.read(4) == b"fmt "
+        assert rdr.read_uint32() == 0x10
         self.audio_format = rdr.read_uint16()
         self.num_channels = rdr.read_uint16()
         self.sample_rate = rdr.read_uint32()
@@ -34,7 +33,7 @@ class FmtChunk:
         self.bits_per_sample = rdr.read_uint16()
 
     def write(self, wtr: BinaryWriter):
-        wtr.write(b"fmt\x20")
+        wtr.write(b"fmt ")
         wtr.write_uint32(0x10)
         wtr.write_uint16(WaveFormat.WAVE_FORMAT_PCM)
         wtr.write_uint16(self.num_channels)
@@ -47,12 +46,11 @@ class FmtChunk:
 
 
 class DataChunk:
-    chunk_id: bytes
     chunk_size: int
     data: np.ndarray
 
     def read(self, rdr: BinaryReader, fmt_chunk: FmtChunk):
-        self.chunk_id = rdr.read(4)
+        assert rdr.read(4) == b"data"
         self.chunk_size = rdr.read_uint32()
 
         if fmt_chunk.bits_per_sample == 0x10:
@@ -85,9 +83,7 @@ class DataChunk:
 
 class WAV:
     file_id: int
-    chunk_id: bytes
     chunk_size: int
-    format: bytes
     fmt: FmtChunk
     data: DataChunk
     loop_flag: int
@@ -103,18 +99,16 @@ class WAV:
         else:
             rdr = stream
 
-        self.chunk_id = rdr.read(4)
+        assert rdr.read(4) == b"RIFF"
         self.chunk_size = rdr.read_uint32()
-        self.format = rdr.read(4)
-        if self.chunk_id != b"RIFF" or self.format != b"WAVE":
-            raise NotImplementedError()
+        assert rdr.read(4) == b"WAVE"
 
         self.fmt.read(rdr)
 
         if self.fmt.audio_format != WaveFormat.WAVE_FORMAT_PCM or self.fmt.bits_per_sample == 0x08:
             raise NotImplementedError()
 
-        rdr.seek(0x14 + self.fmt.chunk_size)
+        rdr.seek(0x24)
 
         data_id = rdr.read(4)
         while data_id != b"data":
