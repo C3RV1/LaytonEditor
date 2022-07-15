@@ -496,7 +496,7 @@ class SWDL(FileFormat):
         sample_data = self.pcmd_chunk.sample_data[sample_entry.sample_pos:sample_entry.sample_pos + sample_length]
         if sample_entry.sample_format == 0x100:  # is already 16 bit pcm
             dt = np.dtype(np.int16).newbyteorder("<")
-            sample_data: np.ndarray = np.frombuffer(sample_data, dtype=dt)
+            sample_data: np.ndarray = sample_data.view(dtype=dt)
         elif sample_entry.sample_format == 0x200:
             self.ima_compressor.reset()
             sample_data = self.ima_compressor.decompress(sample_data)
