@@ -81,7 +81,7 @@ class SlideTile(k4pg.Sprite):
 
     def draw(self, cam: k4pg.Camera):
         super(SlideTile, self).draw(cam)
-        if conf.DEBUG:
+        if conf.DEBUG_PUZZLE:
             for collider in self.get_world_colliders():
                 k4pg.draw.rect(cam, pg.Color(0, 255, 0), collider, width=2)
 
@@ -242,6 +242,6 @@ class Slide(PuzzlePlayer):
             tile.draw(self.btm_camera)
         for move_counter in self.move_counters:
             move_counter.draw(self.btm_camera)
-        if conf.DEBUG:
+        if conf.DEBUG_PUZZLE:
             for occlusion in self.board.occlusions:
                 k4pg.draw.rect(self.btm_camera, pg.Color(255, 0, 0), occlusion, width=2)

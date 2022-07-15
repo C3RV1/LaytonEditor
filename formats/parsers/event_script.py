@@ -1,5 +1,5 @@
 from formats.parsers.gds_parsers import EventGDSParser
-from .dcc import DCCParser
+from formats.parsers.dcc import DCCParser
 import re
 
 

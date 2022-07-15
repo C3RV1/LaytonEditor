@@ -2,4 +2,5 @@
 # Global language (from rom)
 LANG = "en"
 
-DEBUG = False
+DEBUG_PUZZLE = False
+DEBUG_AUDIO = False

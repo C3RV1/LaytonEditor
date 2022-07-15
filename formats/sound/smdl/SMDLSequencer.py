@@ -9,7 +9,7 @@ from formats.sound.smdl import smdl
 from formats.sound.swdl import ProgramInfoEntry
 import numpy as np
 from typing import Dict
-from formats.conf import DEBUG
+from formats import conf
 
 
 @dataclass(order=True)
@@ -106,7 +106,7 @@ class SMDLSequencer:
             mapped_preset = self.map_preset(presets[preset_index])
             if mapped_preset is not None:
                 self.PROGRAM_MAP[preset_index] = mapped_preset
-            if DEBUG:
+            if conf.DEBUG_AUDIO:
                 logging.debug(f"Preset {preset_index} mapped to {mapped_preset}")
 
     def note_on(self, channel, midi_note, velocity):
@@ -157,11 +157,11 @@ class SMDLSequencer:
             event = track_br.read_uint8()
             if event == 0x98:
                 if self.loop_start[track_id] != -1 and self.loops:
-                    if DEBUG:
+                    if conf.DEBUG_AUDIO:
                         logging.debug(f"{prefix}Looping to: {self.loop_start[track_id]}")
                     track_br.seek(self.loop_start[track_id])
                 else:
-                    if DEBUG:
+                    if conf.DEBUG_AUDIO:
                         logging.debug(f"{prefix}Complete")
                     self.track_completed[track_id] = True
                     self.end_channel(track_id)
@@ -190,7 +190,7 @@ class SMDLSequencer:
                     self.last_note_length[track_id] = duration
                 # notes are on even, pauses on odd (pauses after notes)
                 note_end = (self.current_tick + duration) * 2
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Note on {midi_note} with duration {duration}, ending on {note_end}")
 
                 self.note_on(track_id, midi_note, velocity)
@@ -198,7 +198,7 @@ class SMDLSequencer:
                 def on_note_end(note1=midi_note, channel=track_id):
                     self.note_off(channel, note1)
                     prefix_ = f"[Track {channel} tick: {self.current_tick}]\t"
-                    if DEBUG:
+                    if conf.DEBUG_AUDIO:
                         logging.debug(f"{prefix_}Note off {midi_note}")
 
                 queue_stop_object = PrioritizedItem(note_end, on_note_end)
@@ -210,7 +210,7 @@ class SMDLSequencer:
                 # notes are on even, pauses on odd (pauses after notes)
                 pause_end = (self.current_tick + pause_time) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 1 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -219,7 +219,7 @@ class SMDLSequencer:
             elif event == 0x90:
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 2 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -229,7 +229,7 @@ class SMDLSequencer:
                 self.last_delay[track_id] += track_br.read_uint8()
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 3 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -239,7 +239,7 @@ class SMDLSequencer:
                 self.last_delay[track_id] = track_br.read_uint8()
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 4 ending on {pause_end}, {self.last_delay[track_id]}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -250,7 +250,7 @@ class SMDLSequencer:
                 self.last_delay[track_id] = a
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 5 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -262,7 +262,7 @@ class SMDLSequencer:
                 self.last_delay[track_id] = a
                 pause_end = (self.current_tick + self.last_delay[track_id]) * 2 + 1
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Pause 6 ending on {pause_end}")
 
                 queue_stop_object = PrioritizedItem(pause_end, post_pause)
@@ -272,31 +272,31 @@ class SMDLSequencer:
                 self.loop_start[track_id] = track_br.tell()
                 self.start_loop(track_id)
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Looping on: {self.loop_start[track_id]}")
             elif event == 0xa0:
                 self.octave[track_id] = track_br.read_uint8()
                 self.set_octave(track_id, self.octave[track_id])
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Setting octave to {self.octave[track_id]}")
             elif event == 0xa1:
                 octave_mod = track_br.read_uint8()
                 self.mod_octave(track_id, octave_mod)
                 self.octave[track_id] += octave_mod
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Modifying octave with {octave_mod} to {self.octave[track_id]}")
             elif event == 0xa4 or event == 0xa5:
                 self.bpm = track_br.read_uint8()
                 self.set_bpm(track_id, self.bpm)
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Set tempo: {self.bpm}")
             elif event == 0xac:
                 program = track_br.read_uint8()
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Program select: {program}")
 
                 if program in self.PROGRAM_MAP.keys():
@@ -307,28 +307,28 @@ class SMDLSequencer:
             elif event == 0xd7:
                 bend = track_br.read_uint16()
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Bending note: {bend}")
 
                 self.pitch_bend(track_id, bend)
             elif event == 0xe0:  # Change volume
                 volume = track_br.read_uint8()
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Changing volume to {volume}")
 
                 self.change_volume(track_id, volume)
             elif event == 0xe3:
                 expression = track_br.read_uint8()
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Changing expression to {expression}")
 
                 self.change_expression(track_id, expression)
             elif event == 0xe8:  # pan
                 pan = track_br.read_uint8()
 
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Changing pan to {pan}")
 
                 self.change_pan(track_id, pan)
@@ -339,25 +339,25 @@ class SMDLSequencer:
                            0xD0, 0xD1, 0xD2, 0xDB, 0xDF, 0xE1, 0xE7,
                            0xE9, 0xEF, 0xF6]:
                 v = track_br.read_char_array(1)
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent1: {hex(event)} Value: {v}")
             elif event in [0xCB, 0xF8,  # Should remain here
                            # Unknown
                            0xA8, 0xB4, 0xD5, 0xD6, 0xD8, 0xF2]:
                 v = track_br.read_char_array(2)
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent2: {hex(event)} Value: {v}")
             elif event in [0xAF, 0xD4, 0xE2, 0xEA, 0xF3]:  # Unknown
                 v = track_br.read_char_array(3)
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent3: {hex(event)} Value: {v}")
             elif event in [0xDD, 0xE5, 0xED, 0xF1]:  # Unknown
                 v = track_br.read_char_array(4)
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent4: {hex(event)} Value: {v}")
             elif event in [0xDC, 0xE4, 0xEC, 0xF0]:  # Unknown
                 v = track_br.read_char_array(5)
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"[Track {track_id} tick: {self.current_tick}]\tEvent5: {hex(event)} Value: {v}")
 
     def reset(self):

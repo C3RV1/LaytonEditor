@@ -2,10 +2,10 @@ import logging
 from typing import Dict
 
 import mido
-from .smdl import SMDL, Track
+from formats.sound.smdl.smdl import SMDL, Track
 from formats.binary import BinaryWriter
-from ..swdl import ProgramInfoEntry
-from ...conf import DEBUG
+from formats.sound.swdl import ProgramInfoEntry
+from formats import conf
 
 
 class SMDLBuilderMidi:
@@ -55,14 +55,14 @@ class SMDLBuilderMidi:
             mapped_preset = self.map_preset(presets[preset_index])
             if mapped_preset is not None:
                 self.PROGRAM_MAP[mapped_preset] = preset_index
-            if DEBUG:
+            if conf.DEBUG_AUDIO:
                 logging.debug(f"Preset {preset_index} mapped to {mapped_preset}")
 
     def build_midi(self, midi: mido.MidiFile):
         self.smd.tracks = []
         for i, track in enumerate(midi.tracks):
             track: mido.MidiTrack
-            if DEBUG:
+            if conf.DEBUG_AUDIO:
                 logging.debug(f"Track {i}")
 
             smd_track = Track()
@@ -77,7 +77,7 @@ class SMDLBuilderMidi:
 
             def add_pause(midi_ticks):
                 nonlocal last_delay
-                if DEBUG:
+                if conf.DEBUG_AUDIO:
                     logging.debug(f"Adding pause of {midi_ticks} midi ticks")
                 while midi_ticks > 0:
                     if midi_ticks == last_delay:  # same delay
@@ -146,7 +146,7 @@ class SMDLBuilderMidi:
                     note_pair = note_pairs.pop(0)
 
                     assert note_pair[0] == msg
-                    if DEBUG:
+                    if conf.DEBUG_AUDIO:
                         logging.debug(f"{msg} ending on {note_pair[1]}")
 
                     duration = note_pair[1] - current_tick
@@ -200,7 +200,7 @@ class SMDLBuilderMidi:
                     if msg.text == "start_loop":
                         write_event(0x99)
                 else:
-                    if DEBUG:
+                    if conf.DEBUG_AUDIO:
                         logging.debug(f"MSG not implemented {msg}")
 
             smd_track.track_content.event_bytes = track_bw.getvalue()

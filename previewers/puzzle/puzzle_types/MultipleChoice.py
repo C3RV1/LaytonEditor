@@ -18,7 +18,7 @@ class MultipleChoiceButton(k4pg.ButtonSprite):
 
     def draw(self, cam: k4pg.Camera):
         super(MultipleChoiceButton, self).draw(cam)
-        if conf.DEBUG:
+        if conf.DEBUG_PUZZLE:
             k4pg.draw.rect(cam, pg.Color(0, 255, 0), self.get_world_rect(), width=2)
 
 

@@ -1,6 +1,6 @@
 from typing import TextIO
 
-from .swdl import ProgramInfoEntry
+from formats.sound.swdl import ProgramInfoEntry
 
 
 def sfz_write_preset(stream: TextIO, preset: ProgramInfoEntry, sample_location=r"..\samples\sample_%04i.wav"):
