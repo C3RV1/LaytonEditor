@@ -91,6 +91,7 @@ class KgrpChunk:
 
 
 class LFOEntry:
+    unk1: int
     # Destination of the lfo output
     # 0 - none/disabled
     # 1 - pitch
@@ -114,7 +115,7 @@ class LFOEntry:
 
     def read(self, rdr: BinaryReader):
         assert rdr.read_uint8() == 0
-        assert rdr.read_uint8() == 0
+        self.unk1 = rdr.read_uint8()  # bool? GE_003.SWD/SI_012.SWD is 1
         self.destination = rdr.read_uint8()
         self.wshape = rdr.read_uint8()
         self.rate = rdr.read_uint16()
