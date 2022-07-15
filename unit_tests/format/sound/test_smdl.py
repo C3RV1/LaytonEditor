@@ -4,6 +4,7 @@ from typing import Dict
 from formats.binary import BinaryWriter
 from formats.sound.smdl import smdl, SMDLMidiSequencer, SMDLBuilder
 from formats.sound import swdl
+from formats.sound import sound_types
 from formats import binary
 from formats.filesystem import NintendoDSRom
 import unittest
@@ -37,9 +38,7 @@ class TestSMD(unittest.TestCase):
         smd_obj = smdl.SMDL(filename="data_lt2/sound/BG_004.SMD", rom=self.rom)
         swd_obj = swdl.SWDL(filename="data_lt2/sound/BG_004.SWD", rom=self.rom)
 
-        programs: Dict[int, swdl.ProgramInfoEntry] = {}
-        for program_id in swd_obj.get_program_list():
-            programs[program_id] = swd_obj.get_program(program_id)
+        programs: Dict[int, sound_types.Program] = swd_obj.programs
 
         binary_writer = BinaryWriter()
         smd_obj.write_stream(binary_writer)

@@ -239,7 +239,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         elif name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
             self.fp_samplebank_list.Clear()
             sample_bank = SWDL(filename=name, rom=archive)
-            for sample in sample_bank.get_sample_list():
+            for sample in sample_bank.samples:
                 self.fp_samplebank_list.AppendItems(f"Sample {sample}")
             self.fp_menus_loaded.append("Sample Bank")
             self.GetGrandParent().add_menu(self.fp_sample_bank_menu, "Sample Bank")
@@ -401,9 +401,9 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     def fp_sample_bank_play_clicked(self, _):
         self.preview_data: SWDL
-        index = self.preview_data.get_sample_list()[self.fp_samplebank_list.GetSelection()]
-        sample: np.ndarray = self.preview_data.get_sample(index)
-        sample_info = self.preview_data.get_sample_info(index)
+        index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
+        sample_info = self.preview_data.samples[index]
+        sample = sample_info.pcm16
         sample_pcm = np.reshape(sample, (1, sample.shape[0]))
         target_rate = pg.mixer.get_init()[0]
         target_channels = pg.mixer.get_init()[2]

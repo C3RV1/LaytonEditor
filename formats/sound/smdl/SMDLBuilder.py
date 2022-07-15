@@ -4,7 +4,7 @@ from typing import Dict
 import mido
 from formats.sound.smdl.smdl import SMDL, Track
 from formats.binary import BinaryWriter
-from formats.sound.swdl import ProgramInfoEntry
+from formats.sound.sound_types import Program
 from formats import conf
 
 
@@ -43,14 +43,14 @@ class SMDLBuilderMidi:
 
     PAUSE_TICKS = [96, 72, 64, 48, 36, 32, 24, 18, 16, 12, 9, 8, 6, 4, 3, 2]
 
-    def map_preset(self, preset: ProgramInfoEntry):
-        for split_entry in preset.splits_table:
+    def map_preset(self, preset: Program):
+        for split_entry in preset.splits:
             for program in self.SAMPLE_TO_PROGRAM.keys():
-                if split_entry.sample_info.id_ in self.SAMPLE_TO_PROGRAM[program]:
+                if split_entry.sample.id_ in self.SAMPLE_TO_PROGRAM[program]:
                     return program
         return None
 
-    def create_program_map(self, presets: Dict[int, ProgramInfoEntry]):
+    def create_program_map(self, presets: Dict[int, Program]):
         for preset_index in presets:
             mapped_preset = self.map_preset(presets[preset_index])
             if mapped_preset is not None:
