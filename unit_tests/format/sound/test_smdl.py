@@ -50,8 +50,7 @@ class TestSMD(unittest.TestCase):
 
         exported_file = io.BytesIO()
         mid.save(file=exported_file)
-        print(hashlib.sha256(exported_file.getvalue()).hexdigest())
-        assert hashlib.sha256(exported_file.getvalue()).hexdigest() == "fca865d3a1dd0465797296e2a3f3c380683cda5c0095bbc72cd94af5720870d7"
+        assert hashlib.sha256(exported_file.getvalue()).hexdigest() == "927901f3b7963987e37b67f22511468998e6923d6789c910094223ca5bca03fd"
 
         smd_midi_builder = SMDLBuilder.SMDLBuilderMidi(smd_obj)
         smd_midi_builder.create_program_map(programs)
