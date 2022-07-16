@@ -248,7 +248,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         elif name.lower().endswith(".swd"):
             preset_bank = SWDL(filename=name, rom=archive)
             self.fp_info_text.Clear()
-            text = "using samples: " + ", ".join([str(x) for x in preset_bank.get_sample_list()])
+            text = "using samples: " + ", ".join([str(x) for x in preset_bank.samples])
             self.fp_info_text.WriteText(text)
             self.fp_formats_book.SetSelection(6)  # Info page
         elif name.startswith("n_place"):

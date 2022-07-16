@@ -1,9 +1,11 @@
 import io
-from typing import Union, Optional, List
+from enum import IntEnum
+from typing import Union, Optional, List, Dict
 
 import numpy as np
 
 from formats.binary import BinaryReader
+from formats.sound.sound_types import Sample, Program, Split
 
 
 class IfilChunk:
@@ -235,7 +237,7 @@ class SmplChunk:
         if rdr.read(4) != b"smpl":
             raise ValueError("Invalid smpl header")
         chunk_size = rdr.read_uint32()
-        self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.uint8)
+        self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.int16)
     
 
 class Sm24Chunk:
@@ -279,6 +281,61 @@ class SdtaChunk:
                 raise ValueError(f"Invalid sdta sub-chunk: {chunk_name}")
 
 
+class SFGeneratorEnumerator(IntEnum):
+    START_ADDRESS_OFFSET = 0
+    END_ADDRESS_OFFSET = 1
+    START_LOOP_ADDRESS_OFFSET = 2
+    END_LOOP_ADDRESS_OFFSET = 3
+    START_ADDRESS_COARSE_OFFSET = 4
+    MOD_LFO_TO_PITCH = 5
+    VIB_LFO_TO_PITCH = 6
+    MOD_ENV_TO_PITCH = 7
+    INITIAL_FILTER_FC = 8
+    INITIAL_FILTER_Q = 9
+    MOD_LFO_TO_FILTER_FC = 10
+    MOD_ENV_TO_FILTER_FC = 11
+    END_ADDRESS_COARSE_OFFSET = 12
+    MOD_LFO_TO_VOLUME = 13
+    CHORUS_EFFECTS_SEND = 15
+    REVERB_EFFECTS_SEND = 16
+    PAN = 17
+    DELAY_MOD_LFO = 21
+    FREQ_MOD_LFO = 22
+    DELAY_VIB_LFO = 23
+    FREQ_VIB_LFO = 24
+    DELAY_MOD_ENV = 25
+    ATTACK_MOD_ENV = 26
+    HOLD_MOD_ENV = 27
+    DECAY_MOD_ENV = 28
+    SUSTAIN_MOD_ENV = 29
+    RELEASE_MOD_ENV = 30
+    KEYNUM_TO_MOD_ENV_HOLD = 31
+    KEYNUM_TO_MOD_ENV_DECAY = 32
+    DELAY_VOL_ENV = 33
+    ATTACK_VOL_ENV = 34
+    HOLD_VOL_ENV = 35
+    DECAY_VOL_ENV = 36
+    SUSTAIN_VOL_ENV = 37
+    RELEASE_VOL_ENV = 38
+    KEYNUM_TO_VOL_ENV_HOLD = 39
+    KEYNUM_TO_VOL_ENV_DECAY = 40
+    INSTRUMENT = 41
+    KEY_RANGE = 43
+    VEL_RANGE = 44
+    START_LOOP_ADDRESS_COARSE_OFFSET = 45
+    KEYNUM = 46
+    VELOCITY = 47
+    INITIAL_ATTENUATION = 48
+    END_LOOP_ADDRESS_COARSE_OFFSET = 50
+    COARSE_TUNE = 51
+    FINE_TUNE = 52
+    SAMPLE_ID = 53
+    SAMPLE_MODES = 54
+    SCALE_TUNING = 56
+    EXCLUSIVE_CLASS = 57
+    OVERRIDING_ROOT_KEY = 58
+
+
 class SFPresetHeader:
     def __init__(self):
         self.preset_name = ""
@@ -297,6 +354,42 @@ class SFPresetHeader:
         self.library = rdr.read_uint32()
         self.genre = rdr.read_uint32()
         self.morphology = rdr.read_uint32()
+
+    def to_program(self, pdta_chunk: 'PdtaChunk', next_preset_header: 'SFPresetHeader',
+                   samples: List[Sample]) -> Program:
+        program = Program()
+        program.lfos = []
+        program.splits = []
+        instrument_next_bag = pdta_chunk.pbag_chunk.preset_bags[next_preset_header.preset_bag_ndx + 1]
+        instrument_gen = pdta_chunk.pgen_chunk.gen_list[instrument_next_bag.gen_ndx - 1]
+        assert instrument_gen.operation == SFGeneratorEnumerator.INSTRUMENT
+        instrument_id = instrument_gen.amount
+        instrument = pdta_chunk.inst_chunk.instruments[instrument_id]
+        instrument_next = pdta_chunk.inst_chunk.instruments[instrument_id + 1]
+
+        for ibag_idx in range(instrument.inst_bag_ndx, instrument_next.inst_bag_ndx):
+            ibag = pdta_chunk.ibag_chunk.instrument_bags[ibag_idx]
+            ibag_next = pdta_chunk.ibag_chunk.instrument_bags[ibag_idx + 1]
+            split = Split()
+            for gen_idx in range(ibag.gen_ndx, ibag_next.gen_ndx):
+                igen = pdta_chunk.igen_chunk.gen_list[gen_idx]
+                if igen.operation == SFGeneratorEnumerator.SAMPLE_ID:
+                    split.sample = samples[igen.amount]
+                elif igen.operation == SFGeneratorEnumerator.KEY_RANGE:
+                    split.low_key, split.high_key = igen.amount_range
+                elif igen.operation == SFGeneratorEnumerator.VEL_RANGE:
+                    split.low_vel, split.high_vel = igen.amount_range
+                elif igen.operation == SFGeneratorEnumerator.FINE_TUNE:
+                    split.fine_tune = igen.amount_signed
+                elif igen.operation == SFGeneratorEnumerator.COARSE_TUNE:
+                    split.coarse_tune = igen.amount_signed
+                elif igen.operation == SFGeneratorEnumerator.OVERRIDING_ROOT_KEY:
+                    split.root_key = igen.amount
+                elif igen.operation == SFGeneratorEnumerator.PAN:
+                    # amount is in increments of 0.1%, from 0% to 100% (1000)
+                    split.pan = round((igen.amount * 127) / (10 * 100))
+                # TODO: Add envelope, attack, decay, sustain...
+
 
 
 class PhdrChunk:
@@ -374,6 +467,24 @@ class SFGenList:
     def __init__(self):
         self.operation = 0
         self.amount = 0
+
+    @property
+    def amount_signed(self):
+        return (self.amount ^ 0x8000) - 0x8000
+
+    @amount_signed.setter
+    def amount_signed(self, v: int):
+        self.amount = (v + 0x8000) ^ 0x8000
+
+    @property
+    def amount_range(self):
+        # amount is little endian
+        return self.amount & 0xFF, self.amount >> 2
+
+    @amount_range.setter
+    def amount_range(self, v: tuple):
+        # amount is little endian
+        self.amount = v[0] & 0xFF + v[1] << 2
 
     def read(self, rdr: BinaryReader):
         self.operation = rdr.read_uint16()
@@ -490,6 +601,17 @@ class SFSample:
         self.link = rdr.read_uint16()
         self.type = rdr.read_uint16()
 
+    def to_sample(self, sdta_chunk: SdtaChunk) -> Sample:
+        sample = Sample()
+        sample.id_ = self.name
+        sample.loop_beginning = self.start_loop
+        sample.loop_length = self.end_loop - self.start_loop
+        sample.sample_rate = self.rate
+        sample.root_key = self.original_key
+        sample.fine_tune = self.pitch_correction
+        sample.pcm16 = sdta_chunk.smpl_chunk.data[self.start:self.end]
+        return sample
+
 
 class ShdrChunk:
     samples: List[SFSample]
@@ -537,6 +659,8 @@ class PdtaChunk:
 
 class SoundFont:
     info_chunk: InfoChunk
+    samples: List[Sample]
+    programs: Dict[str, Program]
 
     def __init__(self):
         self.info_chunk = InfoChunk()
@@ -558,4 +682,9 @@ class SoundFont:
         self.info_chunk.read(rdr)
         sdta_chunk.read(rdr)
         pdta_chunk.read(rdr)
+
+        self.samples = []
+        # Construct data types
+        for sf_header in pdta_chunk.shdr_chunk.samples:
+            self.samples.append(sf_header.to_sample(sdta_chunk))
         print("DONE")

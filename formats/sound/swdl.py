@@ -1,5 +1,5 @@
 # Thanks to https://projectpokemon.org/docs/mystery-dungeon-nds/dse-swdl-format-r14/
-from typing import List, Optional, Dict
+from typing import List, Dict, Optional
 
 import numpy as np
 
@@ -208,7 +208,7 @@ class SWDSplitEntry:
         self.fine_tune = rdr.read_int8()
         self.coarse_tune = rdr.read_int8()
         self.root_key = rdr.read_int8()
-        self.key_transpose = rdr.read_int8()
+        self.key_transpose = rdr.read_int8()  # difference between root key and 60
         self.sample_volume = rdr.read_int8()
         self.sample_pan = rdr.read_int8()
         self.key_group_id = rdr.read_uint8()
@@ -244,11 +244,10 @@ class SWDSplitEntry:
         split.fine_tune = self.fine_tune
         split.coarse_tune = self.coarse_tune
         split.root_key = self.root_key
-        split.key_transpose = self.key_transpose
         split.volume = self.sample_volume
         split.pan = self.sample_pan
         split.key_group = key_groups[self.key_group_id]
-        split.envelope = self.envelope_on
+        split.envelope_on = self.envelope_on > 0
         split.envelope_multiplier = self.envelope_multiplier
         split.attack_volume = self.attack_volume
         split.attack = self.attack
@@ -375,7 +374,7 @@ class SampleInfoEntry:
         self.fine_tune = rdr.read_int8()
         self.coarse_tune = rdr.read_int8()
         self.root_key = rdr.read_int8()
-        self.key_transpose = rdr.read_int8()
+        self.key_transpose = rdr.read_int8()  # difference between root key and 60
         self.volume = rdr.read_int8()
         self.pan = rdr.read_int8()
         assert rdr.read_uint8() == 0
@@ -417,14 +416,13 @@ class SampleInfoEntry:
         sample.fine_tune = self.fine_tune
         sample.coarse_tune = self.coarse_tune
         sample.root_key = self.root_key
-        sample.key_transpose = self.key_transpose
         sample.volume = self.volume
         sample.pan = self.pan
         sample.loop_enabled = self.loop_enabled
         sample.sample_rate = self.sample_rate
         sample.loop_beginning = self.loop_beginning
         sample.loop_length = self.loop_length
-        sample.envelope = self.envelope
+        sample.envelope_on = self.envelope > 0
         sample.envelope_multiplier = self.envelope_multiplier
         sample.attack_volume = self.attack_volume
         sample.attack = self.attack
@@ -541,7 +539,6 @@ class SWDHeader:
 
 # TODO: Write and figure out unknowns
 class SWDL(FileFormat):
-    ima_compressor: Adpcm
     samples: Dict[int, Sample]
     key_groups: Dict[int, KeyGroup]
     programs: Dict[int, Program]
@@ -554,10 +551,10 @@ class SWDL(FileFormat):
 
     def read_stream(self, stream):
         swd_header = SWDHeader()
-        wavi_chunk = WaviChunk()
-        prgi_chunk = PrgiChunk()
-        pcmd_chunk = None
-        kgrp_chunk = KgrpChunk()
+        wavi_chunk: Optional[WaviChunk] = None
+        prgi_chunk: Optional[PrgiChunk] = None
+        pcmd_chunk: Optional[PcmdChunk] = None
+        kgrp_chunk: Optional[KgrpChunk] = None
         eod_chunk = EodChunk()
         if isinstance(stream, BinaryReader):
             rdr = stream
@@ -571,10 +568,13 @@ class SWDL(FileFormat):
             if chunk_name == b"swdl":
                 swd_header.read(rdr)
             elif chunk_name == b"wavi":
+                wavi_chunk = WaviChunk()
                 wavi_chunk.read(rdr, swd_header.wavi_slot_count)
             elif chunk_name == b"prgi":
+                prgi_chunk = PrgiChunk()
                 prgi_chunk.read(rdr, swd_header.prgi_slot_count)
             elif chunk_name == b"kgrp":
+                kgrp_chunk = KgrpChunk()
                 kgrp_chunk.read(rdr)
             elif chunk_name == b"pcmd":
                 pcmd_chunk = PcmdChunk()
@@ -583,16 +583,22 @@ class SWDL(FileFormat):
                 eod_chunk.read(rdr)
                 break
 
+        self.samples = {}
+        self.key_groups = {}
+        self.programs = {}
         # Construct data structures
-        for sample_info_entry in wavi_chunk.sample_info_table:
-            sample = sample_info_entry.to_sample(pcmd_chunk)
-            self.samples[sample_info_entry.id_] = sample
-        for swd_key_group in kgrp_chunk.key_groups:
-            key_group = swd_key_group.to_key_group()
-            self.key_groups[swd_key_group.id_] = key_group
-        for swd_program in prgi_chunk.program_info_table:
-            program = swd_program.to_program(self.samples, self.key_groups)
-            self.programs[swd_program.id_] = program
+        if wavi_chunk is not None:
+            for sample_info_entry in wavi_chunk.sample_info_table:
+                sample = sample_info_entry.to_sample(pcmd_chunk)
+                self.samples[sample_info_entry.id_] = sample
+        if kgrp_chunk is not None:
+            for swd_key_group in kgrp_chunk.key_groups:
+                key_group = swd_key_group.to_key_group()
+                self.key_groups[swd_key_group.id_] = key_group
+        if prgi_chunk is not None:
+            for swd_program in prgi_chunk.program_info_table:
+                program = swd_program.to_program(self.samples, self.key_groups)
+                self.programs[swd_program.id_] = program
 
     def write_stream(self, stream):
         raise NotImplementedError('saving swd still not implemented')
