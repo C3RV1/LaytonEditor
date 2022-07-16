@@ -93,11 +93,9 @@ class WAV:
         self.fmt = FmtChunk()
         self.data = DataChunk()
 
-    def read_stream(self, stream):
-        if not isinstance(stream, BinaryReader):
-            rdr = BinaryReader(stream)
-        else:
-            rdr = stream
+    def read_stream(self, rdr):
+        if not isinstance(rdr, BinaryReader):
+            rdr = BinaryReader(rdr)
 
         assert rdr.read(4) == b"RIFF"
         self.chunk_size = rdr.read_uint32()
