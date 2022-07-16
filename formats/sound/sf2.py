@@ -308,11 +308,10 @@ class PhdrChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.preset_headers = []
-        while rdr.tell() < end_pos - 38:
+        while rdr.tell() < end_pos:
             preset_header = SFPresetHeader()
             preset_header.read(rdr)
             self.preset_headers.append(preset_header)
-        rdr.read(38)  # terminal record
 
 
 class SFBag:
@@ -334,11 +333,10 @@ class PbagChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.preset_bags = []
-        while rdr.tell() < end_pos - 4:
+        while rdr.tell() < end_pos:
             preset_bag = SFBag()
             preset_bag.read(rdr)
             self.preset_bags.append(preset_bag)
-        rdr.read(4)  # terminal record
 
 
 class SFModList:
@@ -366,11 +364,10 @@ class PmodChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.mod_list = []
-        while rdr.tell() < end_pos - 10:
+        while rdr.tell() < end_pos:
             mod_list = SFModList()
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
-        rdr.read(10)  # terminal record
 
 
 class SFGenList:
@@ -392,11 +389,10 @@ class PgenChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.gen_list = []
-        while rdr.tell() < end_pos - 4:
+        while rdr.tell() < end_pos:
             gen_list = SFGenList()
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
-        rdr.read(4)  # terminal record
 
 
 class SFInst:
@@ -418,11 +414,10 @@ class InstChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.instruments = []
-        while rdr.tell() < end_pos - 22:
+        while rdr.tell() < end_pos:
             instrument = SFInst()
             instrument.read(rdr)
             self.instruments.append(instrument)
-        rdr.read(22)  # terminal record
 
 
 class IbagChunk:
@@ -434,11 +429,10 @@ class IbagChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.instrument_bags = []
-        while rdr.tell() < end_pos - 4:
+        while rdr.tell() < end_pos:
             instrument_bag = SFBag()
             instrument_bag.read(rdr)
             self.instrument_bags.append(instrument_bag)
-        rdr.read(4)  # terminal record
 
 
 class ImodChunk:
@@ -450,11 +444,10 @@ class ImodChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.mod_list = []
-        while rdr.tell() < end_pos - 10:
+        while rdr.tell() < end_pos:
             mod_list = SFModList()
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
-        rdr.read(10)  # terminal record
 
 
 class IgenChunk:
@@ -466,11 +459,10 @@ class IgenChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.gen_list = []
-        while rdr.tell() < end_pos - 4:
+        while rdr.tell() < end_pos:
             gen_list = SFGenList()
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
-        rdr.read(4)  # terminal record
 
 
 class SFSample:
@@ -508,11 +500,10 @@ class ShdrChunk:
         chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.samples = []
-        while rdr.tell() < end_pos - 46:
+        while rdr.tell() < end_pos:
             sample = SFSample()
             sample.read(rdr)
             self.samples.append(sample)
-        rdr.read(46)  # terminal record
 
 
 class PdtaChunk:
@@ -567,3 +558,4 @@ class SoundFont:
         self.info_chunk.read(rdr)
         sdta_chunk.read(rdr)
         pdta_chunk.read(rdr)
+        print("DONE")
