@@ -14,6 +14,7 @@ class IfilChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ifil":
             raise ValueError("Invalid ifil header")
+        _chunk_size = rdr.read_uint32()
         self.major = rdr.read_uint16()
         self.minor = rdr.read_uint16()
 
@@ -25,7 +26,7 @@ class IsngChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"isng":
             raise ValueError("Invalid isng header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.sound_engine = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -38,7 +39,7 @@ class INAMChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"INAM":
             raise ValueError("Invalid INAM header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.name = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -51,7 +52,7 @@ class IromChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"irom":
             raise ValueError("Invalid irom header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.rom = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -65,6 +66,7 @@ class IverChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"iver":
             raise ValueError("Invalid iver header")
+        _chunk_size = rdr.read_uint32()
         self.major = rdr.read_uint16()
         self.minor = rdr.read_uint16()
 
@@ -76,7 +78,7 @@ class ICRDChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ICRD":
             raise ValueError("Invalid ICRD header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.date = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -89,7 +91,7 @@ class IENGChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"IENG":
             raise ValueError("Invalid IENG header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.authors = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -102,7 +104,7 @@ class IPRDChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"IPRD":
             raise ValueError("Invalid IPRD header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.product = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -115,7 +117,7 @@ class ICOPChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ICOP":
             raise ValueError("Invalid ICOP header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.copyright = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -128,7 +130,7 @@ class ICMTChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ICMT":
             raise ValueError("Invalid ICMT header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.comment = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -141,7 +143,7 @@ class ISFTChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ISFT":
             raise ValueError("Invalid ISFT header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.sound_font_tool = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
@@ -165,7 +167,7 @@ class InfoChunk:
         if rdr.read(4) != b"LIST":
             raise ValueError("Invalid INFO header")
 
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
 
         if rdr.read(4) != b"INFO":
@@ -232,7 +234,7 @@ class SmplChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"smpl":
             raise ValueError("Invalid smpl header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.uint8)
     
 
@@ -243,7 +245,7 @@ class Sm24Chunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"sm24":
             raise ValueError("Invalid sm24 header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.uint8)
 
 
@@ -256,7 +258,7 @@ class SdtaChunk:
         if rdr.read(4) != b"LIST":
             raise ValueError("Invalid sdta header")
 
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
 
         if rdr.read(4) != b"sdta":
@@ -303,13 +305,14 @@ class PhdrChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"phdr":
             raise ValueError("Invalid phdr header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.preset_headers = []
         while rdr.tell() < end_pos - 38:
             preset_header = SFPresetHeader()
             preset_header.read(rdr)
             self.preset_headers.append(preset_header)
+        rdr.read(38)  # terminal record
 
 
 class SFBag:
@@ -328,13 +331,14 @@ class PbagChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"pbag":
             raise ValueError("Invalid pbag header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.preset_bags = []
         while rdr.tell() < end_pos - 4:
             preset_bag = SFBag()
             preset_bag.read(rdr)
             self.preset_bags.append(preset_bag)
+        rdr.read(4)  # terminal record
 
 
 class SFModList:
@@ -359,13 +363,14 @@ class PmodChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"pmod":
             raise ValueError("Invalid pmod header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.mod_list = []
         while rdr.tell() < end_pos - 10:
             mod_list = SFModList()
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
+        rdr.read(10)  # terminal record
 
 
 class SFGenList:
@@ -384,13 +389,14 @@ class PgenChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"pgen":
             raise ValueError("Invalid pgen header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.gen_list = []
         while rdr.tell() < end_pos - 4:
             gen_list = SFGenList()
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
+        rdr.read(4)  # terminal record
 
 
 class SFInst:
@@ -409,13 +415,14 @@ class InstChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"inst":
             raise ValueError("Invalid inst header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.instruments = []
         while rdr.tell() < end_pos - 22:
             instrument = SFInst()
             instrument.read(rdr)
             self.instruments.append(instrument)
+        rdr.read(22)  # terminal record
 
 
 class IbagChunk:
@@ -424,13 +431,14 @@ class IbagChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"ibag":
             raise ValueError("Invalid ibag header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.instrument_bags = []
         while rdr.tell() < end_pos - 4:
             instrument_bag = SFBag()
             instrument_bag.read(rdr)
             self.instrument_bags.append(instrument_bag)
+        rdr.read(4)  # terminal record
 
 
 class ImodChunk:
@@ -439,13 +447,14 @@ class ImodChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"imod":
             raise ValueError("Invalid imod header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.mod_list = []
         while rdr.tell() < end_pos - 10:
             mod_list = SFModList()
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
+        rdr.read(10)  # terminal record
 
 
 class IgenChunk:
@@ -454,13 +463,14 @@ class IgenChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"igen":
             raise ValueError("Invalid igen header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.gen_list = []
         while rdr.tell() < end_pos - 4:
             gen_list = SFGenList()
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
+        rdr.read(4)  # terminal record
 
 
 class SFSample:
@@ -495,13 +505,14 @@ class ShdrChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"shdr":
             raise ValueError("Invalid shdr header")
-        chunk_size = rdr.read_uint16()
+        chunk_size = rdr.read_uint32()
         end_pos = rdr.tell() + chunk_size
         self.samples = []
         while rdr.tell() < end_pos - 46:
             sample = SFSample()
             sample.read(rdr)
             self.samples.append(sample)
+        rdr.read(46)  # terminal record
 
 
 class PdtaChunk:
@@ -519,7 +530,7 @@ class PdtaChunk:
     def read(self, rdr: BinaryReader):
         if rdr.read(4) != b"LIST":
             raise ValueError("Invalid pdta header")
-        _chunk_size = rdr.read_uint16()
+        _chunk_size = rdr.read_uint32()
         if rdr.read(4) != b"pdta":
             raise ValueError("Invalid pdta header")
         self.phdr_chunk.read(rdr)
@@ -546,7 +557,7 @@ class SoundFont:
 
         if rdr.read(4) != b"RIFF":
             raise ValueError("Invalid SoundFont header")
-        _chunk_size = rdr.read_uint16()
+        _chunk_size = rdr.read_uint32()
         if rdr.read(4) != b"sfbk":
             raise ValueError("Invalid SoundFont header")
         
