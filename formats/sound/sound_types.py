@@ -1,6 +1,7 @@
 from typing import List, Union
 
 import numpy as np
+from formats.sound.compression.adpcm import Adpcm
 
 
 class Sample:
@@ -10,13 +11,13 @@ class Sample:
     root_key: int = 60
     volume: int = 0x7F
     pan: int = 64  # 0-64-127
-    pcm16: np.ndarray = None
+    _pcm16: np.ndarray = None
+    _adpcm: np.ndarray = None
     loop_enabled: bool = False
     sample_rate: int = 32768
     loop_beginning: int = 0
     loop_length: int = 0
     envelope_on: bool = False
-    envelope_multiplier: int = 0
     attack_volume: int = 0
     attack: int = 0
     decay: int = 0
@@ -24,6 +25,29 @@ class Sample:
     hold: int = 0
     decay2: int = 0
     release: int = 0
+
+    @property
+    def pcm16(self):
+        if self._pcm16 is None and self._adpcm is not None:
+            self._pcm16 = Adpcm().decompress(self._adpcm)
+            self._pcm16 = self._pcm16.reshape((self._pcm16.shape[0], 1))
+        return self._pcm16
+
+    @pcm16.setter
+    def pcm16(self, v: np.ndarray):
+        self._pcm16 = v
+        self._adpcm = None
+
+    @property
+    def adpcm(self):
+        if self._adpcm is None and self._pcm16 is not None:
+            self._adpcm = Adpcm().compress(self._pcm16.reshape((self._pcm16.shape[0],)))
+        return self._adpcm
+
+    @adpcm.setter
+    def adpcm(self, v: np.ndarray):
+        self._adpcm = v
+        self._pcm16 = None
 
 
 class KeyGroup:
@@ -44,18 +68,16 @@ class Split:
     coarse_tune: int = 0
     root_key: int = 60
     volume: int = 0x7F
-    pan: int = 64
+    pan: int = 64  # (0-64-127)
     key_group: KeyGroup
     envelope_on: bool = False
-    # TODO: integrate swd table # must integrate swd table (Volume Envelopes)
-    envelope_multiplier: int = 0
     attack_volume: int = 0
-    attack: int = 0
-    decay: int = 0
-    sustain: int = 0
-    hold: int = 0
-    decay2: int = 0
-    release: int = 0
+    attack: int = 0  # ms
+    decay: int = 0  # ms
+    sustain: int = 0  # volume
+    hold: int = 0  # ms
+    decay2: int = 0  # ms
+    release: int = 0  # ms
 
 
 class LFO:
