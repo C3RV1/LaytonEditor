@@ -1,6 +1,6 @@
 import io
 from enum import IntEnum
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, List
 
 import numpy as np
 
@@ -360,21 +360,27 @@ class SFPresetHeader:
         program = Program()
         program.lfos = []
         program.splits = []
-        instrument_next_bag = pdta_chunk.pbag_chunk.preset_bags[next_preset_header.preset_bag_ndx + 1]
+        # Get the next instrument bag
+        instrument_next_bag = pdta_chunk.pbag_chunk.preset_bags[next_preset_header.preset_bag_ndx]
+        # Get the generator for the instrument (last gen in current bag)
         instrument_gen = pdta_chunk.pgen_chunk.gen_list[instrument_next_bag.gen_ndx - 1]
         assert instrument_gen.operation == SFGeneratorEnumerator.INSTRUMENT
         instrument_id = instrument_gen.amount
         instrument = pdta_chunk.inst_chunk.instruments[instrument_id]
+        program.id_ = instrument.name
         instrument_next = pdta_chunk.inst_chunk.instruments[instrument_id + 1]
 
-        for ibag_idx in range(instrument.inst_bag_ndx, instrument_next.inst_bag_ndx):
+        for ibag_idx in range(instrument.inst_bag_ndx + 1, instrument_next.inst_bag_ndx):
             ibag = pdta_chunk.ibag_chunk.instrument_bags[ibag_idx]
             ibag_next = pdta_chunk.ibag_chunk.instrument_bags[ibag_idx + 1]
             split = Split()
+            set_sample = False
+            set_root_key = False
             for gen_idx in range(ibag.gen_ndx, ibag_next.gen_ndx):
                 igen = pdta_chunk.igen_chunk.gen_list[gen_idx]
                 if igen.operation == SFGeneratorEnumerator.SAMPLE_ID:
                     split.sample = samples[igen.amount]
+                    set_sample = True
                 elif igen.operation == SFGeneratorEnumerator.KEY_RANGE:
                     split.low_key, split.high_key = igen.amount_range
                 elif igen.operation == SFGeneratorEnumerator.VEL_RANGE:
@@ -385,10 +391,16 @@ class SFPresetHeader:
                     split.coarse_tune = igen.amount_signed
                 elif igen.operation == SFGeneratorEnumerator.OVERRIDING_ROOT_KEY:
                     split.root_key = igen.amount
+                    set_root_key = True
                 elif igen.operation == SFGeneratorEnumerator.PAN:
                     # amount is in increments of 0.1%, from 0% to 100% (1000)
                     split.pan = round((igen.amount * 127) / (10 * 100))
                 # TODO: Add envelope, attack, decay, sustain...
+            if set_sample:  # only add zone if it has a sample associated (else is a global zone)
+                if not set_root_key:
+                    split.root_key = split.sample.root_key
+                program.splits.append(split)
+        return program
 
 
 
@@ -479,12 +491,12 @@ class SFGenList:
     @property
     def amount_range(self):
         # amount is little endian
-        return self.amount & 0xFF, self.amount >> 2
+        return self.amount & 0xFF, self.amount >> 8
 
     @amount_range.setter
     def amount_range(self, v: tuple):
         # amount is little endian
-        self.amount = v[0] & 0xFF + v[1] << 2
+        self.amount = v[0] & 0xFF + v[1] << 8
 
     def read(self, rdr: BinaryReader):
         self.operation = rdr.read_uint16()
@@ -660,7 +672,7 @@ class PdtaChunk:
 class SoundFont:
     info_chunk: InfoChunk
     samples: List[Sample]
-    programs: Dict[str, Program]
+    programs: List[Program]
 
     def __init__(self):
         self.info_chunk = InfoChunk()
@@ -684,7 +696,12 @@ class SoundFont:
         pdta_chunk.read(rdr)
 
         self.samples = []
+        self.programs = []
         # Construct data types
-        for sf_header in pdta_chunk.shdr_chunk.samples:
-            self.samples.append(sf_header.to_sample(sdta_chunk))
+        for sf_smpl_header in pdta_chunk.shdr_chunk.samples[:-1]:  # last is terminal record
+            self.samples.append(sf_smpl_header.to_sample(sdta_chunk))
+        for i, sf_prg_header in enumerate(pdta_chunk.phdr_chunk.preset_headers[:-1]):
+            self.programs.append(sf_prg_header.to_program(pdta_chunk,
+                                                          pdta_chunk.phdr_chunk.preset_headers[i + 1],
+                                                          self.samples))
         print("DONE")
