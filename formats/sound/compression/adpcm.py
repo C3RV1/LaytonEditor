@@ -56,7 +56,8 @@ class Adpcm:
         return result
 
     def compress(self, data: np.ndarray) -> np.ndarray:
-        result = np.ndarray((len(data) // 2,), dtype=np.uint8)
+        # (v + 1) // 2 = ceil(v / 2)
+        result = np.ndarray(((len(data) + 1) // 2,), dtype=np.uint8)
 
         index = self.index
         predicted_sample = self.predicted_sample
