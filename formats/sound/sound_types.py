@@ -21,10 +21,10 @@ class Sample:
     attack_volume: int = 0
     attack: int = 0
     decay: int = 0
-    sustain: int = 0
+    sustain: int = 0x7F
     hold: int = 0
-    decay2: int = 0
-    release: int = 0
+    decay2: int = 0x7F
+    release: int = 0x28
 
     @property
     def pcm16(self):
@@ -69,7 +69,7 @@ class Split:
     root_key: int = 60
     volume: int = 0x7F
     pan: int = 64  # (0-64-127)
-    key_group: KeyGroup
+    key_group: KeyGroup = None
     envelope_on: bool = False
     attack_volume: int = 0
     attack: int = 0  # ms

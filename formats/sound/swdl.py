@@ -5,7 +5,6 @@ import numpy as np
 
 from formats.binary import BinaryReader
 from formats.filesystem import FileFormat, NintendoDSRom
-from formats.sound.compression.adpcm import Adpcm
 from formats.sound.sound_types import Sample, KeyGroup, Split, LFO, Program
 
 
@@ -346,7 +345,7 @@ class ProgramInfoEntry:
             lfo_entry = SWDLFOEntry()
             lfo_entry.read(rdr)
             self.lfo_table.append(lfo_entry)
-        rdr.read(16)
+        rdr.read(16)  # Uses pad byte padding value
         self.splits_table = []
         for _ in range(self.splits_count):
             split_entry = SWDSplitEntry()
@@ -476,8 +475,18 @@ class SampleInfoEntry:
         sample.pan = self.pan
         sample.loop_enabled = self.loop_enabled
         sample.sample_rate = self.sample_rate
-        sample.loop_beginning = self.loop_beginning
-        sample.loop_length = self.loop_length
+        sample.loop_beginning = self.loop_beginning * 4
+        # convert from bytes to samples
+        if self.sample_format == 0x100:
+            sample.loop_beginning /= 2
+        elif self.sample_format == 0x200:
+            sample.loop_beginning *= 2
+        sample.loop_length = self.loop_length * 4
+        # convert from bytes to samples
+        if self.sample_format == 0x100:
+            sample.loop_length /= 2
+        elif self.sample_format == 0x200:
+            sample.loop_length *= 2
         sample.envelope_on = self.envelope > 0
         table_to_use = VOLUME_ENVELOPE_TABLE_32BIT if self.envelope_multiplier == 0 else VOLUME_ENVELOPE_TABLE_16BIT
         sample.attack_volume = self.attack_volume
