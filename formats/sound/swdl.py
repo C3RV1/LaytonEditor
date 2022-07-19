@@ -212,24 +212,19 @@ class SWDSplitEntry:
     unk25: int  # possibly bool
     low_key: int = 0
     hi_key: int = 0x7F
-    low_key2: int  # a copy of low_key?
-    hi_key2: int  # a copy of hi_key?
     low_vel: int
     hi_vel: int
-    low_vel2: int  # a copy of low_vel?
-    hi_vel2: int  # a copy of hi_vel?
-    unk16: int  # pad_byte?
-    unk17: int  # pad_byte?
+    unk16: int = 0  # pad_byte?
+    unk17: int = 0  # pad_byte?
     sample_id: int  # sample_info in the wavi chunk
     fine_tune: int  # in cents
     coarse_tune: int = -7
     root_key: int
-    key_transpose: int  # diff between root key and 60?
     sample_volume: int
     sample_pan: int
     key_group_id: int
     unk22: int = 0x02
-    unk24: int  # pad_byte?
+    unk24: int = 0  # pad_byte?
     envelope_on: int  # if is 0, envelope isn't processed
     envelope_multiplier: int
     attack_volume: int
@@ -249,12 +244,12 @@ class SWDSplitEntry:
         print(f"            UNK25: {self.unk25}")
         self.low_key = rdr.read_int8()
         self.hi_key = rdr.read_int8()
-        self.low_key2 = rdr.read_int8()
-        self.hi_key2 = rdr.read_int8()
+        _low_key2 = rdr.read_int8()  # copy
+        _hi_key2 = rdr.read_int8()  # copy
         self.low_vel = rdr.read_int8()
         self.hi_vel = rdr.read_int8()
-        self.low_vel2 = rdr.read_int8()
-        self.hi_vel2 = rdr.read_int8()
+        _low_vel2 = rdr.read_int8()  # copy
+        _hi_vel2 = rdr.read_int8()  # copy
         self.unk16 = rdr.read_uint32()  # 0xAAAAAAAA or 0
         self.unk17 = rdr.read_uint16()  # 0xAAAA or 0
         print(f"            UNK16: {self.unk16}")
@@ -263,7 +258,7 @@ class SWDSplitEntry:
         self.fine_tune = rdr.read_int8()
         self.coarse_tune = rdr.read_int8()
         self.root_key = rdr.read_int8()
-        self.key_transpose = rdr.read_int8()  # difference between root key and 60
+        _key_transpose = rdr.read_int8()  # difference between root key and 60
         self.sample_volume = rdr.read_int8()
         self.sample_pan = rdr.read_int8()
         self.key_group_id = rdr.read_uint8()
@@ -312,6 +307,51 @@ class SWDSplitEntry:
         split.decay2 = table_to_use[self.decay2]
         split.release = table_to_use[self.release]
         return split
+
+    def from_split(self, split: Split):
+        self.low_key = split.low_key
+        self.hi_key = split.high_key
+        self.low_vel = split.low_vel
+        self.hi_vel = split.high_vel
+        self.sample_id = split.sample.id_
+        self.fine_tune = split.fine_tune
+        self.coarse_tune = split.coarse_tune
+        self.root_key = split.root_key
+        self.sample_volume = split.volume
+        self.sample_pan = split.pan
+        self.key_group_id = split.key_group.id_
+        self.envelope_on = split.envelope_on
+
+        self.attack_volume = split.attack_volume
+        self.sustain = split.sustain
+
+        def get_closest_table_env(table_: List[int], value: int):
+            min_diff = -1
+            min_element_i = 0
+            for i, element in enumerate(table_):
+                diff = value - element
+                if abs(diff) < min_diff or min_diff == -1:
+                    min_diff = diff
+                    min_element_i = i
+                if diff < 0:  # if the different is negative, the next diffs can only be greater as the table is sorted
+                    break
+            return min_diff, min_element_i
+        min_avg_diff = -1
+        for env_mult, table in enumerate([VOLUME_ENVELOPE_TABLE_32BIT, VOLUME_ENVELOPE_TABLE_16BIT]):
+            attack_diff, attack_value = get_closest_table_env(table, split.attack)
+            decay_diff, decay_value = get_closest_table_env(table, split.decay)
+            hold_diff, hold_value = get_closest_table_env(table, split.hold)
+            decay2_diff, decay2_value = get_closest_table_env(table, split.decay2)
+            release_diff, release_value = get_closest_table_env(table, split.release)
+            avg_diff = sum([attack_diff, decay_diff, hold_diff, decay2_diff, release_diff]) / 5
+            if avg_diff < min_avg_diff or min_avg_diff == -1:
+                self.attack = attack_value
+                self.decay = decay_value
+                self.hold = hold_value
+                self.decay2 = decay2_value
+                self.release = release_value
+                self.envelope_multiplier = env_mult
+                min_avg_diff = avg_diff
 
 
 class ProgramInfoEntry:
