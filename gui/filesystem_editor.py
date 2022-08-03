@@ -1,23 +1,17 @@
 import PIL.Image
 import wx
 import wx.stc
-import subprocess
-import os
-import threading
-from _thread import start_new_thread
 
 from formats.filesystem import *
 from formats.gds import GDS
 from formats.event import Event
 from formats.parsers.gds_parsers import EventGDSParser
-from formats.parsers import gds_parser
 from formats.graphics.ani import AniSprite, AniSubSprite
 from formats.graphics.bg import BGImage
-from formats.graphics.movie import MovieMods
 from formats.parsers.dcc import DCCParser
 from formats.place import Place
 from formats.puzzle import Puzzle
-from formats.sound.swd import swd_read_samplebank, swd_read_presetbank
+from formats.sound.swdl import SWDL
 from formats.sound import wav, sadl, sample_transform
 import numpy as np
 import pygame as pg
@@ -120,7 +114,7 @@ class FilesystemEditor(generated.FilesystemEditor):
     fp_mods: wx.Menu
     fp_ani_menu: wx.Menu
     fp_place_menu: wx.Menu
-    fp_soundbank_menu: wx.Menu
+    fp_sample_bank_menu: wx.Menu
     fp_menus_loaded: list
 
     def __init__(self, *args, **kwargs):
@@ -134,7 +128,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_mods_menu = wx.Menu()
         self.fp_ani_menu = wx.Menu()
         self.fp_place_menu = wx.Menu()
-        self.fp_soundbank_menu = wx.Menu()
+        self.fp_sample_bank_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
         self.fp_gds_menu = wx.Menu()
@@ -168,7 +162,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_place_menu, "Edit Place", self.fp_place_edit_clicked)
 
-        add_menu_item(self.fp_soundbank_menu, "Play Selected", self.fp_samplebank_play_clicked)
+        add_menu_item(self.fp_sample_bank_menu, "Play Selected", self.fp_sample_bank_play_clicked)
 
         add_menu_item(self.fp_puzzle_menu, "Preview changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
@@ -221,6 +215,7 @@ class FilesystemEditor(generated.FilesystemEditor):
             return
 
         name, archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        logging.info(f"Opening {name}")
         for menu_title in self.fp_menus_loaded:
             self.GetGrandParent().remove_menu(menu_title)
         self.fp_menus_loaded = []
@@ -228,14 +223,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.preview_data = None
 
         set_previewer = False
-
-        if name.endswith(".mods"):
-            #movie = MovieMods(name, rom=archive)
-            self.fp_menus_loaded.append("Movie")
-            self.GetGrandParent().add_menu(self.fp_mods_menu, "Movie")
-            #self.fp_bg_viewimage_scaled.load_bitmap(movie.extract_image_wx_bitmap())
-            self.fp_formats_book.SetSelection(2)  # Background page
-            #self.preview_data = movie
 
         if name.endswith(".arc") and name.split("/")[1] == "bg":
             background = BGImage(name, rom=archive)
@@ -257,17 +244,17 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.GetGrandParent().add_menu(self.fp_ani_menu, "Sprite")
         elif name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
             self.fp_samplebank_list.Clear()
-            samplebank = swd_read_samplebank(archive.open(name))
-            for sample in samplebank.samples:
+            sample_bank = SWDL(filename=name, rom=archive)
+            for sample in sample_bank.samples:
                 self.fp_samplebank_list.AppendItems(f"Sample {sample}")
-            self.fp_menus_loaded.append("Samplebank")
-            self.GetGrandParent().add_menu(self.fp_soundbank_menu, "Samplebank")
-            self.fp_formats_book.SetSelection(5)  # samplebank page
-            self.preview_data = samplebank
+            self.fp_menus_loaded.append("Sample Bank")
+            self.GetGrandParent().add_menu(self.fp_sample_bank_menu, "Sample Bank")
+            self.fp_formats_book.SetSelection(5)  # sample_bank page
+            self.preview_data = sample_bank
         elif name.lower().endswith(".swd"):
-            presetbank = swd_read_presetbank(archive.open(name))
+            preset_bank = SWDL(filename=name, rom=archive)
             self.fp_info_text.Clear()
-            text = "using samples: " + ", ".join([str(x) for x in presetbank.samples_info.keys()])
+            text = "using samples: " + ", ".join([str(x) for x in preset_bank.samples])
             self.fp_info_text.WriteText(text)
             self.fp_formats_book.SetSelection(6)  # Info page
         elif name.startswith("n_place"):
@@ -352,6 +339,10 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_formats_book.SetSelection(0)
             self.fp_menus_loaded.append("Sequenced")
             self.GetGrandParent().add_menu(self.fp_sequenced_menu, "Sequenced")
+        elif name.endswith(".mods"):
+            self.fp_menus_loaded.append("Movie")
+            self.GetGrandParent().add_menu(self.fp_mods_menu, "Movie")
+            self.fp_formats_book.SetSelection(2)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
@@ -375,18 +366,18 @@ class FilesystemEditor(generated.FilesystemEditor):
         newname = self.ft_filetree.GetItemText(selection)
 
         if oldpath.endswith("/"):  # folder
-            *oldparents, oldname, noend = oldpath.split("/")
-            if noend:
-                oldparents.append(oldname)
-            oldparent = "/".join(oldparents) + "/"
-            newpath = oldparent + newname + "/"
-            self.rom.rename_folder(oldpath, newpath)
+            *old_parents, old_name, no_end = oldpath.split("/")
+            if no_end:
+                old_parents.append(old_name)
+            old_parent = "/".join(old_parents) + "/"
+            new_path = old_parent + newname + "/"
+            self.rom.rename_folder(oldpath, new_path)
         else:  # file
-            oldfolder, oldname = os.path.split(oldpath)
-            newpath = os.path.join(oldfolder, newname).replace("\\", "/")
-            self.rom.rename_file(oldpath, newpath)
+            old_folder, old_name = os.path.split(oldpath)
+            new_path = os.path.join(old_folder, newname).replace("\\", "/")
+            archive.rename_file(oldpath, new_path)
 
-        self.ft_filetree.SetItemData(selection, (newpath, archive))
+        self.ft_filetree.SetItemData(selection, (new_path, archive))
 
     def ft_filetree_keydown(self, event: wx.TreeEvent):
         if event.GetKeyCode() == wx.WXK_DELETE:
@@ -418,20 +409,21 @@ class FilesystemEditor(generated.FilesystemEditor):
         filename = path.split("/")[-1]
         self.GetGrandParent().open_sprite_editor_page(self.preview_data, filename)
 
-    def fp_samplebank_play_clicked(self, _):
+    def fp_sample_bank_play_clicked(self, _):
+        self.preview_data: SWDL
         index = list(self.preview_data.samples.keys())[self.fp_samplebank_list.GetSelection()]
-        sample = self.preview_data.samples[index]
-        sample_pcm = np.reshape(sample.pcm, (1, sample.pcm.shape[0]))
+        sample_info = self.preview_data.samples[index]
+        sample = sample_info.pcm16
+        sample_pcm = np.reshape(sample, (1, sample.shape[0]))
         target_rate = pg.mixer.get_init()[0]
         target_channels = pg.mixer.get_init()[2]
-        sample_pcm = sample_transform.change_sample_rate(sample_pcm, sample.samplerate, target_rate)
+        sample_pcm = sample_transform.change_sample_rate(sample_pcm, sample_info.sample_rate, target_rate)
         sample_pcm = sample_transform.change_channels(sample_pcm, target_channels)
         sample_pcm = sample_pcm.swapaxes(0, 1)
         sample_pcm = np.ascontiguousarray(sample_pcm)
         sound = pg.sndarray.make_sound(sample_pcm)
         sound.set_volume(0.5)
         sound.play()
-        # sd.play(sample.pcm, sample.samplerate)
 
     def fs_replace_clicked(self, _event):  # TODO: Connect with MenuItem
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
@@ -521,40 +513,6 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.preview_data.save()
         self.fp_bg_viewimage_scaled.load_bitmap(
             self.preview_data.extract_image_wx_bitmap())
-
-    def fp_mods_export_clicked(self, _):
-        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
-        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-        with open(outputLocation, "wb+") as out_file:
-                    with _archive.open(path, "rb") as game_file:
-                        out_file.write(game_file.read())
-
-    def fp_mods_import_clicked(self, _):
-        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
-        os.system(mobiLocation)
-
-    def open_mobi_view(_):
-        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
-        os.system(mobiLocation)
-
-    def fp_mods_view_clicked(self, _):
-        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
-        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-        with open(outputLocation, "wb+") as out_file:
-                    with _archive.open(path, "rb") as game_file:
-                        out_file.write(game_file.read())
-        t1 = threading.Thread(target=self.open_mobi_view)
-        t1.start()
-        namee = path.split("/")[2]
-        name = namee.split(".")[0]
-        sound_previewer = SoundPreview(SADLStreamPlayer(), load_sadl("data_lt2/stream/movie/ge/"+name.upper()+".SAD"), "data_lt2/stream/movie/ge/"+name.upper()+".SAD")
-        self.previewer.start_renderer(sound_previewer)
-        sound_previewer.start_sound()
-        set_previewer = True
-        self.fp_formats_book.SetSelection(0)  # Empty page
-        self.fp_menus_loaded.append("Stream")
-        self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
-        #start_new_thread(open_mobi_view)
 
     def fp_place_edit_clicked(self, _):
         # TODO: Cleanup with utility functions in editor window
@@ -704,3 +662,36 @@ class FilesystemEditor(generated.FilesystemEditor):
         name, archive = self.preview_data
         with archive.open(name, "w+") as file:
             file.write(self.fp_text_edit.GetValue())
+    def fp_mods_export_clicked(self, _):
+        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        with open(outputLocation, "wb+") as out_file:
+                    with _archive.open(path, "rb") as game_file:
+                        out_file.write(game_file.read())
+
+    def fp_mods_import_clicked(self, _):
+        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
+        os.system(mobiLocation)
+
+    def open_mobi_view(_):
+        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
+        os.system(mobiLocation)
+
+    def fp_mods_view_clicked(self, _):
+        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        with open(outputLocation, "wb+") as out_file:
+                    with _archive.open(path, "rb") as game_file:
+                        out_file.write(game_file.read())
+        t1 = threading.Thread(target=self.open_mobi_view)
+        t1.start()
+        namee = path.split("/")[2]
+        name = namee.split(".")[0]
+        sound_previewer = SoundPreview(SADLStreamPlayer(), load_sadl("data_lt2/stream/movie/ge/"+name.upper()+".SAD"), "data_lt2/stream/movie/ge/"+name.upper()+".SAD")
+        self.previewer.start_renderer(sound_previewer)
+        sound_previewer.start_sound()
+        set_previewer = True
+        self.fp_formats_book.SetSelection(0)  # Empty page
+        self.fp_menus_loaded.append("Stream")
+        self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
+        #start_new_thread(open_mobi_view)
