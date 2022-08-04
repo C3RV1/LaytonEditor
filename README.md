@@ -39,6 +39,7 @@ to `./layton2.sf2`.
 * vgmtrans for [vgmtrans](https://github.com/vgmtrans/vgmtrans)
 * pleonex for [tinke](https://github.com/pleonex/tinke)
 * Martin Korth for [gbatek](https://problemkaputt.de/gbatek.htm)
+* Gericom for [MobiclipDecoder](https://github.com/Gericom/MobiclipDecoder)
 
 ## Credits
 
