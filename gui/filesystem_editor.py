@@ -111,6 +111,7 @@ class FilesystemEditor(generated.FilesystemEditor):
 
     fs_menu: wx.Menu
     fp_bg_menu: wx.Menu
+    fp_mods: wx.Menu
     fp_ani_menu: wx.Menu
     fp_place_menu: wx.Menu
     fp_sample_bank_menu: wx.Menu
@@ -124,6 +125,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         maineditor = self.GetGrandParent()
         self.fs_menu = wx.Menu()
         self.fp_bg_menu = wx.Menu()
+        self.fp_mods_menu = wx.Menu()
         self.fp_ani_menu = wx.Menu()
         self.fp_place_menu = wx.Menu()
         self.fp_sample_bank_menu = wx.Menu()
@@ -151,6 +153,10 @@ class FilesystemEditor(generated.FilesystemEditor):
 
         add_menu_item(self.fp_bg_menu, "Export Image", self.fp_bg_export_clicked)
         add_menu_item(self.fp_bg_menu, "Import Image", self.fp_bg_import_clicked)
+
+        add_menu_item(self.fp_mods_menu, "Export Movie", self.fp_mods_export_clicked)
+        add_menu_item(self.fp_mods_menu, "Import Movie", self.fp_mods_import_clicked)
+        add_menu_item(self.fp_mods_menu, "View Movie", self.fp_mods_view_clicked)
 
         add_menu_item(self.fp_ani_menu, "Edit Sprite", self.fp_ani_edit_clicked)
 
@@ -333,6 +339,10 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_formats_book.SetSelection(0)
             self.fp_menus_loaded.append("Sequenced")
             self.GetGrandParent().add_menu(self.fp_sequenced_menu, "Sequenced")
+        elif name.endswith(".mods"):
+            self.fp_menus_loaded.append("Movie")
+            self.GetGrandParent().add_menu(self.fp_mods_menu, "Movie")
+            self.fp_formats_book.SetSelection(2)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
@@ -652,3 +662,36 @@ class FilesystemEditor(generated.FilesystemEditor):
         name, archive = self.preview_data
         with archive.open(name, "w+") as file:
             file.write(self.fp_text_edit.GetValue())
+    def fp_mods_export_clicked(self, _):
+        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        with open(outputLocation, "wb+") as out_file:
+                    with _archive.open(path, "rb") as game_file:
+                        out_file.write(game_file.read())
+
+    def fp_mods_import_clicked(self, _):
+        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
+        os.system(mobiLocation)
+
+    def open_mobi_view(_):
+        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
+        os.system(mobiLocation)
+
+    def fp_mods_view_clicked(self, _):
+        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        with open(outputLocation, "wb+") as out_file:
+                    with _archive.open(path, "rb") as game_file:
+                        out_file.write(game_file.read())
+        t1 = threading.Thread(target=self.open_mobi_view)
+        t1.start()
+        namee = path.split("/")[2]
+        name = namee.split(".")[0]
+        sound_previewer = SoundPreview(SADLStreamPlayer(), load_sadl("data_lt2/stream/movie/ge/"+name.upper()+".SAD"), "data_lt2/stream/movie/ge/"+name.upper()+".SAD")
+        self.previewer.start_renderer(sound_previewer)
+        sound_previewer.start_sound()
+        set_previewer = True
+        self.fp_formats_book.SetSelection(0)  # Empty page
+        self.fp_menus_loaded.append("Stream")
+        self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
+        #start_new_thread(open_mobi_view)
