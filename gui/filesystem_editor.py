@@ -2,6 +2,7 @@ import PIL.Image
 import wx
 import wx.stc
 
+from formats import conf
 from formats.filesystem import *
 from formats.gds import GDS
 from formats.event import Event
@@ -30,6 +31,10 @@ from previewers.puzzle.get_puzzle_player import get_puzzle_player
 from previewers.sound.SoundPreview import SoundPreview
 
 from pg_utils.rom.rom_extract import load_sadl, load_smd
+
+import threading
+import os
+import subprocess
 
 
 class ClipBoardFile:
@@ -342,7 +347,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         elif name.endswith(".mods"):
             self.fp_menus_loaded.append("Movie")
             self.GetGrandParent().add_menu(self.fp_mods_menu, "Movie")
-            self.fp_formats_book.SetSelection(2)
+            self.fp_formats_book.SetSelection(0)  # Empty page (no preview in editor)
         else:
             self.fp_formats_book.SetSelection(0)  # Empty page
 
@@ -662,36 +667,45 @@ class FilesystemEditor(generated.FilesystemEditor):
         name, archive = self.preview_data
         with archive.open(name, "w+") as file:
             file.write(self.fp_text_edit.GetValue())
+
     def fp_mods_export_clicked(self, _):
-        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        output_location = os.getcwd() + "\\temporary\\temp.mods"
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-        with open(outputLocation, "wb+") as out_file:
-                    with _archive.open(path, "rb") as game_file:
-                        out_file.write(game_file.read())
+        with open(output_location, "wb+") as out_file:
+            with _archive.open(path, "rb") as game_file:
+                out_file.write(game_file.read())
 
     def fp_mods_import_clicked(self, _):
-        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
-        os.system(mobiLocation)
+        mobi_location = os.getcwd() + "\\MobiclipDecoder.exe"
+        # Use subprocess instead of os.system in case the path contains spaces
+        subprocess.run([mobi_location])
 
-    def open_mobi_view(_):
-        mobiLocation = os.getcwd() +"\\MobiclipDecoder.exe"
-        os.system(mobiLocation)
+    def open_mobi_view(self):
+        mobi_location = os.getcwd() + "\\MobiclipDecoder.exe"
+        # Use subprocess instead of os.system in case the path contains spaces
+        subprocess.run([mobi_location])
 
     def fp_mods_view_clicked(self, _):
-        outputLocation = os.getcwd()+"\\temporary\\temp.mods"
+        # Create folder if it does not exist
+        if not os.path.isdir(os.getcwd() + "\\temporary"):
+            os.mkdir(os.getcwd() + "\\temporary")
+
+        output_location = os.getcwd() + "\\temporary\\temp.mods"
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-        with open(outputLocation, "wb+") as out_file:
-                    with _archive.open(path, "rb") as game_file:
-                        out_file.write(game_file.read())
+        with open(output_location, "wb+") as out_file:
+            with _archive.open(path, "rb") as game_file:
+                out_file.write(game_file.read())
         t1 = threading.Thread(target=self.open_mobi_view)
         t1.start()
-        namee = path.split("/")[2]
-        name = namee.split(".")[0]
-        sound_previewer = SoundPreview(SADLStreamPlayer(), load_sadl("data_lt2/stream/movie/ge/"+name.upper()+".SAD"), "data_lt2/stream/movie/ge/"+name.upper()+".SAD")
+        name = path.split("/")[2]
+        name = name.split(".")[0]
+        sound_previewer = SoundPreview(SADLStreamPlayer(),
+                                       load_sadl(f"data_lt2/stream/movie/{conf.LANG}/{name.upper()}.SAD"),
+                                       f"data_lt2/stream/movie/{conf.LANG}/{name.upper()}.SAD")
         self.previewer.start_renderer(sound_previewer)
         sound_previewer.start_sound()
-        set_previewer = True
+
+        # TODO: Should we add Stream menu? Does this interfere with Stream importing/exporting
         self.fp_formats_book.SetSelection(0)  # Empty page
         self.fp_menus_loaded.append("Stream")
         self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
-        #start_new_thread(open_mobi_view)
