@@ -44,3 +44,4 @@ to `./layton2.sf2`.
 
 * [thatrandomstrange](https://github.com/thatrandomstranger)
 * [cervi](https://github.com/C3RV1)
+* [DeUloU](https://github.com/DeUloO)
