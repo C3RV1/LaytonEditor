@@ -5,7 +5,8 @@ from formats.sound.compression.adpcm import Adpcm
 
 
 class Sample:
-    id_: Union[int, str]
+    id_: int
+    name: Union[str, None]
     fine_tune: int = 0
     coarse_tune: int = 0
     root_key: int = 60
@@ -103,7 +104,8 @@ class LFO:
 
 
 class Program:
-    id_: Union[int, str]
+    id_: int
+    name: Union[str, None]
     volume: int = 0x7F
     pan: int = 64  # 0-64-127
     lfos: List[LFO]
