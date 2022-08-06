@@ -117,7 +117,7 @@ class DCCParser:
         for token in self.code:
             if ":" in token:
                 token_split = token.split(":")
-                token = token_split[0] + ": " + token_split[1]
+                token = token_split[0] + ": " + ":".join(token_split[1:])
             if "\"" in token:
                 token_parsed = ""
                 while token[0] != "\"":
@@ -231,7 +231,7 @@ class DCCParser:
                     if is_call:
                         raise SyntaxError("Call is not allowed to have named")
                     token_name = token.split(":")[0]
-                    token_value = token.split(":")[1]
+                    token_value = ":".join(token.split(":")[1:])
                     if token_value == "[":
                         token_value = convert_to_group()
                     current_group['named'][token_name] = token_value
