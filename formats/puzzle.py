@@ -90,7 +90,7 @@ class Puzzle:
 
         self.number = rdr.read_uint16()
         rdr.read_uint16()  # 112
-        self.title = rdr.read_string(encoding=self.encoding)
+        self.title = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
         rdr.seek(0x34)
         self.tutorial_id = rdr.read_uint8()
         for i in range(3):
@@ -128,21 +128,27 @@ class Puzzle:
         wtr: BinaryWriter
 
         puzzle_text_section = BinaryWriter()
-        puzzle_text_section.write_string(self.text, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.text, puzzle=True),
+                                         encoding=self.encoding)
         puzzle_correct_offset = puzzle_text_section.tell()
-        puzzle_text_section.write_string(self.correct_answer, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.correct_answer, puzzle=True),
+                                         encoding=self.encoding)
         puzzle_incorrect_offset = puzzle_text_section.tell()
-        puzzle_text_section.write_string(self.incorrect_answer, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.incorrect_answer, puzzle=True),
+                                         encoding=self.encoding)
         puzzle_hint1_offset = puzzle_text_section.tell()
-        puzzle_text_section.write_string(self.hint1, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.hint1, puzzle=True),
+                                         encoding=self.encoding)
         puzzle_hint2_offset = puzzle_text_section.tell()
-        puzzle_text_section.write_string(self.hint2, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.hint2, puzzle=True),
+                                         encoding=self.encoding)
         puzzle_hint3_offset = puzzle_text_section.tell()
-        puzzle_text_section.write_string(self.hint3, encoding=self.encoding)
+        puzzle_text_section.write_string(subs.convert_substitutions(self.hint3, puzzle=True),
+                                         encoding=self.encoding)
 
         wtr.write_uint16(self.number)
         wtr.write_uint16(112)
-        wtr.write_string(self.title, encoding=self.encoding, size=0x30)
+        wtr.write_string(subs.convert_substitutions(self.title, True), encoding=self.encoding, size=0x30)
         wtr.write_uint8(self.tutorial_id)
         for picarat in self.picarat_decay:
             wtr.write_uint8(picarat)
@@ -250,14 +256,12 @@ class Puzzle:
         parser.get_path("pzd.picarat_decay", create=True)
         for picarat in self.picarat_decay:
             parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", subs.replace_substitutions(self.text, puzzle=True))
-        parser.set_named("pzd.correct_answer", subs.replace_substitutions(self.correct_answer,
-                                                                          puzzle=True))
-        parser.set_named("pzd.incorrect_answer",
-                         subs.replace_substitutions(self.incorrect_answer, puzzle=True))
-        parser.set_named("pzd.hint1", subs.replace_substitutions(self.hint1, puzzle=True))
-        parser.set_named("pzd.hint2", subs.replace_substitutions(self.hint2, puzzle=True))
-        parser.set_named("pzd.hint3", subs.replace_substitutions(self.hint3, puzzle=True))
+        parser.set_named("pzd.text", self.text)
+        parser.set_named("pzd.correct_answer", self.correct_answer)
+        parser.set_named("pzd.incorrect_answer", self.incorrect_answer)
+        parser.set_named("pzd.hint1", self.hint1)
+        parser.set_named("pzd.hint2", self.hint2)
+        parser.set_named("pzd.hint3", self.hint3)
 
         from formats.parsers.gds_parsers import get_puzzle_gds_parser
         gds_parser = get_puzzle_gds_parser(self)
@@ -283,13 +287,12 @@ class Puzzle:
         self.title = parser["pzd.title"]
         self.type = parser["pzd.type"]
         self.number = parser["pzd.number"]
-        self.text = subs.convert_substitutions(parser["pzd.text"], puzzle=True)
-        self.correct_answer = subs.convert_substitutions(parser["pzd.correct_answer"],
-                                                         puzzle=True)
-        self.incorrect_answer = subs.convert_substitutions(parser["pzd.incorrect_answer"], puzzle=True)
-        self.hint1 = subs.convert_substitutions(parser["pzd.hint1"], puzzle=True)
-        self.hint2 = subs.convert_substitutions(parser["pzd.hint2"], puzzle=True)
-        self.hint3 = subs.convert_substitutions(parser["pzd.hint3"], puzzle=True)
+        self.text = parser["pzd.text"]
+        self.correct_answer = parser["pzd.correct_answer"]
+        self.incorrect_answer = parser["pzd.incorrect_answer"]
+        self.hint1 = parser["pzd.hint1"]
+        self.hint2 = parser["pzd.hint2"]
+        self.hint3 = parser["pzd.hint3"]
 
         self.tutorial_id = parser["pzd.tutorial_id"]
         self.reward_id = parser["pzd.reward_id"]
