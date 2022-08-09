@@ -457,6 +457,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             pathname = fileDialog.GetPath()
             if pathname:
                 with open(pathname, "wb+") as out_file:
+                    # To extract compressed files switch the following lines
+                    # with CompressedIOWrapper(_archive.open(path, "rb"), double_typed=False) as game_file:
                     with _archive.open(path, "rb") as game_file:
                         out_file.write(game_file.read())
 

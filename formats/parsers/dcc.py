@@ -115,6 +115,7 @@ class DCCParser:
         joined = ""
         indent = 0
         for token in self.code:
+            # FIXME: Character : in string (unnamed for example) how is parsed?
             if ":" in token:
                 token_split = token.split(":")
                 token = token_split[0] + ": " + ":".join(token_split[1:])
