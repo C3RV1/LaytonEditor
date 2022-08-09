@@ -1,4 +1,5 @@
 import threading
+
 import k4pg
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
 from typing import Any
@@ -58,7 +59,7 @@ class PygamePreviewer(threading.Thread):
             self.current_renderer.unload()
             gc.collect()
         self.current_renderer = renderer
-        self.gm.tick()
+        self.gm.post_load_clear()
         self.loop_lock.release()
 
     def stop_renderer(self):
@@ -67,5 +68,5 @@ class PygamePreviewer(threading.Thread):
             self.current_renderer.unload()
             gc.collect()
         self.current_renderer = PreviewerDefaultRenderer()
-        self.gm.tick()
+        self.gm.post_load_clear()
         self.loop_lock.release()

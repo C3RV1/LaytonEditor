@@ -65,6 +65,10 @@ class GameManager(object):
 
             GameManager.__inited = True
 
+    def post_load_clear(self):
+        self._delta_time = 0
+        self.input_manager.update_events([])
+
     def tick(self):
         if not self._running:
             return
