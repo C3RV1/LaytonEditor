@@ -5,7 +5,7 @@ from typing import Union, Optional, List, Dict
 
 import numpy as np
 
-from formats.binary import BinaryReader
+from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.sound_types import Sample, Program, Split
 
 
@@ -21,6 +21,12 @@ class IfilChunk:
         self.major = rdr.read_uint16()
         self.minor = rdr.read_uint16()
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ifil")
+        wtr.write_uint32(4)
+        wtr.write_uint16(self.major)
+        wtr.write_uint16(self.minor)
+
 
 class IsngChunk:
     def __init__(self, sound_engine="EMU8000"):
@@ -33,6 +39,19 @@ class IsngChunk:
         end_pos = rdr.tell() + chunk_size
         self.sound_engine = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"isng")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.sound_engine[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class INAMChunk:
@@ -47,6 +66,19 @@ class INAMChunk:
         self.name = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"INAM")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.name[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class IromChunk:
     def __init__(self, rom=""):
@@ -59,6 +91,19 @@ class IromChunk:
         end_pos = rdr.tell() + chunk_size
         self.rom = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"irom")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.rom[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class IverChunk:
@@ -73,6 +118,12 @@ class IverChunk:
         self.major = rdr.read_uint16()
         self.minor = rdr.read_uint16()
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"iver")
+        wtr.write_uint32(4)
+        wtr.write_uint16(self.major)
+        wtr.write_uint16(self.minor)
+
 
 class ICRDChunk:
     def __init__(self, date=""):
@@ -85,6 +136,19 @@ class ICRDChunk:
         end_pos = rdr.tell() + chunk_size
         self.date = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ICRD")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.date[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class IENGChunk:
@@ -99,6 +163,19 @@ class IENGChunk:
         self.authors = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"IENG")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.authors[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class IPRDChunk:
     def __init__(self, product=""):
@@ -111,6 +188,19 @@ class IPRDChunk:
         end_pos = rdr.tell() + chunk_size
         self.product = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"IPRD")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.product[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class ICOPChunk:
@@ -125,6 +215,19 @@ class ICOPChunk:
         self.copyright = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ICOP")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.copyright[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class ICMTChunk:
     def __init__(self, comment=""):
@@ -138,6 +241,19 @@ class ICMTChunk:
         self.comment = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ICMT")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.comment[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class ISFTChunk:
     def __init__(self, sound_font_tool=""):
@@ -150,6 +266,19 @@ class ISFTChunk:
         end_pos = rdr.tell() + chunk_size
         self.sound_font_tool = rdr.read_string(encoding="ascii")
         rdr.seek(end_pos)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ISFT")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place-holder chunk size
+        wtr.write_string(self.sound_font_tool[:255], encoding="ascii")
+        wtr.align(2)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class InfoChunk:
@@ -229,6 +358,40 @@ class InfoChunk:
         if self.ifil_chunk is None or self.isng_chunk is None or self.inam_chunk is None:
             raise ValueError("INFO chunk missing one of the required sub-chunks")
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"LIST")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        wtr.write(b"INFO")
+        if self.ifil_chunk is not None:
+            self.ifil_chunk.write(wtr)
+        if self.isng_chunk is not None:
+            self.isng_chunk.write(wtr)
+        if self.inam_chunk is not None:
+            self.inam_chunk.write(wtr)
+        if self.irom_chunk is not None:
+            self.irom_chunk.write(wtr)
+        if self.iver_chunk is not None:
+            self.iver_chunk.write(wtr)
+        if self.icrd_chunk is not None:
+            self.icrd_chunk.write(wtr)
+        if self.ieng_chunk is not None:
+            self.ieng_chunk.write(wtr)
+        if self.iprd_chunk is not None:
+            self.iprd_chunk.write(wtr)
+        if self.icop_chunk is not None:
+            self.icop_chunk.write(wtr)
+        if self.icmt_chunk is not None:
+            self.icmt_chunk.write(wtr)
+        if self.isft_chunk is not None:
+            self.isft_chunk.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class SmplChunk:
     def __init__(self, data: Optional[np.ndarray] = None):
@@ -239,8 +402,14 @@ class SmplChunk:
         if rdr.read(4) != b"smpl":
             raise ValueError("Invalid smpl header")
         chunk_size = rdr.read_uint32()
-        self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.int16)
-    
+        self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.dtype(np.int16).newbyteorder('<'))
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"smpl")
+        data_bin = self.data.tobytes()
+        wtr.write_uint32(len(data_bin))  # chunk size
+        wtr.write(data_bin)
+
 
 class Sm24Chunk:
     def __init__(self, data: Optional[np.ndarray] = None):
@@ -251,6 +420,12 @@ class Sm24Chunk:
             raise ValueError("Invalid sm24 header")
         chunk_size = rdr.read_uint32()
         self.data = np.frombuffer(rdr.read(chunk_size), dtype=np.uint8)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"sm24")
+        data_bin = self.data.tobytes()
+        wtr.write_uint32(len(data_bin))  # chunk size
+        wtr.write(data_bin)
 
 
 class SdtaChunk:
@@ -279,8 +454,26 @@ class SdtaChunk:
             elif chunk_name == b"sm24":
                 self.sm24_chunk = Sm24Chunk()
                 self.sm24_chunk.read(rdr)
+                raise NotImplementedError("LaytonEditor does not support 24-bit samples")
             else:
                 raise ValueError(f"Invalid sdta sub-chunk: {chunk_name}")
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"LIST")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        wtr.write(b"sdta")
+
+        if self.smpl_chunk is not None:
+            self.smpl_chunk.write(wtr)
+        if self.sm24_chunk is not None:
+            self.sm24_chunk.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class SFGeneratorEnumerator(IntEnum):
@@ -357,6 +550,15 @@ class SFPresetHeader:
         self.genre = rdr.read_uint32()
         self.morphology = rdr.read_uint32()
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write_string(self.preset_name, size=20, encoding="ascii")
+        wtr.write_uint16(self.preset_id)
+        wtr.write_uint16(self.preset_bank)
+        wtr.write_uint16(self.preset_bag_ndx)
+        wtr.write_uint32(self.library)
+        wtr.write_uint32(self.genre)
+        wtr.write_uint32(self.morphology)
+
     def to_program(self, pdta_chunk: 'PdtaChunk', next_preset_header: 'SFPresetHeader',
                    samples: List[Sample]) -> Program:
         program = Program()
@@ -365,7 +567,7 @@ class SFPresetHeader:
         program.lfos = []
         program.splits = []
         # Get the next instrument bag
-        instrument_last_bag = pdta_chunk.pbag_chunk.preset_bags[next_preset_header.preset_bag_ndx]
+        instrument_last_bag = pdta_chunk.pbag_chunk.preset_bags[self.preset_bag_ndx]
         instrument_next_bag = pdta_chunk.pbag_chunk.preset_bags[next_preset_header.preset_bag_ndx]
         instrument_id = None
         for gen_ndx in range(instrument_last_bag.gen_ndx, instrument_next_bag.gen_ndx):
@@ -374,7 +576,7 @@ class SFPresetHeader:
                 instrument_id = instrument_gen.amount
                 break
             elif instrument_gen.operation == SFGeneratorEnumerator.PAN:
-                program.pan = round(((instrument_gen.amount_signed) * 127) / (10 * 100))
+                program.pan = round((instrument_gen.amount_signed * 127) / (10 * 100))
         # Get the generator for the instrument (last gen in current bag)
         assert instrument_id is not None
         instrument = pdta_chunk.inst_chunk.instruments[instrument_id]
@@ -515,6 +717,19 @@ class PhdrChunk:
             preset_header.read(rdr)
             self.preset_headers.append(preset_header)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"phdr")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for preset_header in self.preset_headers:
+            preset_header.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class SFBag:
     def __init__(self):
@@ -524,6 +739,10 @@ class SFBag:
     def read(self, rdr: BinaryReader):
         self.gen_ndx = rdr.read_uint16()
         self.mod_ndx = rdr.read_uint16()
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write_uint16(self.gen_ndx)
+        wtr.write_uint16(self.mod_ndx)
 
 
 class PbagChunk:
@@ -543,6 +762,19 @@ class PbagChunk:
             preset_bag.read(rdr)
             self.preset_bags.append(preset_bag)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"pbag")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for preset_bag in self.preset_bags:
+            preset_bag.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class SFModEntry:
     def __init__(self):
@@ -558,6 +790,13 @@ class SFModEntry:
         self.amount = rdr.read_int16()
         self.amt_source = rdr.read_uint16()
         self.transform = rdr.read_uint16()
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write_uint16(self.source)
+        wtr.write_uint16(self.destination)
+        wtr.write_uint16(self.amount)
+        wtr.write_uint16(self.amt_source)
+        wtr.write_uint16(self.transform)
 
 
 class PmodChunk:
@@ -576,6 +815,19 @@ class PmodChunk:
             mod_list = SFModEntry()
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"pmod")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for mod in self.mod_list:
+            mod.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class SFGenEntry:
@@ -609,6 +861,10 @@ class SFGenEntry:
         self.operation = rdr.read_uint16()
         self.amount = rdr.read_uint16()
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write_uint16(self.operation)
+        wtr.write_uint16(self.amount)
+
 
 class PgenChunk:
     gen_list: List[SFGenEntry]
@@ -627,6 +883,19 @@ class PgenChunk:
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"pgen")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for gen in self.gen_list:
+            gen.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class SFInst:
     def __init__(self):
@@ -636,6 +905,10 @@ class SFInst:
     def read(self, rdr: BinaryReader):
         self.name = rdr.read_string(size=20, encoding="ascii")
         self.inst_bag_ndx = rdr.read_uint16()
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write_string(self.name, size=20, encoding="ascii")
+        wtr.write_uint16(self.inst_bag_ndx)
 
 
 class InstChunk:
@@ -655,6 +928,19 @@ class InstChunk:
             instrument.read(rdr)
             self.instruments.append(instrument)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"inst")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for instrument in self.instruments:
+            instrument.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class IbagChunk:
     instrument_bags: List[SFBag]
@@ -672,6 +958,19 @@ class IbagChunk:
             instrument_bag = SFBag()
             instrument_bag.read(rdr)
             self.instrument_bags.append(instrument_bag)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"ibag")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for inst_bag in self.instrument_bags:
+            inst_bag.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class ImodChunk:
@@ -691,6 +990,19 @@ class ImodChunk:
             mod_list.read(rdr)
             self.mod_list.append(mod_list)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"imod")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for mod in self.mod_list:
+            mod.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
 
 class IgenChunk:
     gen_list: List[SFGenEntry]
@@ -708,6 +1020,19 @@ class IgenChunk:
             gen_list = SFGenEntry()
             gen_list.read(rdr)
             self.gen_list.append(gen_list)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"igen")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for gen in self.gen_list:
+            gen.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
 
 class SFSample:
@@ -735,13 +1060,26 @@ class SFSample:
         self.link = rdr.read_uint16()
         self.type = rdr.read_uint16()
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write_string(self.name, size=20, encoding="ascii")
+        wtr.write_uint32(self.start)
+        wtr.write_uint32(self.end)
+        wtr.write_uint32(self.start_loop)
+        wtr.write_uint32(self.end_loop)
+        wtr.write_uint32(self.rate)
+        wtr.write_uint8(self.original_key)
+        wtr.write_uint8(self.pitch_correction)
+        wtr.write_uint16(self.link)
+        wtr.write_uint16(self.type)
+
     def to_sample(self, sdta_chunk: SdtaChunk) -> Sample:
         sample = Sample()
+        sample.name = self.name
         if res := re.match("^sample ([0-9]+)$", self.name):
             sample.id = int(res.group(1))
         else:
             sample.id_ = None
-        sample.loop_beginning = self.start_loop
+        sample.loop_beginning = self.start_loop - self.start
         sample.loop_length = self.end_loop - self.start_loop
         sample.sample_rate = self.rate
         sample.root_key = self.original_key
@@ -750,16 +1088,20 @@ class SFSample:
         return sample
 
     def from_sample(self, sample: Sample, sdta_chunk: SdtaChunk):
-        self.name = f"sample {sample.id_}"
-        self.start_loop = sample.loop_beginning
-        self.end_loop = self.start_loop + sample.loop_length
+        if sample.name is None:
+            self.name = f"sample {sample.id_}"
+        else:
+            self.name = sample.name
         self.rate = sample.sample_rate
         self.original_key = sample.root_key
         self.pitch_correction = sample.fine_tune
         self.start = sdta_chunk.smpl_chunk.position
+        self.start_loop = self.start + sample.loop_beginning
+        self.end_loop = self.start_loop + sample.loop_length
         pcm16 = sample.pcm16
         self.end = self.start + len(pcm16)
         sdta_chunk.smpl_chunk.data[self.start:self.end] = pcm16
+        sdta_chunk.smpl_chunk.position = self.end
 
 
 class ShdrChunk:
@@ -779,13 +1121,26 @@ class ShdrChunk:
             sample.read(rdr)
             self.samples.append(sample)
 
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"shdr")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        for sample in self.samples:
+            sample.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
     def from_samples(self, samples: List[Sample], sdta_chunk: SdtaChunk):
-        self.samples = []
+        self.samples = [SFSample()]
         data_length = sum([len(sample.pcm16) for sample in samples])
         sdta_chunk.smpl_chunk = SmplChunk(np.zeros((data_length,), np.int16))
         for sample in samples:
             self.samples.insert(-1, SFSample())  # Insert before terminal record
-            self.samples[-1].from_sample(sample, sdta_chunk)
+            self.samples[-2].from_sample(sample, sdta_chunk)
 
 
 class PdtaChunk:
@@ -815,6 +1170,27 @@ class PdtaChunk:
         self.imod_chunk.read(rdr)
         self.igen_chunk.read(rdr)
         self.shdr_chunk.read(rdr)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"LIST")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # place holder chunk size
+        wtr.write(b"pdta")
+        self.phdr_chunk.write(wtr)
+        self.pbag_chunk.write(wtr)
+        self.pmod_chunk.write(wtr)
+        self.pgen_chunk.write(wtr)
+        self.inst_chunk.write(wtr)
+        self.ibag_chunk.write(wtr)
+        self.imod_chunk.write(wtr)
+        self.igen_chunk.write(wtr)
+        self.shdr_chunk.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
 
     def from_samples_and_programs(self, samples: List[Sample], programs: List[Program],
                                   sdta_chunk: SdtaChunk):
@@ -886,10 +1262,29 @@ class SoundFont:
             self.programs[i] = program
             program.id_ = i
 
+    def write_stream(self, wtr: Union[io.BytesIO, BinaryWriter]):
+        if not isinstance(wtr, BinaryWriter):
+            wtr = BinaryWriter(wtr)
+        sdta_chunk, pdta_chunk = self.construct()
+
+        wtr.write(b"RIFF")
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)
+        wtr.write(b"sfbk")
+        self.info_chunk.write(wtr)
+        sdta_chunk.write(wtr)
+        pdta_chunk.write(wtr)
+
+        # write chunk_size
+        end_pos = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(end_pos - (chunk_size_pos + 4))
+        wtr.seek(end_pos)
+
     def construct(self):
         sdta_chunk = SdtaChunk()
         pdta_chunk = PdtaChunk()
 
         pdta_chunk.from_samples_and_programs(list(self.samples.values()), list(self.programs.values()),
                                              sdta_chunk)
-        print("Constructed")
+        return sdta_chunk, pdta_chunk
