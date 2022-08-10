@@ -713,8 +713,10 @@ class SFPresetHeader:
                 if split.decay != 0:
                     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.DECAY_VOL_ENV,
                                                                          amount_signed=ms_to_timecent(split.decay)))
-                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.SUSTAIN_VOL_ENV,
-                                                                         amount=1000))
+
+                # if split.sustain != 0:
+                #     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.SUSTAIN_VOL_ENV,
+                #                                                          amount=int(1000 * (split.sustain / 0x7f))))
 
                 if split.hold != 0:
                     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.HOLD_VOL_ENV,
