@@ -1,10 +1,12 @@
+import os
+
 from formats.sound.smdl import smdl
 import numpy as np
 
-from formats.sound.sound_types import Program
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound import sample_transform
-from typing import Dict, Optional
+from formats.sound import sf2, swdl
+from typing import Optional
 from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
 
 import pygame as pg
@@ -38,13 +40,21 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
     def __init__(self):
         super(SMDLStreamPlayer, self).__init__()
         self.smd_sequencer: Optional[SMDLFluidSynthSequencer] = None
-        self.preset_dict: Dict[int, Program] = {}
+        self.tmp_sf2_path = None
         self.buffer_size = 0
         self.load_size = 0
         self.channels = 0
 
-    def set_preset_dict(self, preset_dict: Dict[int, Program]):
-        self.preset_dict = preset_dict
+    def create_temporal_sf2(self, swd_file: swdl.SWDL, sample_bank: swdl.SWDL):
+        sf = sf2.SoundFont()
+        sf.samples = swd_file.samples
+        sf.programs = swd_file.programs
+        sf.set_sample_data(sample_bank.samples)
+        if not os.path.isdir(os.getcwd() + f"\\temporary"):
+            os.mkdir(os.getcwd() + f"\\temporary")
+        self.tmp_sf2_path = os.getcwd() + f"\\temporary\\temp_sf2.sf2"
+        with open(self.tmp_sf2_path, "wb") as f:
+            sf.write_stream(f)
 
     def add_samples(self, first_init=False):
         target_buffer_position = self.expected_buffer_position + self.load_size
@@ -89,7 +99,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
 
     def start_sound(self, snd_obj: smdl.SMDL, loops=False):
         self.fading = False
-        if not SMDLFluidSynthSequencer.get_dependencies_met():
+        if not SMDLFluidSynthSequencer.get_dependencies_met() or self.tmp_sf2_path is None:
             return
         if self.sound_obj is not None:
             self.sound_obj.stop()
@@ -99,7 +109,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.load_size = self.LOAD_SECONDS * self.sample_rate
         self.expected_buffer_position = 0
         self.smd_sequencer = SMDLFluidSynthSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
-        self.smd_sequencer.create_program_map(self.preset_dict)
+        self.smd_sequencer.load_sf2(self.tmp_sf2_path)
         self.smd_sequencer.reset()
         self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, self.channels), dtype=np.int16))
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)

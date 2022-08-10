@@ -342,8 +342,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.GetGrandParent().add_menu(self.fp_stream_menu, "Stream")
         elif name.lower().endswith(".smd"):
             smdl_stream_player = SMDLStreamPlayer()
-            smdl, swd_presets = load_smd(name)
-            smdl_stream_player.set_preset_dict(swd_presets)
+            smdl, swd_file, sample_bank = load_smd(name)
+            smdl_stream_player.create_temporal_sf2(swd_file, sample_bank)
             sound_previewer = SoundPreview(smdl_stream_player, smdl, name)
             self.previewer.start_renderer(sound_previewer)
             set_previewer = True
@@ -678,10 +678,8 @@ class FilesystemEditor(generated.FilesystemEditor):
             with wx.ProgressDialog("Exporting to MID", "This could take several minutes.", parent=self,
                                    style=wx.PD_APP_MODAL) as progressDialog:
                 smdl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
-                smdl, presets = load_smd(smdl_file_path, self.rom)
+                smdl, _swd, _sample_bank = load_smd(smdl_file_path, self.rom)
                 smdl_seq = SMDLMidiSequencer(smdl)
-                smdl_seq.convert_programs = False
-                # smdl_seq.create_program_map(presets)
                 mid: mido.MidiFile = smdl_seq.generate_mid()
                 mid.save(pathname)
                 progressDialog.Update(100, "Completed")

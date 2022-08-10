@@ -93,10 +93,10 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False
 
-        smd, presets = load_smd("data_lt2/sound/BG_035.SMD")
+        smd, swd_file, sample_bank = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer()
         self.puzzle_bg_music.set_volume(0.5)
-        self.puzzle_bg_music.set_preset_dict(presets)
+        self.puzzle_bg_music.create_temporal_sf2(swd_file, sample_bank)
         self.puzzle_bg_music.start_sound(smd, loops=True)
 
         self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader, self.hints,

@@ -1,9 +1,7 @@
 import logging
-import os
 from formats.sound.smdl import smdl
 from formats.sound.smdl.SMDLSequencer import SMDLSequencer
 import numpy as np
-import sys
 
 
 try:
@@ -18,13 +16,15 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
     def __init__(self, smd_obj: smdl.SMDL, sample_rate=44100, loops=True):
         super(SMDLFluidSynthSequencer, self).__init__(smd_obj, sample_rate=sample_rate, loops=loops)
 
-        sf2_path = SMDLFluidSynthSequencer.get_sf2_path()
-        if fluidsynth is None or not os.path.isfile(sf2_path):
+        if fluidsynth is None:
             self.fs = None
             return
         self.fs = fluidsynth.ModifiedSynth(samplerate=self.sample_rate, gain=0.5)
+        self.sf_id = 0
+
+    def load_sf2(self, sf2_path):
         self.sf_id = self.fs.sfload(sf2_path)
-        self.fs.program_select(0, self.sf_id, 0, 0)
+        # self.fs.program_select(0, self.sf_id, 0, 0)
 
     def note_on(self, channel, midi_note, velocity):
         self.fs.noteon(channel, midi_note, velocity)
@@ -68,14 +68,5 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
         pass
 
     @staticmethod
-    def get_sf2_path():
-        if getattr(sys, "frozen", False):
-            sf2_path = os.path.join(os.path.dirname(sys.executable), "layton2.sf2")
-        else:
-            sf2_path = os.path.join(os.getcwd(), "layton2.sf2")
-        return sf2_path
-
-    @staticmethod
     def get_dependencies_met():
-        sf2_path = SMDLFluidSynthSequencer.get_sf2_path()
-        return fluidsynth is not None and os.path.isfile(sf2_path)
+        return fluidsynth is not None

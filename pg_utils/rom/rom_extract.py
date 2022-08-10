@@ -1,12 +1,9 @@
 import os
 import shutil
-from typing import Dict
 
 from formats.sound.smdl import smdl
 from formats.sound import sadl
 from formats.sound import swdl
-from formats.sound import sound_types
-import formats.binary as binary
 
 from formats import conf
 from pg_utils.rom import RomSingleton
@@ -37,8 +34,10 @@ def load_smd(path: str, rom=None) -> tuple:
 
     swd_path = path.split(".")[0] + ".SWD"
     swd_file = swdl.SWDL(swd_path, rom=rom)
-    programs: Dict[int, sound_types.Program] = swd_file.programs
-    return smd_obj, programs
+
+    sample_bank_path = "/".join(path.split("/")[:-1]) + "/BG_999.SWD"
+    sample_bank = swdl.SWDL(sample_bank_path, rom=rom)
+    return smd_obj, swd_file, sample_bank
 
 
 def clear_extracted():

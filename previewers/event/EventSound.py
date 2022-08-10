@@ -11,8 +11,8 @@ class EventSound:
         self.bg_player.set_volume(0.3)
 
     def play_smdl(self, path):
-        smd_obj, presets = load_smd(path)
-        self.bg_player.set_preset_dict(presets)
+        smd_obj, swd_file, sample_bank = load_smd(path)
+        self.bg_player.create_temporal_sf2(swd_file, sample_bank)
         self.bg_player.start_sound(smd_obj, loops=True)
 
     def stop_smdl(self):
