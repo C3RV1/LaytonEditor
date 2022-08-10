@@ -1,8 +1,10 @@
 # Thanks to https://projectpokemon.org/docs/mystery-dungeon-nds/dse-swdl-format-r14/
+import logging
 from typing import List, Dict, Optional
 
 import numpy as np
 
+from formats import conf
 from formats.binary import BinaryReader
 from formats.filesystem import FileFormat, NintendoDSRom
 from formats.sound.sound_types import Sample, KeyGroup, Split, LFO, Program
@@ -114,15 +116,16 @@ class SWDKeyGroup:
     def read(self, rdr: BinaryReader):
         # key groups used for padding are all 0xAA
         self.id_ = rdr.read_uint16()
-        print(f"    KeyGroup: {self.id_}")
         self.polyphony = rdr.read_uint8()
         self.priority = rdr.read_uint8()
         self.voice_channel_low = rdr.read_uint8()
         self.voice_channel_hi = rdr.read_uint8()
         self.unk50 = rdr.read_uint8()  # 0xAA if key_group_id == 0xAAAA else 0
         self.unk51 = rdr.read_uint8()  # 0xAA if key_group_id == 0xAAAA else 0
-        print(f"        UNK50: {self.unk50}")
-        print(f"        UNK51: {self.unk51}")
+        if conf.DEBUG_AUDIO:
+            logging.debug(f"    KeyGroup: {self.id_}")
+            logging.debug(f"        UNK50: {self.unk50}")
+            logging.debug(f"        UNK51: {self.unk51}")
 
     def to_key_group(self) -> KeyGroup:
         key_group = KeyGroup()
@@ -142,7 +145,8 @@ class KgrpChunk:
     key_groups: List[SWDKeyGroup]
 
     def read(self, rdr: BinaryReader):
-        print("KGPRChunk")
+        if conf.DEBUG_AUDIO:
+            logging.debug("KGPRChunk")
         self.magic = rdr.read(4)
         if self.magic != b"kgrp":
             raise ValueError("SWDKgprChunk does not start with magic value")
@@ -184,14 +188,15 @@ class SWDLFOEntry:
     delay: int  # milliseconds
 
     def read(self, rdr: BinaryReader):
-        print("        LFOEntry")
         assert rdr.read_uint8() == 0
         self.unk1 = rdr.read_uint8()  # bool? GE_003.SWD/SI_012.SWD is 1 (mostly 0)
         self.destination = rdr.read_uint8()
         self.wshape = rdr.read_uint8()
         self.rate = rdr.read_uint16()
         self.unk29 = rdr.read_uint16()
-        print(f"            UNK29: {self.unk29}")
+        if conf.DEBUG_AUDIO:
+            logging.debug("        LFOEntry")
+            logging.debug(f"            UNK29: {self.unk29}")
         self.depth = rdr.read_uint16()
         self.delay = rdr.read_uint16()
         assert rdr.read_uint16() == 0
@@ -238,10 +243,8 @@ class SWDSplitEntry:
     def read(self, rdr: BinaryReader):
         assert rdr.read_uint8() == 0
         self.splits_table_id = rdr.read_uint8()
-        print(f"        Split Entry {self.splits_table_id}")
         assert rdr.read_uint8() == 2
         self.unk25 = rdr.read_uint8()  # 1 or 0 (bool)
-        print(f"            UNK25: {self.unk25}")
         self.low_key = rdr.read_int8()
         self.hi_key = rdr.read_int8()
         _low_key2 = rdr.read_int8()  # copy
@@ -252,8 +255,6 @@ class SWDSplitEntry:
         _hi_vel2 = rdr.read_int8()  # copy
         self.unk16 = rdr.read_uint32()  # 0xAAAAAAAA or 0
         self.unk17 = rdr.read_uint16()  # 0xAAAA or 0
-        print(f"            UNK16: {self.unk16}")
-        print(f"            UNK17: {self.unk17}")
         self.sample_id = rdr.read_uint16()
         self.fine_tune = rdr.read_int8()
         self.coarse_tune = rdr.read_int8()
@@ -265,9 +266,6 @@ class SWDSplitEntry:
         self.unk22 = rdr.read_uint8()  # 0 or 2
         assert rdr.read_uint16() == 0
         self.unk24 = rdr.read_uint16()  # pad byte? 0xAAAA or 0xFFFF
-        print(f"            KEY_GROUP_ID: {self.key_group_id}")
-        print(f"            UNK22: {self.unk22}")
-        print(f"            UNK22: {self.unk24}")
         self.envelope_on = rdr.read_uint8()
         self.envelope_multiplier = rdr.read_uint8()
         assert rdr.read_uint8() == 1
@@ -282,6 +280,14 @@ class SWDSplitEntry:
         self.decay2 = rdr.read_int8()
         self.release = rdr.read_int8()
         assert rdr.read_uint8() == 0xFF
+        if conf.DEBUG_AUDIO:
+            logging.debug(f"        Split Entry {self.splits_table_id}")
+            logging.debug(f"            UNK25: {self.unk25}")
+            logging.debug(f"            UNK16: {self.unk16}")
+            logging.debug(f"            UNK17: {self.unk17}")
+            logging.debug(f"            KEY_GROUP_ID: {self.key_group_id}")
+            logging.debug(f"            UNK22: {self.unk22}")
+            logging.debug(f"            UNK22: {self.unk24}")
 
     def to_split(self, samples: Dict[int, Sample],
                  key_groups: Dict[int, KeyGroup]) -> Split:
@@ -366,7 +372,6 @@ class ProgramInfoEntry:
 
     def read(self, rdr: BinaryReader):
         self.id_ = rdr.read_uint16()
-        print(f"    Program {self.id_}")
         self.splits_count = rdr.read_uint16()
         self.program_volume = rdr.read_int8()
         self.program_pan = rdr.read_int8()
@@ -376,7 +381,6 @@ class ProgramInfoEntry:
         assert rdr.read_uint8() == 0
         self.lfo_count = rdr.read_uint8()
         self.pad_byte = rdr.read_uint8()
-        print(f"        Pad Byte {self.pad_byte}")
         assert rdr.read_uint8() == 0
         assert rdr.read_uint8() == 0
         assert rdr.read_uint8() == 0
@@ -391,6 +395,9 @@ class ProgramInfoEntry:
             split_entry = SWDSplitEntry()
             split_entry.read(rdr)
             self.splits_table.append(split_entry)
+        if conf.DEBUG_AUDIO:
+            logging.debug(f"    Program {self.id_}")
+            logging.debug(f"        Pad Byte {self.pad_byte}")
 
     def to_program(self, samples: Dict[int, Sample],
                    key_groups: Dict[int, KeyGroup]) -> Program:
@@ -412,7 +419,8 @@ class PrgiChunk:
     program_info_table: List[ProgramInfoEntry]
 
     def read(self, rdr: BinaryReader, prgi_slot_count: int):
-        print("PRGIChunk")
+        if conf.DEBUG_AUDIO:
+            logging.debug("PRGIChunk")
         self.magic = rdr.read(4)
         if self.magic != b"prgi":
             raise ValueError("SWDPrgiChunk does not start with magic value")
@@ -563,7 +571,8 @@ class WaviChunk:
     sample_info_table: List[SampleInfoEntry]
 
     def read(self, rdr: BinaryReader, wavi_slot_count: int):
-        print("WAVIChunk")
+        if conf.DEBUG_AUDIO:
+            logging.debug("WAVIChunk")
         self.magic = rdr.read(4)
         if self.magic != b"wavi":
             raise ValueError("SWDWaviChunk does not start with magic value")
@@ -606,7 +615,8 @@ class SWDHeader:
     wavi_len: int  # len of wavi chunk
 
     def read(self, rdr: BinaryReader):
-        print("SWDHeader")
+        if conf.DEBUG_AUDIO:
+            logging.debug("SWDHeader")
         self.magic = rdr.read(4)
         if self.magic != b"swdl":
             raise ValueError("SWDHeader does not start with magic value")
@@ -638,7 +648,8 @@ class SWDHeader:
         self.wavi_slot_count = rdr.read_uint16()
         self.prgi_slot_count = rdr.read_uint16()
         self.unk17 = rdr.read_uint16()
-        print(f"    UNK17: {self.unk17}")
+        if conf.DEBUG_AUDIO:
+            logging.debug(f"    UNK17: {self.unk17}")
         self.wavi_len = rdr.read_uint32()
 
 

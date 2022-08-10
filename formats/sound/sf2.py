@@ -709,7 +709,6 @@ class SFPresetHeader:
                 # if split.attack != 0:
                 #     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.ATTACK_VOL_ENV,
                 #                                                          amount_signed=ms_to_timecent(split.attack)))
-                # print(f"INST {instrument.name} split {split.low_key}-{split.high_key} decay2: {split.decay2}")
 
                 if split.decay != 0:
                     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.DECAY_VOL_ENV,
