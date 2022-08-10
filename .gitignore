@@ -21,7 +21,6 @@ tests/
 *.wav
 *.sad
 *.sf2
-*.dll
 *.pdb
 *.SMD
 *.log
