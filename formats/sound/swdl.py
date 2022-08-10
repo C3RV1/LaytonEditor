@@ -528,6 +528,7 @@ class SampleInfoEntry:
         if self.sample_format == 0x100:
             sample.loop_beginning /= 2
         elif self.sample_format == 0x200:
+            sample.loop_beginning -= 4
             sample.loop_beginning *= 2
         sample.loop_length = self.loop_length * 4
         # convert from bytes to samples
