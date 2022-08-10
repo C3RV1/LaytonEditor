@@ -36,27 +36,22 @@ class TestSMD(unittest.TestCase):
 
     def test_SMD_Mid(self):
         smd_obj = smdl.SMDL(filename="data_lt2/sound/BG_004.SMD", rom=self.rom)
-        swd_obj = swdl.SWDL(filename="data_lt2/sound/BG_004.SWD", rom=self.rom)
-
-        programs: Dict[int, sound_types.Program] = swd_obj.programs
 
         binary_writer = BinaryWriter()
         smd_obj.write_stream(binary_writer)
         assert hashlib.sha256(binary_writer.getvalue()).hexdigest() == "a876cb3acd2940219eeeb247ed6b078bbdde5ab7602ac72a8b77119f1f58a923"
 
         smd_midi_seq = SMDLMidiSequencer.SMDLMidiSequencer(smd_obj)
-        smd_midi_seq.create_program_map(programs)
         mid = smd_midi_seq.generate_mid()
 
         exported_file = io.BytesIO()
         mid.save(file=exported_file)
-        assert hashlib.sha256(exported_file.getvalue()).hexdigest() == "927901f3b7963987e37b67f22511468998e6923d6789c910094223ca5bca03fd"
+        assert hashlib.sha256(exported_file.getvalue()).hexdigest() == "89b9b44e21dcdb82b0ded4cef625e3680615d96da465836b8ab59cb5d8fa9d94"
 
         smd_midi_builder = SMDLBuilder.SMDLBuilderMidi(smd_obj)
-        smd_midi_builder.create_program_map(programs)
         smd_midi_builder.build_midi(mid)
 
         binary_writer = BinaryWriter()
         smd_obj.write_stream(binary_writer)
-        assert hashlib.sha256(binary_writer.getvalue()).hexdigest() == "058edc79a9d7bedc6fc3e5a10fed652b693006863fe704189fa62f1c60b7a4e3"
+        assert hashlib.sha256(binary_writer.getvalue()).hexdigest() == "ec5e8053c8cf93ed554e07d26869c878ff6e89ed85ee0b90de92cca6dfaa782f"
 
