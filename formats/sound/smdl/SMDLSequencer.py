@@ -40,6 +40,8 @@ class SMDLSequencer:
         self.current_tick = 0
         self.completed = False
 
+        self.convert_programs = True
+
         self.PROGRAM_MAP = {}
 
         for track in self.smd_obj.tracks:
@@ -299,11 +301,14 @@ class SMDLSequencer:
                 if conf.DEBUG_AUDIO:
                     logging.debug(f"{prefix}Program select: {program}")
 
-                if program in self.PROGRAM_MAP.keys():
-                    program = self.PROGRAM_MAP[program]
-                    self.set_program(track_id, program)
+                if self.convert_programs:
+                    if program in self.PROGRAM_MAP.keys():
+                        program = self.PROGRAM_MAP[program]
+                        self.set_program(track_id, program)
+                    else:
+                        logging.debug(f"{prefix}PROGRAM {program} not in PROGRAM_MAP")
                 else:
-                    logging.debug(f"{prefix}PROGRAM {program} not in PROGRAM_MAP")
+                    self.set_program(track_id, program)
             elif event == 0xd7:
                 bend = track_br.read_uint16()
 

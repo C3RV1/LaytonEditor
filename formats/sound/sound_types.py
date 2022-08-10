@@ -6,7 +6,7 @@ from formats.sound.compression.adpcm import Adpcm
 
 class Sample:
     id_: int
-    name: Union[str, None]
+    name: Union[str, None] = None
     fine_tune: int = 0
     coarse_tune: int = 0
     root_key: int = 60
@@ -64,7 +64,7 @@ class Split:
     high_key: int = 0x7F
     low_vel: int = 0
     high_vel: int = 0x7F
-    sample: 'Sample'
+    sample: Union['Sample', int]
     fine_tune: int = 0
     coarse_tune: int = 0
     root_key: int = 60
@@ -105,7 +105,7 @@ class LFO:
 
 class Program:
     id_: int
-    name: Union[str, None]
+    name: Union[str, None] = None
     volume: int = 0x7F
     pan: int = 64  # 0-64-127
     lfos: List[LFO]

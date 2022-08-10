@@ -1,5 +1,8 @@
 import io
+import logging
+import math
 import re
+import typing
 from enum import IntEnum
 from typing import Union, Optional, List, Dict
 
@@ -7,6 +10,12 @@ import numpy as np
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.sound_types import Sample, Program, Split
+
+
+def ms_to_timecent(ms: int):
+    if ms == 0:
+        return -32768
+    return int(1200 * math.log2(ms / 1000))
 
 
 class IfilChunk:
@@ -671,6 +680,11 @@ class SFPresetHeader:
                                                       SFGenEntry(operation=SFGeneratorEnumerator.OVERRIDING_ROOT_KEY,
                                                                  amount=split.root_key))
 
+            pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.SAMPLE_MODES,
+                                                                 amount=1 if split.sample.loop_enabled else 0))
+
+            """
+            Ignore tuning for now (doesn't seem to work)
             # Add fine tune
             if split.fine_tune != 0:
                 pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.FINE_TUNE,
@@ -680,6 +694,7 @@ class SFPresetHeader:
             if split.coarse_tune != 0:
                 pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.COARSE_TUNE,
                                                                      amount_signed=split.coarse_tune))
+            """
 
             # Add pan
             if split.pan != 64:
@@ -687,6 +702,28 @@ class SFPresetHeader:
                 pan = round(split.pan * 1000 / 127)
                 pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.PAN,
                                                                      amount=pan))
+
+            if split.envelope_on:
+                # Can't use attack as we cannot simulate split.attack_volume
+                # SF2 always starts at volume 0, but SWDL does not
+                # if split.attack != 0:
+                #     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.ATTACK_VOL_ENV,
+                #                                                          amount_signed=ms_to_timecent(split.attack)))
+                # print(f"INST {instrument.name} split {split.low_key}-{split.high_key} decay2: {split.decay2}")
+
+                if split.decay != 0:
+                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.DECAY_VOL_ENV,
+                                                                         amount_signed=ms_to_timecent(split.decay)))
+                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.SUSTAIN_VOL_ENV,
+                                                                         amount=1000))
+
+                if split.hold != 0:
+                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.HOLD_VOL_ENV,
+                                                                         amount_signed=ms_to_timecent(split.hold)))
+
+                if split.release != 0:
+                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.RELEASE_VOL_ENV,
+                                                                         amount_signed=ms_to_timecent(split.release)))
 
             # TODO: Add envelope, attack, decay, sustain
 
@@ -1046,7 +1083,7 @@ class SFSample:
         self.original_key = 0
         self.pitch_correction = 0
         self.link = 0
-        self.type = 0
+        self.type = 1
 
     def read(self, rdr: BinaryReader):
         self.name = rdr.read_string(size=20, encoding="ascii")
@@ -1068,7 +1105,7 @@ class SFSample:
         wtr.write_uint32(self.end_loop)
         wtr.write_uint32(self.rate)
         wtr.write_uint8(self.original_key)
-        wtr.write_uint8(self.pitch_correction)
+        wtr.write_int8(self.pitch_correction)
         wtr.write_uint16(self.link)
         wtr.write_uint16(self.type)
 
@@ -1084,7 +1121,8 @@ class SFSample:
         sample.sample_rate = self.rate
         sample.root_key = self.original_key
         sample.fine_tune = self.pitch_correction
-        sample.pcm16 = sdta_chunk.smpl_chunk.data[self.start:self.end]
+        pcm16 = sdta_chunk.smpl_chunk.data[self.start:self.end]
+        sample.pcm16 = pcm16.reshape((pcm16.shape[0], 1))
         return sample
 
     def from_sample(self, sample: Sample, sdta_chunk: SdtaChunk):
@@ -1094,11 +1132,13 @@ class SFSample:
             self.name = sample.name
         self.rate = sample.sample_rate
         self.original_key = sample.root_key
-        self.pitch_correction = sample.fine_tune
+        # Ignore fine tune for now?
+        self.pitch_correction = 0  # sample.fine_tune
         self.start = sdta_chunk.smpl_chunk.position
         self.start_loop = self.start + sample.loop_beginning
         self.end_loop = self.start_loop + sample.loop_length
         pcm16 = sample.pcm16
+        pcm16 = pcm16.reshape((pcm16.shape[0],))
         self.end = self.start + len(pcm16)
         sdta_chunk.smpl_chunk.data[self.start:self.end] = pcm16
         sdta_chunk.smpl_chunk.position = self.end
@@ -1262,7 +1302,7 @@ class SoundFont:
             self.programs[i] = program
             program.id_ = i
 
-    def write_stream(self, wtr: Union[io.BytesIO, BinaryWriter]):
+    def write_stream(self, wtr: Union[io.BytesIO, typing.BinaryIO, BinaryWriter]):
         if not isinstance(wtr, BinaryWriter):
             wtr = BinaryWriter(wtr)
         sdta_chunk, pdta_chunk = self.construct()
@@ -1280,6 +1320,14 @@ class SoundFont:
         wtr.seek(chunk_size_pos)
         wtr.write_uint32(end_pos - (chunk_size_pos + 4))
         wtr.seek(end_pos)
+
+    def set_sample_data(self, sample_data: Dict[int, Sample]):
+        for sample_id, sample in sample_data.items():
+            if sample_id not in self.samples:
+                continue
+            self.samples[sample_id].pcm16 = sample.pcm16
+        if any([s.pcm16 is None for s in self.samples.values()]):
+            logging.warning("Sample data not fully set")
 
     def construct(self):
         sdta_chunk = SdtaChunk()

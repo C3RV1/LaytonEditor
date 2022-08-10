@@ -12,6 +12,7 @@ from formats.graphics.bg import BGImage
 from formats.parsers.dcc import DCCParser
 from formats.place import Place
 from formats.puzzle import Puzzle
+from formats.sound import sf2
 from formats.sound.swdl import SWDL
 from formats.sound import wav, sadl, sample_transform
 import numpy as np
@@ -134,6 +135,7 @@ class FilesystemEditor(generated.FilesystemEditor):
         self.fp_ani_menu = wx.Menu()
         self.fp_place_menu = wx.Menu()
         self.fp_sample_bank_menu = wx.Menu()
+        self.fp_swdl_menu = wx.Menu()
         self.fp_puzzle_menu = wx.Menu()
         self.fp_event_menu = wx.Menu()
         self.fp_gds_menu = wx.Menu()
@@ -168,6 +170,8 @@ class FilesystemEditor(generated.FilesystemEditor):
         add_menu_item(self.fp_place_menu, "Edit Place", self.fp_place_edit_clicked)
 
         add_menu_item(self.fp_sample_bank_menu, "Play Selected", self.fp_sample_bank_play_clicked)
+
+        add_menu_item(self.fp_swdl_menu, "Export to SF2", self.fp_sample_bank_to_sf2)
 
         add_menu_item(self.fp_puzzle_menu, "Preview changes", self.fp_puzzle_apply_mods)
         add_menu_item(self.fp_puzzle_menu, "Save changes", self.fp_puzzle_save)
@@ -247,21 +251,23 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.fp_ani_imageindex.SetMax(len(sprite.images) - 1)
             self.fp_menus_loaded.append("Sprite")
             self.GetGrandParent().add_menu(self.fp_ani_menu, "Sprite")
-        elif name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
-            self.fp_samplebank_list.Clear()
-            sample_bank = SWDL(filename=name, rom=archive)
-            for sample in sample_bank.samples:
-                self.fp_samplebank_list.AppendItems(f"Sample {sample}")
-            self.fp_menus_loaded.append("Sample Bank")
-            self.GetGrandParent().add_menu(self.fp_sample_bank_menu, "Sample Bank")
-            self.fp_formats_book.SetSelection(5)  # sample_bank page
-            self.preview_data = sample_bank
         elif name.lower().endswith(".swd"):
-            preset_bank = SWDL(filename=name, rom=archive)
-            self.fp_info_text.Clear()
-            text = "using samples: " + ", ".join([str(x) for x in preset_bank.samples])
-            self.fp_info_text.WriteText(text)
-            self.fp_formats_book.SetSelection(6)  # Info page
+            bank = SWDL(filename=name, rom=archive)
+            self.preview_data = bank
+            self.fp_menus_loaded.append("SWDL")
+            self.GetGrandParent().add_menu(self.fp_swdl_menu, "SWDL")
+            if name.lower().endswith("999.swd") and name.split("/")[1] == "sound":
+                self.fp_samplebank_list.Clear()
+                for sample in bank.samples:
+                    self.fp_samplebank_list.AppendItems(f"Sample {sample}")
+                self.fp_menus_loaded.append("Sample Bank")
+                self.GetGrandParent().add_menu(self.fp_sample_bank_menu, "Sample Bank")
+                self.fp_formats_book.SetSelection(5)  # sample_bank page
+            else:
+                self.fp_info_text.Clear()
+                text = "using samples: " + ", ".join([str(x) for x in bank.samples])
+                self.fp_info_text.WriteText(text)
+                self.fp_formats_book.SetSelection(6)  # Info page
         elif name.startswith("n_place"):
             place = Place(name, rom=archive)
             self.previewer.start_renderer(PlacePreview(place))
@@ -429,6 +435,25 @@ class FilesystemEditor(generated.FilesystemEditor):
         sound = pg.sndarray.make_sound(sample_pcm)
         sound.set_volume(0.5)
         sound.play()
+
+    def fp_sample_bank_to_sf2(self, _):
+        self.preview_data: SWDL
+        swdl_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
+        swdl_path: str
+        sf = sf2.SoundFont()
+        sf.info_chunk.isft_chunk = sf2.ISFTChunk(sound_font_tool="Layton Editor")
+        sf.programs = self.preview_data.programs
+        sf.samples = self.preview_data.samples
+        if not swdl_path.lower().endswith("999.swd"):
+            main_bank_path = "/".join(swdl_path.split("/")[:-1]) + "/BG_999.SWD"
+            main_bank = SWDL(filename=main_bank_path, rom=self.rom)
+            sf.set_sample_data(main_bank.samples)
+        with wx.FileDialog(self, "Export to SF2", wildcard="SoundFont2 Files (*.sf2)|*.sf2", style=wx.FD_SAVE) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            with open(pathname, "wb") as f:
+                sf.write_stream(f)
 
     def fs_replace_clicked(self, _event):  # TODO: Connect with MenuItem
         path, _archive = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
@@ -655,7 +680,8 @@ class FilesystemEditor(generated.FilesystemEditor):
                 smdl_file_path, _ = self.ft_filetree.GetItemData(self.ft_filetree.GetSelection())
                 smdl, presets = load_smd(smdl_file_path, self.rom)
                 smdl_seq = SMDLMidiSequencer(smdl)
-                smdl_seq.create_program_map(presets)
+                smdl_seq.convert_programs = False
+                # smdl_seq.create_program_map(presets)
                 mid: mido.MidiFile = smdl_seq.generate_mid()
                 mid.save(pathname)
                 progressDialog.Update(100, "Completed")
