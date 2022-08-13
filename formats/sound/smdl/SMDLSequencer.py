@@ -319,6 +319,9 @@ class SMDLSequencer:
         self.last_delay = [0] * len(self.smd_obj.tracks)
         self.bpm = 120
         self.completed = False
+        self.loop_start = [-1] * len(self.smd_obj.tracks)
+        self.octave = [0] * len(self.smd_obj.tracks)
+        self.event_queue = PriorityQueue()
 
     def generate_samples(self, ticks_to_create=0):
         samples = np.zeros((0, 2), dtype=np.int16)

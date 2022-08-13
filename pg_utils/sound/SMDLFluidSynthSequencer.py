@@ -21,10 +21,11 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
             return
         self.fs = fluidsynth.ModifiedSynth(samplerate=self.sample_rate, gain=0.5)
         self.sf_id = 0
+        self.sf2_path = None
 
     def load_sf2(self, sf2_path):
+        self.sf2_path = sf2_path
         self.sf_id = self.fs.sfload(sf2_path)
-        # self.fs.program_select(0, self.sf_id, 0, 0)
 
     def note_on(self, channel, midi_note, velocity):
         self.fs.noteon(channel, midi_note, velocity)
@@ -70,3 +71,9 @@ class SMDLFluidSynthSequencer(SMDLSequencer):
     @staticmethod
     def get_dependencies_met():
         return fluidsynth is not None
+
+    def reset(self):
+        super(SMDLFluidSynthSequencer, self).reset()
+        self.fs = fluidsynth.ModifiedSynth(samplerate=self.sample_rate, gain=0.5)
+        if self.sf2_path is not None:
+            self.sf_id = self.fs.sfload(self.sf2_path)

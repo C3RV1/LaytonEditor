@@ -74,7 +74,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
         self.quit_btn = k4pg.ButtonSprite(position=pg.Vector2(0, 50), pressed_tag="on", not_pressed_tag="off")
         self.sprite_loader.load("data_lt2/ani/nazo/system/?/later.arc", self.quit_btn)
 
-        self.voice = SADLStreamPlayer()
+        self.voice = SADLStreamPlayer(loops=False)
         self.voice.set_volume(0.5)
         self.voice_base = 100
 
@@ -96,7 +96,8 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.load_bg()
             self.bg_timer = self.bg_anim_time
             self.clearing = False
-            self.voice.start_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD"))
+            self.voice.load_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD"))
+            self.voice.play()
         elif self.stage == self.STATE_MOVE_UP:
             self.bg.position.y = 192
             self.bg_timer = self.bg_move_up_time
@@ -104,7 +105,8 @@ class PuzzleWinScreen(TwoScreenRenderer):
         elif self.stage == self.STATE_PICARATS:
             self.fader.fade_in(None)
             vid = self.voice_base + (10 if self.is_correct else 20)
-            self.voice.start_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{vid}.SAD"))
+            self.voice.load_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{vid}.SAD"))
+            self.voice.play()
         elif self.stage == self.STATE_FADE_OUT2:
             self.fader.fade_out(None)
             self.puzzle_music.fade(.2, True)

@@ -35,15 +35,14 @@ import pygame as pg
 
 class SMDLStreamPlayer(StreamPlayerAbstract):
     SOUND_SECONDS = 10
-    LOAD_SECONDS = 0.5
+    LOAD_SECONDS = 0.25
 
-    def __init__(self):
-        super(SMDLStreamPlayer, self).__init__()
+    def __init__(self, loops=False):
+        super(SMDLStreamPlayer, self).__init__(loops=loops)
         self.smd_sequencer: Optional[SMDLFluidSynthSequencer] = None
         self.tmp_sf2_path = None
         self.buffer_size = 0
         self.load_size = 0
-        self.channels = 0
 
     def create_temporal_sf2(self, swd_file: swdl.SWDL, sample_bank: swdl.SWDL):
         sf = sf2.SoundFont()
@@ -97,30 +96,37 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
             new_samples_remain -= new_samples_copy_length
             self.buffer_offset = buffer_end
 
-    def start_sound(self, snd_obj: smdl.SMDL, loops=False):
-        self.fading = False
+    def _load_sound(self, snd_obj: smdl.SMDL):
         if not SMDLFluidSynthSequencer.get_dependencies_met() or self.tmp_sf2_path is None:
-            return
-        if self.sound_obj is not None:
-            self.sound_obj.stop()
-        self.sample_rate = pg.mixer.get_init()[0]
-        self.channels = pg.mixer.get_init()[2]
+            return False
         self.buffer_size = self.SOUND_SECONDS * self.sample_rate
         self.load_size = self.LOAD_SECONDS * self.sample_rate
-        self.expected_buffer_position = 0
-        self.smd_sequencer = SMDLFluidSynthSequencer(snd_obj, sample_rate=self.sample_rate, loops=loops)
+        self.smd_sequencer = SMDLFluidSynthSequencer(snd_obj, sample_rate=self.sample_rate)
         self.smd_sequencer.load_sf2(self.tmp_sf2_path)
-        self.smd_sequencer.reset()
         self.sound_obj = pg.sndarray.make_sound(np.zeros((self.buffer_size, self.channels), dtype=np.int16))
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)
-        self.loading_finished = False  # Because of looping smdls we never stop loading
-        self.buffer_offset = 0
-        self.add_samples(first_init=True)
-        self.loading = True
-        # We ignore the loops passed
-        self.sound_obj.play(loops=-1)
-        self.sound_obj.set_volume(self.volume)
+        return True
+
+    def stop(self):
+        if not self.playing:
+            return
+        super(SMDLStreamPlayer, self).stop()
+
+    def play(self):
+        if self.playing:
+            self.stop()
+        if self.expected_buffer_position != 0:
+            # SMDL requires reset when stopping
+            self.smd_sequencer.reset()
+            self.smd_sequencer.loops = self.loops
+            self.buffer_offset = 0
+            self.expected_buffer_position = 0
+            self.loading = True
+            self.add_samples(first_init=True)
+
+        self.channel = self.sound_obj.play(loops=-1)  # SMDL ignores loops
         self.playing = True
+        self.paused = False
 
     @staticmethod
     def get_playable():

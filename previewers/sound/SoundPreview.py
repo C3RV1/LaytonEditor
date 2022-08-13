@@ -40,8 +40,8 @@ class SoundPreview(TwoScreenRenderer):
         self.volume_slider.position.y = 192 // 2 - 20
 
         self.player: StreamPlayerAbstract = player
+        self.player.load_sound(snd_obj)
         self.player.set_volume(0.5)
-        self.snd_obj: Any = snd_obj
         self.playing = False
         if self.check_playable():
             self.explanation_text.text = "Touch the headphones to play"
@@ -71,14 +71,13 @@ class SoundPreview(TwoScreenRenderer):
 
     def start_sound(self):
         self.play_btn.set_tag("ON")
-        if self.snd_obj and not self.playing:
-            self.playing = True
-            self.player.start_sound(self.snd_obj, loops=True)
+        self.player.unpause()
+        self.playing = True
 
     def stop_sound(self):
         self.play_btn.set_tag("OFF")
+        self.player.pause()
         self.playing = False
-        self.player.stop()
 
     def update(self, dt: float):
         if self.play_btn.get_pressed(self.btm_camera, dt):
