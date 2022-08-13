@@ -124,7 +124,8 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
             self.loading = True
             self.add_samples(first_init=True)
 
-        self.channel = self.sound_obj.play(loops=-1)  # SMDL ignores loops
+        self.channel = self.sound_obj.play(loops=-1)  # SMDL ignores loops here
+        self.channel.set_volume(self.volume)
         self.playing = True
         self.paused = False
 
