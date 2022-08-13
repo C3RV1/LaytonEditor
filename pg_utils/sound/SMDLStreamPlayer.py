@@ -107,11 +107,6 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)
         return True
 
-    def stop(self):
-        if not self.playing:
-            return
-        super(SMDLStreamPlayer, self).stop()
-
     def play(self):
         if self.playing:
             self.stop()
@@ -128,6 +123,7 @@ class SMDLStreamPlayer(StreamPlayerAbstract):
         self.channel.set_volume(self.volume)
         self.playing = True
         self.paused = False
+        self.fading = False
 
     @staticmethod
     def get_playable():

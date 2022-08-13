@@ -120,6 +120,7 @@ class StreamPlayerAbstract:
         self.channel.set_volume(self.volume)
         self.playing = True
         self.paused = False
+        self.fading = False
 
     @staticmethod
     def get_playable():
