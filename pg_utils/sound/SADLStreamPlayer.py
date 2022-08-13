@@ -13,16 +13,13 @@ class SADLStreamPlayer(StreamPlayerAbstract):
         super(SADLStreamPlayer, self).__init__(loops=loops)
         self.sadl: Optional[sadl.SADL] = None
 
-        self.target_rate = pg.mixer.get_init()[0]
-        self.target_channels = pg.mixer.get_init()[2]
-
     def add_samples(self, first_init=False):
         sample_steps = 20
         if first_init:
             sample_steps *= 3  # If the sound gets cut increase this number (slower load, better playback)
         new_samples = np.array(self.sadl.decode(sample_steps))
-        new_samples = sample_transform.change_channels(new_samples, self.target_channels)
-        new_samples = sample_transform.change_sample_rate(new_samples, self.sadl.sample_rate, self.target_rate)
+        new_samples = sample_transform.change_channels(new_samples, self.channels)
+        new_samples = sample_transform.change_sample_rate(new_samples, self.sadl.sample_rate, self.sample_rate)
         new_samples = new_samples.swapaxes(0, 1)
         if new_samples.shape[0] == 0:
             self.loading = False
@@ -34,7 +31,7 @@ class SADLStreamPlayer(StreamPlayerAbstract):
 
     def _load_sound(self, snd_obj: sadl.SADL):
         self.sadl = snd_obj
-        alloc_size = int(math.ceil(snd_obj.num_samples * self.target_rate / snd_obj.sample_rate))
-        self.sound_obj = pg.sndarray.make_sound(np.zeros((alloc_size, self.target_channels), dtype=np.int16))
+        alloc_size = int(math.ceil(snd_obj.num_samples * self.sample_rate / snd_obj.sample_rate))
+        self.sound_obj = pg.sndarray.make_sound(np.zeros((alloc_size, self.channels), dtype=np.int16))
         self.sound_buffer = pg.sndarray.samples(self.sound_obj)
         return True
