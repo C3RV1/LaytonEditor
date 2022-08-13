@@ -18,6 +18,7 @@ def change_sample_rate(buffer: np.ndarray, current, target) -> np.ndarray:
 
     return converted
 
+
 def change_channels(buffer: np.ndarray, target: int) -> np.ndarray:
     converted = np.ndarray(shape=(target, buffer.shape[1]), dtype=buffer.dtype)
     for i in range(target):

@@ -707,24 +707,27 @@ class SFPresetHeader:
                 # Can't use attack as we cannot simulate split.attack_volume
                 # SF2 always starts at volume 0, but SWDL does not
                 # if split.attack != 0:
-                #     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.ATTACK_VOL_ENV,
-                #                                                          amount_signed=ms_to_timecent(split.attack)))
+                #     pdta_chunk.igen_chunk.gen_list.insert(-1,
+                #                                           SFGenEntry(operation=SFGeneratorEnumerator.ATTACK_VOL_ENV,
+                #                                                      amount_signed=ms_to_timecent(split.attack)))
 
                 if split.decay != 0:
                     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.DECAY_VOL_ENV,
                                                                          amount_signed=ms_to_timecent(split.decay)))
 
                 # if split.sustain != 0:
-                #     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.SUSTAIN_VOL_ENV,
-                #                                                          amount=int(1000 * (split.sustain / 0x7f))))
+                #     pdta_chunk.igen_chunk.gen_list.insert(-1,
+                #                                           SFGenEntry(operation=SFGeneratorEnumerator.SUSTAIN_VOL_ENV,
+                #                                                      amount=int(1000 * (split.sustain / 0x7f))))
 
                 if split.hold != 0:
                     pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.HOLD_VOL_ENV,
                                                                          amount_signed=ms_to_timecent(split.hold)))
 
                 if split.release != 0:
-                    pdta_chunk.igen_chunk.gen_list.insert(-1, SFGenEntry(operation=SFGeneratorEnumerator.RELEASE_VOL_ENV,
-                                                                         amount_signed=ms_to_timecent(split.release)))
+                    pdta_chunk.igen_chunk.gen_list.insert(-1,
+                                                          SFGenEntry(operation=SFGeneratorEnumerator.RELEASE_VOL_ENV,
+                                                                     amount_signed=ms_to_timecent(split.release)))
 
             # TODO: Add envelope, attack, decay, sustain
 
