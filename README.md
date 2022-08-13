@@ -15,21 +15,6 @@ dependencies listed on `requirements.txt`.
 
 To run just execute `python laytonEditor.py`.
 
-## Enabling Background Music
-
-The editor can work without following these instructions.
-
-Background music requires a C library called fluidsynth which can be
-downloaded from
-[https://github.com/FluidSynth/fluidsynth/releases/](https://github.com/FluidSynth/fluidsynth/releases/)
-for window users. For other users follow the instructions at
-[https://github.com/FluidSynth/fluidsynth/wiki/Download](https://github.com/FluidSynth/fluidsynth/wiki/Download).
-
-Then, copy the library to `./custom_fluidsynth/fluidsynth/`. If the folder
-doesn't exist, create it. You also need the layton2.sf2 soundfont which is
-not available to the public at the moment. If you were to have it, copy it
-to `./layton2.sf2`.
-
 ## Thanks to...
 
 * nwhitehead for [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
