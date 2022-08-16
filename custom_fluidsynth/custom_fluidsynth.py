@@ -5,10 +5,7 @@ import sys
 # therefore before importing we briefly rename it to libfluidsynth-2.dll
 # and then rename if back
 
-if getattr(sys, "frozen", False):
-    directory = os.path.join(os.path.dirname(sys.executable), 'fluidsynth')
-else:
-    directory = os.path.join(os.path.dirname(__file__), 'fluidsynth')
+directory = os.path.join(os.path.dirname(__file__), '../data_permanent/fluidsynth')
 
 os.environ['PATH'] += ";" + directory
 

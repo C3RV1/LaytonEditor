@@ -702,14 +702,16 @@ class FilesystemEditor(generated.FilesystemEditor):
                 out_file.write(game_file.read())
 
     def fp_mods_import_clicked(self, _):
-        mobi_location = os.getcwd() + "\\MobiclipDecoder.exe"
+        mobi_location = os.getcwd() + "\\data_permanent\\mobiclip\\MobiclipDecoder.exe"
+        temp_file_location = os.getcwd() + "\\temporary\\temp.mods"
         # Use subprocess instead of os.system in case the path contains spaces
-        subprocess.run([mobi_location])
+        subprocess.run([mobi_location, temp_file_location])
 
     def open_mobi_view(self):
-        mobi_location = os.getcwd() + "\\MobiclipDecoder.exe"
+        mobi_location = os.getcwd() + "\\data_permanent\\mobiclip\\MobiclipDecoder.exe"
+        temp_file_location = os.getcwd() + "\\temporary\\temp.mods"
         # Use subprocess instead of os.system in case the path contains spaces
-        subprocess.run([mobi_location])
+        subprocess.run([mobi_location, temp_file_location])
 
     def fp_mods_view_clicked(self, _):
         # Create folder if it does not exist

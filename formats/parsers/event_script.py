@@ -390,6 +390,14 @@ class EventScriptParser:
             except ValueError:
                 raise TypeError(f"Dialogue sfx: Invalid values (line {self.line_num})")
             self.ev.gds.commands.append(event_gds_parser.reverse_command_name("dialogue_sfx", [sfx_id] + default))
+        elif line_split[0] == "reveal":
+            if not match_syntax(line_split, ("reveal", "mystery", None)):
+                raise SyntaxError(f"Reveal does not match syntax (line {self.line_num})")
+            try:
+                mystery_id = int(line_split[2])
+            except ValueError:
+                raise TypeError(f"Reveal: Invalid value (line {self.line_num})")
+            self.ev.gds.commands.append(event_gds_parser.reverse_command_name("reveal_mystery", [mystery_id]))
         elif re.match("^0x[0-9a-fA-F]{2}$", line_split[0]):
             args = line_split[1:]
             parsed = []

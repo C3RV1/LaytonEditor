@@ -515,7 +515,7 @@ class EventEditor(generated.EventEditor):
         self.add_command_panel(CommandRepr(
             EventGDSParser().parse_cmd("bg_shake"),
             [["unk0", "uint", 30],
-             "Screen", "uint", 0]
+             ["Screen", "uint", 0]]
         ))
         self.do_modify()
 
@@ -548,7 +548,7 @@ class EventEditor(generated.EventEditor):
             [["SAD SFX ID", "uint", 0],
              ["unk1", "float", 0.0],
              ["unk2", "uint", 0],
-             ["unk2", "uint", 0]]
+             ["unk3", "uint", 0]]
         ))
         self.do_modify()
 
@@ -562,5 +562,6 @@ class EventEditor(generated.EventEditor):
     def add_mystery_reveal(self, _):
         self.add_command_panel(CommandRepr(
             EventGDSParser().parse_cmd("reveal_mystery"),
-            [["Mystery ID", "unit", 0]]
+            [["Mystery ID", "uint", 0]]
         ))
+        self.do_modify()
