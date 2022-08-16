@@ -147,7 +147,7 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x5d:
             self.event_sound.play_sadl(f"data_lt2/stream/ST_{str(command.params[0]).zfill(3)}.SAD")
         elif command.command == 0x62:
-            self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD")
+            self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD", command.params[1])
         elif command.command == 0x69:
             self.wait_tap = True
         elif command.command == 0x6a:
