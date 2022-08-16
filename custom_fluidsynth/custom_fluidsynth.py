@@ -6,9 +6,9 @@ import sys
 # and then rename if back
 
 if getattr(sys, "frozen", False):
-    directory = os.path.join(os.path.dirname(sys.executable), 'fluidsynth')
+    directory = os.path.join(os.path.dirname(sys.executable), '../data_permanent/fluidsynth')
 else:
-    directory = os.path.join(os.path.dirname(__file__), 'fluidsynth')
+    directory = os.path.join(os.path.dirname(__file__), '../data_permanent/fluidsynth')
 
 os.environ['PATH'] += ";" + directory
 

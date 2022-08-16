@@ -5,7 +5,7 @@ tests/
 *.xml
 *.iml
 *.pyc
-*.exe
+*.mods
 *.spec
 *.d
 *.o
