@@ -558,3 +558,9 @@ class EventEditor(generated.EventEditor):
             []
         ))
         self.do_modify()
+
+    def add_mystery_reveal(self, _):
+        self.add_command_panel(CommandRepr(
+            EventGDSParser().parse_cmd("reveal_mystery"),
+            [["Mystery ID", "unit", 0]]
+        ))
