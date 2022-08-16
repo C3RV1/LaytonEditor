@@ -725,6 +725,9 @@ class EventEditor ( wx.Panel ):
 		self.m_dialogueSfxBtn = wx.Button( self.event_commands_add, wx.ID_ANY, u"Set Dialogue SFX", wx.DefaultPosition, wx.DefaultSize, 0 )
 		gSizer2.Add( self.m_dialogueSfxBtn, 0, wx.ALL|wx.EXPAND, 5 )
 
+		self.m_revealMystery = wx.Button( self.event_commands_add, wx.ID_ANY, u"Reveal Mystery", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer2.Add( self.m_revealMystery, 0, wx.ALL|wx.EXPAND, 5 )
+
 
 		self.event_commands_add.SetSizer( gSizer2 )
 		self.event_commands_add.Layout()
@@ -851,6 +854,7 @@ class EventEditor ( wx.Panel ):
 		self.m_bgmFadeOutBtn.Bind( wx.EVT_BUTTON, self.add_btm_fade_out )
 		self.m_bgmFadeInBtn.Bind( wx.EVT_BUTTON, self.add_btm_fade_in )
 		self.m_dialogueSfxBtn.Bind( wx.EVT_BUTTON, self.add_dialogue_sfx )
+		self.m_revealMystery.Bind( wx.EVT_BUTTON, self.add_mystery_reveal )
 
 	def __del__( self ):
 		pass
@@ -933,6 +937,9 @@ class EventEditor ( wx.Panel ):
 		event.Skip()
 
 	def add_dialogue_sfx( self, event ):
+		event.Skip()
+
+	def add_mystery_reveal( self, event ):
 		event.Skip()
 
 
