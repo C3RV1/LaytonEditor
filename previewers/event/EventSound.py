@@ -10,11 +10,12 @@ class EventSound:
         self.bg_player = pg_utils.sound.SMDLStreamPlayer.SMDLStreamPlayer(loops=True)
         self.bg_player.set_volume(0.3)
 
-    def play_smdl(self, path):
+    def play_smdl(self, path, vol):
         smd_obj, swd_file, sample_bank = load_smd(path)
         self.bg_player.create_temporal_sf2(swd_file, sample_bank)
         self.bg_player.load_sound(smd_obj)
         self.bg_player.play()
+        self.bg_player.set_volume(vol)
 
     def stop_smdl(self):
         self.bg_player.stop()
