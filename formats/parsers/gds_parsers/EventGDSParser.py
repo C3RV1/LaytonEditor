@@ -42,6 +42,7 @@ class EventGDSParser(GDSParser):
             0x69: ["wait_tap", "Wait Tap"],
             0x6a: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
             0x6b: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
+            0x71: ["reveal_chapter", "Reveal Chapter", ["Chapter ID"]],
             0x72: fade,
             0x80: fade,
             0x87: fade,

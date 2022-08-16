@@ -558,3 +558,9 @@ class EventEditor(generated.EventEditor):
             []
         ))
         self.do_modify()
+
+    def add_chapter_reveal(self, _):
+        self.add_command_panel(CommandRepr(
+            EventGDSParser().parse_cmd("reveal_chapter"),
+            [["Chapter ID", "unit", 0]]
+        ))
