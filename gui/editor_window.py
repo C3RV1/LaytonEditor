@@ -77,6 +77,7 @@ class MainEditor(generated.MainEditor):
         RomSingleton(rom=self.rom)
 
         # Only open the main filesystem page.
+        self.le_editor_pages.SetSelection(0)  # Deleting on a page which is not 0 causes error (why? no idea)
         self.le_editor_pages.DeleteAllPages()
         menus_to_remove = []
         for menu in self.le_menu.Menus:

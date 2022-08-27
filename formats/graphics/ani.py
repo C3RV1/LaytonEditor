@@ -273,6 +273,8 @@ class AniSprite(FileFormat):
         else:
             logging.info(f"Animation {self._last_filename} reworking palette")
         # Create the new palette by adding all the images together into 1 pil Image and then quantizing it.
+        # TODO: Prioritize inserted image colors in palette
+        # TODO: Bulk import images instead?
         comb_w = max([img.shape[1] for img in self.images])
         comb_h = sum([img.shape[0] for img in self.images])
         if image_index is not None:
