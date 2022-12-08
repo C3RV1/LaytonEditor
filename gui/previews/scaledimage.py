@@ -22,11 +22,11 @@ class ScaledImage(wx.Panel):
 
     def load_bitmap(self, bitmap: wx.Bitmap):
         self._bitmap = bitmap
-        self.Refresh()
+        self.Refresh(False)
 
     def clear_bitmap(self):
         self._bitmap = None
-        self.Refresh()
+        self.Refresh(False)
 
     def on_paint(self, _event):
 
@@ -52,21 +52,17 @@ class ScaledImage(wx.Panel):
         if not w:
             return
 
-        dc.SetPen(wx.BLACK_PEN)
-        dc.SetBrush(wx.GREEN_BRUSH)
-        dc.DrawRectangle(0, 0, ow, oh)
-
         dc.DrawBitmap(scale_wx_bitmap(self._bitmap, w, h, self._nearest), cx, cy)
 
     def on_size(self, _event):
-        self.Refresh()
+        self.Refresh(False)
 
     def on_mouse(self, event: wx.MouseEvent):
         if event.LeftDClick() or event.LeftDown():
             clicked_time = time.time()
             if clicked_time - self._last_click < 0.5:
                 self._nearest = not self._nearest
-                self.Refresh()
+                self.Refresh(False)
                 self._last_click = 0
             else:
                 self._last_click = clicked_time

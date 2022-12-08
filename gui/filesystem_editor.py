@@ -210,10 +210,14 @@ class FilesystemEditor(generated.FilesystemEditor):
         for menu_title in self.fp_menus_loaded:
             self.GetGrandParent().remove_menu(menu_title)
         self.GetGrandParent().remove_menu("Filesystem")
+        self.fp_menus_loaded = []
 
     def close(self):
-        # Filesystem can't be closed
-        return False
+        if self.base_folder == self.rom.filenames:
+            # Root filesystem can't be closed
+            return False
+        self.exit()  # removes the menus
+        return True
 
     def refresh_preview(self):
         try:
@@ -248,7 +252,11 @@ class FilesystemEditor(generated.FilesystemEditor):
                 sprite = AniSubSprite(name, rom=archive)
             self.preview_data = sprite
             self.fp_ani_viewimage_scaled.load_bitmap(sprite.extract_image_wx_bitmap(0))
-            self.fp_ani_imageindex.SetMax(len(sprite.images) - 1)
+            if len(sprite.images) < 2:
+                self.fp_ani_imageindex.Hide()  # TODO: Reset wx layout to exclude slider
+            else:
+                self.fp_ani_imageindex.Show()
+                self.fp_ani_imageindex.SetMax(len(sprite.images) - 1)
             self.fp_menus_loaded.append("Sprite")
             self.GetGrandParent().add_menu(self.fp_ani_menu, "Sprite")
         elif name.lower().endswith(".swd"):
@@ -273,7 +281,6 @@ class FilesystemEditor(generated.FilesystemEditor):
             self.previewer.start_renderer(PlacePreview(place))
             set_previewer = True
             self.fp_place_viewer.load_place(place, self.rom)
-            self.fp_place_viewer.Refresh()
             self.fp_formats_book.SetSelection(4)  # Placeviewer page
             self.fp_menus_loaded.append("Place")
             self.GetGrandParent().add_menu(self.fp_place_menu, "Place")

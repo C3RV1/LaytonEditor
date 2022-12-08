@@ -153,6 +153,12 @@ class PlaceEditor(gui.generated.PlaceEditor):
                                                           exit_obj.event_or_place_index))
 
     def plc_items_selchanged(self, event):
+        try:
+            if not self.plc_items.GetSelections():
+                return
+        except RuntimeError:
+            # wrapped c/c++ object of type TreeCtrl has been deleted
+            return
         selection = self.plc_items.GetSelection()
         name = self.plc_items.GetItemText(selection)
         data = self.plc_items.GetItemData(selection)

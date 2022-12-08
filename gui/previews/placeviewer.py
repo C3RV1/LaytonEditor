@@ -39,16 +39,17 @@ class PlaceViewer(wx.Panel):
                 self._ch_images[obj.character_index] = \
                     AniSprite(f"data_lt2/ani/eventobj/obj_{obj.character_index}.arc",
                               rom=rom).extract_image_wx_bitmap(0)
-        self.Refresh()
+        self.Refresh(False)
 
     def on_paint(self, _event):
+
         dc = wx.BufferedPaintDC(self)
         w, h = ow, oh = self.GetSize()
         cx, cy = 0, 0
-        if w / 256 > h / 192:
+        if w / 256 > h / 192:  # Borders left and right
             w = int(h / 192 * 256)
             cx = (ow - w) // 2
-        elif h / 192 > w / 256:
+        elif h / 192 > w / 256:  # Borders top and bottom
             h = int(w / 256 * 192)
             cy = (oh - h) // 2
         fw, fh = w / 256, h / 192
@@ -66,32 +67,34 @@ class PlaceViewer(wx.Panel):
             if hintcoin.index:
                 hc_w, hc_h = self._hc_image.GetSize()
                 dc.DrawBitmap(scale_wx_bitmap(self._hc_image, int(hc_w * fw), int(hc_h * fh)),
-                              hintcoin.x * fw + cx, hintcoin.y * fh + cy)
+                              int(hintcoin.x * fw + cx), int(hintcoin.y * fh + cy))
 
         for plc_exit in self._place.exits:
             if plc_exit.width:
                 ex_w, ex_h = self._ex_images[plc_exit.image_index].GetSize()
-                dc.DrawBitmap(scale_wx_bitmap(self._ex_images[plc_exit.image_index], ex_w * fw, ex_h * fh),
-                              plc_exit.x * fw + cx, plc_exit.y * fh + cy)
+                dc.DrawBitmap(scale_wx_bitmap(self._ex_images[plc_exit.image_index], int(ex_w * fw), int(ex_h * fh)),
+                              int(plc_exit.x * fw + cx), int(plc_exit.y * fh + cy))
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.SetPen(wx.GREEN_PEN)
-                dc.DrawRectangle(plc_exit.x * fw + cx, plc_exit.y * fh + cy, plc_exit.width * fw, plc_exit.height * fh)
+                dc.DrawRectangle(int(plc_exit.x * fw + cx), int(plc_exit.y * fh + cy),
+                                 int(plc_exit.width * fw), int(plc_exit.height * fh))
 
         for comment in self._place.comments:
             if comment.width:
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.SetPen(wx.BLUE_PEN)
-                dc.DrawRectangle(comment.x * fw + cx, comment.y * fh + cy, comment.width * fw, comment.height * fh)
+                dc.DrawRectangle(int(comment.x * fw + cx), int(comment.y * fh + cy),
+                                 int(comment.width * fw), int(comment.height * fh))
 
         for obj in self._place.objects:
             if obj.width:
                 if obj.character_index:
                     ch_w, ch_h = self._ch_images[obj.character_index].GetSize()
-                    dc.DrawBitmap(scale_wx_bitmap(self._ch_images[obj.character_index], ch_w * fw, ch_h * fh),
-                                  obj.x * fw + cx, obj.y * fh + cy)
+                    dc.DrawBitmap(scale_wx_bitmap(self._ch_images[obj.character_index], int(ch_w * fw), int(ch_h * fh)),
+                                  int(obj.x * fw + cx), int(obj.y * fh + cy))
                 dc.SetPen(wx.RED_PEN)
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
-                dc.DrawRectangle(obj.x * fw + cx, obj.y * fh + cy, obj.width * fw, obj.height * fh)
+                dc.DrawRectangle(int(obj.x * fw + cx), int(obj.y * fh + cy), int(obj.width * fw), int(obj.height * fh))
 
     def on_size(self, _event):
-        self.Refresh()
+        self.Refresh(False)
