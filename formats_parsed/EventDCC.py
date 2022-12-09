@@ -54,6 +54,6 @@ class EventDCC:
             self.parser.set_named(f"evdat.char{i}.shown", self.ev.characters_shown[i])
             self.parser.set_named(f"evdat.char{i}.anim", self.ev.characters_anim_index[i])
 
-        EventGDSParser(ev=self.ev).parse_into_dcc(self.ev.gds, self.parser)
+        EventGDSParser(ev=self.ev).serialize_into_dcc(self.ev.gds, self.parser)
 
         return self.parser.serialize()

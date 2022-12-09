@@ -36,7 +36,7 @@ class GDSParser:
                 return formats.gds.GDSCommand(key, params.copy())
         raise ValueError(f"{command} is not a valid command")
 
-    def parse_into_dcc(self, gds: formats.gds.GDS, dcc_parser: DCCParser):
+    def serialize_into_dcc(self, gds: formats.gds.GDS, dcc_parser: DCCParser):
         dcc_parser.get_path("script", create=True)
         for param in gds.params:
             dcc_parser["script::unnamed"].append(param)

@@ -15,7 +15,8 @@ class EditorTree(QtCore.QAbstractItemModel):
             FontsCategory(),
             MoviesCategory(),
             StreamedAudioCategory(),
-            TextsCategory()
+            TextsCategory(),
+            ScriptsCategory()
         ]
 
     def set_rom(self, rom):

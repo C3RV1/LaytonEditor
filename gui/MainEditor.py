@@ -12,6 +12,12 @@ from .PuzzleWidget import PuzzleWidget
 from .editor_categories.Puzzles import PuzzleNode
 from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 
+from .TextWidget import TextWidget
+from .editor_categories.Texts import TextAsset
+
+from .ScriptWidget import ScriptWidget
+from .editor_categories.Scripts import ScriptAsset
+
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
 
@@ -102,6 +108,12 @@ class MainEditor(MainEditorUI):
 
             self.pg_previewer.start_renderer(PuzzlePlayer(puzzle))
             set_previewer = True
+        elif isinstance(node, TextAsset):
+            self.active_editor = TextWidget(self)
+            self.active_editor.set_text(node)
+        elif isinstance(node, ScriptAsset):
+            self.active_editor = ScriptWidget(self)
+            self.active_editor.set_script(node.to_gds())
         else:
             self.active_editor = QtWidgets.QWidget()
 

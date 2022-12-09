@@ -83,5 +83,5 @@ class PuzzleDCC:
         self.parser.set_named("pzd.hint3", self.pz.hint3)
 
         gds_parser = get_puzzle_gds_parser(self.pz)
-        gds_parser.parse_into_dcc(self.pz.gds, self.parser)
+        gds_parser.serialize_into_dcc(self.pz.gds, self.parser)
         return self.parser.serialize()

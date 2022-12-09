@@ -1,17 +1,18 @@
 from .Filesystem import FolderNode, AssetNode, FilesystemCategory
 from formats.filesystem import PlzArchive
+from formats.gds import GDS
 
 
-class TextFolder(FolderNode):
+class ScriptFolder(FolderNode):
     def __init__(self, category, path, folder, parent):
-        super(TextFolder, self).__init__(category, path, folder, parent)
+        super(ScriptFolder, self).__init__(category, path, folder, parent)
         if isinstance(self.folder, PlzArchive):
-            self.files = [x for x in self.folder.filenames if x.endswith(".txt")]
+            self.files = [x for x in self.folder.filenames if x.endswith(".gds")]
         else:
-            self.files = [x for x in self.folder.files if x.endswith(".txt") or x.endswith(".plz")]
+            self.files = [x for x in self.folder.files if x.endswith(".gds") or x.endswith(".plz")]
 
     def get_asset_type(self):
-        return TextAsset
+        return ScriptAsset
 
     def child_count(self):
         if isinstance(self.folder, PlzArchive):
@@ -44,16 +45,19 @@ class TextFolder(FolderNode):
         return self.children[row]
 
 
-class TextAsset(AssetNode):
+class ScriptAsset(AssetNode):
     def data(self):
         return self.path.split("/")[-1].split(".")[0]
 
+    def to_gds(self) -> GDS:
+        return GDS(rom=self.rom, filename=self.path)
 
-class TextsCategory(FilesystemCategory):
+
+class ScriptsCategory(FilesystemCategory):
     def __init__(self):
-        super(TextsCategory, self).__init__()
-        self.name = "Texts"
+        super(ScriptsCategory, self).__init__()
+        self.name = "Scripts"
 
     def set_rom(self, rom):
-        super(TextsCategory, self).set_rom(rom)
-        self._root = TextFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)
+        super(ScriptsCategory, self).set_rom(rom)
+        self._root = ScriptFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)

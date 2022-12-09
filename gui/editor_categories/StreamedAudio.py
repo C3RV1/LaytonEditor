@@ -18,4 +18,4 @@ class StreamedAudioCategory(FilesystemCategory):
 
     def set_rom(self, rom):
         super(StreamedAudioCategory, self).set_rom(rom)
-        self._root = StreamedAudioFolder(self, "/data_lt2/bg", self.rom.filenames["/data_lt2/bg"], None)
+        self._root = StreamedAudioFolder(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None)

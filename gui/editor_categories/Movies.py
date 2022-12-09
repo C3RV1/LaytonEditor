@@ -13,6 +13,7 @@ class MovieAsset(AssetNode):
 
 class MoviesCategory(FilesystemCategory):
     def __init__(self):
+        # TODO: Sort numerically and not alphabetically
         super(MoviesCategory, self).__init__()
         self.name = "Movies"
 

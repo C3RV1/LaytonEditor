@@ -1,5 +1,5 @@
 from PySide6 import QtCore
-from formats.filesystem import Folder, PlzArchive
+from formats.filesystem import Folder, PlzArchive, NintendoDSRom
 from ..EditorTypes import EditorCategory, EditorObject
 
 
@@ -77,7 +77,7 @@ class AssetNode(EditorObject):
         self.category = category
         self.path = path
         self.parent = parent_idx
-        self.rom = rom
+        self.rom: NintendoDSRom | PlzArchive = rom
 
     def data(self):
         return self.path.split("/")[-1]
