@@ -3,7 +3,7 @@ from typing import List, Dict
 
 from PySide6 import QtCore
 from ..EditorTypes import EditorCategory, EditorObject
-from formats.filesystem import Folder, Archive
+from formats.filesystem import Folder
 from formats.event import Event
 
 
@@ -88,7 +88,7 @@ class EventCategory(EditorCategory):
             return model.createIndex(row, column, parent_node.event_nodes[row])
 
         key = list(self.event_top_nodes.keys())[row]
-        child = self._event_top_nodes[key]
+        child = self.event_top_nodes[key]
         return model.createIndex(row, column, child)
 
     def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QAbstractItemModel,

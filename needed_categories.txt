@@ -2,9 +2,9 @@ Filesystem -
 Sprites -
 Backgrounds -
 Events -
+Puzzles -
 Fonts -
 Movies -
-Puzzles
 Places
 Sequenced Audio
 Streamed Audio -

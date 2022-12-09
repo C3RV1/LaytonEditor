@@ -11,6 +11,7 @@ class EditorTree(QtCore.QAbstractItemModel):
             SpriteCategory(),
             BackgroundsCategory(),
             EventCategory(),
+            PuzzleCategory(),
             FontsCategory(),
             MoviesCategory(),
             StreamedAudioCategory(),

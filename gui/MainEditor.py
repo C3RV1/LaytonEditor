@@ -1,15 +1,21 @@
-from PySide6.QtWidgets import QFileDialog
 from gui.ui.MainEditor import MainEditorUI
-from formats.filesystem import NintendoDSRom
-from .EditorTree import EditorTree
-from .EditorTypes import EditorObject
-from .EventWidget import EventWidget
-from .editor_categories.Events import EventNode
 from PySide6 import QtCore, QtWidgets
 
+from .EditorTree import EditorTree
+from .EditorTypes import EditorObject
+
+from .EventWidget import EventWidget
+from .editor_categories.Events import EventNode
 from previewers.event.EventPlayer import EventPlayer
+
+from .PuzzleWidget import PuzzleWidget
+from .editor_categories.Puzzles import PuzzleNode
+from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
+
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
+
+from formats.filesystem import NintendoDSRom
 from formats import conf
 
 import logging
@@ -28,7 +34,7 @@ class MainEditor(MainEditorUI):
         self.pg_previewer.start()
 
     def file_menu_open(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open ROM", filter="NDS Rom (*.nds)")
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open ROM", filter="NDS Rom (*.nds)")
         if file_path == "":
             return
 
@@ -66,7 +72,7 @@ class MainEditor(MainEditorUI):
             self.rom.save()
 
     def file_menu_save_as(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save ROM", filter="NDS Rom (*.nds)")
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save ROM", filter="NDS Rom (*.nds)")
         if file_path == "":
             return
         self.last_path = file_path
@@ -88,6 +94,13 @@ class MainEditor(MainEditorUI):
             self.active_editor.set_event(event)
 
             self.pg_previewer.start_renderer(EventPlayer(event))
+            set_previewer = True
+        elif isinstance(node, PuzzleNode):
+            self.active_editor = PuzzleWidget(self)
+            puzzle = node.get_puzzle()
+            self.active_editor.set_puzzle(puzzle)
+
+            self.pg_previewer.start_renderer(PuzzlePlayer(puzzle))
             set_previewer = True
         else:
             self.active_editor = QtWidgets.QWidget()

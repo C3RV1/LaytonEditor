@@ -5,6 +5,8 @@ class MainEditorUI(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainEditorUI, self).__init__(*args, **kwargs)
 
+        self.setWindowTitle("Layton Editor")
+
         menu_bar = self.menuBar()
         self.file_menu = menu_bar.addMenu("File")
 

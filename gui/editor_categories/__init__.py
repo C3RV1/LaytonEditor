@@ -6,3 +6,4 @@ from .Fonts import FontsCategory
 from .Movies import MoviesCategory
 from .StreamedAudio import StreamedAudioCategory
 from .Events import EventCategory
+from .Puzzles import PuzzleCategory

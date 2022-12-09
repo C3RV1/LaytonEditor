@@ -4,7 +4,7 @@ import sys
 import os
 import faulthandler
 
-VERSION = "v0.4.3-pre2"
+VERSION = "v0.5-pre1"
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # Ensure that the cwd is set correctly
