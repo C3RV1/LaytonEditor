@@ -5,7 +5,6 @@ import formats.filesystem
 import formats.gds
 import formats.graphics.bg
 import formats.dlz
-import formats.parsers.dcc
 from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
@@ -235,85 +234,6 @@ class Puzzle:
     def save_gds(self):
         self.gds.save()
         return True
-
-    def to_readable(self):
-        parser = formats.parsers.dcc.DCCParser()
-        parser.reset()
-        parser.get_path("pzd", create=True)
-        parser.set_named("pzd.title", self.title)
-        parser.set_named("pzd.type", self.type)
-        parser.set_named("pzd.number", self.number)
-        parser.set_named("pzd.location_id", self.location_id)
-        parser.set_named("pzd.tutorial_id", self.tutorial_id)
-        parser.set_named("pzd.reward_id", self.reward_id)
-        parser.set_named("pzd.bg_btm_id", self.bg_btm_id)
-        parser.set_named("pzd.bg_location_id", self.bg_location_id)
-        parser.set_named("pzd.judge_char", self.judge_char)
-        parser.set_named("pzd.flag_bit2", self.flag_bit2)
-        parser.set_named("pzd.flag_bit5", self.flag_bit5)
-        parser.set_named("pzd.bg_lang", self.bg_lang)
-        parser.set_named("pzd.ans_bg_lang", self.ans_bg_lang)
-        parser.get_path("pzd.picarat_decay", create=True)
-        for picarat in self.picarat_decay:
-            parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", self.text)
-        parser.set_named("pzd.correct_answer", self.correct_answer)
-        parser.set_named("pzd.incorrect_answer", self.incorrect_answer)
-        parser.set_named("pzd.hint1", self.hint1)
-        parser.set_named("pzd.hint2", self.hint2)
-        parser.set_named("pzd.hint3", self.hint3)
-
-        from formats.parsers.gds_parsers import get_puzzle_gds_parser
-        gds_parser = get_puzzle_gds_parser(self)
-        gds_parser.parse_into_dcc(self.gds, parser)
-        return parser.serialize()
-
-    def from_readable(self, readable):
-        parser = formats.parsers.dcc.DCCParser()
-        try:
-            parser.parse(readable)
-        except Exception as e:
-            return False, str(e)
-
-        required_paths = ["pzd.title", "pzd.type", "pzd.number", "pzd.text",  "pzd.correct_answer",
-                          "pzd.incorrect_answer", "pzd.hint1", "pzd.hint2", "pzd.hint3", "pzd.tutorial_id",
-                          "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_location_id", "pzd.judge_char", "pzd.flag_bit2",
-                          "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang"]
-
-        for req_path in required_paths:
-            if not parser.exists(req_path):
-                return False, f"Missing {req_path}"
-
-        self.title = parser["pzd.title"]
-        self.type = parser["pzd.type"]
-        self.number = parser["pzd.number"]
-        self.text = parser["pzd.text"]
-        self.correct_answer = parser["pzd.correct_answer"]
-        self.incorrect_answer = parser["pzd.incorrect_answer"]
-        self.hint1 = parser["pzd.hint1"]
-        self.hint2 = parser["pzd.hint2"]
-        self.hint3 = parser["pzd.hint3"]
-
-        self.tutorial_id = parser["pzd.tutorial_id"]
-        self.reward_id = parser["pzd.reward_id"]
-        self.bg_btm_id = parser["pzd.bg_btm_id"]
-        self.bg_location_id = parser["pzd.bg_location_id"]
-        self.judge_char = parser["pzd.judge_char"]
-        self.flag_bit2 = parser["pzd.flag_bit2"]
-        self.flag_bit5 = parser["pzd.flag_bit5"]
-        self.location_id = parser["pzd.location_id"]
-        self.picarat_decay = []
-        for picarat in parser["pzd.picarat_decay::unnamed"]:
-            self.picarat_decay.append(picarat)
-
-        self.bg_lang = parser["pzd.bg_lang"]
-        self.ans_bg_lang = parser["pzd.ans_bg_lang"]
-        self.gds.commands = []
-
-        from formats.parsers.gds_parsers import get_puzzle_gds_parser
-        gds_parser = get_puzzle_gds_parser(self)
-        successful, error_msg = gds_parser.parse_from_dcc(self.gds, parser)
-        return successful, error_msg
 
     # FLAG PROPERTIES
 

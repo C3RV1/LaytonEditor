@@ -1,6 +1,7 @@
 import formats.puzzle as pzd
 from formats.binary import BinaryWriter
 from formats.filesystem import NintendoDSRom
+from formats_parsed.PuzzleDCC import PuzzleDCC
 import unittest
 import os
 
@@ -43,8 +44,8 @@ class TestPuzzleData(unittest.TestCase):
 
     def test_readable(self):
         pz_data = self.get_pzd()
-        readable = pz_data.to_readable()
-        pz_data.from_readable(readable)
+        readable = PuzzleDCC(pz_data).serialize()
+        PuzzleDCC(pz_data).parse(readable)
         wtr = BinaryWriter()
         pz_data.export_data(wtr)
         assert wtr.data == pz_data.original

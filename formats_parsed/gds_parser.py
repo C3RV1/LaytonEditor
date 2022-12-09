@@ -1,5 +1,5 @@
 import formats.gds
-from formats.parsers.dcc import DCCParser
+from formats_parsed.dcc import DCCParser
 
 
 class GDSParser:

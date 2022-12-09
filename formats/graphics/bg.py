@@ -5,9 +5,10 @@ from formats.filesystem import FileFormat
 from formats.binary import BinaryReader, BinaryWriter
 
 from PIL import Image
+from PIL.ImageQt import ImageQt
+from PySide6 import QtGui
 import numpy as np
 import ndspy.color
-import wx
 
 
 class BGImage(FileFormat):
@@ -84,9 +85,9 @@ class BGImage(FileFormat):
                 tile_id = np.where(np.all(tile.reshape((64,)) == tiles.reshape(tiles.shape[0], 64), axis=1) == True)
                 wtr.write_uint16(tile_id[0][0])
 
-    def extract_image_wx_bitmap(self) -> wx.Bitmap:
-        height, width = self.image.shape
-        return wx.Bitmap.FromBufferRGBA(width, height, self.palette[self.image].astype(np.uint8))
+    def extract_image_qt(self) -> QtGui.QPixmap:
+        qim = ImageQt(self.image)
+        return QtGui.QPixmap.fromImage(qim)
 
     def extract_image_pil(self) -> Image.Image:
         return Image.fromarray(self.palette[self.image].astype(np.uint8), "RGBA")

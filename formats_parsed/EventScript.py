@@ -1,6 +1,8 @@
-from formats.parsers.gds_parsers import EventGDSParser
-from formats.parsers.dcc import DCCParser
+from formats_parsed.gds_parsers import EventGDSParser
+from formats_parsed.dcc import DCCParser
 import re
+
+from formats.event import Event
 
 
 def split_quoted(data: str, separator=" ", remove_quotes=True):
@@ -57,11 +59,10 @@ def match_syntax(split, syntax, optional=()):
     return True
 
 
-class EventScriptParser:
+class EventScript:
     def __init__(self, data: str, ev=None):
         self.ev = ev
         if self.ev is None:
-            from ..event import Event
             self.ev = Event()
 
         self.lines = data.split("\n")
@@ -410,7 +411,7 @@ class EventScriptParser:
 
 if __name__ == '__main__':
     with open("../../e10_030.txt", "rb") as f:
-        p = EventScriptParser(f.read().decode("utf-8").replace("\r\n", "\n"))
+        p = EventScript(f.read().decode("utf-8").replace("\r\n", "\n"))
         try:
             p.parse()
         except Exception as e:

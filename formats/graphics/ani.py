@@ -7,7 +7,8 @@ from typing import BinaryIO
 
 import ndspy.color
 import numpy as np
-import wx
+from PIL.ImageQt import ImageQt
+from PySide6 import QtGui
 from PIL import Image
 
 from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
@@ -256,10 +257,9 @@ class AniSprite(FileFormat):
     def extract_image_pil(self, image_index) -> Image.Image:
         return Image.fromarray(self.palette[self.images[image_index]].astype(np.uint8), "RGBA")
 
-    def extract_image_wx_bitmap(self, image_index) -> wx.Bitmap:
-        height, width = self.images[image_index].shape
-        image_array = self.palette[self.images[image_index]].astype(np.uint8)
-        return wx.Bitmap.FromBufferRGBA(width, height, image_array)
+    def extract_image_qt(self, image_index) -> QtGui.QPixmap:
+        qim = ImageQt(self.images[image_index])
+        return QtGui.QPixmap.fromImage(qim)
 
     def replace_image_pil(self, image_index, image: Optional[Image.Image]):  # also used to recreate palette
         # TODO: Change colordepth

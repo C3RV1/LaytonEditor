@@ -1,5 +1,6 @@
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.sample_transform import change_sample_rate, change_channels
+from formats.sound.sadl import SADL
 import numpy as np
 import os
 
@@ -116,6 +117,30 @@ class WAV:
         rdr.seek(-4, os.SEEK_CUR)
 
         self.data.read(rdr, self.fmt)
+
+    @classmethod
+    def from_sadl(cls, sadl: SADL):
+        wav_obj = cls()
+        wav_obj.fmt.num_channels = sadl.channels
+        wav_obj.fmt.sample_rate = sadl.sample_rate
+        wav_obj.fmt.bits_per_sample = 0x10
+        wav_obj.data.data = sadl.decode()
+        return wav_obj
+
+    def to_sadl(self, sadl: SADL):
+        # TODO: Change to generate SADL
+        sadl.channels = min(self.fmt.num_channels, 2)
+        sadl.sample_rate = self.fmt.sample_rate
+        if sadl.sample_rate <= 16364:
+            sadl.sample_rate = 16364
+        else:
+            sadl.sample_rate = 32728
+        data = self.data.data
+        if self.fmt.num_channels != sadl.channels:
+            data = change_channels(data, sadl.channels)
+        if self.fmt.sample_rate != sadl.sample_rate:
+            data = change_sample_rate(data, self.fmt.sample_rate, sadl.sample_rate)
+        sadl.encode(data)
 
     def change_sample_rate(self, target_rate):
         if self.fmt.sample_rate == target_rate:

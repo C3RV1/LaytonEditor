@@ -4,9 +4,6 @@ import re
 import formats.binary as binary
 import formats.gds
 import formats.filesystem as fs
-import formats.parsers.dcc as dcc
-from formats.parsers.gds_parsers import EventGDSParser
-import formats.parsers.event_script as event_script
 from typing import Optional
 
 from formats import conf
@@ -150,14 +147,6 @@ class Event:
             return formats.gds.GDS()
         return self.texts[text_num]
 
-    def from_event_script(self, data: str):
-        try:
-            parser = event_script.EventScriptParser(data, self)
-            parser.parse()
-        except Exception as e:
-            return False, str(e)
-        return True, ""
-
     def list_event_texts(self):
         if self.rom is None:
             return
@@ -175,51 +164,3 @@ class Event:
         dial_files = self.list_event_texts()
         for filename in dial_files.values():
             self.texts_archive.remove_file(filename)
-
-    def to_readable(self):
-        parser = dcc.DCCParser()
-        parser.reset()
-        parser.get_path("evdat", create=True)
-        parser.set_named("evdat.map_top_id", self.map_top_id)
-        parser.set_named("evdat.map_btm_id", self.map_bottom_id)
-        for i in range(len(self.characters)):
-            parser.get_path(f"evdat.char{i}", create=True)
-            parser.set_named(f"evdat.char{i}.char", self.characters[i])
-            parser.set_named(f"evdat.char{i}.pos", self.characters_pos[i])
-            parser.set_named(f"evdat.char{i}.shown", self.characters_shown[i])
-            parser.set_named(f"evdat.char{i}.anim", self.characters_anim_index[i])
-
-        EventGDSParser(ev=self).parse_into_dcc(self.gds, parser)
-
-        return parser.serialize()
-
-    def from_readable(self, readable):
-        parser = dcc.DCCParser()
-        try:
-            parser.parse(readable)
-        except Exception as e:
-            return False, str(e)
-
-        required_paths = ["evdat.map_top_id", "evdat.map_btm_id"]
-        for i in range(8):
-            required_paths.extend([f"evdat.char{i}.char", f"evdat.char{i}.pos", f"evdat.char{i}.shown",
-                                   f"evdat.char{i}.anim"])
-
-        for req_path in required_paths:
-            if not parser.exists(req_path):
-                return False, f"Missing {req_path}"
-
-        self.map_top_id = parser["evdat.map_top_id"]
-        self.map_bottom_id = parser["evdat.map_btm_id"]
-
-        for i in range(8):
-            self.characters[i] = parser[f"evdat.char{i}.char"]
-            self.characters_pos[i] = parser[f"evdat.char{i}.pos"]
-            self.characters_shown[i] = parser[f"evdat.char{i}.shown"]
-            self.characters_anim_index[i] = parser[f"evdat.char{i}.anim"]
-
-        self.texts = {}
-
-        successful, error_msg = EventGDSParser(ev=self).parse_from_dcc(self.gds, parser)
-
-        return successful, error_msg

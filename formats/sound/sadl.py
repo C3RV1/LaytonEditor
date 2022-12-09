@@ -3,7 +3,6 @@ import math
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.compression import adpcm, procyon
-from formats.sound.wav import WAV
 from formats.filesystem import FileFormat
 import numpy as np
 from typing import List
@@ -151,28 +150,6 @@ class SADL(FileFormat):
         else:
             raise NotImplementedError()
         return decoded
-
-    def to_wav(self) -> WAV:
-        wav = WAV()
-        wav.fmt.num_channels = self.channels
-        wav.fmt.sample_rate = self.sample_rate
-        wav.fmt.bits_per_sample = 0x10
-        wav.data.data = self.decode()
-        return wav
-
-    def from_wav(self, wav: WAV):
-        self.channels = wav.fmt.num_channels
-        if self.channels > 2:
-            self.channels = 2
-        self.sample_rate = wav.fmt.sample_rate
-        if self.sample_rate <= 16364:
-            self.sample_rate = 16364
-        else:
-            self.sample_rate = 32728
-        wav.change_channels(self.channels)
-        wav.change_sample_rate(self.sample_rate)
-        decoded = wav.data.data
-        self.encode(decoded)
 
     def encode(self, decoded: np.ndarray):
         self.num_samples = decoded.shape[1]
