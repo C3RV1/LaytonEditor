@@ -45,8 +45,7 @@ class EventCategory(EditorCategory):
         self.name = "Events"
         self._event_top_nodes: Dict[int, EventTopNode] = {}
 
-    def set_rom(self, rom):
-        super(EventCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._event_top_nodes = {}
 
     @property

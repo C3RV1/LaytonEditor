@@ -27,8 +27,7 @@ class PuzzleCategory(EditorCategory):
         self.name = "Puzzles"
         self._puzzle_nodes = {}
 
-    def set_rom(self, rom):
-        super(PuzzleCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._puzzle_nodes = {}
 
     @property

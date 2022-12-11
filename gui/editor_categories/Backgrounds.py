@@ -1,4 +1,7 @@
 from .Filesystem import FolderNode, AssetNode, FilesystemCategory
+from PySide6 import QtCore
+from typing import Any
+import os
 
 
 class BackgroundFolder(FolderNode):
@@ -15,7 +18,7 @@ class BackgroundsCategory(FilesystemCategory):
     def __init__(self):
         super(BackgroundsCategory, self).__init__()
         self.name = "Backgrounds"
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(BackgroundsCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = BackgroundFolder(self, "/data_lt2/bg", self.rom.filenames["/data_lt2/bg"], None)

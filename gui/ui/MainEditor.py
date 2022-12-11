@@ -29,9 +29,14 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.horizontal_layout = QtWidgets.QHBoxLayout()
 
         self.file_tree = QtWidgets.QTreeView(self.window)
+        self.file_tree.setSelectionMode(self.file_tree.SelectionMode.SingleSelection)
         self.file_tree.setHeaderHidden(True)
+        self.file_tree.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.file_tree.customContextMenuRequested.connect(self.file_tree_context_menu)
         self.file_tree.currentChanged = self.tree_changed_selection
         self.horizontal_layout.addWidget(self.file_tree, 1)
+
+        self.ft_context_menu = QtWidgets.QMenu()
 
         self.active_editor = QtWidgets.QWidget()
         self.horizontal_layout.addWidget(self.active_editor, 3)
@@ -42,6 +47,19 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.setFixedSize(QtCore.QSize(1280, 720))
 
         self.show()
+
+    def file_tree_context_menu(self, point: QtCore.QPoint):
+        index = self.file_tree.indexAt(point)
+        if index.isValid():
+            self.ft_context_menu.clear()
+            actions = index.internalPointer().category.get_context_menu(index)
+            if not actions:
+                return
+            for name, callback in actions:
+                action = QtGui.QAction(name, self.ft_context_menu)
+                action.triggered.connect(callback)
+                self.ft_context_menu.addAction(action)
+            self.ft_context_menu.exec(self.file_tree.mapToGlobal(point))
 
     def file_menu_open(self):
         pass

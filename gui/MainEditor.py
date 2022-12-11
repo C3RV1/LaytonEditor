@@ -35,6 +35,7 @@ class MainEditor(MainEditorUI):
         self.last_path = None
 
         self.tree_model = EditorTree()
+        self.file_tree.setModel(self.tree_model)
 
         self.pg_previewer = PygamePreviewer()
         self.pg_previewer.start()
@@ -71,7 +72,6 @@ class MainEditor(MainEditorUI):
         self.file_save_action.setEnabled(True)
         self.file_save_as_action.setEnabled(True)
         self.tree_model.set_rom(self.rom)
-        self.file_tree.setModel(self.tree_model)
 
     def file_menu_save(self):
         if self.last_path:

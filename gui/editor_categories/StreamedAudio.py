@@ -15,7 +15,7 @@ class StreamedAudioCategory(FilesystemCategory):
     def __init__(self):
         super(StreamedAudioCategory, self).__init__()
         self.name = "Streamed Audio"
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(StreamedAudioCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = StreamedAudioFolder(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None)

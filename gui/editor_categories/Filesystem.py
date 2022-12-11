@@ -1,4 +1,7 @@
-from PySide6 import QtCore
+import os.path
+from typing import List, Tuple, Callable, Any
+
+from PySide6 import QtCore, QtWidgets, QtGui
 from formats.filesystem import Folder, PlzArchive, NintendoDSRom
 from ..EditorTypes import EditorCategory, EditorObject
 
@@ -10,6 +13,9 @@ class FolderNode(EditorObject):
         self.folder: Folder | PlzArchive = folder
         self.parent = parent
 
+        self.children = {}
+
+    def reset_children(self):
         self.children = {}
 
     def child_count(self):
@@ -49,7 +55,7 @@ class FolderNode(EditorObject):
         return self.children[row]
 
     def data(self):
-        return self.path.split("/")[-1]
+        return os.path.basename(self.path)
 
 
 class FolderNodeOneLevel(FolderNode):
@@ -80,7 +86,7 @@ class AssetNode(EditorObject):
         self.rom: NintendoDSRom | PlzArchive = rom
 
     def data(self):
-        return self.path.split("/")[-1]
+        return os.path.basename(self.path)
 
 
 class FilesystemCategory(EditorCategory):
@@ -88,13 +94,13 @@ class FilesystemCategory(EditorCategory):
         super(FilesystemCategory, self).__init__()
         self.name = "Filesystem"
         self._root: FolderNode = None
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(FilesystemCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = FolderNode(self, "", self.rom.filenames, None)
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
-        if index.internalPointer() == self:
+        if index.internalPointer() is self:
             return self._root.child_count()
         node = index.internalPointer()
         if isinstance(node, FolderNode):
@@ -104,7 +110,7 @@ class FilesystemCategory(EditorCategory):
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,
               model: QtCore.QAbstractItemModel):
         parent_idx = parent
-        if parent.internalPointer() == self:
+        if parent.internalPointer() is self:
             parent = self._root
         else:
             parent = parent.internalPointer()
@@ -119,7 +125,7 @@ class FilesystemCategory(EditorCategory):
 
     def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QAbstractItemModel,
                model: QtCore.QAbstractItemModel):
-        if index.isValid() and index.internalPointer() != self:
+        if index.isValid() and index.internalPointer() is not self:
             return index.internalPointer().parent
         return QtCore.QModelIndex()
 
@@ -127,3 +133,62 @@ class FilesystemCategory(EditorCategory):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             return index.internalPointer().data()
         return None
+
+    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable]]:
+        if isinstance(index.internalPointer(), AssetNode):
+            return [
+                ("Replace", lambda: self.import_(index)),
+                ("Export", lambda: self.export(index))
+            ]
+        return []
+
+    def import_(self, index: QtCore.QModelIndex):
+        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import file...")
+        if import_path == "":
+            return
+        asset: AssetNode = index.internalPointer()
+        with open(import_path, "rb") as import_file:
+            asset_file = asset.rom.open(asset.path, "wb")
+            asset_file.write(import_file.read())
+            asset_file.close()
+
+    def export(self, index: QtCore.QModelIndex):
+        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export file...")
+        if export_path == "":
+            return
+        asset: AssetNode = index.internalPointer()
+        with open(export_path, "wb") as export_file:
+            asset_file = asset.rom.open(asset.path, "rb")
+            export_file.write(asset_file.read())
+            asset_file.close()
+
+    def flags(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel) -> QtCore.Qt.ItemFlag:
+        default_flags = super(FilesystemCategory, self).flags(index, model)
+        if index.internalPointer() is self or not self.allow_rename:
+            return default_flags
+        return default_flags | QtCore.Qt.ItemFlag.ItemIsEditable
+
+    def set_data(self, index: QtCore.QModelIndex, value: Any, role, model) -> bool:
+        if value == "":
+            return False
+        node = index.internalPointer()
+        if isinstance(node, FolderNode):
+            self.rename_folder(node, value)
+        elif isinstance(node, AssetNode):
+            self.rename_asset(node, value)
+        model.updated_fs(self)
+        return True
+
+    def rename_asset(self, asset: AssetNode, value):
+        asset.rom.rename_file(asset.path, value)
+        new_path = os.path.join(os.path.dirname(asset.path), value).replace("\\", "/")
+        asset.path = new_path
+
+    def rename_folder(self, folder: FolderNode, value):
+        new_path = os.path.join(os.path.dirname(folder.path), value).replace("\\", "/")
+        if isinstance(folder.folder, Folder):
+            self.rom.rename_folder(folder.path, new_path)
+        elif isinstance(folder.folder, PlzArchive):
+            self.rom.rename_file(folder.path, value)
+        folder.path = new_path
+        folder.reset_children()

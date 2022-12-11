@@ -53,7 +53,7 @@ class TextsCategory(FilesystemCategory):
     def __init__(self):
         super(TextsCategory, self).__init__()
         self.name = "Texts"
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(TextsCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = TextFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)

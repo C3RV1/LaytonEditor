@@ -15,7 +15,7 @@ class FontsCategory(FilesystemCategory):
     def __init__(self):
         super(FontsCategory, self).__init__()
         self.name = "Fonts"
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(FontsCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = FontFolder(self, "/data_lt2/font", self.rom.filenames["/data_lt2/font"], None)

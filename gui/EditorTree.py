@@ -1,3 +1,5 @@
+from typing import List, Sequence, Any
+
 from PySide6 import QtCore
 from .editor_categories import *
 from .EditorTypes import EditorObject
@@ -6,22 +8,48 @@ from .EditorTypes import EditorObject
 class EditorTree(QtCore.QAbstractItemModel):
     def __init__(self):
         super(EditorTree, self).__init__()
-        self.categories = [
-            FilesystemCategory(),
-            SpriteCategory(),
-            BackgroundsCategory(),
-            EventCategory(),
-            PuzzleCategory(),
-            FontsCategory(),
-            MoviesCategory(),
-            StreamedAudioCategory(),
-            TextsCategory(),
-            ScriptsCategory()
-        ]
+        self.categories = []
 
     def set_rom(self, rom):
+        self.layoutAboutToBeChanged.emit()
+        if rom.name == b"LAYTON2":
+            self.categories = [
+                FilesystemCategory(),
+                SpriteCategory(),
+                BackgroundsCategory(),
+                EventCategory(),
+                PuzzleCategory(),
+                FontsCategory(),
+                MoviesCategory(),
+                StreamedAudioCategory(),
+                TextsCategory(),
+                ScriptsCategory()
+            ]
+        else:
+            self.categories = [
+                FilesystemCategory()
+            ]
         for category in self.categories:
             category.set_rom(rom)
+        self.layoutChanged.emit()
+
+    def updated_fs(self, exclude_category=None):
+        self.layoutAboutToBeChanged.emit()
+        for category in self.categories:
+            if category is exclude_category:
+                continue
+            category.reset_file_system()
+        self.layoutChanged.emit()
+
+    def setData(self, index: QtCore.QModelIndex, value: Any, role: int = ...) -> bool:
+        if not index.isValid():
+            return False
+        return index.internalPointer().category.set_data(index, value, role, self)
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+        if not index.isValid():
+            return super(EditorTree, self).flags(index)
+        return index.internalPointer().category.flags(index, self)
 
     def rowCount(self, index: QtCore.QModelIndex) -> int:
         if not index.isValid():

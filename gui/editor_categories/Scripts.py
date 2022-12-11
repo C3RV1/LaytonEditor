@@ -57,7 +57,7 @@ class ScriptsCategory(FilesystemCategory):
     def __init__(self):
         super(ScriptsCategory, self).__init__()
         self.name = "Scripts"
+        self.allow_rename = False
 
-    def set_rom(self, rom):
-        super(ScriptsCategory, self).set_rom(rom)
+    def reset_file_system(self):
         self._root = ScriptFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)
