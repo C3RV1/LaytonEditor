@@ -5,7 +5,6 @@ class SpriteCategory(FilesystemCategory):
     def __init__(self):
         super(SpriteCategory, self).__init__()
         self.name = "Sprites"
-        self.allow_rename = False
 
     def reset_file_system(self):
         self._root = FolderNode(self, "/data_lt2/ani", self.rom.filenames["/data_lt2/ani"], None,

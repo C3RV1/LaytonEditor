@@ -153,7 +153,7 @@ class FilesystemCategory(EditorCategory):
         super(FilesystemCategory, self).__init__()
         self.name = "Filesystem"
         self._root: FolderNode = None
-        self.allow_rename = False
+        self.allow_rename = True
 
     def reset_file_system(self):
         self._root = FolderNode(self, "", self.rom.filenames, None)

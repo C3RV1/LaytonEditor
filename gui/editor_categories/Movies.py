@@ -6,7 +6,6 @@ class MoviesCategory(FilesystemCategory):
         # TODO: Sort numerically and not alphabetically
         super(MoviesCategory, self).__init__()
         self.name = "Movies"
-        self.allow_rename = False
 
     def reset_file_system(self):
         self._root = FolderNodeOneLevel(self, "/data_lt2/movie", self.rom.filenames["/data_lt2/movie"], None,

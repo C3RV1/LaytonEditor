@@ -5,7 +5,6 @@ class FontsCategory(FilesystemCategory):
     def __init__(self):
         super(FontsCategory, self).__init__()
         self.name = "Fonts"
-        self.allow_rename = False
 
     def reset_file_system(self):
         self._root = FolderNodeOneLevel(self, "/data_lt2/font", self.rom.filenames["/data_lt2/font"], None,
