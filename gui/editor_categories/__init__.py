@@ -8,3 +8,7 @@ from .StreamedAudio import StreamedAudioCategory
 from .Events import EventCategory
 from .Puzzles import PuzzleCategory
 from .Scripts import ScriptsCategory
+from .SequencedAudio import SequencedAudioCategory
+from .SoundBank import SoundBankCategory
+from .SoundEffect import SoundEffectCategory
+from .Places import PlaceCategory

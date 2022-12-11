@@ -3,11 +3,11 @@ Sprites -
 Backgrounds -
 Events - EDITING
 Puzzles - EDITING
+Places -
 Fonts -
 Movies -
-Places
-Sequenced Audio
-Sound Banks?
+Sequenced Audio -
+Sound Banks -
 Streamed Audio -
 Text - EDITING
 Scripts - EDITING

@@ -1,12 +1,12 @@
 from .Filesystem import FilesystemCategory, FolderNodeOneLevelFilterExtension, AssetNodeBasename
 
 
-class SequencedAudioCategory(FilesystemCategory):
+class SoundEffectCategory(FilesystemCategory):
     def __init__(self):
-        super(SequencedAudioCategory, self).__init__()
-        self.name = "Sequenced Audio"
+        super(SoundEffectCategory, self).__init__()
+        self.name = "Sound Effects"
         self.allow_rename = False
 
     def reset_file_system(self):
         self._root = FolderNodeOneLevelFilterExtension(self, "/data_lt2/sound", self.rom.filenames["/data_lt2/sound"],
-                                                       None, extensions=[".SMD"], asset_class=AssetNodeBasename)
+                                                       None, extensions=[".SED"], asset_class=AssetNodeBasename)

@@ -1,6 +1,5 @@
 from .ui.TextWidget import TextWidgetUI
 
-from .editor_categories.Texts import TextAsset
 from formats.gds import GDS
 from formats_parsed.gds_parsers import EventGDSParser
 from formats_parsed.dcc import DCCParser

@@ -1,6 +1,6 @@
 from .ui.TextWidget import TextWidgetUI
 
-from .editor_categories.Texts import TextAsset
+from .editor_categories.Filesystem import AssetNode
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -11,9 +11,9 @@ class TextWidget(TextWidgetUI):
     def __init__(self, main_editor):
         super(TextWidget, self).__init__()
         self.main_editor: MainEditor = main_editor
-        self.text_asset: TextAsset = None
+        self.text_asset: AssetNode = None
 
-    def set_text(self, text: TextAsset):
+    def set_text(self, text: AssetNode):
         self.text_asset = text
         f = text.rom.open(text.path, "r")
         self.text_editor.setPlainText(f.read())

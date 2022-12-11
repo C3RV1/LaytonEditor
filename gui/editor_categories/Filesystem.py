@@ -87,7 +87,7 @@ class FolderNodeFilterExtension(FolderNode):
         self.extensions = extensions
 
     def create_folder(self, category, path, parent_idx, parent):
-        return type(self)(category, path, parent_idx, parent, self.extensions,
+        return type(self)(category, path, parent_idx, parent, extensions=self.extensions,
                           asset_class=self.asset_class)
 
 
@@ -103,7 +103,7 @@ class FolderNodeOneLevel(FolderNode):
                 name = self.files[row]
                 self.children[row] = self.get_asset_type()(self.category, name, parent_idx, self.folder)
                 return self.children[row]
-            name: str = self.folder.files[row]
+            name: str = self.files[row]
             self.children[row] = self.get_asset_type()(self.category, self.path + "/" + name,
                                                        parent_idx, self.category.rom)
         return self.children[row]

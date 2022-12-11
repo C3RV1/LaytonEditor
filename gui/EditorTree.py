@@ -19,9 +19,13 @@ class EditorTree(QtCore.QAbstractItemModel):
                 BackgroundsCategory(),
                 EventCategory(),
                 PuzzleCategory(),
+                PlaceCategory(),
                 FontsCategory(),
                 MoviesCategory(),
                 StreamedAudioCategory(),
+                SequencedAudioCategory(),
+                SoundBankCategory(),
+                SoundEffectCategory(),
                 TextsCategory(),
                 ScriptsCategory()
             ]

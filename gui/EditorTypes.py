@@ -34,7 +34,7 @@ class EditorCategory(EditorObject):
               model: 'EditorTree') -> QtCore.QModelIndex:
         return QtCore.QModelIndex()
 
-    def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QAbstractItemModel,
+    def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QModelIndex,
                model: 'EditorTree') -> QtCore.QModelIndex:
         return QtCore.QModelIndex()
 
