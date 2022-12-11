@@ -121,13 +121,13 @@ class WAV:
         self.data.read(rdr, self.fmt)
 
     @classmethod
-    def from_sadl(cls, sadl: SADL):
+    def from_sadl(cls, sadl: SADL, progress_callback: Union[Callable, None] = None):
         wav_obj = cls()
         wav_obj.fmt.num_channels = sadl.channels
         wav_obj.fmt.sample_rate = sadl.sample_rate
         wav_obj.fmt.bits_per_sample = 0x10
-        wav_obj.data.data = sadl.decode()
-        return wav_obj
+        wav_obj.data.data = sadl.decode(progress_callback=progress_callback)
+        return wav_obj, wav_obj.data.data is not None
 
     def to_sadl(self, sadl: SADL, progress_callback: Union[Callable, None] = None):
         # TODO: Change to generate SADL

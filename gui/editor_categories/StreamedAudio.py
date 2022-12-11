@@ -64,7 +64,17 @@ class StreamedAudioCategory(FilesystemCategory):
         if export_path == "":
             return
 
-        wav_file = WAV.from_sadl(node.get_sadl())
+        progress_dialog = QtWidgets.QProgressDialog("Decoding SADL...", "Abort", 0, 100, None)
+        progress_dialog.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+
+        def update_progress(value, maximum):
+            progress_dialog.setMaximum(maximum)
+            progress_dialog.setValue(value)
+            return progress_dialog.wasCanceled()
+
+        wav_file, successful = WAV.from_sadl(node.get_sadl(), progress_callback=update_progress)
+        if not successful:
+            return
         with open(export_path, "wb") as export_file:
             wav_file.write_stream(export_file)
 

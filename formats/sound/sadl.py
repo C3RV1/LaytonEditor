@@ -135,6 +135,7 @@ class SADL(FileFormat):
             coding |= 2
         else:
             raise NotImplementedError()
+        wtr.write_uint8(coding)
 
         wtr.seek(0x100)
         buffer = self.buffer.copy()
@@ -146,15 +147,23 @@ class SADL(FileFormat):
         wtr.seek(0x40)
         wtr.write_uint32(size)
 
-    def decode(self, blocks=-1):
+    def decode(self, blocks=-1, progress_callback: Union[Callable, None] = None):
+        cancelled = False
         if self.coding == Coding.INT_IMA:
             if blocks == -1:
                 blocks = self.num_samples // 2 // 0x10 - self.blocks_done
             decoded = np.zeros((self.channels, blocks * 32), dtype=np.int16)
             for chan in range(self.channels):
+                if cancelled:
+                    break
                 for i in range(blocks):
+                    if cancelled:
+                        break
                     if i + self.blocks_done == self.num_samples // 2 // 0x10:
                         continue
+                    if progress_callback:
+                        if progress_callback(i + chan * blocks, blocks * self.channels):
+                            cancelled = True
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
                     decoded_block = self.ima_decoders[chan].decompress(block)
                     self.offset[chan] += 0x10
@@ -165,15 +174,24 @@ class SADL(FileFormat):
                 blocks = self.num_samples // 30 - self.blocks_done
             decoded = np.zeros((self.channels, blocks * 30), dtype=np.int16)
             for chan in range(self.channels):
+                if cancelled:
+                    break
                 for i in range(blocks):
+                    if cancelled:
+                        break
                     if i + self.blocks_done >= self.num_samples // 30:
                         break
+                    if progress_callback:
+                        if progress_callback(i + chan * blocks, blocks * self.channels):
+                            cancelled = True
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
                     self.procyon_decoders[chan].decode_block(block, decoded[chan][i*30:(i*30)+30])
                     self.offset[chan] += 0x10
             self.blocks_done += blocks
         else:
             raise NotImplementedError()
+        if cancelled:
+            return None
         return decoded
 
     def encode(self, decoded: np.ndarray, progress_callback: Union[Callable, None] = None):
