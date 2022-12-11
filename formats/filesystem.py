@@ -16,6 +16,15 @@ class Archive:
     def open(self, file: Union[AnyStr, int], mode: str = "rb") -> Union[io.BytesIO, io.TextIOWrapper]:
         pass
 
+    def add_file(self, file: str) -> Optional[int]:
+        pass
+
+    def remove_file(self, file: str):
+        pass
+
+    def rename_file(self, old, new):
+        pass
+
 
 class RomFile(io.BytesIO):
     def __init__(self, archive, index: int, operation: str = "w"):
@@ -187,12 +196,18 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
             if fp.id == fileid:
                 fp.close()
 
-    def rename_file(self, old, new):
-        with self.open(old, "rb") as f:
+    def move_file(self, old_path, new_path):
+        with self.open(old_path, "rb") as f:
             data = f.read()
-        self.remove_file(old)
-        with self.open(new, "wb+") as f:
+        self.remove_file(old_path)
+        with self.open(new_path, "wb+") as f:
             f.write(data)
+
+    def rename_file(self, old_path, new_filename):
+        folder_name, filename = os.path.split(old_path)
+        folder: Folder = self.filenames[folder_name]
+        index = folder.files.index(filename)
+        folder.files[index] = new_filename
 
     @staticmethod
     def folder_split(path) -> List[str]:
@@ -421,9 +436,8 @@ class PlzArchive(Archive, FileFormat):
         self.files.pop(index)
         self.filenames.pop(index)
 
-    def rename_file(self, old, new):
-        with self.open(old, "rb") as f:
-            data = f.read()
-        self.remove_file(old)
-        with self.open(new, "wb+") as f:
-            f.write(data)
+    def rename_file(self, old_filename, new_filename):
+        if old_filename not in self.filenames:
+            return
+        index = self.filenames.index(old_filename)
+        self.filenames[index] = new_filename
