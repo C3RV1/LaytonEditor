@@ -14,17 +14,21 @@ class FolderNode(EditorObject):
         self.parent = parent
 
         self.children = {}
+        if isinstance(self.folder, PlzArchive):
+            self.files = self.folder.filenames
+        else:
+            self.files = self.folder.files
 
     def reset_children(self):
         self.children = {}
 
     def child_count(self):
         if isinstance(self.folder, PlzArchive):
-            return len(self.folder.filenames)
-        return len(self.folder.folders) + len(self.folder.files)
+            return len(self.files)
+        return len(self.folder.folders) + len(self.files)
 
-    def get_folder_type(self):
-        return type(self)
+    def create_folder(self, category, path, parent_idx, parent):
+        return type(self)(category, path, parent_idx, parent)
 
     def get_asset_type(self):
         return AssetNode
@@ -34,21 +38,18 @@ class FolderNode(EditorObject):
             return None
         if row not in self.children:
             if isinstance(self.folder, PlzArchive):
-                name = self.folder.filenames[row]
+                name = self.files[row]
                 self.children[row] = self.get_asset_type()(self.category, name, parent_idx, self.folder)
-                return self.children[row]
-            if row < len(self.folder.folders):
+            elif row < len(self.folder.folders):
                 name, folder = self.folder.folders[row]
-                self.children[row] = self.get_folder_type()(self.category, self.path + "/" + name,
-                                                            folder, parent_idx)
+                self.children[row] = self.create_folder(self.category, self.path + "/" + name, folder, parent_idx)
             else:
                 row2 = row - len(self.folder.folders)
-                name: str = self.folder.files[row2]
+                name: str = self.files[row2]
                 if name.endswith(".plz"):
                     path = self.path + "/" + name
-                    self.children[row] = self.get_folder_type()(self.category, self.path + "/" + name,
-                                                                self.category.rom.get_archive(path),
-                                                                parent_idx)
+                    self.children[row] = self.create_folder(self.category, self.path + "/" + name,
+                                                            self.category.rom.get_archive(path), parent_idx)
                 else:
                     self.children[row] = self.get_asset_type()(self.category, self.path + "/" + name,
                                                                parent_idx, self.category.rom)
@@ -58,24 +59,46 @@ class FolderNode(EditorObject):
         return os.path.basename(self.path)
 
 
+class FolderNodeFilterExtension(FolderNode):
+    def __init__(self, category, path, folder, parent, extension):
+        super(FolderNodeFilterExtension, self).__init__(category, path, folder, parent)
+        if isinstance(self.folder, PlzArchive):
+            self.files = [x for x in self.folder.filenames if x.endswith(extension)]
+        else:
+            self.files = [x for x in self.folder.files if x.endswith(extension) or x.endswith(".plz")]
+        self.extension = extension
+
+    def create_folder(self, category, path, parent_idx, parent):
+        return type(self)(category, path, parent_idx, parent, self.extension)
+
+
 class FolderNodeOneLevel(FolderNode):
     def child_count(self):
-        if isinstance(self.folder, PlzArchive):
-            return len(self.folder.filenames)
-        return len(self.folder.files)
+        return len(self.files)
 
     def child(self, row, parent_idx):
         if 0 > row or self.child_count() <= row:
             return None
         if row not in self.children:
             if isinstance(self.folder, PlzArchive):
-                name = self.folder.filenames[row]
+                name = self.files[row]
                 self.children[row] = self.get_asset_type()(self.category, name, parent_idx, self.folder)
                 return self.children[row]
             name: str = self.folder.files[row]
             self.children[row] = self.get_asset_type()(self.category, self.path + "/" + name,
                                                        parent_idx, self.category.rom)
         return self.children[row]
+
+
+class FolderNodeOneLevelFilterExtension(FolderNodeFilterExtension, FolderNodeOneLevel):
+    def __init__(self, category, path, folder, parent, extension):
+        super(FolderNodeOneLevelFilterExtension, self).__init__(category, path, folder, parent, extension)
+
+    def child_count(self):
+        return FolderNodeOneLevel.child_count(self)
+
+    def child(self, row, parent_idx):
+        return FolderNodeOneLevel.child(row, parent_idx)
 
 
 class AssetNode(EditorObject):

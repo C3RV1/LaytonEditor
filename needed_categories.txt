@@ -1,12 +1,13 @@
 Filesystem -
 Sprites -
 Backgrounds -
-Events -
-Puzzles -
+Events - EDITING
+Puzzles - EDITING
 Fonts -
 Movies -
 Places
 Sequenced Audio
+Sound Banks?
 Streamed Audio -
-Text -
-Scripts -
+Text - EDITING
+Scripts - EDITING
