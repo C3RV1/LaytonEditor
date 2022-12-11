@@ -231,7 +231,7 @@ class FilesystemCategory(EditorCategory):
     def set_data(self, index: QtCore.QModelIndex, value: Any, role, model) -> bool:
         if value == "":
             return False
-        node = index.internalPointer()
+        node: AssetNode | FolderNode = index.internalPointer()
         node.rename(value)
         model.updated_fs(self)
         return True
