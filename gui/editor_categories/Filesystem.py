@@ -193,7 +193,7 @@ class FilesystemCategory(EditorCategory):
             return index.internalPointer().data()
         return None
 
-    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable]]:
+    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable] | None]:
         if isinstance(index.internalPointer(), AssetNode):
             return [
                 ("Replace", lambda: self.import_(index)),

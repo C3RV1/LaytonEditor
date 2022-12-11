@@ -1,3 +1,5 @@
+import os.path
+
 from gui.ui.MainEditor import MainEditorUI
 from PySide6 import QtCore, QtWidgets
 
@@ -17,6 +19,10 @@ from .editor_categories.Texts import TextAsset
 
 from .ScriptWidget import ScriptWidget
 from .editor_categories.Scripts import ScriptAsset
+
+from previewers.sound.SoundPreview import SoundPreview
+from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
+from .editor_categories.StreamedAudio import SADLNode
 
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
@@ -91,6 +97,7 @@ class MainEditor(MainEditorUI):
         self.active_editor.hide()
         self.horizontal_layout.removeWidget(self.active_editor)
         self.active_editor.deleteLater()
+        self.active_editor = None
 
         set_previewer = False
 
@@ -114,7 +121,13 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, ScriptAsset):
             self.active_editor = ScriptWidget(self)
             self.active_editor.set_script(node.to_gds())
-        else:
+        elif isinstance(node, SADLNode):
+            sadl_player = SADLStreamPlayer()
+            self.pg_previewer.start_renderer(SoundPreview(sadl_player, node.get_sadl(),
+                                                          node.data()))
+            set_previewer = True
+
+        if self.active_editor is None:
             self.active_editor = QtWidgets.QWidget()
 
         if not set_previewer:

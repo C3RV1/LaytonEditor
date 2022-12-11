@@ -55,7 +55,11 @@ class MainEditorUI(QtWidgets.QMainWindow):
             actions = index.internalPointer().category.get_context_menu(index)
             if not actions:
                 return
-            for name, callback in actions:
+            for action_data in actions:
+                if action_data is None:
+                    self.ft_context_menu.addSeparator()
+                    continue
+                name, callback = action_data
                 action = QtGui.QAction(name, self.ft_context_menu)
                 action.triggered.connect(callback)
                 self.ft_context_menu.addAction(action)

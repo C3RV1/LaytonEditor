@@ -1,3 +1,5 @@
+from typing import Callable, Union
+
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.sample_transform import change_sample_rate, change_channels
 from formats.sound.sadl import SADL
@@ -127,7 +129,7 @@ class WAV:
         wav_obj.data.data = sadl.decode()
         return wav_obj
 
-    def to_sadl(self, sadl: SADL):
+    def to_sadl(self, sadl: SADL, progress_callback: Union[Callable, None] = None):
         # TODO: Change to generate SADL
         sadl.channels = min(self.fmt.num_channels, 2)
         sadl.sample_rate = self.fmt.sample_rate
@@ -140,7 +142,7 @@ class WAV:
             data = change_channels(data, sadl.channels)
         if self.fmt.sample_rate != sadl.sample_rate:
             data = change_sample_rate(data, self.fmt.sample_rate, sadl.sample_rate)
-        sadl.encode(data)
+        return sadl.encode(data, progress_callback)
 
     def change_sample_rate(self, target_rate):
         if self.fmt.sample_rate == target_rate:
