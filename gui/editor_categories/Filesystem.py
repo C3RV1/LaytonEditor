@@ -60,16 +60,19 @@ class FolderNode(EditorObject):
 
 
 class FolderNodeFilterExtension(FolderNode):
-    def __init__(self, category, path, folder, parent, extension):
+    def __init__(self, category, path, folder, parent, extensions):
         super(FolderNodeFilterExtension, self).__init__(category, path, folder, parent)
         if isinstance(self.folder, PlzArchive):
-            self.files = [x for x in self.folder.filenames if x.endswith(extension)]
+            self.files = filter(lambda x: any([x.endswith(extension) for extension in extensions]),
+                                self.folder.filenames)
         else:
-            self.files = [x for x in self.folder.files if x.endswith(extension) or x.endswith(".plz")]
-        self.extension = extension
+            self.files = filter(lambda x: any([x.endswith(extension) for extension in extensions + [".plz"]]),
+                                self.folder.files)
+        self.files = list(self.files)
+        self.extensions = extensions
 
     def create_folder(self, category, path, parent_idx, parent):
-        return type(self)(category, path, parent_idx, parent, self.extension)
+        return type(self)(category, path, parent_idx, parent, self.extensions)
 
 
 class FolderNodeOneLevel(FolderNode):
@@ -176,10 +179,11 @@ class FilesystemCategory(EditorCategory):
             asset_file.close()
 
     def export(self, index: QtCore.QModelIndex):
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export file...")
+        asset: AssetNode = index.internalPointer()
+        filename = os.path.basename(asset.path)
+        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export file...", filename)
         if export_path == "":
             return
-        asset: AssetNode = index.internalPointer()
         with open(export_path, "wb") as export_file:
             asset_file = asset.rom.open(asset.path, "rb")
             export_file.write(asset_file.read())

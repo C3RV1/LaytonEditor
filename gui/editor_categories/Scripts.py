@@ -3,8 +3,10 @@ from formats.gds import GDS
 
 
 class ScriptFolder(FolderNodeFilterExtension):
-    def __init__(self, category, path, folder, parent, extension=".gds"):
-        super(ScriptFolder, self).__init__(category, path, folder, parent, extension)
+    def __init__(self, category, path, folder, parent, extensions=None):
+        if extensions is None:
+            extensions = [".gds"]
+        super(ScriptFolder, self).__init__(category, path, folder, parent, extensions)
 
     def get_asset_type(self):
         return ScriptAsset

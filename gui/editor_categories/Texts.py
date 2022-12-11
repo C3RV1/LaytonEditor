@@ -2,8 +2,10 @@ from .Filesystem import FolderNodeFilterExtension, AssetNode, FilesystemCategory
 
 
 class TextFolder(FolderNodeFilterExtension):
-    def __init__(self, category, path, folder, parent, extension=".txt"):
-        super(TextFolder, self).__init__(category, path, folder, parent, extension)
+    def __init__(self, category, path, folder, parent, extensions=None):
+        if extensions is None:
+            extensions = [".txt"]
+        super(TextFolder, self).__init__(category, path, folder, parent, extensions)
 
     def get_asset_type(self):
         return TextAsset

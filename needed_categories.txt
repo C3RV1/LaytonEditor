@@ -1,4 +1,4 @@
-Filesystem -
+Filesystem - REPLACING, EXPORTING
 Sprites -
 Backgrounds -
 Events - EDITING
