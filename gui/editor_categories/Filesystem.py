@@ -7,7 +7,7 @@ from ..EditorTypes import EditorCategory, EditorObject
 
 
 class FolderNode(EditorObject):
-    def __init__(self, category, path, folder, parent):
+    def __init__(self, category, path, folder, parent, asset_class=None):
         self.category = category
         self.path = path
         self.folder: Folder | PlzArchive = folder
@@ -19,6 +19,10 @@ class FolderNode(EditorObject):
         else:
             self.files = self.folder.files
 
+        if asset_class is None:
+            asset_class = AssetNode
+        self.asset_class = asset_class
+
     def reset_children(self):
         self.children = {}
 
@@ -28,10 +32,10 @@ class FolderNode(EditorObject):
         return len(self.folder.folders) + len(self.files)
 
     def create_folder(self, category, path, parent_idx, parent):
-        return type(self)(category, path, parent_idx, parent)
+        return type(self)(category, path, parent_idx, parent, asset_class=self.asset_class)
 
     def get_asset_type(self):
-        return AssetNode
+        return self.asset_class
 
     def child(self, row, parent_idx):
         if 0 > row or self.child_count() <= row:
@@ -58,10 +62,21 @@ class FolderNode(EditorObject):
     def data(self):
         return os.path.basename(self.path)
 
+    def rename(self, value):
+        new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
+        if isinstance(self.folder, Folder):
+            self.category.rom.rename_folder(self.path, new_path)
+        elif isinstance(self.folder, PlzArchive):
+            self.category.rom.rename_file(self.path, value)
+        self.path = new_path
+        self.reset_children()
+
 
 class FolderNodeFilterExtension(FolderNode):
-    def __init__(self, category, path, folder, parent, extensions):
-        super(FolderNodeFilterExtension, self).__init__(category, path, folder, parent)
+    def __init__(self, *args, extensions=None, **kwargs):
+        if extensions is None:
+            extensions = []
+        super(FolderNodeFilterExtension, self).__init__(*args, **kwargs)
         if isinstance(self.folder, PlzArchive):
             self.files = filter(lambda x: any([x.endswith(extension) for extension in extensions]),
                                 self.folder.filenames)
@@ -72,7 +87,8 @@ class FolderNodeFilterExtension(FolderNode):
         self.extensions = extensions
 
     def create_folder(self, category, path, parent_idx, parent):
-        return type(self)(category, path, parent_idx, parent, self.extensions)
+        return type(self)(category, path, parent_idx, parent, self.extensions,
+                          asset_class=self.asset_class)
 
 
 class FolderNodeOneLevel(FolderNode):
@@ -94,14 +110,14 @@ class FolderNodeOneLevel(FolderNode):
 
 
 class FolderNodeOneLevelFilterExtension(FolderNodeFilterExtension, FolderNodeOneLevel):
-    def __init__(self, category, path, folder, parent, extension):
-        super(FolderNodeOneLevelFilterExtension, self).__init__(category, path, folder, parent, extension)
+    def __init__(self, *args, **kwargs):
+        super(FolderNodeOneLevelFilterExtension, self).__init__(*args, **kwargs)
 
     def child_count(self):
         return FolderNodeOneLevel.child_count(self)
 
     def child(self, row, parent_idx):
-        return FolderNodeOneLevel.child(row, parent_idx)
+        return FolderNodeOneLevel.child(self, row, parent_idx)
 
 
 class AssetNode(EditorObject):
@@ -113,6 +129,23 @@ class AssetNode(EditorObject):
 
     def data(self):
         return os.path.basename(self.path)
+
+    def rename(self, value):
+        self.rom.rename_file(self.path, value)
+        new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
+        self.path = new_path
+
+
+class AssetNodeBasename(AssetNode):
+    def data(self):
+        return os.path.splitext(os.path.basename(self.path))[0]
+
+    def rename(self, value):
+        _, old_extension = os.path.splitext(self.path)
+        value += old_extension
+        self.rom.rename_file(self.path, value)
+        new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
+        self.path = new_path
 
 
 class FilesystemCategory(EditorCategory):
@@ -199,23 +232,6 @@ class FilesystemCategory(EditorCategory):
         if value == "":
             return False
         node = index.internalPointer()
-        if isinstance(node, FolderNode):
-            self.rename_folder(node, value)
-        elif isinstance(node, AssetNode):
-            self.rename_asset(node, value)
+        node.rename(value)
         model.updated_fs(self)
         return True
-
-    def rename_asset(self, asset: AssetNode, value):
-        asset.rom.rename_file(asset.path, value)
-        new_path = os.path.join(os.path.dirname(asset.path), value).replace("\\", "/")
-        asset.path = new_path
-
-    def rename_folder(self, folder: FolderNode, value):
-        new_path = os.path.join(os.path.dirname(folder.path), value).replace("\\", "/")
-        if isinstance(folder.folder, Folder):
-            self.rom.rename_folder(folder.path, new_path)
-        elif isinstance(folder.folder, PlzArchive):
-            self.rom.rename_file(folder.path, value)
-        folder.path = new_path
-        folder.reset_children()

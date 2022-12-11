@@ -1,14 +1,4 @@
-from .Filesystem import FolderNode, AssetNode, FilesystemCategory
-
-
-class StreamedAudioFolder(FolderNode):
-    def get_asset_type(self):
-        return StreamedAudioAsset
-
-
-class StreamedAudioAsset(AssetNode):
-    def data(self):
-        return self.path.split("/")[-1].split(".")[0]
+from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
 
 
 class StreamedAudioCategory(FilesystemCategory):
@@ -18,4 +8,5 @@ class StreamedAudioCategory(FilesystemCategory):
         self.allow_rename = False
 
     def reset_file_system(self):
-        self._root = StreamedAudioFolder(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None)
+        self._root = FolderNode(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None,
+                                asset_class=AssetNodeBasename)

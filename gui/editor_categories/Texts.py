@@ -1,19 +1,4 @@
-from .Filesystem import FolderNodeFilterExtension, AssetNode, FilesystemCategory
-
-
-class TextFolder(FolderNodeFilterExtension):
-    def __init__(self, category, path, folder, parent, extensions=None):
-        if extensions is None:
-            extensions = [".txt"]
-        super(TextFolder, self).__init__(category, path, folder, parent, extensions)
-
-    def get_asset_type(self):
-        return TextAsset
-
-
-class TextAsset(AssetNode):
-    def data(self):
-        return self.path.split("/")[-1].split(".")[0]
+from .Filesystem import FolderNodeFilterExtension, AssetNodeBasename, FilesystemCategory
 
 
 class TextsCategory(FilesystemCategory):
@@ -23,4 +8,5 @@ class TextsCategory(FilesystemCategory):
         self.allow_rename = False
 
     def reset_file_system(self):
-        self._root = TextFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)
+        self._root = FolderNodeFilterExtension(self, "/data_lt2", self.rom.filenames["/data_lt2"], None,
+                                               asset_class=AssetNodeBasename)

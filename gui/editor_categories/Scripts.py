@@ -1,21 +1,8 @@
-from .Filesystem import FolderNodeFilterExtension, AssetNode, FilesystemCategory
+from .Filesystem import FolderNodeFilterExtension, AssetNodeBasename, FilesystemCategory
 from formats.gds import GDS
 
 
-class ScriptFolder(FolderNodeFilterExtension):
-    def __init__(self, category, path, folder, parent, extensions=None):
-        if extensions is None:
-            extensions = [".gds"]
-        super(ScriptFolder, self).__init__(category, path, folder, parent, extensions)
-
-    def get_asset_type(self):
-        return ScriptAsset
-
-
-class ScriptAsset(AssetNode):
-    def data(self):
-        return self.path.split("/")[-1].split(".")[0]
-
+class ScriptAsset(AssetNodeBasename):
     def to_gds(self) -> GDS:
         return GDS(rom=self.rom, filename=self.path)
 
@@ -27,4 +14,5 @@ class ScriptsCategory(FilesystemCategory):
         self.allow_rename = False
 
     def reset_file_system(self):
-        self._root = ScriptFolder(self, "/data_lt2", self.rom.filenames["/data_lt2"], None)
+        self._root = FolderNodeFilterExtension(self, "/data_lt2", self.rom.filenames["/data_lt2"], None,
+                                               extensions=[".gds"], asset_class=ScriptAsset)

@@ -1,14 +1,4 @@
-from .Filesystem import FolderNode, AssetNode, FilesystemCategory
-
-
-class SpriteFolder(FolderNode):
-    def get_asset_type(self):
-        return SpriteAsset
-
-
-class SpriteAsset(AssetNode):
-    def data(self):
-        return self.path.split("/")[-1].split(".")[0]
+from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
 
 
 class SpriteCategory(FilesystemCategory):
@@ -18,4 +8,5 @@ class SpriteCategory(FilesystemCategory):
         self.allow_rename = False
 
     def reset_file_system(self):
-        self._root = SpriteFolder(self, "/data_lt2/ani", self.rom.filenames["/data_lt2/ani"], None)
+        self._root = FolderNode(self, "/data_lt2/ani", self.rom.filenames["/data_lt2/ani"], None,
+                                asset_class=AssetNodeBasename)
