@@ -6,8 +6,9 @@ Puzzles - EDITING
 Places - PREVIEWING
 Fonts -
 Movies -
-Sequenced Audio - EDITING
+Streamed Audio - EDITING
+Sequenced Audio -
 Sound Banks -
-Streamed Audio -
+Sound Effects -
 Text - EDITING
 Scripts - EDITING
