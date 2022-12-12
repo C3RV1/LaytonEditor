@@ -7,7 +7,7 @@ Places - PREVIEWING
 Fonts -
 Movies -
 Streamed Audio - EDITING
-Sequenced Audio -
+Sequenced Audio - EDITING
 Sound Banks -
 Sound Effects -
 Text - EDITING

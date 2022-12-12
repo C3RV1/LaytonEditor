@@ -23,7 +23,9 @@ from .editor_categories.Scripts import ScriptAsset
 
 from previewers.sound.SoundPreview import SoundPreview
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
+from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 from .editor_categories.StreamedAudio import SADLNode
+from .editor_categories.SequencedAudio import SMDLNode
 
 from previewers.place.PlacePreview import PlacePreview
 from .editor_categories.Places import PlaceVersion
@@ -135,6 +137,14 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, SADLNode):
             sadl_player = SADLStreamPlayer()
             self.pg_previewer.start_renderer(SoundPreview(sadl_player, node.get_sadl(),
+                                                          node.data()))
+            set_previewer = True
+        elif isinstance(node, SMDLNode):
+            smdl_player = SMDLStreamPlayer()
+            smdl, swdl = node.get_smdl(), node.get_swdl()
+            sample_bank = node.sample_bank()
+            smdl_player.create_temporal_sf2(swdl, sample_bank)
+            self.pg_previewer.start_renderer(SoundPreview(smdl_player, smdl,
                                                           node.data()))
             set_previewer = True
         elif isinstance(node, PlaceVersion):
