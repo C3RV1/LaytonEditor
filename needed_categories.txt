@@ -3,10 +3,10 @@ Sprites -
 Backgrounds -
 Events - EDITING
 Puzzles - EDITING
-Places -
+Places - PREVIEWING
 Fonts -
 Movies -
-Sequenced Audio -
+Sequenced Audio - EDITING
 Sound Banks -
 Streamed Audio -
 Text - EDITING

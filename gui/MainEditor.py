@@ -24,6 +24,9 @@ from previewers.sound.SoundPreview import SoundPreview
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from .editor_categories.StreamedAudio import SADLNode
 
+from previewers.place.PlacePreview import PlacePreview
+from .editor_categories.Places import PlaceVersion
+
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
 
@@ -125,6 +128,9 @@ class MainEditor(MainEditorUI):
             sadl_player = SADLStreamPlayer()
             self.pg_previewer.start_renderer(SoundPreview(sadl_player, node.get_sadl(),
                                                           node.data()))
+            set_previewer = True
+        elif isinstance(node, PlaceVersion):
+            self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
             set_previewer = True
 
         if self.active_editor is None:

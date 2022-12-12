@@ -3,6 +3,7 @@ from typing import Dict
 
 from ..EditorTypes import EditorObject, EditorCategory
 from formats.filesystem import Folder, Archive
+from formats.place import Place
 from PySide6 import QtCore
 
 
@@ -15,6 +16,9 @@ class PlaceVersion(EditorObject):
 
     def data(self):
         return f"Version {self.version}"
+
+    def get_place(self):
+        return Place(filename=f"n_place{self.top}_{self.version}.dat", rom=self.archive)
 
 
 class PlaceTop(EditorObject):
