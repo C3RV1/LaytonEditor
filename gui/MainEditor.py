@@ -5,6 +5,7 @@ from PySide6 import QtCore, QtWidgets
 
 from .EditorTree import EditorTree
 from .EditorTypes import EditorObject
+from .editor_categories.Filesystem import FolderNode, AssetNode
 
 from .EventWidget import EventWidget
 from .editor_categories.Events import EventNode
@@ -100,6 +101,10 @@ class MainEditor(MainEditorUI):
         node: EditorObject = current.internalPointer()
         if not node:
             return
+
+        if isinstance(node, FolderNode) or isinstance(node, AssetNode):
+            logging.info(f"Opening {node.path}, category {type(node.category).__name__}")
+
         self.active_editor.hide()
         self.horizontal_layout.removeWidget(self.active_editor)
         self.active_editor.deleteLater()
