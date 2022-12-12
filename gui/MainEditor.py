@@ -27,6 +27,9 @@ from .editor_categories.StreamedAudio import SADLNode
 from previewers.place.PlacePreview import PlacePreview
 from .editor_categories.Places import PlaceVersion
 
+from .BackgroundWidget import BackgroundWidget
+from .editor_categories.Backgrounds import BackgroundAsset
+
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
 
@@ -132,6 +135,9 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, PlaceVersion):
             self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
             set_previewer = True
+        elif isinstance(node, BackgroundAsset):
+            self.active_editor = BackgroundWidget(self)
+            self.active_editor.set_image(node.get_bg())
 
         if self.active_editor is None:
             self.active_editor = QtWidgets.QWidget()

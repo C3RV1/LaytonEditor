@@ -1,4 +1,10 @@
 from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
+from formats.graphics.bg import BGImage
+
+
+class BackgroundAsset(AssetNodeBasename):
+    def get_bg(self) -> BGImage:
+        return BGImage(self.path, rom=self.rom)
 
 
 class BackgroundsCategory(FilesystemCategory):
@@ -8,4 +14,4 @@ class BackgroundsCategory(FilesystemCategory):
 
     def reset_file_system(self):
         self._root = FolderNode(self, "/data_lt2/bg", self.rom.filenames["/data_lt2/bg"], None,
-                                asset_class=AssetNodeBasename)
+                                asset_class=BackgroundAsset)

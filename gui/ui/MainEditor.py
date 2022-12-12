@@ -52,7 +52,8 @@ class MainEditorUI(QtWidgets.QMainWindow):
         index = self.file_tree.indexAt(point)
         if index.isValid():
             self.ft_context_menu.clear()
-            actions = index.internalPointer().category.get_context_menu(index)
+            actions = index.internalPointer().category.get_context_menu(index,
+                                                                        self.tree_changed_selection)
             if not actions:
                 return
             for action_data in actions:

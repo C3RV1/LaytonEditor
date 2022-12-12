@@ -6,6 +6,7 @@ class BackgroundWidgetUI(QtWidgets.QWidget):
         super(BackgroundWidgetUI, self).__init__(*args, **kwargs)
 
         self.v_layout = QtWidgets.QVBoxLayout()
+        self.v_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self.image_preview = QtWidgets.QLabel()
         self.v_layout.addWidget(self.image_preview)

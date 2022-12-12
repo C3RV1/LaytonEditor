@@ -41,7 +41,8 @@ class EditorCategory(EditorObject):
     def data(self, index: QtCore.QModelIndex, role, model: 'EditorTree'):
         return QtCore.QModelIndex()
 
-    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable] | None]:
+    def get_context_menu(self, index: QtCore.QModelIndex,
+                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
         return []
 
     def flags(self, index: QtCore.QModelIndex, model: 'EditorTree') -> QtCore.Qt.ItemFlag:

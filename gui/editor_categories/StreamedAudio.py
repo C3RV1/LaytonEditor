@@ -21,18 +21,19 @@ class StreamedAudioCategory(FilesystemCategory):
         self._root = FolderNode(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None,
                                 asset_class=SADLNode)
 
-    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable] | None]:
-        default_context_menu = super(StreamedAudioCategory, self).get_context_menu(index)
+    def get_context_menu(self, index: QtCore.QModelIndex,
+                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+        default_context_menu = super(StreamedAudioCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SADLNode):
             wav_context_actions = [
                 None,
-                ("Import WAV", lambda: self.import_wav(index)),
+                ("Import WAV", lambda: self.import_wav(index, refresh_function)),
                 ("Export WAV", lambda: self.export_wav(index))
             ]
             default_context_menu.extend(wav_context_actions)
         return default_context_menu
 
-    def import_wav(self, index: QtCore.QModelIndex):
+    def import_wav(self, index: QtCore.QModelIndex, refresh_callback: Callable):
         node: SADLNode = index.internalPointer()
         import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import WAV...", filter="WAV Files (*.wav)")
         if import_path == "":
@@ -54,6 +55,8 @@ class StreamedAudioCategory(FilesystemCategory):
         sadl = node.get_sadl()
         if wav_file.to_sadl(sadl, progress_callback=update_progress):
             sadl.save()
+
+        refresh_callback(index, index)
 
     def export_wav(self, index: QtCore.QModelIndex):
         node: SADLNode = index.internalPointer()

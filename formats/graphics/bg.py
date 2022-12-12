@@ -86,7 +86,10 @@ class BGImage(FileFormat):
                 wtr.write_uint16(tile_id[0][0])
 
     def extract_image_qt(self) -> QtGui.QPixmap:
-        qim = ImageQt(self.image)
+        image = self.extract_image_pil()
+        width, height = image.size
+        image = image.resize((width * 2, height * 2), resample=Image.Resampling.NEAREST)
+        qim = ImageQt(image)
         return QtGui.QPixmap.fromImage(qim)
 
     def extract_image_pil(self) -> Image.Image:

@@ -193,15 +193,17 @@ class FilesystemCategory(EditorCategory):
             return index.internalPointer().data()
         return None
 
-    def get_context_menu(self, index: QtCore.QModelIndex) -> List[Tuple[str, Callable] | None]:
+    def get_context_menu(self, index: QtCore.QModelIndex,
+                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
         if isinstance(index.internalPointer(), AssetNode):
             return [
-                ("Replace", lambda: self.import_(index)),
+                ("Replace", lambda: self.import_(index, refresh_function)),
                 ("Export", lambda: self.export(index))
             ]
         return []
 
-    def import_(self, index: QtCore.QModelIndex):
+    def import_(self, index: QtCore.QModelIndex,
+                refresh_function: Callable):
         import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import file...")
         if import_path == "":
             return
@@ -210,6 +212,8 @@ class FilesystemCategory(EditorCategory):
             asset_file = asset.rom.open(asset.path, "wb")
             asset_file.write(import_file.read())
             asset_file.close()
+
+        refresh_function(index, index)
 
     def export(self, index: QtCore.QModelIndex):
         asset: AssetNode = index.internalPointer()
