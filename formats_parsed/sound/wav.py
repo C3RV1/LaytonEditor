@@ -126,6 +126,7 @@ class WAV:
         wav_obj.fmt.num_channels = sadl.channels
         wav_obj.fmt.sample_rate = sadl.sample_rate
         wav_obj.fmt.bits_per_sample = 0x10
+        sadl.reset_decoding()
         wav_obj.data.data = sadl.decode(progress_callback=progress_callback)
         return wav_obj, wav_obj.data.data is not None
 

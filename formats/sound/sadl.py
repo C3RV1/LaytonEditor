@@ -115,6 +115,15 @@ class SADL(FileFormat):
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 
+    def reset_decoding(self):
+        self.offset = [0] * self.channels
+        self.ima_decoders = []
+        self.procyon_decoders = []
+        for i in range(self.channels):
+            self.ima_decoders.append(adpcm.Adpcm())
+            self.procyon_decoders.append(procyon.Procyon())
+        self.blocks_done = 0
+
     def write_stream(self, stream):
         if not isinstance(stream, BinaryWriter):
             wtr = BinaryWriter(stream)
@@ -228,13 +237,14 @@ class SADL(FileFormat):
 
         while any(x.is_alive() for x in processes):
             progress = sum(sh_progress)
-            if progress_callback(progress, (self.num_samples // 30) * self.channels):
-                for process in processes:
-                    process.kill()
-                src_sh_mem.close()
-                dst_sh_mem.close()
-                sm_progress.close()
-                return False
+            if progress_callback:
+                if progress_callback(progress, (self.num_samples // 30) * self.channels):
+                    for process in processes:
+                        process.kill()
+                    src_sh_mem.close()
+                    dst_sh_mem.close()
+                    sm_progress.close()
+                    return False
             time.sleep(0.05)
 
         self.buffer[:] = buffer_sh[:]
