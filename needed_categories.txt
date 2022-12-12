@@ -1,6 +1,6 @@
 Filesystem - REPLACING, EXPORTING
 Sprites -
-Backgrounds -
+Backgrounds - EDITING
 Events - EDITING
 Puzzles - EDITING
 Places - PREVIEWING
