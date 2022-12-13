@@ -8,7 +8,7 @@ Fonts -
 Movies -
 Streamed Audio - EDITING
 Sequenced Audio - EDITING
-Sound Banks -
+Sound Banks - EXPORTING
 Sound Effects -
 Text - EDITING
 Scripts - EDITING
