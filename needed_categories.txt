@@ -1,5 +1,5 @@
 Filesystem - REPLACING, EXPORTING
-Sprites -
+Sprites - IMAGE EDITING
 Backgrounds - EDITING
 Events - EDITING
 Puzzles - EDITING
