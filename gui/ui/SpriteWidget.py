@@ -29,6 +29,9 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.image_list.setDragEnabled(True)
         self.image_list.setDropIndicatorShown(True)
         self.image_list.currentChanged = self.image_list_selection
+        self.image_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.image_list.customContextMenuRequested.connect(self.image_list_context_menu)
+        self.il_context_menu = QtWidgets.QMenu()
         self.images_layout.addWidget(self.image_list, 1)
 
         self.image_view = QtWidgets.QLabel()
@@ -47,6 +50,9 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.setLayout(self.v_layout)
 
     def image_list_selection(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+        pass
+
+    def image_list_context_menu(self, point: QtCore.QPoint):
         pass
 
     def save_btn_click(self):

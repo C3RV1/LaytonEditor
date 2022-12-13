@@ -1,57 +1,7 @@
-from typing import List
-
 from ..ui.SpriteWidget import SpriteWidgetUI
 from formats.graphics.ani import AniSprite
 from PySide6 import QtCore, QtWidgets, QtGui
-
-
-class ImagesModel(QtCore.QAbstractListModel):
-    def __init__(self):
-        super(ImagesModel, self).__init__()
-        self.sprite: AniSprite = None
-
-    def set_sprite(self, sprite: AniSprite):
-        self.layoutAboutToBeChanged.emit()
-        self.sprite = sprite
-        self.layoutChanged.emit()
-
-    def rowCount(self, parent: QtCore.QModelIndex) -> int:
-        return len(self.sprite.images)
-
-    def data(self, index: QtCore.QModelIndex, role: int = ...):
-        if not index.isValid() or role != QtCore.Qt.ItemDataRole.DecorationRole:
-            return None
-        return QtGui.QIcon(self.sprite.extract_image_qt(index.row()))
-
-    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
-        default_flags = super(ImagesModel, self).flags(index)
-        if not index.isValid():
-            return default_flags | QtCore.Qt.ItemFlag.ItemIsDropEnabled
-        return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
-
-    def supportedDropActions(self) -> QtCore.Qt.DropAction:
-        return QtCore.Qt.DropAction.MoveAction
-
-    def mimeData(self, indexes: List[QtCore.QModelIndex]) -> QtCore.QMimeData:
-        mime_data = super().mimeData(indexes)
-        if not indexes:
-            return mime_data
-        index = indexes[0].row()
-        mime_data.setText(str(index))
-        return mime_data
-
-    def dropMimeData(self, data: QtCore.QMimeData, action: QtCore.Qt.DropAction, row: int, column: int,
-                     parent: QtCore.QModelIndex) -> bool:
-        print(int(data.text()), row)
-        src_row = int(data.text())
-        if src_row < row:
-            row -= 1
-        if src_row == row:
-            return False
-        image = self.sprite.images[src_row]
-        self.sprite.images.remove(image)
-        self.sprite.images.insert(row, image)
-        return True
+from .SpriteImagesModel import ImagesModel
 
 
 class SpriteEditor(SpriteWidgetUI):
@@ -65,9 +15,34 @@ class SpriteEditor(SpriteWidgetUI):
         self.images_model.set_sprite(sprite)
         self.image_list.setModel(self.images_model)
 
+    def save_btn_click(self):
+        self.sprite.save()
+
     def image_list_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
         if not selected.isValid():
             return
         index = selected.row()
         self.image_view.setPixmap(self.sprite.extract_image_qt(index))
 
+    def image_list_context_menu(self, point: QtCore.QPoint):
+        index = self.image_list.indexAt(point)
+        self.il_context_menu.clear()
+
+        action = QtGui.QAction("Append Image", self.il_context_menu)
+        action.triggered.connect(self.images_model.append_image)
+        self.il_context_menu.addAction(action)
+
+        if index.isValid():
+            action = QtGui.QAction("Replace Image", self.il_context_menu)
+            action.triggered.connect(lambda x: self.images_model.replace_image(index))
+            self.il_context_menu.addAction(action)
+
+            action = QtGui.QAction("Export Image", self.il_context_menu)
+            action.triggered.connect(lambda x: self.images_model.export_image(index))
+            self.il_context_menu.addAction(action)
+
+            action = QtGui.QAction("Remove Image", self.il_context_menu)
+            action.triggered.connect(lambda x: self.images_model.remove_image(index))
+            self.il_context_menu.addAction(action)
+
+        self.il_context_menu.exec(self.image_list.mapToGlobal(point))
