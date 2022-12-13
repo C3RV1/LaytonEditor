@@ -23,7 +23,7 @@ class PlaceAbstractTableModel(QtCore.QAbstractTableModel):
 class PropertiesModel(PlaceAbstractTableModel):
     def rowCount(self, parent: QtCore.QModelIndex) -> int:
         if not parent.isValid():
-            return 5
+            return 6
         return 0
 
     def columnCount(self, parent: QtCore.QModelIndex) -> int:
