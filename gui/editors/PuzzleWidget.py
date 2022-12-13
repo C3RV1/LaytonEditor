@@ -1,6 +1,6 @@
 import logging
 
-from .ui.PuzzleWidget import PuzzleWidgetUI
+from ..ui.PuzzleWidget import PuzzleWidgetUI
 from formats.puzzle import Puzzle
 from formats_parsed.PuzzleDCC import PuzzleDCC
 
@@ -8,12 +8,12 @@ from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from MainEditor import MainEditor
+    from ..MainEditor import MainEditor
 
 
-class PuzzleWidget(PuzzleWidgetUI):
+class PuzzleEditor(PuzzleWidgetUI):
     def __init__(self, main_editor):
-        super(PuzzleWidget, self).__init__()
+        super(PuzzleEditor, self).__init__()
         self.puzzle = None
         self.main_editor: MainEditor = main_editor
 

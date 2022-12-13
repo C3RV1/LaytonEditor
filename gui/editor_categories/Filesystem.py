@@ -189,7 +189,7 @@ class FilesystemCategory(EditorCategory):
         return QtCore.QModelIndex()
 
     def data(self, index, role, model):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+        if index.isValid() and (role == QtCore.Qt.ItemDataRole.DisplayRole or role == QtCore.Qt.ItemDataRole.EditRole):
             return index.internalPointer().data()
         return None
 

@@ -1,15 +1,15 @@
-from .ui.TextWidget import TextWidgetUI
+from ..ui.TextWidget import TextWidgetUI
 
-from .editor_categories.Filesystem import AssetNode
+from ..editor_categories.Filesystem import AssetNode
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from MainEditor import MainEditor
+    from ..MainEditor import MainEditor
 
 
-class TextWidget(TextWidgetUI):
+class TextEditor(TextWidgetUI):
     def __init__(self, main_editor):
-        super(TextWidget, self).__init__()
+        super(TextEditor, self).__init__()
         self.main_editor: MainEditor = main_editor
         self.text_asset: AssetNode = None
 

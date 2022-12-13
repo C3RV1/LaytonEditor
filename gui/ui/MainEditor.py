@@ -49,22 +49,7 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.show()
 
     def file_tree_context_menu(self, point: QtCore.QPoint):
-        index = self.file_tree.indexAt(point)
-        if index.isValid():
-            self.ft_context_menu.clear()
-            actions = index.internalPointer().category.get_context_menu(index,
-                                                                        self.tree_changed_selection)
-            if not actions:
-                return
-            for action_data in actions:
-                if action_data is None:
-                    self.ft_context_menu.addSeparator()
-                    continue
-                name, callback = action_data
-                action = QtGui.QAction(name, self.ft_context_menu)
-                action.triggered.connect(callback)
-                self.ft_context_menu.addAction(action)
-            self.ft_context_menu.exec(self.file_tree.mapToGlobal(point))
+        pass
 
     def file_menu_open(self):
         pass

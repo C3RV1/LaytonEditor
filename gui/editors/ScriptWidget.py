@@ -1,4 +1,4 @@
-from .ui.TextWidget import TextWidgetUI
+from ..ui.TextWidget import TextWidgetUI
 
 from formats.gds import GDS
 from formats_parsed.gds_parsers import EventGDSParser
@@ -6,12 +6,12 @@ from formats_parsed.dcc import DCCParser
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from MainEditor import MainEditor
+    from ..MainEditor import MainEditor
 
 
-class ScriptWidget(TextWidgetUI):
+class ScriptEditor(TextWidgetUI):
     def __init__(self, main_editor):
-        super(ScriptWidget, self).__init__()
+        super(ScriptEditor, self).__init__()
         self.main_editor: MainEditor = main_editor
         self.gds: GDS = None
         self.dcc_parser = DCCParser()

@@ -1,38 +1,14 @@
-import os.path
-
-from gui.ui.MainEditor import MainEditorUI
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets, QtGui
+from .ui.MainEditor import MainEditorUI
 
 from .EditorTree import EditorTree
 from .EditorTypes import EditorObject
-from .editor_categories.Filesystem import FolderNode, AssetNode
+from .editors import *
+from .editor_categories import *
+from previewers import *
 
-from .EventWidget import EventWidget
-from .editor_categories.Events import EventNode
-from previewers.event.EventPlayer import EventPlayer
-
-from .PuzzleWidget import PuzzleWidget
-from .editor_categories.Puzzles import PuzzleNode
-from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
-
-from .TextWidget import TextWidget
-from .editor_categories.Texts import TextAsset
-
-from .ScriptWidget import ScriptWidget
-from .editor_categories.Scripts import ScriptAsset
-
-from previewers.sound.SoundPreview import SoundPreview
 from pg_utils.sound.SADLStreamPlayer import SADLStreamPlayer
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
-from .editor_categories.StreamedAudio import SADLNode
-from .editor_categories.SequencedAudio import SMDLNode
-
-from previewers.place.PlacePreview import PlacePreview
-from .editor_categories.Places import PlaceVersion
-
-from .BackgroundWidget import BackgroundWidget
-from .editor_categories.Backgrounds import BackgroundAsset
-
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
 
@@ -99,6 +75,24 @@ class MainEditor(MainEditorUI):
         self.last_path = file_path
         self.rom.saveToFile(file_path)
 
+    def file_tree_context_menu(self, point: QtCore.QPoint):
+        index = self.file_tree.indexAt(point)
+        if index.isValid():
+            self.ft_context_menu.clear()
+            category = index.internalPointer().category
+            actions = category.get_context_menu(index, self.tree_changed_selection)
+            if not actions:
+                return
+            for action_data in actions:
+                if action_data is None:
+                    self.ft_context_menu.addSeparator()
+                    continue
+                name, callback = action_data
+                action = QtGui.QAction(name, self.ft_context_menu)
+                action.triggered.connect(callback)
+                self.ft_context_menu.addAction(action)
+            self.ft_context_menu.exec(self.file_tree.mapToGlobal(point))
+
     def tree_changed_selection(self, current: QtCore.QModelIndex, previous: QtCore.QModelIndex):
         node: EditorObject = current.internalPointer()
         if not node:
@@ -115,24 +109,24 @@ class MainEditor(MainEditorUI):
         set_previewer = False
 
         if isinstance(node, EventNode):
-            self.active_editor = EventWidget(self)
+            self.active_editor = EventEditor(self)
             event = node.get_event()
             self.active_editor.set_event(event)
 
             self.pg_previewer.start_renderer(EventPlayer(event))
             set_previewer = True
         elif isinstance(node, PuzzleNode):
-            self.active_editor = PuzzleWidget(self)
+            self.active_editor = PuzzleEditor(self)
             puzzle = node.get_puzzle()
             self.active_editor.set_puzzle(puzzle)
 
             self.pg_previewer.start_renderer(PuzzlePlayer(puzzle))
             set_previewer = True
         elif isinstance(node, TextAsset):
-            self.active_editor = TextWidget(self)
+            self.active_editor = TextEditor(self)
             self.active_editor.set_text(node)
         elif isinstance(node, ScriptAsset):
-            self.active_editor = ScriptWidget(self)
+            self.active_editor = ScriptEditor(self)
             self.active_editor.set_script(node.to_gds())
         elif isinstance(node, SADLNode):
             sadl_player = SADLStreamPlayer()
@@ -148,10 +142,12 @@ class MainEditor(MainEditorUI):
                                                           node.data()))
             set_previewer = True
         elif isinstance(node, PlaceVersion):
+            self.active_editor = PlaceEditor(self)
+
             self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
             set_previewer = True
         elif isinstance(node, BackgroundAsset):
-            self.active_editor = BackgroundWidget(self)
+            self.active_editor = BackgroundEditor(self)
             self.active_editor.set_image(node.get_bg())
 
         if self.active_editor is None:
