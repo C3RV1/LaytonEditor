@@ -1,5 +1,5 @@
 from .Filesystem import FilesystemCategory, FolderNode, AssetNode
-from .Sprites import SpriteCategory
+from .Sprites import SpriteCategory, SpriteAsset
 from .Backgrounds import BackgroundsCategory, BackgroundAsset
 from .Texts import TextsCategory, TextAsset
 from .Fonts import FontsCategory

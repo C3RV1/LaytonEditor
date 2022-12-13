@@ -258,7 +258,10 @@ class AniSprite(FileFormat):
         return Image.fromarray(self.palette[self.images[image_index]].astype(np.uint8), "RGBA")
 
     def extract_image_qt(self, image_index) -> QtGui.QPixmap:
-        qim = ImageQt(self.images[image_index])
+        image = self.extract_image_pil(image_index)
+        width, height = image.size
+        image = image.resize((width * 2, height * 2), resample=Image.Resampling.NEAREST)
+        qim = ImageQt(image)
         return QtGui.QPixmap.fromImage(qim)
 
     def replace_image_pil(self, image_index, image: Optional[Image.Image]):  # also used to recreate palette

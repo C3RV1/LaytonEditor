@@ -1,4 +1,12 @@
 from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
+from formats.graphics.ani import AniSprite, AniSubSprite
+
+
+class SpriteAsset(AssetNodeBasename):
+    def get_sprite(self) -> AniSprite | AniSubSprite:
+        if self.path.endswith(".arc"):
+            return AniSprite(self.path, rom=self.rom)
+        return AniSubSprite(self.path, rom=self.rom)
 
 
 class SpriteCategory(FilesystemCategory):
@@ -8,4 +16,4 @@ class SpriteCategory(FilesystemCategory):
 
     def reset_file_system(self):
         self._root = FolderNode(self, "/data_lt2/ani", self.rom.filenames["/data_lt2/ani"], None,
-                                asset_class=AssetNodeBasename)
+                                asset_class=SpriteAsset)

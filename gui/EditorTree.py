@@ -11,6 +11,7 @@ class EditorTree(QtCore.QAbstractItemModel):
         self.categories = []
 
     def set_rom(self, rom):
+        self.beginResetModel()
         self.layoutAboutToBeChanged.emit()
         if rom.name == b"LAYTON2":
             self.categories = [
@@ -36,6 +37,7 @@ class EditorTree(QtCore.QAbstractItemModel):
         for category in self.categories:
             category.set_rom(rom)
         self.layoutChanged.emit()
+        self.endResetModel()
 
     def updated_fs(self, exclude_category=None):
         self.layoutAboutToBeChanged.emit()

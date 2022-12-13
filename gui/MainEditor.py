@@ -150,6 +150,9 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, BackgroundAsset):
             self.active_editor = BackgroundEditor(self)
             self.active_editor.set_image(node.get_bg())
+        elif isinstance(node, SpriteAsset):
+            self.active_editor = SpriteEditor(self)
+            self.active_editor.set_sprite(node.get_sprite())
 
         if self.active_editor is None:
             self.active_editor = QtWidgets.QWidget()

@@ -4,3 +4,4 @@ from .PlaceWidget import PlaceEditor
 from .PuzzleWidget import PuzzleEditor
 from .ScriptWidget import ScriptEditor
 from .TextWidget import TextEditor
+from .SpriteWidget import SpriteEditor
