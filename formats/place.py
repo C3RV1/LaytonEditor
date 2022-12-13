@@ -128,9 +128,9 @@ class Place(FileFormat):
         self.background_music_index = rdr.read_uint16()
 
     def write_stream(self, stream):
-        wtr = BinaryWriter()
+        wtr = BinaryWriter(stream)
         wtr.write_uint16(self.index)
-        wtr.align(0x18)
+        wtr.seek(0x18)
         wtr.write_uint8(self.map_x)
         wtr.write_uint8(self.map_y)
         wtr.write_uint8(self.background_image_index)
@@ -172,6 +172,6 @@ class Place(FileFormat):
             wtr.write_uint8(plc_exit.unk2)
             wtr.write_uint8(plc_exit.unk3)
             wtr.write_uint16(plc_exit.event_or_place_index)
-        wtr.align(0x38c)
+        wtr.seek(0x38c)
         wtr.write_uint16(self.background_music_index)
 

@@ -77,6 +77,7 @@ class PropertiesModel(PlaceAbstractTableModel):
             self.place.map_image_index = value
         elif index.row() == 5:
             self.place.background_music_index = value
+        return True
 
 
 class HintcoinModel(PlaceAbstractTableModel):
@@ -125,6 +126,7 @@ class HintcoinModel(PlaceAbstractTableModel):
             hintcoin.index = value
         elif index.column() == 3:
             hintcoin.unk = value
+        return True
 
 
 class SpritesModel(PlaceAbstractTableModel):
@@ -170,6 +172,7 @@ class SpritesModel(PlaceAbstractTableModel):
             spr.y = value
         elif index.column() == 2:
             spr.filename = value
+        return True
 
 
 class ObjectsModel(PlaceAbstractTableModel):
@@ -227,6 +230,7 @@ class ObjectsModel(PlaceAbstractTableModel):
             obj.event_index = value
         elif index.column() == 6:
             obj.unk = value
+        return True
 
 
 class CommentsModel(PlaceAbstractTableModel):
@@ -284,6 +288,7 @@ class CommentsModel(PlaceAbstractTableModel):
             comment.text_index = value
         elif index.column() == 6:
             comment.unk = value
+        return True
 
 
 class ExitsModel(PlaceAbstractTableModel):
@@ -354,6 +359,7 @@ class ExitsModel(PlaceAbstractTableModel):
             exit_.unk3 = value
         elif index.column() == 10:
             exit_.event_or_place_index = value
+        return True
 
 
 class PlaceEditor(PlaceWidgetUI):
