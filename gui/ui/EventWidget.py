@@ -13,6 +13,7 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.character_widget_layout = QtWidgets.QVBoxLayout()
 
         self.character_table = QtWidgets.QTableView(self.character_widget)
+        self.character_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         self.character_widget_layout.addWidget(self.character_table)
 
         self.character_btn_layout = QtWidgets.QHBoxLayout()

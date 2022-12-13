@@ -143,6 +143,7 @@ class MainEditor(MainEditorUI):
             set_previewer = True
         elif isinstance(node, PlaceVersion):
             self.active_editor = PlaceEditor(self)
+            self.active_editor.set_place(node.get_place())
 
             self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
             set_previewer = True

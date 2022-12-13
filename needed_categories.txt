@@ -3,7 +3,7 @@ Sprites -
 Backgrounds - EDITING
 Events - EDITING
 Puzzles - EDITING
-Places - PREVIEWING
+Places - PREVIEWING (missing comments, hint coins), EDITING
 Fonts -
 Movies -
 Streamed Audio - EDITING
