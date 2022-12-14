@@ -1,6 +1,6 @@
 import os.path
 from PySide6 import QtCore, QtWidgets
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 from .Filesystem import FilesystemCategory, FolderNodeOneLevelFilterExtension, AssetNodeBasename
 from formats.sound.smdl.smdl import SMDL
 from formats.sound.swdl import SWDL
@@ -32,7 +32,7 @@ class SequencedAudioCategory(FilesystemCategory):
                                                        None, extensions=[".SMD"], asset_class=SMDLNode)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(SequencedAudioCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SMDLNode):
             wav_context_actions = [

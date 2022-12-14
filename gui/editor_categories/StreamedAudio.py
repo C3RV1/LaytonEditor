@@ -2,7 +2,7 @@ import os.path
 
 from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
 from PySide6 import QtCore, QtWidgets, QtGui
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Union
 from formats.sound.sadl import SADL
 from formats_parsed.sound.wav import WAV
 
@@ -22,7 +22,7 @@ class StreamedAudioCategory(FilesystemCategory):
                                 asset_class=SADLNode)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(StreamedAudioCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SADLNode):
             wav_context_actions = [

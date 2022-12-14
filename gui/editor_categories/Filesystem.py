@@ -1,5 +1,5 @@
 import os.path
-from typing import List, Tuple, Callable, Any
+from typing import List, Tuple, Callable, Any, Union
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from formats.filesystem import Folder, PlzArchive, NintendoDSRom
@@ -194,7 +194,7 @@ class FilesystemCategory(EditorCategory):
         return None
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         if isinstance(index.internalPointer(), AssetNode):
             return [
                 ("Replace", lambda: self.import_(index, refresh_function)),

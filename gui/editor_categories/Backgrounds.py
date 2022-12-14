@@ -3,7 +3,7 @@ import os
 from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
 from formats.graphics.bg import BGImage
 from PySide6 import QtCore, QtWidgets
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 from PIL import Image
 
 
@@ -22,7 +22,7 @@ class BackgroundsCategory(FilesystemCategory):
                                 asset_class=BackgroundAsset)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(BackgroundsCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), BackgroundAsset):
             bg_context_actions = [

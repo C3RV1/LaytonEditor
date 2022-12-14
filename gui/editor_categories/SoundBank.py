@@ -3,7 +3,7 @@ import os
 from .Filesystem import FilesystemCategory, FolderNodeOneLevelFilterExtension, AssetNodeBasename
 from formats.sound.swdl import SWDL
 from PySide6 import QtCore, QtWidgets
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 from formats_parsed.sound import sf2
 
 
@@ -22,7 +22,7 @@ class SoundBankCategory(FilesystemCategory):
                                                        None, extensions=[".SWD"], asset_class=SWDLNode)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(SoundBankCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SWDLNode):
             wav_context_actions = [

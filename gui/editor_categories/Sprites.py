@@ -1,9 +1,10 @@
 from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
 from formats.graphics.ani import AniSprite, AniSubSprite
+from typing import Union
 
 
 class SpriteAsset(AssetNodeBasename):
-    def get_sprite(self) -> AniSprite | AniSubSprite:
+    def get_sprite(self) -> Union[AniSprite, AniSubSprite]:
         if self.path.endswith(".arc"):
             return AniSprite(self.path, rom=self.rom)
         return AniSubSprite(self.path, rom=self.rom)

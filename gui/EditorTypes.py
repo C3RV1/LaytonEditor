@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable, Any, TYPE_CHECKING
+from typing import List, Tuple, Callable, Any, TYPE_CHECKING, Union
 
 from PySide6 import QtCore
 from formats.filesystem import NintendoDSRom
@@ -42,7 +42,7 @@ class EditorCategory(EditorObject):
         return QtCore.QModelIndex()
 
     def get_context_menu(self, index: QtCore.QModelIndex,
-                         refresh_function: Callable) -> List[Tuple[str, Callable] | None]:
+                         refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         return []
 
     def flags(self, index: QtCore.QModelIndex, model: 'EditorTree') -> QtCore.Qt.ItemFlag:
