@@ -447,57 +447,109 @@ class AniSubSprite(AniSprite):
         wtr.write_uint32(256 if self.colordepth == 8 else 16)
 
         for img in self.images:
+            # TODO: Maybe improve algorithm to use less parts
+
             img_h, img_w = img.shape
             wtr.write_uint16(img_w)
             wtr.write_uint16(img_h)
 
-            # number of parts
-            wtr.write_uint16(calculate_power_of_2_steps(img_w) *
-                             calculate_power_of_2_steps(img_h))
+            count_position = wtr.tell()
+            wtr.write_uint16(0)
             wtr.write_zeros(2)
+
+            def get_flags(_part_w, _part_h):
+                if _part_w == _part_h:
+                    shape = 0
+                    if _part_w == 8:
+                        size_flag = 0
+                    elif _part_w == 16:
+                        size_flag = 1
+                    elif _part_w == 32:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                elif _part_w > _part_h:
+                    shape = 1
+                    if _part_w == 16:
+                        size_flag = 0
+                    elif _part_w == 32 and _part_h == 8:
+                        size_flag = 1
+                    elif _part_w == 32 and _part_h == 16:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                else:
+                    shape = 2
+                    if _part_h == 16:
+                        size_flag = 0
+                    elif _part_h == 32 and _part_w == 8:
+                        size_flag = 1
+                    elif _part_h == 32 and _part_w == 16:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                return shape << 14, size_flag << 14
+
+            count = 0
+
+            def add_part(_part_x, _part_y, _part_w, _part_h):
+                nonlocal count
+                shape_flag, size_flag = get_flags(_part_w, _part_h)
+                wtr.write_uint16(shape_flag)
+                wtr.write_uint16(size_flag)
+                wtr.write_uint16(_part_x)
+                wtr.write_uint16(_part_y)
+                wtr.write_uint16(int(log(_part_w, 2)) - 3)
+                wtr.write_uint16(int(log(_part_h, 2)) - 3)
+
+                part = np.zeros((_part_h // 8, _part_w // 8, 8, 8), np.uint8)
+
+                if _part_x + _part_w > img_w:
+                    _part_w += img_w - _part_x - _part_w
+                if _part_y + _part_h > img_h:
+                    _part_h += img_h - _part_y - _part_h
+
+                for yt, yslice in enumerate(part):
+                    for xt, xslice in enumerate(yslice):
+                        xslice[:_part_h - 8 * yt, :_part_w - 8 * xt] = \
+                            img[_part_y + yt * 8:min(_part_y + yt * 8 + 8, _part_y + _part_h),
+                            _part_x + xt * 8:min(_part_x + xt * 8 + 8, _part_x + _part_w)]
+
+                if self.colordepth == 8:
+                    wtr.write(part.tobytes())
+                else:
+                    _, hw = part.shape
+                    part_4bit: np.ndarray = part[:hw // 2] << 4 | part[hw // 2:]
+                    wtr.write(part_4bit.tobytes())
+                count += 1
 
             w_left, h_left = img_w, img_h
             part_x, part_y = 0, 0
             while h_left > 0:
-                part_h = get_nearest_power_of_2(h_left)
-                good_h = part_h
-                h_left -= part_h
+                part_h = min(get_nearest_power_of_2(h_left), 64)
                 w_left = img_w
                 part_x = 0
                 while w_left > 0:
-                    part_w = get_nearest_power_of_2(w_left)
-                    w_left -= part_w
-                    part_h = good_h
+                    part_w = min(get_nearest_power_of_2(w_left), 64)
 
-                    wtr.write_uint16(part_x)  # TODO: THIS
-                    wtr.write_uint16(part_y)
-                    wtr.write_uint16(part_x)
-                    wtr.write_uint16(part_y)
-                    wtr.write_uint16(int(log(part_w, 2)) - 3)
-                    wtr.write_uint16(int(log(part_h, 2)) - 3)
-
-                    part = np.zeros((part_h // 8, part_w // 8, 8, 8), np.uint8)
-
-                    if part_x + part_w > img_w:
-                        part_w += img_w - part_x - part_w
-                    if part_y + part_h > img_h:
-                        part_h += img_h - part_y - part_h
-
-                    for yt, yslice in enumerate(part):
-                        for xt, xslice in enumerate(yslice):
-                            xslice[:part_h - 8 * yt, :part_w - 8 * xt] = \
-                                img[part_y + yt * 8:min(part_y + yt * 8 + 8, part_y + part_h),
-                                    part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)]
-
-                    if self.colordepth == 8:
-                        wtr.write(part.tobytes())
+                    if part_w == 64 and part_h < 32:
+                        add_part(part_x, part_y, 32, part_h)
+                        add_part(part_x + 32, part_y, 32, part_h)
+                    elif part_w < 32 and part_h == 64:
+                        add_part(part_x, part_y, part_w, 32)
+                        add_part(part_x, part_y + 32, part_w, 32)
                     else:
-                        _, hw = part.shape
-                        part_4bit: np.ndarray = part[:hw // 2] << 4 | part[hw // 2:]
-                        wtr.write(part_4bit.tobytes())
+                        add_part(part_x, part_y, part_w, part_h)
 
                     part_x += part_w
+                    w_left -= part_w
                 part_y += part_h
+                h_left -= part_h
+
+            last_pos = wtr.tell()
+            wtr.seek(count_position)
+            wtr.write_uint16(count)
+            wtr.seek(last_pos)
 
         for color_i in range(256 if self.colordepth == 8 else 16):
             self.palette[color_i]: np.ndarray

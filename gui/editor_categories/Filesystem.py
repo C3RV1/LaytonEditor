@@ -10,7 +10,7 @@ class FolderNode(EditorObject):
     def __init__(self, category, path, folder, parent, asset_class=None):
         self.category = category
         self.path = path
-        self.folder: Folder | PlzArchive = folder
+        self.folder: Union[Folder, PlzArchive] = folder
         self.parent = parent
 
         self.children = {}
@@ -125,7 +125,7 @@ class AssetNode(EditorObject):
         self.category = category
         self.path = path
         self.parent = parent_idx
-        self.rom: NintendoDSRom | PlzArchive = rom
+        self.rom: Union[NintendoDSRom, PlzArchive] = rom
 
     def data(self):
         return os.path.basename(self.path)
@@ -235,7 +235,7 @@ class FilesystemCategory(EditorCategory):
     def set_data(self, index: QtCore.QModelIndex, value: Any, role, model) -> bool:
         if value == "":
             return False
-        node: AssetNode | FolderNode = index.internalPointer()
+        node: Union[AssetNode, FolderNode] = index.internalPointer()
         node.rename(value)
         model.updated_fs(self)
         return True
