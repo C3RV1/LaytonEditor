@@ -206,7 +206,7 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
     def rename_file(self, old_path, new_filename):
         folder_name, filename = os.path.split(old_path)
         folder: Folder = self.filenames[folder_name]
-        index = folder.files.next_frame_index(filename)
+        index = folder.files.index(filename)
         folder.files[index] = new_filename
 
     @staticmethod
@@ -252,7 +252,7 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
             old_parent.folders.remove(old_folder_item)
             new_parent.folders.append(new_folder_item)
         else:  # same parent, keep the folder index
-            index = old_parent.folders.next_frame_index(old_folder_item)
+            index = old_parent.folders.index(old_folder_item)
             new_parent.folders[index] = new_folder_item
 
 

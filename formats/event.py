@@ -49,7 +49,7 @@ class Event:
             return
         prefix, postfix, complete = self.resolve_event_id()
         events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
-        file_id = events_packed.filenames.next_frame_index(f"d{prefix}_{postfix}.dat")
+        file_id = events_packed.filenames.index(f"d{prefix}_{postfix}.dat")
         self.load(events_packed.files[file_id])
         self.load_gds()
         self.load_texts()
