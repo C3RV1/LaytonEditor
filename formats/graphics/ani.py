@@ -34,7 +34,7 @@ def calculate_power_of_2_steps(x: int):
 
 @dataclass
 class AnimationFrame:
-    index: int
+    next_frame_index: int  # Frame set after this frame
     duration: int
     image_index: int
 
@@ -119,7 +119,7 @@ class AniSprite(FileFormat):
             frame_durations = rdr.read_uint32_array(n_frames)
             image_indexes = rdr.read_uint32_array(n_frames)
             animation_frame_sets.append([
-                AnimationFrame(index=frame_indexes[i], duration=frame_durations[i],
+                AnimationFrame(next_frame_index=frame_indexes[i], duration=frame_durations[i],
                                image_index=image_indexes[i])
                 for i in range(n_frames)])
         self.animations = [Animation(name=animation_names[i], frames=animation_frame_sets[i])
@@ -217,7 +217,7 @@ class AniSprite(FileFormat):
             wtr.write_string(anim.name, 0x1e)
         for anim in self.animations:
             wtr.write_uint32(len(anim.frames))
-            wtr.write_uint32_array([frame.index for frame in anim.frames])
+            wtr.write_uint32_array([frame.next_frame_index for frame in anim.frames])
             wtr.write_uint32_array([frame.duration for frame in anim.frames])
             wtr.write_uint32_array([frame.image_index for frame in anim.frames])
 
@@ -413,7 +413,7 @@ class AniSubSprite(AniSprite):
             frame_durations = rdr.read_uint32_array(n_frames)
             image_indexes = rdr.read_uint32_array(n_frames)
             animation_frame_sets.append([
-                AnimationFrame(index=frame_indexes[i], duration=frame_durations[i],
+                AnimationFrame(next_frame_index=frame_indexes[i], duration=frame_durations[i],
                                image_index=image_indexes[i])
                 for i in range(n_frames)])
         self.animations = [Animation(name=animation_names[i], frames=animation_frame_sets[i])
@@ -513,7 +513,7 @@ class AniSubSprite(AniSprite):
                     for xt, xslice in enumerate(yslice):
                         xslice[:_part_h - 8 * yt, :_part_w - 8 * xt] = \
                             img[_part_y + yt * 8:min(_part_y + yt * 8 + 8, _part_y + _part_h),
-                            _part_x + xt * 8:min(_part_x + xt * 8 + 8, _part_x + _part_w)]
+                                _part_x + xt * 8:min(_part_x + xt * 8 + 8, _part_x + _part_w)]
 
                 if self.colordepth == 8:
                     wtr.write(part.tobytes())
@@ -562,7 +562,7 @@ class AniSubSprite(AniSprite):
             wtr.write_string(anim.name, 0x1e)
         for anim in self.animations:
             wtr.write_uint32(len(anim.frames))
-            wtr.write_uint32_array([frame.index for frame in anim.frames])
+            wtr.write_uint32_array([frame.next_frame_index for frame in anim.frames])
             wtr.write_uint32_array([frame.duration for frame in anim.frames])
             wtr.write_uint32_array([frame.image_index for frame in anim.frames])
 

@@ -151,7 +151,7 @@ class EventEditor(EventWidgetUI):
 
     def save_dcc_btn_click(self):
         text = self.text_editor.toPlainText()
-        is_ok, error = EventDCC(self.event).parse(text)
+        is_ok, error = EventDCC(self.event).parse(text, include_character=False)
         if is_ok:
             self.event.save_to_rom()
             self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
