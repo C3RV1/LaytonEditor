@@ -33,16 +33,20 @@ class SpriteEditor(SpriteWidgetUI):
         self.il_context_menu.addAction(action)
 
         if index.isValid():
+            def replace_image(index_):
+                self.images_model.replace_image(index_)
+                self.image_list_selection(index_, None)
+
             action = QtGui.QAction("Replace Image", self.il_context_menu)
-            action.triggered.connect(lambda x: self.images_model.replace_image(index))
+            action.triggered.connect(lambda: replace_image(index))
             self.il_context_menu.addAction(action)
 
             action = QtGui.QAction("Export Image", self.il_context_menu)
-            action.triggered.connect(lambda x: self.images_model.export_image(index))
+            action.triggered.connect(lambda: self.images_model.export_image(index))
             self.il_context_menu.addAction(action)
 
             action = QtGui.QAction("Remove Image", self.il_context_menu)
-            action.triggered.connect(lambda x: self.images_model.remove_image(index))
+            action.triggered.connect(lambda: self.images_model.remove_image(index))
             self.il_context_menu.addAction(action)
 
         self.il_context_menu.exec(self.image_list.mapToGlobal(point))

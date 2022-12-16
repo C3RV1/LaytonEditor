@@ -16,13 +16,14 @@ from formats.filesystem import NintendoDSRom
 from formats import conf
 
 import logging
+from typing import Union
 
 
 class MainEditor(MainEditorUI):
     def __init__(self, *args, **kwargs):
         super(MainEditor, self).__init__(*args, **kwargs)
 
-        self.rom: NintendoDSRom | None = None
+        self.rom: Union[NintendoDSRom, None] = None
         self.last_path = None
 
         self.tree_model = EditorTree()
