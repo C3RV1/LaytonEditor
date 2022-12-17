@@ -2,9 +2,9 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from formats.graphics.ani import AniSprite, Animation
 
 
-class SpriteVariablesModel(QtCore.QAbstractTableModel):
+class VariablesModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, **kwargs):
-        super(SpriteVariablesModel, self).__init__(*args, **kwargs)
+        super(VariablesModel, self).__init__(*args, **kwargs)
         self.sprite: AniSprite = None
 
     def set_sprite(self, sprite: AniSprite):
@@ -45,7 +45,7 @@ class SpriteVariablesModel(QtCore.QAbstractTableModel):
         return self.sprite.variable_data[index.row() - 1][index.column() - 1]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
-        default_flags = super(SpriteVariablesModel, self).flags(index)
+        default_flags = super(VariablesModel, self).flags(index)
         if index.row() == 0:
             if index.column() == 1:
                 default_flags |= QtCore.Qt.ItemFlag.ItemIsEditable

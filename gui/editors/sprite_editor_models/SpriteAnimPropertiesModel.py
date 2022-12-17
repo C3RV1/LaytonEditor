@@ -2,9 +2,9 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from formats.graphics.ani import AniSprite, Animation
 
 
-class SpriteAnimPropertiesModel(QtCore.QAbstractTableModel):
+class AnimPropertiesModel(QtCore.QAbstractTableModel):
     def __init__(self, frame_next_input_widgets, *args, **kwargs):
-        super(SpriteAnimPropertiesModel, self).__init__(*args, **kwargs)
+        super(AnimPropertiesModel, self).__init__(*args, **kwargs)
         self.frame_next_input_widgets = frame_next_input_widgets
         self.sprite: AniSprite = None
         self.animation: Animation = None
@@ -84,7 +84,7 @@ class SpriteAnimPropertiesModel(QtCore.QAbstractTableModel):
                 return ["Looping", "No looping", "Custom"]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
-        default_flags = super(SpriteAnimPropertiesModel, self).flags(index)
+        default_flags = super(AnimPropertiesModel, self).flags(index)
         if not index.isValid():
             return default_flags
         if index.column() == 0:

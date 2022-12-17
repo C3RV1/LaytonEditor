@@ -1,22 +1,18 @@
 from ..ui.SpriteWidget import SpriteWidgetUI
 from formats.graphics.ani import AniSprite, AnimationFrame
 from PySide6 import QtCore, QtWidgets, QtGui
-from .SpriteImagesModel import ImagesModel
-from .SpriteAnimsModel import AnimsModel
-from .SpriteFramesModel import FramesModel
-from .SpriteAnimPropertiesModel import SpriteAnimPropertiesModel
-from .SpriteVariablesModel import SpriteVariablesModel
+from .sprite_editor_models import *
 
 
 class SpriteEditor(SpriteWidgetUI):
     def __init__(self, *args, **kwargs):
         super(SpriteEditor, self).__init__(*args, **kwargs)
         self.sprite: AniSprite = None
-        self.variables_model = SpriteVariablesModel()
+        self.variables_model = VariablesModel()
         self.images_model = ImagesModel()
         self.anims_model = AnimsModel()
-        self.anim_properties_model = SpriteAnimPropertiesModel([self.frame_next_index_label,
-                                                                self.frame_next_index_input])
+        self.anim_properties_model = AnimPropertiesModel([self.frame_next_index_label,
+                                                          self.frame_next_index_input])
         self.frames_model = FramesModel(self.anim_properties_model.update_frame_next)
         self.selected_frame: AnimationFrame = None
 
