@@ -51,6 +51,19 @@ class ImagesModel(QtCore.QAbstractListModel):
         image = self.sprite.images[src_row]
         self.sprite.images.pop(src_row)
         self.sprite.images.insert(row, image)
+        max_row = max(src_row, row)
+        min_row = min(src_row, row)
+        for animation in self.sprite.animations:
+            for frame in animation.frames:
+                if frame.image_index == src_row:
+                    frame.image_index = row
+                elif src_row < row:
+                    # moved element forward
+                    if src_row < frame.image_index <= row:
+                        frame.image_index -= 1
+                elif src_row > row:
+                    if row <= frame.image_index <= src_row:
+                        frame.image_index += 1
         return True
 
     def append_image(self):
@@ -86,5 +99,5 @@ class ImagesModel(QtCore.QAbstractListModel):
     def remove_image(self, index: QtCore.QModelIndex):
         self.beginRemoveRows(QtCore.QModelIndex(), index.row(),
                              index.row())
-        self.sprite.images.pop(index.row())
+        self.sprite.remove_image(index.row())
         self.endRemoveRows()

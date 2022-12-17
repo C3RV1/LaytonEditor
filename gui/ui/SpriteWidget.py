@@ -58,7 +58,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.image_list.setAcceptDrops(True)
         self.image_list.setDragEnabled(True)
         self.image_list.setDropIndicatorShown(True)
-        self.image_list.currentChanged = self.image_list_selection
+        self.image_list.selectionChanged = self.image_list_selection_ui
         self.image_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.image_list.customContextMenuRequested.connect(self.image_list_context_menu)
         self.images_layout.addWidget(self.image_list, 1)
@@ -82,7 +82,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.anim_list.setAcceptDrops(True)
         self.anim_list.setDragEnabled(True)
         self.anim_list.setDropIndicatorShown(True)
-        self.anim_list.currentChanged = self.anim_change_selection
+        self.anim_list.selectionChanged = self.anim_change_selection_ui
         self.anim_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.anim_list.customContextMenuRequested.connect(self.anim_context_menu)
         self.anim_layout.addWidget(self.anim_list, 1)
@@ -103,7 +103,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.frame_list.setAcceptDrops(True)
         self.frame_list.setDragEnabled(True)
         self.frame_list.setDropIndicatorShown(True)
-        self.frame_list.currentChanged = self.frame_change_selection
+        self.frame_list.selectionChanged = self.frame_change_selection_ui
         self.frame_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.frame_list.customContextMenuRequested.connect(self.frame_context_menu)
         self.frame_edit_layout.addWidget(self.frame_list, 1)
@@ -165,7 +165,14 @@ class SpriteWidgetUI(QtWidgets.QWidget):
 
         self.setLayout(self.v_layout)
 
-    def image_list_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def image_list_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+        QtWidgets.QListView.selectionChanged(self.image_list, selected, deselected)
+        if selected.indexes():
+            self.image_list_selection(selected.indexes()[0])
+        else:
+            self.image_list_selection(QtCore.QModelIndex())
+
+    def image_list_selection(self, selected: QtCore.QModelIndex):
         pass
 
     def image_list_context_menu(self, point: QtCore.QPoint):
@@ -174,13 +181,27 @@ class SpriteWidgetUI(QtWidgets.QWidget):
     def save_btn_click(self):
         pass
 
-    def anim_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def anim_change_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+        QtWidgets.QListView.selectionChanged(self.anim_list, selected, deselected)
+        if selected.indexes():
+            self.anim_change_selection(selected.indexes()[0])
+        else:
+            self.anim_change_selection(QtCore.QModelIndex())
+
+    def anim_change_selection(self, selected: QtCore.QModelIndex):
         pass
 
     def anim_context_menu(self, point: QtCore.QPoint):
         pass
 
-    def frame_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def frame_change_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+        QtWidgets.QListView.selectionChanged(self.anim_list, selected, deselected)
+        if selected.indexes():
+            self.frame_change_selection(selected.indexes()[0])
+        else:
+            self.frame_change_selection(QtCore.QModelIndex())
+
+    def frame_change_selection(self, selected: QtCore.QModelIndex):
         pass
 
     def frame_context_menu(self, point: QtCore.QPoint):

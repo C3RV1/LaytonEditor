@@ -28,8 +28,9 @@ class SpriteEditor(SpriteWidgetUI):
     def save_btn_click(self):
         self.sprite.save()
 
-    def image_list_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def image_list_selection(self, selected: QtCore.QModelIndex):
         if not selected.isValid():
+            self.image_view.clear()
             return
         index = selected.row()
         self.image_view.setPixmap(self.sprite.extract_image_qt(index))
@@ -61,13 +62,14 @@ class SpriteEditor(SpriteWidgetUI):
 
         self.context_menu.exec(self.image_list.mapToGlobal(point))
 
-    def anim_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def anim_change_selection(self, selected: QtCore.QModelIndex):
         if not selected.isValid():
             self.anim_data_tab.hide()
             return
         self.anim_data_tab.show()
         self.frames_model.set_animation(self.sprite, selected.row())
         self.frame_list.setModel(self.frames_model)
+        self.frame_list.clearSelection()
         self.anim_properties_model.set_animation(self.sprite, selected.row())
         self.anim_properties.setModel(self.anim_properties_model)
 
@@ -86,7 +88,7 @@ class SpriteEditor(SpriteWidgetUI):
 
         self.context_menu.exec(self.image_list.mapToGlobal(point))
 
-    def frame_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
+    def frame_change_selection(self, selected: QtCore.QModelIndex):
         if not selected.isValid():
             self.selected_frame = None
             self.frame_edit_data.hide()
