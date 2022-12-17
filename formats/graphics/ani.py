@@ -298,7 +298,6 @@ class AniSprite(FileFormat):
             else:
                 comb.paste(self.extract_image_pil(i), (0, comb_y))
                 comb_y += self.images[i].shape[0]
-        comb.save("exported_test.png")
         comb = comb.convert("P", colors=(
             255 if self.colordepth == 8 else 15))  # 255 because we need to add the transparent color
         colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))

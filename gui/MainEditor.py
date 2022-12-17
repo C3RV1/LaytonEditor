@@ -32,7 +32,12 @@ class MainEditor(MainEditorUI):
         self.pg_previewer = PygamePreviewer()
         self.pg_previewer.start()
 
+        self.overwrite_dont_ask_again = False
+
     def file_menu_open(self):
+        if self.last_path is not None:
+            if not self.unsaved_data_dialog():
+                return
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open ROM", filter="NDS Rom (*.nds)")
         if file_path == "":
             return
@@ -49,6 +54,13 @@ class MainEditor(MainEditorUI):
                 conf.LANG = lang_table[lang_id]
             except IndexError:  # US version?
                 # TODO: Figure out how to read it properly
+                ret = QtWidgets.QMessageBox.warning(self, "Version not recognised",
+                                                    "Language not recognised, assume US?",
+                                                    buttons=QtWidgets.QMessageBox.StandardButton.Abort |
+                                                            QtWidgets.QMessageBox.StandardButton.Yes,
+                                                    defaultButton=QtWidgets.QMessageBox.StandardButton.Abort)
+                if ret == QtWidgets.QMessageBox.StandardButton.Abort:
+                    return
                 logging.warning(f"Game language not recognized: assuming US")
                 conf.LANG = "en"
             logging.info(f"Game language: {conf.LANG}")
@@ -66,8 +78,10 @@ class MainEditor(MainEditorUI):
         self.tree_model.set_rom(self.rom)
 
     def file_menu_save(self):
+        if not self.overwrite_data_dialogue():
+            return
         if self.last_path:
-            self.rom.save()
+            self.rom.saveToFile(self.last_path)
 
     def file_menu_save_as(self):
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save ROM", filter="NDS Rom (*.nds)")
@@ -163,6 +177,18 @@ class MainEditor(MainEditorUI):
 
         self.horizontal_layout.addWidget(self.active_editor, 3)
         self.active_editor.show()
+
+    def unsaved_data_dialog(self):
+        ret = QtWidgets.QMessageBox.warning(self, "Unsaved data", "Any unsaved data will be lost. Continue?",
+                                            buttons=QtWidgets.QMessageBox.StandardButton.Yes |
+                                                    QtWidgets.QMessageBox.StandardButton.No)
+        return ret == QtWidgets.QMessageBox.StandardButton.Yes
+
+    def overwrite_data_dialogue(self):
+        ret = QtWidgets.QMessageBox.warning(self, "Overwrite data", "Any original data will be lost. Continue?",
+                                            buttons=QtWidgets.QMessageBox.StandardButton.Yes |
+                                                    QtWidgets.QMessageBox.StandardButton.No)
+        return ret != QtWidgets.QMessageBox.StandardButton.No
 
     def closeEvent(self, event) -> None:
         self.pg_previewer.loop_lock.acquire()
