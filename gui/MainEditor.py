@@ -17,6 +17,7 @@ from formats import conf
 
 import logging
 from typing import Union
+import qdarktheme
 
 
 class MainEditor(MainEditorUI):
@@ -33,6 +34,7 @@ class MainEditor(MainEditorUI):
         self.pg_previewer.start()
 
         self.overwrite_dont_ask_again = False
+        self.current_theme = "dark"
 
     def file_menu_open(self):
         if self.last_path is not None:
@@ -194,3 +196,11 @@ class MainEditor(MainEditorUI):
         self.pg_previewer.loop_lock.acquire()
         self.pg_previewer.gm.exit()
         self.pg_previewer.loop_lock.release()
+
+    def toggle_theme(self):
+        if self.current_theme == "dark":
+            new_theme = "light"
+        else:
+            new_theme = "dark"
+        qdarktheme.setup_theme(new_theme)
+        self.current_theme = new_theme

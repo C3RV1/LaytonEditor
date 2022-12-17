@@ -24,6 +24,12 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.file_save_as_action.triggered.connect(self.file_menu_save_as)
         self.file_save_as_action.setEnabled(False)
 
+        self.settings_menu = menu_bar.addMenu("Settings")
+
+        self.toggle_theme_action = QtGui.QAction("Toggle Theme", self)
+        self.settings_menu.addAction(self.toggle_theme_action)
+        self.toggle_theme_action.triggered.connect(self.toggle_theme)
+
         self.window = QtWidgets.QWidget()
 
         self.horizontal_layout = QtWidgets.QHBoxLayout()
@@ -58,6 +64,9 @@ class MainEditorUI(QtWidgets.QMainWindow):
         pass
 
     def file_menu_save_as(self):
+        pass
+
+    def toggle_theme(self):
         pass
 
     def tree_changed_selection(self, current: QtCore.QModelIndex, previous: QtCore.QModelIndex):
