@@ -3,6 +3,34 @@ from typing import List
 from PySide6 import QtCore, QtWidgets, QtGui
 
 
+class FrameOrderEditor(QtWidgets.QComboBox):
+    def __init__(self, parent):
+        super(FrameOrderEditor, self).__init__(parent)
+        self.addItem("Looping")
+        self.addItem("No looping")
+        self.addItem("Custom")
+
+    def get_value(self):
+        return self.currentText()
+
+    def set_data(self, value):
+        self.setCurrentText(value)
+
+    value_property = QtCore.Property(str, get_value, set_data, user=True)
+
+
+class FrameOrderEditorCreator(QtWidgets.QItemEditorCreatorBase):
+    def __init__(self, cls):
+        super(FrameOrderEditorCreator, self).__init__()
+        self.cls = cls
+
+    def createWidget(self, parent):
+        return self.cls(parent)
+
+    def valuePropertyName(self):
+        return "value_property"
+
+
 class SpriteWidgetUI(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(SpriteWidgetUI, self).__init__(*args, **kwargs)
@@ -42,7 +70,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.images_tab.setLayout(self.images_layout)
 
         self.animations_tab = QtWidgets.QWidget()
-        self.anim_layout = QtWidgets.QHBoxLayout()
+        self.anim_layout = QtWidgets.QVBoxLayout()
 
         self.anim_list = QtWidgets.QListView()
         self.anim_list.setFlow(QtWidgets.QListView.Flow.TopToBottom)
@@ -61,7 +89,9 @@ class SpriteWidgetUI(QtWidgets.QWidget):
 
         self.anim_data_tab = QtWidgets.QTabWidget()
 
-        self.frame_list_shown = False
+        self.frame_edit_widget = QtWidgets.QWidget()
+        self.frame_edit_layout = QtWidgets.QHBoxLayout()
+
         self.frame_list = QtWidgets.QListView()
         self.frame_list.setFlow(QtWidgets.QListView.Flow.TopToBottom)
         self.frame_list.setViewMode(QtWidgets.QListView.ViewMode.ListMode)
@@ -76,16 +106,58 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.frame_list.currentChanged = self.frame_change_selection
         self.frame_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.frame_list.customContextMenuRequested.connect(self.frame_context_menu)
-        self.anim_data_tab.addTab(self.frame_list, "Frames")
+        self.frame_edit_layout.addWidget(self.frame_list, 1)
+
+        self.frame_edit_data = QtWidgets.QWidget()
+        self.frame_edit_data_layout = QtWidgets.QVBoxLayout()
+
+        self.frame_preview = QtWidgets.QLabel()
+        self.frame_edit_data_layout.addWidget(self.frame_preview)
+
+        self.frame_properties_layout = QtWidgets.QGridLayout()
+
+        self.frame_next_index_label = QtWidgets.QLabel("Next Index")
+        self.frame_properties_layout.addWidget(self.frame_next_index_label, 0, 0)
+        self.frame_next_index_input = QtWidgets.QSpinBox()
+        self.frame_next_index_input.valueChanged.connect(self.frame_next_index_changed)
+        self.frame_properties_layout.addWidget(self.frame_next_index_input, 0, 1)
+
+        self.frame_image_index_label = QtWidgets.QLabel("Image Index")
+        self.frame_properties_layout.addWidget(self.frame_image_index_label, 1, 0)
+        self.frame_image_index_input = QtWidgets.QSpinBox()
+        self.frame_image_index_input.valueChanged.connect(self.frame_image_index_changed)
+        self.frame_properties_layout.addWidget(self.frame_image_index_input, 1, 1)
+
+        self.frame_duration_label = QtWidgets.QLabel("Duration")
+        self.frame_properties_layout.addWidget(self.frame_duration_label, 2, 0)
+        self.frame_duration_input = QtWidgets.QSpinBox()
+        self.frame_duration_input.valueChanged.connect(self.frame_duration_changed)
+        self.frame_properties_layout.addWidget(self.frame_duration_input, 2, 1)
+
+        self.frame_edit_data_layout.addLayout(self.frame_properties_layout)
+
+        self.frame_edit_data.setLayout(self.frame_edit_data_layout)
+        self.frame_edit_layout.addWidget(self.frame_edit_data, 1)
+        self.frame_edit_data.hide()
+
+        self.frame_edit_widget.setLayout(self.frame_edit_layout)
+        self.anim_data_tab.addTab(self.frame_edit_widget, "Frames")
 
         self.anim_properties = QtWidgets.QTableView()
+        item_delegate: QtWidgets.QItemDelegate = self.anim_properties.itemDelegate()
+        factory = QtWidgets.QItemEditorFactory()
+        factory.registerEditor(QtCore.QMetaType.Type.QStringList, FrameOrderEditorCreator(FrameOrderEditor))
+        item_delegate.setItemEditorFactory(factory)
         self.anim_data_tab.addTab(self.anim_properties, "Properties")
 
-        self.anim_layout.addWidget(self.anim_data_tab, 1)
+        self.anim_layout.addWidget(self.anim_data_tab, 2)
 
         self.animations_tab.setLayout(self.anim_layout)
 
         self.tab_widget.addTab(self.animations_tab, "Animations")
+
+        self.variables_table = QtWidgets.QTableView()
+        self.tab_widget.addTab(self.variables_table, "Variables")
 
         self.save_btn = QtWidgets.QPushButton("Save")
         self.save_btn.clicked.connect(self.save_btn_click)
@@ -93,7 +165,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
 
         self.setLayout(self.v_layout)
 
-    def image_list_selection(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+    def image_list_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
         pass
 
     def image_list_context_menu(self, point: QtCore.QPoint):
@@ -102,14 +174,23 @@ class SpriteWidgetUI(QtWidgets.QWidget):
     def save_btn_click(self):
         pass
 
-    def anim_change_selection(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+    def anim_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
         pass
 
     def anim_context_menu(self, point: QtCore.QPoint):
         pass
 
-    def frame_change_selection(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+    def frame_change_selection(self, selected: QtCore.QModelIndex, deselected: QtCore.QModelIndex):
         pass
 
     def frame_context_menu(self, point: QtCore.QPoint):
+        pass
+
+    def frame_next_index_changed(self, value: int):
+        pass
+
+    def frame_image_index_changed(self, value: int):
+        pass
+
+    def frame_duration_changed(self, value: int):
         pass

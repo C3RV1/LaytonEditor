@@ -52,11 +52,19 @@ class AniSprite(FileFormat):
     colordepth: int = 8
     images: List[np.ndarray] = []
     animations: List[Animation] = [Animation()]
-    variables: dict = {f"Var{i}": [0, ] * 8 for i in range(16)}
+    variable_labels = [f"Var{i}" for i in range(16)]
+    variable_data = [[0] * 8 for i in range(16)]
     palette: np.ndarray = np.zeros((256, 4), np.uint8)
     child_image: str = ""
 
     _compressed_default = 2
+
+    @property
+    def variables(self):
+        var_dict = {}
+        for label, values in zip(self.variable_labels, self.variable_data):
+            var_dict[label] = values
+        return var_dict
 
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):
@@ -128,13 +136,11 @@ class AniSprite(FileFormat):
         if rdr.read_uint16() != 0x1234:
             return  # We hit end of stream
 
-        variable_labels = rdr.read_string_array(16, 16)
-        variable_data = [[] for _ in range(16)]
+        self.variable_labels = rdr.read_string_array(16, 16)
+        self.variable_data = [[] for _ in range(16)]
         for _ in range(8):
             for var_i in range(16):
-                variable_data[var_i].append(rdr.read_int16())
-
-        self.variables = {variable_labels[i]: variable_data[i] for i in range(16)}
+                self.variable_data[var_i].append(rdr.read_int16())
 
         for anim in self.animations:
             anim.child_image_x = rdr.read_uint16()
@@ -208,7 +214,8 @@ class AniSprite(FileFormat):
             self.palette[color_i]: np.ndarray
             self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
-            self.palette[color_i, 3] = 255
+            if color_i:
+                self.palette[color_i, 3] = 255
 
         wtr.write_zeros(0x1e)
         wtr.write_uint32(len(self.animations))
@@ -223,12 +230,11 @@ class AniSprite(FileFormat):
 
         wtr.write_uint16(0x1234)  # magic number probably
 
-        variable_labels = list(self.variables)
-        assert len(variable_labels) == 16
-        wtr.write_string_array(variable_labels, 16)
+        assert len(self.variable_labels) == 16
+        wtr.write_string_array(self.variable_labels, 16)
         for dat_i in range(8):
-            for var_l in variable_labels:
-                wtr.write_int16(self.variables[var_l][dat_i])
+            for var_l in self.variable_data:
+                wtr.write_int16(var_l[dat_i])
 
         for anim in self.animations:
             wtr.write_uint16(anim.child_image_x)
@@ -292,6 +298,7 @@ class AniSprite(FileFormat):
             else:
                 comb.paste(self.extract_image_pil(i), (0, comb_y))
                 comb_y += self.images[i].shape[0]
+        comb.save("exported_test.png")
         comb = comb.convert("P", colors=(
             255 if self.colordepth == 8 else 15))  # 255 because we need to add the transparent color
         colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))
@@ -422,13 +429,11 @@ class AniSubSprite(AniSprite):
         if rdr.read_uint16() != 0x1234:
             return  # We hit end of stream
 
-        variable_labels = rdr.read_string_array(16, 16)
-        variable_data = [[] for _ in range(16)]
+        self.variable_labels = rdr.read_string_array(16, 16)
+        self.variable_data = [[] for _ in range(16)]
         for _ in range(8):
             for var_i in range(16):
-                variable_data[var_i].append(rdr.read_int16())
-
-        self.variables = {variable_labels[i]: variable_data[i] for i in range(16)}
+                self.variable_data[var_i].append(rdr.read_int16())
 
         for anim in self.animations:
             anim.child_image_x = rdr.read_int16()
@@ -553,7 +558,10 @@ class AniSubSprite(AniSprite):
 
         for color_i in range(256 if self.colordepth == 8 else 16):
             self.palette[color_i]: np.ndarray
+            self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
+            if color_i:
+                self.palette[color_i, 3] = 255
 
         wtr.write_zeros(0x1e)
         wtr.write_uint32(len(self.animations))
@@ -568,12 +576,11 @@ class AniSubSprite(AniSprite):
 
         wtr.write_uint16(0x1234)  # magic number probably
 
-        variable_labels = list(self.variables)
-        assert len(variable_labels) == 16
-        wtr.write_string_array(variable_labels, 16)
+        assert len(self.variable_labels) == 16
+        wtr.write_string_array(self.variable_labels, 16)
         for dat_i in range(8):
-            for var_l in variable_labels:
-                wtr.write_uint16(self.variables[var_l][dat_i])
+            for var_l in self.variable_data:
+                wtr.write_uint16(var_l[dat_i])
 
         for anim in self.animations:
             wtr.write_int16(anim.child_image_x)

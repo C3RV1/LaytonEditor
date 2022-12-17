@@ -1,13 +1,14 @@
 from PySide6 import QtCore, QtWidgets, QtGui
-from formats.graphics.ani import AniSprite, Animation
-from typing import List
+from formats.graphics.ani import AniSprite, Animation, AnimationFrame
+from typing import List, Callable
 
 
 class FramesModel(QtCore.QAbstractListModel):
-    def __init__(self):
+    def __init__(self, update_frame_next: Callable):
         super(FramesModel, self).__init__()
         self.sprite: AniSprite = None
         self.animation: Animation = None
+        self.update_frame_next = update_frame_next
 
     def set_animation(self, sprite: AniSprite, anim_index: int):
         self.layoutAboutToBeChanged.emit()
@@ -23,7 +24,7 @@ class FramesModel(QtCore.QAbstractListModel):
             return None
         frame_idx = index.row()
         if role == QtCore.Qt.ItemDataRole.DisplayRole or role == QtCore.Qt.ItemDataRole.EditRole:
-            return self.animation.frames[frame_idx].image_index
+            return frame_idx
         if role == QtCore.Qt.ItemDataRole.DecorationRole:
             frame = self.animation.frames[frame_idx]
             return QtGui.QIcon(self.sprite.extract_image_qt(frame.image_index))
@@ -33,7 +34,7 @@ class FramesModel(QtCore.QAbstractListModel):
         default_flags = super(FramesModel, self).flags(index)
         if not index.isValid():
             return default_flags | QtCore.Qt.ItemFlag.ItemIsDropEnabled
-        return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled | QtCore.Qt.ItemFlag.ItemIsEditable
+        return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
 
     def supportedDropActions(self) -> QtCore.Qt.DropAction:
         return QtCore.Qt.DropAction.MoveAction
@@ -58,12 +59,18 @@ class FramesModel(QtCore.QAbstractListModel):
         frame = self.animation.frames[src_row]
         self.animation.frames.pop(src_row)
         self.animation.frames.insert(row, frame)
+        self.update_frame_next()
         return True
 
-    def setData(self, index: QtCore.QModelIndex, value, role: int = ...) -> bool:
-        if not index.isValid() or not isinstance(value, int):
-            return False
-        if value >= len(self.sprite.images):
-            return False
-        self.animation.frames[index.row()].image_index = value
-        return True
+    def append_frame(self):
+        self.beginInsertRows(QtCore.QModelIndex(), len(self.animation.frames),
+                             len(self.animation.frames))
+        self.animation.frames.append(AnimationFrame(next_frame_index=0, image_index=0, duration=0))
+        self.update_frame_next()
+        self.endInsertRows()
+
+    def remove_frame(self, index: QtCore.QModelIndex):
+        self.beginRemoveRows(QtCore.QModelIndex(), index.row(), index.row())
+        self.animation.frames.pop(index.row())
+        self.update_frame_next()
+        self.endInsertRows()

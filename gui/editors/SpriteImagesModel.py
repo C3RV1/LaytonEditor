@@ -71,6 +71,7 @@ class ImagesModel(QtCore.QAbstractListModel):
 
         image: Image.Image = Image.open(import_path)
         self.sprite.replace_image_pil(index.row(), image)
+        self.dataChanged.emit(index, index, index.parent())
 
     def export_image(self, index: QtCore.QModelIndex):
         filename = f"{index.row()}.png"
