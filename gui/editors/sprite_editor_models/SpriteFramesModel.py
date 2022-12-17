@@ -23,6 +23,8 @@ class FramesModel(QtCore.QAbstractListModel):
         if not index.isValid():
             return None
         frame_idx = index.row()
+        if frame_idx >= len(self.animation.frames):
+            return None
         if role == QtCore.Qt.ItemDataRole.DisplayRole or role == QtCore.Qt.ItemDataRole.EditRole:
             return frame_idx
         if role == QtCore.Qt.ItemDataRole.DecorationRole:
