@@ -32,7 +32,13 @@ class EditorTree(QtCore.QAbstractItemModel):
             ]
         else:
             self.categories = [
-                FilesystemCategory()
+                FilesystemCategory(),
+                SpriteCategory(),
+                BackgroundsCategory(),
+                FontsCategory(),
+                StreamedAudioCategory(),
+                TextsCategory(),
+                ScriptsCategory()
             ]
         for category in self.categories:
             category.set_rom(rom)
@@ -74,6 +80,8 @@ class EditorTree(QtCore.QAbstractItemModel):
         if not _index.isValid():
             return QtCore.QModelIndex()
         editor_obj: EditorObject = _index.internalPointer()
+        if editor_obj.category not in self.categories:
+            return QtCore.QModelIndex()
         parent_index = self.createIndex(self.categories.index(editor_obj.category), 0,
                                         editor_obj.category)
         return editor_obj.category.parent(_index, parent_index, self)

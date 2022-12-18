@@ -1,6 +1,6 @@
 import os
 
-from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
+from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory, FolderNodeFilterExtension
 from formats.graphics.bg import BGImage
 from PySide6 import QtCore, QtWidgets
 from typing import Callable, List, Tuple, Union
@@ -18,8 +18,12 @@ class BackgroundsCategory(FilesystemCategory):
         self.name = "Backgrounds"
 
     def reset_file_system(self):
-        self._root = FolderNode(self, "/data_lt2/bg", self.rom.filenames["/data_lt2/bg"], None,
-                                asset_class=BackgroundAsset)
+        if self.rom.name == b"LAYTON2":
+            self._root = FolderNode(self, "/data_lt2/bg", self.rom.filenames["/data_lt2/bg"], None,
+                                    asset_class=BackgroundAsset)
+        else:
+            self._root = FolderNodeFilterExtension(self, "", self.rom.filenames, None, extensions=[".arc"],
+                                                   asset_class=BackgroundAsset)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:

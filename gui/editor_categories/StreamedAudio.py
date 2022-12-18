@@ -1,6 +1,6 @@
 import os.path
 
-from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory
+from .Filesystem import FolderNode, AssetNodeBasename, FilesystemCategory, FolderNodeFilterExtension
 from PySide6 import QtCore, QtWidgets, QtGui
 from typing import List, Tuple, Callable, Union
 from formats.sound.sadl import SADL
@@ -18,8 +18,12 @@ class StreamedAudioCategory(FilesystemCategory):
         self.name = "Streamed Audio"
 
     def reset_file_system(self):
-        self._root = FolderNode(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None,
-                                asset_class=SADLNode)
+        if self.rom.name == b"LAYTON2":
+            self._root = FolderNode(self, "/data_lt2/stream", self.rom.filenames["/data_lt2/stream"], None,
+                                    asset_class=SADLNode)
+        else:
+            self._root = FolderNodeFilterExtension(self, "", self.rom.filenames, None, extensions=[".SAD"],
+                                                   asset_class=SADLNode)
 
     def get_context_menu(self, index: QtCore.QModelIndex,
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:

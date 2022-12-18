@@ -174,6 +174,8 @@ class SADL(FileFormat):
                         if progress_callback(i + chan * blocks, blocks * self.channels):
                             cancelled = True
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
+                    if block.shape[0] == 0:
+                        break
                     decoded_block = self.ima_decoders[chan].decompress(block)
                     self.offset[chan] += 0x10
                     decoded[chan][i*32:i*32+32] = decoded_block

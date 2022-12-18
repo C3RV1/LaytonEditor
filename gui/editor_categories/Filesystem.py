@@ -77,11 +77,12 @@ class FolderNodeFilterExtension(FolderNode):
         if extensions is None:
             extensions = []
         super(FolderNodeFilterExtension, self).__init__(*args, **kwargs)
+        extensions = list(map(lambda x: x.lower(), extensions))
         if isinstance(self.folder, PlzArchive):
-            self.files = filter(lambda x: any([x.endswith(extension) for extension in extensions]),
+            self.files = filter(lambda x: any([x.lower().endswith(extension) for extension in extensions]),
                                 self.folder.filenames)
         else:
-            self.files = filter(lambda x: any([x.endswith(extension) for extension in extensions + [".plz"]]),
+            self.files = filter(lambda x: any([x.lower().endswith(extension) for extension in extensions + [".plz"]]),
                                 self.folder.files)
         self.files = list(self.files)
         self.extensions = extensions

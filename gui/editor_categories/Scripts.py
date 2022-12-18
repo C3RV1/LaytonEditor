@@ -13,5 +13,9 @@ class ScriptsCategory(FilesystemCategory):
         self.name = "Scripts"
 
     def reset_file_system(self):
-        self._root = FolderNodeFilterExtension(self, "/data_lt2", self.rom.filenames["/data_lt2"], None,
-                                               extensions=[".gds"], asset_class=ScriptAsset)
+        if self.rom.name == b"LAYTON2":
+            self._root = FolderNodeFilterExtension(self, "/data_lt2", self.rom.filenames["/data_lt2"], None,
+                                                   extensions=[".gds"], asset_class=ScriptAsset)
+        else:
+            self._root = FolderNodeFilterExtension(self, "", self.rom.filenames, None,
+                                                   extensions=[".gds"], asset_class=ScriptAsset)
