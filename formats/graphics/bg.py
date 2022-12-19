@@ -98,8 +98,8 @@ class BGImage(FileFormat):
     def import_image_pil(self, image: Image.Image):
         # Find out why palette breaks close to 256 colors (keeping at 200 colors for consistency w/ the game)
         # 199 colors + 1 transparent
-        image = image.resize((256, 192)).convert("RGB").quantize(199, method=Image.MEDIANCUT)
-        self.palette = np.zeros((min(len(image.palette.colors.keys()), 199) + 1, 4), np.uint8)
+        image = image.resize((256, 192)).convert("RGB").quantize(199, method=Image.MAXCOVERAGE)
+        self.palette = np.zeros((min(len(image.palette.colors), 199) + 1, 4), np.uint8)
         logging.info(f"Replacing background {self._last_filename} with image of size {image.size} and palette of "
                      f"length {len(self.palette)}")
         self.palette[0] = (0, 255, 0, 0)
