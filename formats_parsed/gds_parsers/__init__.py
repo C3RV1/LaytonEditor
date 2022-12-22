@@ -6,21 +6,21 @@ from .EventGDSParser import EventGDSParser
 from .SortGDSParser import SortGDSParser
 from .SlideGDSParser import SlideGDSParser
 from .AreaGDSParser import AreaGDSParser
-from formats.puzzle import Puzzle
+from formats.puzzle import Puzzle, PuzzleType
 from ..gds_parser import GDSParser
 
 
 TYPE_TO_GDS_PARSER = {
-    Puzzle.WRITE_DATE: WriteGDSParser,
-    Puzzle.WRITE_NUM: WriteGDSParser,
-    Puzzle.WRITE_ALT: WriteGDSParser,
-    Puzzle.WRITE_CHARS: WriteGDSParser,
-    Puzzle.ON_OFF: OnOffGDSParser,
-    Puzzle.MULTIPLE_CHOICE: MultipleChoiceGDSParser,
-    Puzzle.TILE_ROTATE_2: TileRotate2GDSParser,
-    Puzzle.SORT: SortGDSParser,
-    Puzzle.SLIDE: SlideGDSParser,
-    Puzzle.AREA: AreaGDSParser
+    PuzzleType.WRITE_DATE: WriteGDSParser,
+    PuzzleType.WRITE_NUM: WriteGDSParser,
+    PuzzleType.WRITE_ALT: WriteGDSParser,
+    PuzzleType.WRITE_CHARS: WriteGDSParser,
+    PuzzleType.ON_OFF: OnOffGDSParser,
+    PuzzleType.MULTIPLE_CHOICE: MultipleChoiceGDSParser,
+    PuzzleType.TILE_ROTATE_2: TileRotate2GDSParser,
+    PuzzleType.SORT: SortGDSParser,
+    PuzzleType.SLIDE: SlideGDSParser,
+    PuzzleType.AREA: AreaGDSParser
 }
 
 

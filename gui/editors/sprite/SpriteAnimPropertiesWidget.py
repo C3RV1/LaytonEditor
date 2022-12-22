@@ -1,5 +1,5 @@
-from PySide6 import QtCore, QtWidgets, QtGui
-from gui.ui.AnimPropertiesWidget import AnimPropertiesWidgetUI, FrameOrders
+from PySide6 import QtWidgets
+from gui.ui.sprite.AnimPropertiesWidget import AnimPropertiesWidgetUI, FrameOrders
 from formats.graphics.ani import AniSprite, Animation
 
 

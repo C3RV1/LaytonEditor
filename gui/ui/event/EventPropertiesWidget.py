@@ -12,7 +12,7 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(EventPropertiesWidgetUI, self).__init__(*args, **kwargs)
 
-        self.layout = QtWidgets.QVBoxLayout()
+        self.v_layout = QtWidgets.QVBoxLayout()
 
         self.form_layout = QtWidgets.QFormLayout()
 
@@ -24,10 +24,10 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.map_btm_id_input.valueChanged.connect(self.map_btm_id_edit)
         self.form_layout.addRow("Map Bottom ID", self.map_btm_id_input)
 
-        self.layout.addLayout(self.form_layout)
+        self.v_layout.addLayout(self.form_layout)
 
         self.character_table = QtWidgets.QTableView()
-        self.layout.addWidget(self.character_table)
+        self.v_layout.addWidget(self.character_table)
 
         self.character_buttons_layout = QtWidgets.QHBoxLayout()
 
@@ -39,9 +39,9 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.remove_character.clicked.connect(self.remove_character_click)
         self.character_buttons_layout.addWidget(self.remove_character)
 
-        self.layout.addLayout(self.character_buttons_layout)
+        self.v_layout.addLayout(self.character_buttons_layout)
 
-        self.setLayout(self.layout)
+        self.setLayout(self.v_layout)
 
     def map_top_id_edit(self, value: int):
         pass

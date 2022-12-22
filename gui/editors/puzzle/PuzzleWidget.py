@@ -1,6 +1,6 @@
 import logging
 
-from ..ui.PuzzleWidget import PuzzleWidgetUI
+from gui.ui.puzzle.PuzzleWidget import PuzzleWidgetUI
 from formats.puzzle import Puzzle
 from formats_parsed.PuzzleDCC import PuzzleDCC
 
@@ -8,7 +8,9 @@ from previewers.puzzle.PuzzlePlayer import PuzzlePlayer
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..MainEditor import MainEditor
+    from gui.MainEditor import MainEditor
+
+from .PuzzlePropertiesWidget import PuzzlePropertiesWidget
 
 
 class PuzzleEditor(PuzzleWidgetUI):
@@ -17,15 +19,19 @@ class PuzzleEditor(PuzzleWidgetUI):
         self.puzzle = None
         self.main_editor: MainEditor = main_editor
 
+    def get_puzzle_properties_widget(self):
+        return PuzzlePropertiesWidget(self)
+
     def set_puzzle(self, pz: Puzzle):
         self.puzzle = pz
         dcc_text = PuzzleDCC(pz)
-        serialized = dcc_text.serialize()
+        serialized = dcc_text.serialize(include_properties=False)
         self.text_editor.setPlainText(serialized)
+        self.puzzle_properties.set_puzzle(pz)
 
     def preview_dcc_btn_click(self):
         text = self.text_editor.toPlainText()
-        is_ok, error = PuzzleDCC(self.puzzle).parse(text)
+        is_ok, error = PuzzleDCC(self.puzzle).parse(text, include_properties=False)
         if is_ok:
             self.main_editor.pg_previewer.start_renderer(PuzzlePlayer(self.puzzle))
         else:
@@ -33,7 +39,7 @@ class PuzzleEditor(PuzzleWidgetUI):
 
     def save_dcc_btn_click(self):
         text = self.text_editor.toPlainText()
-        is_ok, error = PuzzleDCC(self.puzzle).parse(text)
+        is_ok, error = PuzzleDCC(self.puzzle).parse(text, include_properties=False)
         if is_ok:
             self.puzzle.save_to_rom()
             self.main_editor.pg_previewer.start_renderer(PuzzlePlayer(self.puzzle))

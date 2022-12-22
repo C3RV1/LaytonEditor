@@ -1,16 +1,6 @@
-import logging
-
-from ..ui.EventWidget import EventWidgetUI
+from gui.ui.event.EventPropertiesWidget import EventPropertiesWidgetUI
+from PySide6 import QtCore
 from formats.event import Event
-from formats_parsed.EventDCC import EventDCC
-from formats_parsed.EventScript import EventScript
-
-from previewers.event.EventPlayer import EventPlayer
-from PySide6 import QtCore, QtWidgets, QtGui
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..MainEditor import MainEditor
 
 
 class EventCharacterTable(QtCore.QAbstractTableModel):
@@ -74,13 +64,13 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         if not index.isValid():
             return False
         if index.column() == 0:
-            self.event.characters[index.row() - 2] = value
+            self.event.characters[index.row()] = value
         elif index.column() == 1:
-            self.event.characters_pos[index.row() - 2] = value
+            self.event.characters_pos[index.row()] = value
         elif index.column() == 2:
-            self.event.characters_shown[index.row() - 2] = value
+            self.event.characters_shown[index.row()] = value
         elif index.column() == 3:
-            self.event.characters_anim_index[index.row() - 2] = value
+            self.event.characters_anim_index[index.row()] = value
         else:
             return False
         return True
@@ -104,56 +94,24 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class EventEditor(EventWidgetUI):
-    def __init__(self, main_editor):
-        super(EventEditor, self).__init__()
-        self.event = None
+class EventPropertiesWidget(EventPropertiesWidgetUI):
+    def __init__(self, *args, **kwargs):
+        super(EventPropertiesWidget, self).__init__(*args, **kwargs)
+        self.event: Event = None
         self.char_table_model = EventCharacterTable()
-        self.main_editor: MainEditor = main_editor
+        self.character_table.setModel(self.char_table_model)
 
     def set_event(self, ev: Event):
         self.event = ev
         self.char_table_model.set_event(ev)
-        self.character_table.setModel(self.char_table_model)
-        dcc_text = EventDCC(ev)
-        serialized = dcc_text.serialize(include_character=False)
-        self.text_editor.setPlainText(serialized)
+        self.map_top_id_input.setValue(self.event.map_top_id)
+        self.map_btm_id_input.setValue(self.event.map_bottom_id)
 
-    def preview_dcc_btn_click(self):
-        text = self.text_editor.toPlainText()
-        is_ok, error = EventDCC(self.event).parse(text, include_character=False)
-        if is_ok:
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        else:
-            logging.error(f"Error compiling DCC: {error}")
+    def map_top_id_edit(self, value: int):
+        self.event.map_top_id = value
 
-    def save_dcc_btn_click(self):
-        text = self.text_editor.toPlainText()
-        is_ok, error = EventDCC(self.event).parse(text, include_character=False)
-        if is_ok:
-            self.event.save_to_rom()
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        else:
-            logging.error(f"Error compiling DCC: {error}")
-
-    def preview_ev_script_btn_click(self):
-        text = self.text_editor.toPlainText()
-        try:
-            ev_script = EventScript(text, self.event)
-            ev_script.parse()
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        except Exception as e:
-            logging.error(f"Error compiling EventScript: {e}")
-
-    def save_ev_script_btn_click(self):
-        text = self.text_editor.toPlainText()
-        try:
-            ev_script = EventScript(text, self.event)
-            ev_script.parse()
-            self.event.save_to_rom()
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        except Exception as e:
-            logging.error(f"Error compiling EventScript: {e}")
+    def map_btm_id_edit(self, value: int):
+        self.event.map_bottom_id = value
 
     def add_character_click(self):
         self.char_table_model.add_character()

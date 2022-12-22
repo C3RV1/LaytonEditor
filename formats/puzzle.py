@@ -10,9 +10,10 @@ from formats.binary import BinaryReader, BinaryWriter
 import utility.replace_substitutions as subs
 from formats import conf
 
+import enum
 
-class Puzzle:
-    encoding = "cp1252"
+
+class PuzzleType(enum.IntEnum):
     MATCHSTICK_UNUSED = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
@@ -49,6 +50,10 @@ class Puzzle:
     RICKETY_BRIDGE = 0x21
     FIND_SHAPE = 0x22
     WRITE_DATE = 0x23
+
+
+class Puzzle:
+    encoding = "cp1252"
 
     def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
         self.rom = rom

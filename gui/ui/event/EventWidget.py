@@ -1,4 +1,5 @@
 from PySide6 import QtCore, QtWidgets, QtGui
+from .EventPropertiesWidget import EventPropertiesWidgetUI
 
 
 class EventWidgetUI(QtWidgets.QWidget):
@@ -9,26 +10,7 @@ class EventWidgetUI(QtWidgets.QWidget):
 
         self.tab_widget = QtWidgets.QTabWidget(self)
 
-        self.character_widget = QtWidgets.QWidget(self.tab_widget)
-        self.character_widget_layout = QtWidgets.QVBoxLayout()
-
-        self.character_table = QtWidgets.QTableView(self.character_widget)
-        self.character_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.character_widget_layout.addWidget(self.character_table)
-
-        self.character_btn_layout = QtWidgets.QHBoxLayout()
-
-        self.add_character = QtWidgets.QPushButton("Add Character")
-        self.add_character.clicked.connect(self.add_character_click)
-        self.remove_character = QtWidgets.QPushButton("Remove Character")
-        self.remove_character.clicked.connect(self.remove_character_click)
-
-        self.character_btn_layout.addWidget(self.add_character)
-        self.character_btn_layout.addWidget(self.remove_character)
-        self.character_widget_layout.addLayout(self.character_btn_layout)
-
-        self.character_widget.setLayout(self.character_widget_layout)
-
+        self.character_widget = self.get_event_properties_widget()
         self.tab_widget.addTab(self.character_widget, "Properties")
 
         self.text_editor = QtWidgets.QPlainTextEdit(self.tab_widget)
@@ -56,6 +38,9 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.v_layout.addLayout(self.btn_window_layout, 1)
 
         self.setLayout(self.v_layout)
+
+    def get_event_properties_widget(self):
+        return EventPropertiesWidgetUI(self)
 
     def preview_dcc_btn_click(self):
         pass

@@ -1,7 +1,7 @@
-from ..ui.SpriteWidget import SpriteWidgetUI
+from gui.ui.sprite.SpriteWidget import SpriteWidgetUI
 from formats.graphics.ani import AniSprite, AnimationFrame
-from PySide6 import QtCore, QtWidgets, QtGui
-from .sprite_editor_models import *
+from PySide6 import QtCore, QtGui
+from . import *
 
 
 class SpriteEditor(SpriteWidgetUI):
