@@ -1,34 +1,6 @@
 from typing import List
-
+from .AnimPropertiesWidget import AnimPropertiesWidgetUI
 from PySide6 import QtCore, QtWidgets, QtGui
-
-
-class FrameOrderEditor(QtWidgets.QComboBox):
-    def __init__(self, parent):
-        super(FrameOrderEditor, self).__init__(parent)
-        self.addItem("Looping")
-        self.addItem("No looping")
-        self.addItem("Custom")
-
-    def get_value(self):
-        return self.currentText()
-
-    def set_data(self, value):
-        self.setCurrentText(value)
-
-    value_property = QtCore.Property(str, get_value, set_data, user=True)
-
-
-class FrameOrderEditorCreator(QtWidgets.QItemEditorCreatorBase):
-    def __init__(self, cls):
-        super(FrameOrderEditorCreator, self).__init__()
-        self.cls = cls
-
-    def createWidget(self, parent):
-        return self.cls(parent)
-
-    def valuePropertyName(self):
-        return "value_property"
 
 
 class SpriteWidgetUI(QtWidgets.QWidget):
@@ -143,11 +115,7 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.frame_edit_widget.setLayout(self.frame_edit_layout)
         self.anim_data_tab.addTab(self.frame_edit_widget, "Frames")
 
-        self.anim_properties = QtWidgets.QTableView()
-        item_delegate: QtWidgets.QItemDelegate = self.anim_properties.itemDelegate()
-        factory = QtWidgets.QItemEditorFactory()
-        factory.registerEditor(QtCore.QMetaType.Type.QStringList, FrameOrderEditorCreator(FrameOrderEditor))
-        item_delegate.setItemEditorFactory(factory)
+        self.anim_properties = self.get_anim_properties_widget()
         self.anim_data_tab.addTab(self.anim_properties, "Properties")
 
         self.anim_layout.addWidget(self.anim_data_tab, 2)
@@ -164,6 +132,9 @@ class SpriteWidgetUI(QtWidgets.QWidget):
         self.v_layout.addWidget(self.save_btn, 1)
 
         self.setLayout(self.v_layout)
+
+    def get_anim_properties_widget(self):
+        return AnimPropertiesWidgetUI(self)
 
     def image_list_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
         QtWidgets.QListView.selectionChanged(self.image_list, selected, deselected)

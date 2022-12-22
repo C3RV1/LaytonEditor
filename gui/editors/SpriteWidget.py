@@ -11,10 +11,11 @@ class SpriteEditor(SpriteWidgetUI):
         self.variables_model = VariablesModel()
         self.images_model = ImagesModel()
         self.anims_model = AnimsModel()
-        self.anim_properties_model = AnimPropertiesModel([self.frame_next_index_label,
-                                                          self.frame_next_index_input])
-        self.frames_model = FramesModel(self.anim_properties_model.update_frame_next)
+        self.frames_model = FramesModel(self.anim_properties.frame_order_edit)
         self.selected_frame: AnimationFrame = None
+
+    def get_anim_properties_widget(self):
+        return AnimPropertiesWidget([self.frame_next_index_label, self.frame_next_index_input])
 
     def set_sprite(self, sprite: AniSprite):
         self.sprite = sprite
@@ -48,11 +49,11 @@ class SpriteEditor(SpriteWidgetUI):
                 self.images_model.replace_image(index_)
                 self.image_list_selection(index_, None)
 
-            action = QtGui.QAction("Replace Image", self.context_menu)
+            action = QtGui.QAction("Import PNG", self.context_menu)
             action.triggered.connect(lambda: replace_image(index))
             self.context_menu.addAction(action)
 
-            action = QtGui.QAction("Export Image", self.context_menu)
+            action = QtGui.QAction("Export PNG", self.context_menu)
             action.triggered.connect(lambda: self.images_model.export_image(index))
             self.context_menu.addAction(action)
 
@@ -70,8 +71,7 @@ class SpriteEditor(SpriteWidgetUI):
         self.frames_model.set_animation(self.sprite, selected.row())
         self.frame_list.setModel(self.frames_model)
         self.frame_list.clearSelection()
-        self.anim_properties_model.set_animation(self.sprite, selected.row())
-        self.anim_properties.setModel(self.anim_properties_model)
+        self.anim_properties.set_animation(self.sprite, selected.row())
 
     def anim_context_menu(self, point: QtCore.QPoint):
         index = self.anim_list.indexAt(point)
@@ -130,4 +130,3 @@ class SpriteEditor(SpriteWidgetUI):
 
     def frame_duration_changed(self, value: int):
         self.selected_frame.duration = value
-
