@@ -31,7 +31,7 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
 
     def rowCount(self, parent: QtCore.QModelIndex) -> int:
         if not parent.isValid():
-            return self.char_count + 2
+            return self.char_count
 
     def columnCount(self, parent: QtCore.QModelIndex) -> int:
         return 4
@@ -40,11 +40,7 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         if role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == QtCore.Qt.Vertical:
-            return [
-                "Map Top ID",
-                "Map Bottom ID",
-                f"Character {section - 2}"
-            ][min(section, 2)]
+            return f"Character {section}"
         if section >= 5:
             return None
         return [
@@ -58,43 +54,25 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         if not index.isValid() or (role != QtCore.Qt.ItemDataRole.DisplayRole and
                                    role != QtCore.Qt.ItemDataRole.EditRole):
             return None
-        if index.row() == 0:
-            if index.column() == 0:
-                return self.event.map_top_id
-            return None
-        elif index.row() == 1:
-            if index.column() == 0:
-                return self.event.map_bottom_id
-            return None
         if index.column() == 0:
-            return self.event.characters[index.row() - 2]
+            return self.event.characters[index.row()]
         elif index.column() == 1:
-            return self.event.characters_pos[index.row() - 2]
+            return self.event.characters_pos[index.row()]
         elif index.column() == 2:
-            return self.event.characters_shown[index.row() - 2]
+            return self.event.characters_shown[index.row()]
         elif index.column() == 3:
-            return self.event.characters_anim_index[index.row() - 2]
+            return self.event.characters_anim_index[index.row()]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         default_flags = super(EventCharacterTable, self).flags(index)
         if not index.isValid():
             return default_flags
-        if index.row() == 0 or index.row() == 1:
-            if index.column() == 0:
-                default_flags |= QtCore.Qt.ItemFlag.ItemIsEditable
-        else:
-            default_flags |= QtCore.Qt.ItemFlag.ItemIsEditable
+        default_flags |= QtCore.Qt.ItemFlag.ItemIsEditable
         return default_flags
 
     def setData(self, index: QtCore.QModelIndex, value, role: int = ...) -> bool:
         if not index.isValid():
             return False
-        if index.row() == 0:
-            self.event.map_top_id = value
-            return True
-        elif index.row() == 1:
-            self.event.map_bottom_id = value
-            return True
         if index.column() == 0:
             self.event.characters[index.row() - 2] = value
         elif index.column() == 1:
