@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from ..MainEditor import MainEditor
 
 
+# TODO: Hide all disabled items (all elements 0) and implement Add/Remove buttons
+
+
 class PlaceAbstractTableModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, **kwargs):
         super(PlaceAbstractTableModel, self).__init__(*args, **kwargs)

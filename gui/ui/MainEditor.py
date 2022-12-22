@@ -2,6 +2,9 @@ from PySide6 import QtCore, QtWidgets, QtGui
 
 
 class MainEditorUI(QtWidgets.QMainWindow):
+    FILE_ICON = None
+    DIR_ICON = None
+
     def __init__(self, *args, **kwargs):
         super(MainEditorUI, self).__init__(*args, **kwargs)
 
@@ -11,6 +14,12 @@ class MainEditorUI(QtWidgets.QMainWindow):
         save_icon = self.style().standardIcon(save_pixmap)
         open_pixmap = QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton
         open_icon = self.style().standardIcon(open_pixmap)
+
+        file_pixmap = QtWidgets.QStyle.StandardPixmap.SP_FileIcon
+        MainEditorUI.FILE_ICON = self.style().standardIcon(file_pixmap)
+
+        dir_pixmap = QtWidgets.QStyle.StandardPixmap.SP_DirIcon
+        MainEditorUI.DIR_ICON = self.style().standardIcon(dir_pixmap)
 
         menu_bar = self.menuBar()
         self.file_menu = menu_bar.addMenu("File")

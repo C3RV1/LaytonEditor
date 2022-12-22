@@ -4,6 +4,7 @@ from typing import List, Tuple, Callable, Any, Union
 from PySide6 import QtCore, QtWidgets, QtGui
 from formats.filesystem import Folder, PlzArchive, NintendoDSRom
 from ..EditorTypes import EditorCategory, EditorObject
+from ..ui.MainEditor import MainEditorUI
 
 
 class FolderNode(EditorObject):
@@ -61,6 +62,9 @@ class FolderNode(EditorObject):
 
     def data(self):
         return os.path.basename(self.path)
+
+    def decorative(self):
+        return MainEditorUI.DIR_ICON
 
     def rename(self, value):
         new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
@@ -131,6 +135,9 @@ class AssetNode(EditorObject):
     def data(self):
         return os.path.basename(self.path)
 
+    def decorative(self):
+        return MainEditorUI.FILE_ICON
+
     def rename(self, value):
         self.rom.rename_file(self.path, value)
         new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
@@ -190,8 +197,12 @@ class FilesystemCategory(EditorCategory):
         return QtCore.QModelIndex()
 
     def data(self, index, role, model):
-        if index.isValid() and (role == QtCore.Qt.ItemDataRole.DisplayRole or role == QtCore.Qt.ItemDataRole.EditRole):
+        if not index.isValid():
+            return None
+        if role == QtCore.Qt.ItemDataRole.DisplayRole or role == QtCore.Qt.ItemDataRole.EditRole:
             return index.internalPointer().data()
+        elif role == QtCore.Qt.ItemDataRole.DecorationRole:
+            return index.internalPointer().decorative()
         return None
 
     def get_context_menu(self, index: QtCore.QModelIndex,

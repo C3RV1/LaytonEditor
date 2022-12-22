@@ -41,6 +41,9 @@ class EditorCategory(EditorObject):
     def data(self, index: QtCore.QModelIndex, role, model: 'EditorTree'):
         return QtCore.QModelIndex()
 
+    def decorative(self):
+        return None
+
     def get_context_menu(self, index: QtCore.QModelIndex,
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         return []
