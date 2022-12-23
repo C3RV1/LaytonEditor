@@ -35,6 +35,9 @@ def fluid_synth_write_s16_stereo_custom(synth, length):
 
 
 class ModifiedSynth(Synth):
+    """ Modified synth used to generate samples in stereo.
+    """
+
     def __init__(self, gain=0.2, samplerate=44100, channels=256, **kwargs):
         super(ModifiedSynth, self).__init__(gain=gain, samplerate=float(samplerate), channels=channels, **kwargs)
 
