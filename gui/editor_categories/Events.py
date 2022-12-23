@@ -18,7 +18,7 @@ class EventNode(EditorObject):
 
     def get_event(self) -> Event:
         ev = Event(self.category.rom)
-        ev.set_event_id(self.top * 1000 + self.btm)
+        ev.event_id = self.top * 1000 + self.btm
         ev.load_from_rom()
         return ev
 

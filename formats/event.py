@@ -28,9 +28,6 @@ class Event:
 
         self.original = b""
 
-    def set_event_id(self, new_id):
-        self.event_id = new_id
-
     def resolve_event_id(self):
         prefix = self.event_id // 1000
         postfix = self.event_id % 1000
@@ -82,10 +79,7 @@ class Event:
             self.characters_pos.append(reader.read_uint8())
         self.characters_shown = []
         for _indexChar in range(8):
-            if reader.read_uint8() == 0:
-                self.characters_shown.append(False)
-            else:
-                self.characters_shown.append(True)
+            self.characters_shown.append(reader.read_bool())
         self.characters_anim_index = []
         for _indexChar in range(8):
             self.characters_anim_index.append(reader.read_uint8())
@@ -102,7 +96,7 @@ class Event:
         for char_pos in self.characters_pos:
             wtr.write_uint8(char_pos)
         for char_show in self.characters_shown:
-            wtr.write_uint8(1 if char_show else 0)
+            wtr.write_bool(char_show)
         for char_anim in self.characters_anim_index:
             wtr.write_uint8(char_anim)
 
