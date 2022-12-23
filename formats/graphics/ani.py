@@ -448,7 +448,7 @@ class AniSubSprite(AniSprite):
 
         wtr.write_uint16(len(self.images))
         wtr.write_uint16(3 if self.colordepth == 4 else 4)
-        wtr.write_uint32(256 if self.colordepth == 8 else 16)
+        wtr.write_uint32(len(self.palette))
 
         for img in self.images:
             # TODO: Maybe improve algorithm to use less parts
@@ -555,7 +555,7 @@ class AniSubSprite(AniSprite):
             wtr.write_uint16(count)
             wtr.seek(last_pos)
 
-        for color_i in range(256 if self.colordepth == 8 else 16):
+        for color_i in range(len(self.palette)):
             self.palette[color_i]: np.ndarray
             self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
