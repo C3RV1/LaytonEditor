@@ -12,7 +12,23 @@ import ndspy.color
 
 
 class BGImage(FileFormat):
-    image: np.ndarray = np.zeros((256, 192), np.uint8)
+    """
+    Background file on the Layton ROM.
+
+    Attributes
+    ----------
+    self.image : np.ndarray
+        Array representing the image.
+
+        The image is represented row-first, so that it's accessed image[row][column].
+        All entries on the image represent a color in the palette.
+    self.palette : np.ndarray
+        Array of colors used in the image.
+
+        Each color is RGBA, all colors having alpha 255 except color 0, which is
+        transparent.
+    """
+    image: np.ndarray = np.zeros((192, 256), np.uint8)
     palette: np.ndarray = np.zeros((256, 4), np.uint8)
 
     _compressed_default = 2
@@ -86,6 +102,14 @@ class BGImage(FileFormat):
                 wtr.write_uint16(tile_id[0][0])
 
     def extract_image_qt(self) -> QtGui.QPixmap:
+        """
+        Extract image as a QPixmap.
+
+        Returns
+        -------
+        QPixmap
+            The image converted to a QPixmap.
+        """
         image = self.extract_image_pil()
         width, height = image.size
         image = image.resize((width * 2, height * 2), resample=Image.Resampling.NEAREST)
@@ -93,9 +117,29 @@ class BGImage(FileFormat):
         return QtGui.QPixmap.fromImage(qim)
 
     def extract_image_pil(self) -> Image.Image:
+        """
+        Extract image as a Pillow image.
+
+        Returns
+        -------
+        Image.Image
+            The image converted to a Pillow image.
+        """
         return Image.fromarray(self.palette[self.image].astype(np.uint8), "RGBA")
 
     def import_image_pil(self, image: Image.Image):
+        """
+        Import a Pillow image.
+
+        Parameters
+        ----------
+        image : Image.Image
+            The Pillow image to replace the current image.
+
+        Notes
+        -----
+        This function also reworks the palette of the BGImage.
+        """
         # Find out why palette breaks close to 256 colors (keeping at 200 colors for consistency w/ the game)
         # 199 colors + 1 transparent
         image = image.resize((256, 192)).convert("RGB").quantize(199, method=Image.MAXCOVERAGE)

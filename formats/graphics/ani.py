@@ -17,6 +17,17 @@ from formats.filesystem import FileFormat
 
 # Calculate and write the sections
 def get_nearest_power_of_2(x: int):
+    """
+    Gets the nearest power of 2 to x.
+
+    Examples
+    --------
+    >>> get_nearest_power_of_2(10)
+    8
+
+    >>> get_nearest_power_of_2(324)
+    256
+    """
     possible_results = floor(log(x, 2)), ceil(log(x, 2))
     if x - 2 ** possible_results[1] < -7:
         return max(8, int(2 ** possible_results[0]))
@@ -25,6 +36,21 @@ def get_nearest_power_of_2(x: int):
 
 
 def calculate_power_of_2_steps(x: int):
+    """
+    Calculate how many powers of two are required to get to a number.
+
+    Notes
+    -----
+    This method is equivalent to counting the number of 1s in the binary
+    representation of the number.
+
+    Examples
+    --------
+    >>> calculate_power_of_2_steps(142)
+    4
+
+    For 142, we need to add 2 + 4 + 8 + 128 = 142, so 4 steps.
+    """
     ret = 0
     while x > 0:
         ret += 1
@@ -34,13 +60,94 @@ def calculate_power_of_2_steps(x: int):
 
 @dataclass
 class AnimationFrame:
+    """
+    Dataclass representing a frame of an animation.
+
+    Attributes
+    ----------
+    self.next_frame_index: int
+        Frame to play after this one.
+    self.duration: int
+        Duration of the frame in frames.
+    self.image_index: int
+        Index of the image which should play when this frame is active.
+    """
     next_frame_index: int  # Frame set after this frame
     duration: int
     image_index: int
 
 
+def generate_palette(images: List[Image.Image], maximum_color_count: int):
+    """
+    Generate the palette for a list of images, respecting a maximum number of colors.
+
+    Parameters
+    ----------
+    images : List[Image.Image]
+        List of Pillow images for which to generate the palette.
+    maximum_color_count : int
+        Number of allowed colors in total.
+
+    Returns
+    -------
+    Tuple[np.ndarray, List[np.ndarray]]
+        A tuple representing the palette and the images converted to the palette.
+
+        The first element is the palette as an ndarray of shape (color_count, 4).
+        The second element are the images as a list of ndarrays. The images are represented
+        row-first, so they are accessed images[image_index][row][column].
+    """
+    comb_w = max([img.width for img in images])
+    comb_h = sum([img.height for img in images])
+    comb = Image.new("RGBA", (comb_w, comb_h))
+    comb_y = 0
+    for i in range(len(images)):
+        comb.paste(images[i], (0, comb_y))
+        comb_y += images[i].height
+    comb = comb.convert("P", colors=(maximum_color_count - 1))
+    colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))
+    indexes = np.asarray(comb, np.uint8)
+
+    # add the regular transparent color
+    colors = np.concatenate(([[0, 255, 0, 0]], colors[:(maximum_color_count - 1)]))
+    indexes = indexes + 1  # we added our transparent color at the front of the palette
+    for i, (*_, a) in enumerate(colors):
+        if a < 128:
+            indexes[indexes == i] = 0  # transparent color, change to the transparent type
+
+    palette = np.zeros((len(colors), 4), np.uint8)
+    palette[:len(colors)] = colors
+
+    images_numpy = []
+
+    comb_y = 0
+    for i in range(len(images)):
+        h, w = images[i].height, images[i].width
+        image_numpy = indexes[comb_y:comb_y + h, :w]
+        images_numpy.append(image_numpy)
+        comb_y += h
+
+    return palette, images_numpy
+
+
 @dataclass
 class Animation:
+    """
+    Dataclass representing an animation.
+
+    Attributes
+    ----------
+    self.name : str
+        The name of the animation.
+    self.frames : List[AnimationFrame]
+        List of frames in this animation.
+    self.child_image_x : int
+        Position of the child image in the X axis.
+    self.child_image_y : int
+        Position of the child image in the Y axis.
+    self.child_image_animation_index : int
+        Animation index that the child should play.
+    """
     name: str = "Create an Animation"
     frames: List[AnimationFrame] = field(default_factory=list)
     child_image_x: int = 0
@@ -49,7 +156,40 @@ class Animation:
 
 
 class AniSprite(FileFormat):
-    colordepth: int = 8
+    """
+    Animation file on the Layton ROM.
+
+    Attributes
+    ----------
+    self.color_depth : int
+        Bits needed to represent a single color (8 or 4).
+    self.images : List[np.ndarray]
+        Images contained in the file, as numpy arrays.
+
+        Each image is represented row-first, so that they are accessed image[row][column].
+        Therefore, each image is of shape (height, width).
+        All entries on each image represent a color in the palette.
+    self.animations : List[Animation]
+        List of animations contained in the file, as Animation objects.
+    self.variable_labels : List[str]
+        List of 16 strings, each corresponding to the name of a variable.
+    self.variable_data : List[List[int]]
+        List of the data contained in each variable. Each variable is a list of 8 integers.
+    self.palette : np.ndarray
+        Array of colors used in the images.
+
+        Each color is RGBA, all colors having alpha 255 except color 0, which is
+        transparent.
+    self.child_image : str
+        Path of the child image, with the ".ani" extension (TODO: check for AniSubSprite).
+    self.variables : Dict[str, List[int]]
+        Dictionary representation of variable_labels and variable_data.
+
+        The dict returned by this function is read-only, although any modification made
+        to the variable data will change the underlying data, because list objects
+        share the same reference.
+    """
+    color_depth: int = 8
     images: List[np.ndarray] = []
     animations: List[Animation] = [Animation()]
     variable_labels = [f"Var{i}" for i in range(16)]
@@ -73,7 +213,7 @@ class AniSprite(FileFormat):
             rdr = BinaryReader(stream)
 
         n_images = rdr.read_uint16()
-        self.colordepth = 4 if rdr.read_uint16() == 3 else 8
+        self.color_depth = 4 if rdr.read_uint16() == 3 else 8
 
         # import the images
         self.images = []
@@ -92,7 +232,7 @@ class AniSprite(FileFormat):
                 part_h = 2 ** (3 + rdr.read_uint16())
 
                 part: np.ndarray
-                if self.colordepth == 8:
+                if self.color_depth == 8:
                     part = np.frombuffer(rdr.read(part_h * part_w), np.uint8)
                     part = part.reshape((part_h, part_w))
                 else:
@@ -158,7 +298,7 @@ class AniSprite(FileFormat):
             wtr = BinaryWriter(stream)
 
         wtr.write_uint16(len(self.images))
-        wtr.write_uint16(3 if self.colordepth == 4 else 4)
+        wtr.write_uint16(3 if self.color_depth == 4 else 4)
 
         for img in self.images:
             img_h, img_w = img.shape
@@ -197,7 +337,7 @@ class AniSprite(FileFormat):
 
                     part[:part_h, :part_w] = img[part_y:part_y + part_h, part_x:part_x + part_w]
 
-                    if self.colordepth == 8:
+                    if self.color_depth == 8:
                         wtr.write(part.tobytes())
                     else:
                         h, w = part.shape
@@ -247,84 +387,105 @@ class AniSprite(FileFormat):
 
         return stream
 
-    @classmethod
-    def fromstream(cls, stream: BinaryIO):
-        return cls(file=stream)
+    def extract_image_pil(self, image_index: int) -> Image.Image:
+        """
+        Extract an image as a Pillow image.
 
-    @classmethod
-    def frombuffer(cls, buffer: bytes):
-        (ret := cls()).read_stream(BytesIO(buffer))
-        return ret
+        Parameters
+        ----------
+        image_index : int
+            The index of the image to extract.
 
-    def tobytes(self):
-        self.write_stream((stream := BytesIO()))
-        return stream.getvalue()
-
-    def extract_image_pil(self, image_index) -> Image.Image:
+        Returns
+        -------
+        Image.Image
+            The extracted Pillow image.
+        """
         return Image.fromarray(self.palette[self.images[image_index]].astype(np.uint8), "RGBA")
 
     def extract_image_qt(self, image_index) -> QtGui.QPixmap:
+        """
+        Extracts an image as a QPixmap.
+
+        Parameters
+        ----------
+        image_index : int
+            The index of the image to extract.
+
+        Returns
+        -------
+        QtGui.QPixmap
+            The extracted QPixmap.
+        """
         image = self.extract_image_pil(image_index)
         width, height = image.size
         image = image.resize((width * 2, height * 2), resample=Image.Resampling.NEAREST)
         qim = ImageQt(image)
         return QtGui.QPixmap.fromImage(qim)
 
-    def replace_image_pil(self, image_index, image: Optional[Image.Image]):  # also used to recreate palette
-        # TODO: Change colordepth
-        if image_index is not None:
-            logging.info(f"Animation {self._last_filename} replacing image {image_index} to image of size {image.size}")
-            if image_index < 0:
-                image_index = len(self.images) + image_index
-            assert image_index < len(self.images)
+    def rework_palette(self):
+        """
+        Creates the palette again for the images contained in the file.
+        """
+        logging.info(f"Animation {self._last_filename} reworking palette")
+        images_pil = [self.extract_image_pil(i) for i in range(len(self.images))]
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
 
-            image = image.convert("RGBA")
-        else:
-            logging.info(f"Animation {self._last_filename} reworking palette")
-        # Create the new palette by adding all the images together into 1 pil Image and then quantizing it.
-        # TODO: Prioritize inserted image colors in palette
-        # TODO: Bulk import images instead?
-        comb_w = max([img.shape[1] for img in self.images])
-        comb_h = sum([img.shape[0] for img in self.images])
-        if image_index is not None:
-            comb_w = max(comb_w, image.width)
-            comb_h = comb_h + image.height
-        comb = Image.new("RGBA", (comb_w, comb_h))
-        comb_y = 0
-        for i in range(len(self.images)):
-            if i == image_index:
-                comb.paste(image, (0, comb_y))
-                comb_y += image.height
-            else:
-                comb.paste(self.extract_image_pil(i), (0, comb_y))
-                comb_y += self.images[i].shape[0]
-        comb = comb.convert("P", colors=(
-            255 if self.colordepth == 8 else 15))  # 255 because we need to add the transparent color
-        colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))
-        indexes = np.asarray(comb, np.uint8)
+    def replace_image_pil(self, image_index: int, image: Image.Image):
+        """
+        Replaces an image with a Pillow image, reworking the palette afterwards.
 
-        # add the regular transparent color
-        colors = np.concatenate(([[0, 255, 0, 0]], colors[:(255 if self.colordepth == 8 else 15)]))
-        indexes = indexes + 1  # we added our transparent color at the front of the palette
-        for i, (*_, a) in enumerate(colors):
-            if a < 128:
-                indexes[indexes == i] = 0  # transparent color, change to the transparent type
+        Parameters
+        ----------
+        image_index : int
+            Index of the image to replace.
+        image : Image.Image
+            Image with which to replace it.
+        """
+        logging.info(f"Animation {self._last_filename} replacing image at idx {image_index}")
+        images_pil = [self.extract_image_pil(i) for i in range(len(self.images))]
+        images_pil[image_index] = image
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
 
-        self.palette = np.zeros((len(colors), 4), np.uint8)
-        self.palette[:len(colors)] = colors
+    def bulk_import_images(self, images_pil: List[Image.Image]):
+        """
+        Imports a list of images, removing all current images in the process.
 
-        comb_y = 0
-        for i in range(len(self.images)):
-            h, w, *_ = self.images[i].shape if i != image_index else (image.height, image.width)
-            self.images[i] = indexes[comb_y:comb_y + h, :w]
-            comb_y += h
+        Parameters
+        ----------
+        images_pil : List[Image.Image]
+            List of all images.
+        """
+        logging.info(f"Animation {self._last_filename} bulk importing {len(images_pil)} images")
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
 
     def append_image_pil(self, image: Image.Image):
+        """
+        Appends an image to the end of the image list.
+
+        Parameters
+        ----------
+        image : Image.Image
+            Pillow image to append.
+        """
         logging.info(f"Animation {self._last_filename} appending image of size {image.size}")
         self.images.append(np.ndarray((0, 0), np.uint8))
         self.replace_image_pil(-1, image)
 
-    def insert_image_pil(self, image_index, image: Image.Image):
+    def insert_image_pil(self, image_index: int, image: Image.Image):
+        """
+        Inserts the given image at image_index.
+
+        Parameters
+        ----------
+        image_index : int
+            Index at which to insert the image.
+        image : Image.Image
+            Image to insert.
+        """
         logging.info(f"Animation {self._last_filename} inserting image of size {image.size} to idx {image_index}")
         self.images.insert(image_index, np.ndarray((0, 0), np.uint8))
         for anim in self.animations:
@@ -333,7 +494,18 @@ class AniSprite(FileFormat):
                     anim.frames[i].image_index += 1
         self.replace_image_pil(image_index, image)
 
-    def remove_image(self, image_index):
+    def remove_image(self, image_index: int):
+        """
+        Removes the image at the specified index.
+
+        When removing an image, it also modifies all existing animations to remove
+        this image from any frame.
+
+        Parameters
+        ----------
+        image_index : int
+            Index of the image to remove.
+        """
         logging.info(f"Animation {self._last_filename} removing image of idx {image_index}")
         self.images.pop(image_index)
 
@@ -346,18 +518,21 @@ class AniSprite(FileFormat):
                     anim.frames[i].image_index -= 1
             for frame in frames_to_remove:
                 anim.frames.remove(frame)
-        self.replace_image_pil(None, None)  # Recreate palette
-
-    def __bytes__(self):
-        return self.tobytes()
+        self.rework_palette()  # Recreate palette
 
 
 class AniSubSprite(AniSprite):
+    """
+    Animation file on the Layton ROM for images shown on the sub engine.
+
+    For attributes look at base class (AniSprite).
+    """
+
     def read_stream(self, stream: BinaryIO):
         rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
 
         n_images = rdr.read_uint16()
-        self.colordepth = 4 if rdr.read_uint16() == 3 else 8
+        self.color_depth = 4 if rdr.read_uint16() == 3 else 8
         palette_length = rdr.read_uint32()
 
         # import the images
@@ -378,7 +553,7 @@ class AniSubSprite(AniSprite):
                 part_w = 2 ** (3 + rdr.read_uint16())
                 part_h = 2 ** (3 + rdr.read_uint16())
                 part: np.ndarray
-                if self.colordepth == 8:
+                if self.color_depth == 8:
                     part = np.frombuffer(rdr.read(part_h * part_w), np.uint8)
                 else:
                     bufpart = np.frombuffer(rdr.read(part_h * part_w // 2), np.uint8)
@@ -447,7 +622,7 @@ class AniSubSprite(AniSprite):
         wtr = stream if isinstance(stream, BinaryWriter) else BinaryWriter(stream)
 
         wtr.write_uint16(len(self.images))
-        wtr.write_uint16(3 if self.colordepth == 4 else 4)
+        wtr.write_uint16(3 if self.color_depth == 4 else 4)
         wtr.write_uint32(len(self.palette))
 
         for img in self.images:
@@ -519,7 +694,7 @@ class AniSubSprite(AniSprite):
                             img[_part_y + yt * 8:min(_part_y + yt * 8 + 8, _part_y + _part_h),
                                 _part_x + xt * 8:min(_part_x + xt * 8 + 8, _part_x + _part_w)]
 
-                if self.colordepth == 8:
+                if self.color_depth == 8:
                     wtr.write(part.tobytes())
                 else:
                     _, hw = part.shape

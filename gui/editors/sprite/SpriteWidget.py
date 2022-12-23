@@ -51,7 +51,7 @@ class SpriteEditor(SpriteWidgetUI):
 
             def replace_image(index_):
                 self.images_model.replace_image(index_)
-                self.image_list_selection(index_, None)
+                self.image_list_selection(index_)
 
             self.context_menu.addSeparator()
 

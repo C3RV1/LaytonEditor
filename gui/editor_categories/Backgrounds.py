@@ -5,6 +5,7 @@ from formats.graphics.bg import BGImage
 from PySide6 import QtCore, QtWidgets
 from typing import Callable, List, Tuple, Union
 from PIL import Image
+from ..SettingsManager import SettingsManager
 
 
 class BackgroundAsset(AssetNodeBasename):
@@ -39,7 +40,7 @@ class BackgroundsCategory(FilesystemCategory):
 
     def import_png(self, index: QtCore.QModelIndex, refresh_callback: Callable):
         node: BackgroundAsset = index.internalPointer()
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import PNG...", filter="PNG Files (*.png)")
+        import_path = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
         if import_path == "":
             return
 
@@ -54,8 +55,7 @@ class BackgroundsCategory(FilesystemCategory):
         node: BackgroundAsset = index.internalPointer()
         filename, _ = os.path.splitext(os.path.basename(node.path))
         filename += ".png"
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export PNG...", filename,
-                                                               filter="PNG Files (*.png)")
+        export_path = SettingsManager().export_file(None, "Export PNG...", filename, "PNG Files (*.png)")
         if export_path == "":
             return
 

@@ -5,6 +5,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from formats.filesystem import Folder, PlzArchive, NintendoDSRom
 from ..EditorTypes import EditorCategory, EditorObject
 from ..ui.MainEditor import MainEditorUI
+from ..SettingsManager import SettingsManager
 
 
 class FolderNode(EditorObject):
@@ -216,7 +217,7 @@ class FilesystemCategory(EditorCategory):
 
     def import_(self, index: QtCore.QModelIndex,
                 refresh_function: Callable):
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import file...")
+        import_path = SettingsManager().import_file(None, "Import file...")
         if import_path == "":
             return
         asset: AssetNode = index.internalPointer()
@@ -230,7 +231,7 @@ class FilesystemCategory(EditorCategory):
     def export(self, index: QtCore.QModelIndex):
         asset: AssetNode = index.internalPointer()
         filename = os.path.basename(asset.path)
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export file...", filename)
+        export_path = SettingsManager().export_file(None, "Export file...", filename)
         if export_path == "":
             return
         with open(export_path, "wb") as export_file:

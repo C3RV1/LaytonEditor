@@ -2,6 +2,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from formats.graphics.ani import AniSprite
 from typing import List
 from PIL import Image
+from gui.SettingsManager import SettingsManager
 
 
 class ImagesModel(QtCore.QAbstractListModel):
@@ -69,7 +70,7 @@ class ImagesModel(QtCore.QAbstractListModel):
     def append_image(self):
         self.beginInsertRows(QtCore.QModelIndex(), len(self.sprite.images),
                              len(self.sprite.images))
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import PNG...", filter="PNG Files (*.png)")
+        import_path, _ = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
         if import_path == "":
             return
 
@@ -78,7 +79,7 @@ class ImagesModel(QtCore.QAbstractListModel):
         self.endInsertRows()
 
     def replace_image(self, index: QtCore.QModelIndex):
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import PNG...", filter="PNG Files (*.png)")
+        import_path, _ = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
         if import_path == "":
             return
 
@@ -88,8 +89,7 @@ class ImagesModel(QtCore.QAbstractListModel):
 
     def export_image(self, index: QtCore.QModelIndex):
         filename = f"{index.row()}.png"
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export PNG...", filename,
-                                                               filter="PNG Files (*.png)")
+        export_path = SettingsManager().export_file(None, "Export PNG...", filename, "PNG Files (*.png)")
         if export_path == "":
             return
 

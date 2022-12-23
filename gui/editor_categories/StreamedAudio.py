@@ -5,6 +5,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from typing import List, Tuple, Callable, Union
 from formats.sound.sadl import SADL
 from formats_parsed.sound.wav import WAV
+from ..SettingsManager import SettingsManager
 
 
 class SADLNode(AssetNodeBasename):
@@ -39,7 +40,7 @@ class StreamedAudioCategory(FilesystemCategory):
 
     def import_wav(self, index: QtCore.QModelIndex, refresh_callback: Callable):
         node: SADLNode = index.internalPointer()
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import WAV...", filter="WAV Files (*.wav)")
+        import_path, _ = SettingsManager().import_file(None, "Import WAV...", "WAV Files (*.wav)")
         if import_path == "":
             return
 
@@ -66,8 +67,7 @@ class StreamedAudioCategory(FilesystemCategory):
         node: SADLNode = index.internalPointer()
         filename, _ = os.path.splitext(os.path.basename(node.path))
         filename += ".wav"
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export WAV...", filename,
-                                                               filter="WAV Files (*.wav)")
+        export_path = SettingsManager().export_file(None, "Export WAV...", filename, "WAV Files (*.wav)")
         if export_path == "":
             return
 

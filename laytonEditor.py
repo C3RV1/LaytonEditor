@@ -20,6 +20,5 @@ import qdarktheme
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    qdarktheme.setup_theme("dark")
     main_editor = MainEditor()
     app.exec()

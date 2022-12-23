@@ -6,6 +6,11 @@ from formats.filesystem import FileFormat
 
 
 class Dlz(FileFormat):
+    """
+    DLZ file format on the Layton ROM.
+
+    Each DLZ file consists of a binary structure repeated over and over.
+    """
     _entries = list[bytes]
 
     _compressed_default = True

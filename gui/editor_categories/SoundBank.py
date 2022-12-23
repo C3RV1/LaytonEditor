@@ -5,6 +5,7 @@ from formats.sound.swdl import SWDL
 from PySide6 import QtCore, QtWidgets
 from typing import Callable, List, Tuple, Union
 from formats_parsed.sound import sf2
+from ..SettingsManager import SettingsManager
 
 
 class SWDLNode(AssetNodeBasename):
@@ -37,8 +38,7 @@ class SoundBankCategory(FilesystemCategory):
 
         filename, _ = os.path.splitext(os.path.basename(node.path))
         filename += ".sf2"
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export SF2...", filename,
-                                                               filter="SoundFont Files (*.sf2)")
+        export_path, _ = SettingsManager().export_file(None, "Export SF2...", filename, "SoundFont Files (*.sf2)")
         if export_path == "":
             return
 

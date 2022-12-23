@@ -18,10 +18,14 @@ from formats import conf
 import logging
 from typing import Union
 import qdarktheme
+from .SettingsManager import SettingsManager
 
 
 class MainEditor(MainEditorUI):
     def __init__(self, *args, **kwargs):
+        self.current_theme = SettingsManager().theme
+        qdarktheme.setup_theme(SettingsManager().theme)
+
         super(MainEditor, self).__init__(*args, **kwargs)
 
         self.rom: Union[NintendoDSRom, None] = None
@@ -33,14 +37,11 @@ class MainEditor(MainEditorUI):
         self.pg_previewer = PygamePreviewer()
         self.pg_previewer.start()
 
-        self.overwrite_dont_ask_again = False
-        self.current_theme = "dark"
-
     def file_menu_open(self):
         if self.last_path is not None:
             if not self.unsaved_data_dialog():
                 return
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open ROM", filter="NDS Rom (*.nds)")
+        file_path = SettingsManager().open_rom(self)
         if file_path == "":
             return
 
@@ -86,7 +87,7 @@ class MainEditor(MainEditorUI):
             self.rom.saveToFile(self.last_path)
 
     def file_menu_save_as(self):
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save ROM", filter="NDS Rom (*.nds)")
+        file_path = SettingsManager().save_rom(self)
         if file_path == "":
             return
         self.last_path = file_path
@@ -198,9 +199,5 @@ class MainEditor(MainEditorUI):
         self.pg_previewer.loop_lock.release()
 
     def toggle_theme(self):
-        if self.current_theme == "dark":
-            new_theme = "light"
-        else:
-            new_theme = "dark"
-        qdarktheme.setup_theme(new_theme)
-        self.current_theme = new_theme
+        SettingsManager().toggle_theme()
+        qdarktheme.setup_theme(SettingsManager().theme)

@@ -7,6 +7,7 @@ from formats.sound.swdl import SWDL
 from formats_parsed.sound.SMDLMidiSequencer import SMDLMidiSequencer
 from formats_parsed.sound.SMDLBuilder import SMDLBuilderMidi
 import mido
+from ..SettingsManager import SettingsManager
 
 
 class SMDLNode(AssetNodeBasename):
@@ -45,7 +46,7 @@ class SequencedAudioCategory(FilesystemCategory):
 
     def import_mid(self, index, refresh_callback):
         node: SMDLNode = index.internalPointer()
-        import_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import MID...", filter="MIDI Files (*.mid)")
+        import_path, _ = SettingsManager().import_file(None, "Import MID...", "MIDI Files (*.mid)")
         if import_path == "":
             return
 
@@ -64,8 +65,7 @@ class SequencedAudioCategory(FilesystemCategory):
 
         filename, _ = os.path.splitext(os.path.basename(node.path))
         filename += ".mid"
-        export_path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "Export MID...", filename,
-                                                               filter="MIDI Files (*.mid)")
+        export_path, _ = SettingsManager().export_file(None, "Export MID...", filename, "MIDI Files (*.mid)")
         if export_path == "":
             return
 
