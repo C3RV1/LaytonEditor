@@ -403,7 +403,7 @@ class AniSubSprite(AniSprite):
 
             self.images.append(img)
 
-        self.palette = np.zeros((256, 4), np.uint8)
+        self.palette = np.zeros((palette_length, 4), np.uint8)
         for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
