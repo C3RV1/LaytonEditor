@@ -13,7 +13,7 @@ class Dlz(FileFormat):
     """
     _entries = list[bytes]
 
-    _compressed_default = True
+    _compressed_default = 1
 
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):
@@ -45,8 +45,33 @@ class Dlz(FileFormat):
         for entry in self._entries:
             wtr.write(entry)
 
-    def unpack(self, __format):
+    def unpack(self, __format: str):
+        """
+        Unpack the entries in the DLZ file according to a struct format.
+
+        Parameters
+        ----------
+        __format : str
+            The format of each entry as a `struct` module format.
+
+        Returns
+        -------
+        List[Tuple]
+            A list containing all the unpacked entries.
+        """
         return [struct.unpack(__format, entry) for entry in self._entries]
 
     def pack(self, fmt, data: list):
+        """
+        Pack the supplied data entries according to a struct format.
+
+        Parameters
+        ----------
+        fmt : str
+            The format of each entry as a `struct` module format.
+        data : List[Tuple]
+            A list of the entries.
+
+            Is entry is a structure following the format specified in the fmt parameter.
+        """
         self._entries = [struct.pack(fmt, *entry_dat) for entry_dat in data]

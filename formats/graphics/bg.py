@@ -14,22 +14,21 @@ import ndspy.color
 class BGImage(FileFormat):
     """
     Background file on the Layton ROM.
-
-    Attributes
-    ----------
-    self.image : np.ndarray
-        Array representing the image.
-
-        The image is represented row-first, so that it's accessed image[row][column].
-        All entries on the image represent a color in the palette.
-    self.palette : np.ndarray
-        Array of colors used in the image.
-
-        Each color is RGBA, all colors having alpha 255 except color 0, which is
-        transparent.
     """
     image: np.ndarray = np.zeros((192, 256), np.uint8)
+    """
+    Array representing the image.
+
+    The image is represented row-first, so that it's accessed image[row][column].
+    All entries on the image represent a color in the palette.
+    """
     palette: np.ndarray = np.zeros((256, 4), np.uint8)
+    """
+    Array of colors used in the image.
+
+    Each color is RGBA, all colors having alpha 255 except color 0, which is
+    transparent.
+    """
 
     _compressed_default = 2
 

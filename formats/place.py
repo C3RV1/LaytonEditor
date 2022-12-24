@@ -72,7 +72,7 @@ class Place(FileFormat):
     comments: List[PlaceComment] = [PlaceComment() for _ in range(16)]
     exits: List[PlaceExit] = [PlaceExit() for _ in range(12)]
 
-    _compressed_default = False
+    _compressed_default = 0
 
     def read_stream(self, stream):
         rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)

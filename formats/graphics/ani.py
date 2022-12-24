@@ -58,25 +58,6 @@ def calculate_power_of_2_steps(x: int):
     return ret
 
 
-@dataclass
-class AnimationFrame:
-    """
-    Dataclass representing a frame of an animation.
-
-    Attributes
-    ----------
-    self.next_frame_index: int
-        Frame to play after this one.
-    self.duration: int
-        Duration of the frame in frames.
-    self.image_index: int
-        Index of the image which should play when this frame is active.
-    """
-    next_frame_index: int  # Frame set after this frame
-    duration: int
-    image_index: int
-
-
 def generate_palette(images: List[Image.Image], maximum_color_count: int):
     """
     Generate the palette for a list of images, respecting a maximum number of colors.
@@ -131,76 +112,76 @@ def generate_palette(images: List[Image.Image], maximum_color_count: int):
 
 
 @dataclass
+class AnimationFrame:
+    """
+    Dataclass representing a frame of an animation.
+    """
+    next_frame_index: int
+    """Frame to play after this one."""
+    duration: int
+    """Duration of the frame in frames."""
+    image_index: int
+    """Index of the image which should play when this frame is active."""
+
+
+@dataclass
 class Animation:
     """
     Dataclass representing an animation.
-
-    Attributes
-    ----------
-    self.name : str
-        The name of the animation.
-    self.frames : List[AnimationFrame]
-        List of frames in this animation.
-    self.child_image_x : int
-        Position of the child image in the X axis.
-    self.child_image_y : int
-        Position of the child image in the Y axis.
-    self.child_image_animation_index : int
-        Animation index that the child should play.
     """
     name: str = "Create an Animation"
+    """The name of the animation."""
     frames: List[AnimationFrame] = field(default_factory=list)
+    """List of frames in this animation."""
     child_image_x: int = 0
+    """Position of the child image in the X axis."""
     child_image_y: int = 0
+    """Position of the child image in the Y axis."""
     child_image_animation_index: int = 0
+    """Animation index that the child should play."""
 
 
 class AniSprite(FileFormat):
     """
     Animation file on the Layton ROM.
-
-    Attributes
-    ----------
-    self.color_depth : int
-        Bits needed to represent a single color (8 or 4).
-    self.images : List[np.ndarray]
-        Images contained in the file, as numpy arrays.
-
-        Each image is represented row-first, so that they are accessed image[row][column].
-        Therefore, each image is of shape (height, width).
-        All entries on each image represent a color in the palette.
-    self.animations : List[Animation]
-        List of animations contained in the file, as Animation objects.
-    self.variable_labels : List[str]
-        List of 16 strings, each corresponding to the name of a variable.
-    self.variable_data : List[List[int]]
-        List of the data contained in each variable. Each variable is a list of 8 integers.
-    self.palette : np.ndarray
-        Array of colors used in the images.
-
-        Each color is RGBA, all colors having alpha 255 except color 0, which is
-        transparent.
-    self.child_image : str
-        Path of the child image, with the ".ani" extension (TODO: check for AniSubSprite).
-    self.variables : Dict[str, List[int]]
-        Dictionary representation of variable_labels and variable_data.
-
-        The dict returned by this function is read-only, although any modification made
-        to the variable data will change the underlying data, because list objects
-        share the same reference.
     """
     color_depth: int = 8
+    """Bits needed to represent a single color (8 or 4)."""
     images: List[np.ndarray] = []
+    """
+    Images contained in the file, as numpy arrays.
+
+    Each image is represented row-first, so that they are accessed image[row][column].
+    Therefore, each image is of shape (height, width).
+    All entries on each image represent a color in the palette.
+    """
     animations: List[Animation] = [Animation()]
+    """List of animations contained in the file, as Animation objects."""
     variable_labels = [f"Var{i}" for i in range(16)]
+    """List of 16 strings, each corresponding to the name of a variable."""
     variable_data = [[0] * 8 for i in range(16)]
+    """List of the data contained in each variable. Each variable is a list of 8 integers."""
     palette: np.ndarray = np.zeros((256, 4), np.uint8)
+    """
+    Array of colors used in the images.
+    
+    Each color is RGBA, all colors having alpha 255 except color 0, which is
+    transparent.
+    """
     child_image: str = ""
+    """Path of the child image, with the ".ani" extension (TODO: check for AniSubSprite)."""
 
     _compressed_default = 2
 
     @property
     def variables(self):
+        """
+        Dictionary representation of variable_labels and variable_data.
+
+        The dict returned by this function is read-only, although any modification made
+        to the variable data will change the underlying data, because list objects
+        share the same reference.
+        """
         var_dict = {}
         for label, values in zip(self.variable_labels, self.variable_data):
             var_dict[label] = values

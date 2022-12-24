@@ -18,7 +18,7 @@ SECOND_TYPES = {
 }
 
 
-def compress(data: bytes, compression_type=LZ10, double_typed: bool = False) -> bytes:
+def compress(data: bytes, compression_type=LZ10, double_typed: bool = None) -> bytes:
     if not data:
         return b""
     if double_typed is None:
