@@ -48,7 +48,7 @@ class Archive:
         """
         pass
 
-    def rename_file(self, old, new):
+    def rename_file(self, path: str, new_filename: str):
         """
         Renames the file at the specified path to the specified file name.
 
