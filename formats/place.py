@@ -10,7 +10,7 @@ class PlaceHintcoin:
     x: int = 0
     y: int = 0
     index: int = 0
-    diameter: int = 0
+    size: int = 0
 
 
 @dataclass
@@ -87,7 +87,7 @@ class Place(FileFormat):
             hintcoin.x = rdr.read_uint8()
             hintcoin.y = rdr.read_uint8()
             hintcoin.index = rdr.read_uint8()
-            hintcoin.diameter = rdr.read_uint8()
+            hintcoin.size = rdr.read_uint8()
         rdr.seek(0x2c)
         for comment in self.comments:
             comment.x = rdr.read_uint8()
@@ -139,7 +139,7 @@ class Place(FileFormat):
             wtr.write_uint8(hintcoin.x)
             wtr.write_uint8(hintcoin.y)
             wtr.write_uint8(hintcoin.index)
-            wtr.write_uint8(hintcoin.diameter)
+            wtr.write_uint8(hintcoin.size)
         for comment in self.comments:
             wtr.write_uint8(comment.x)
             wtr.write_uint8(comment.y)

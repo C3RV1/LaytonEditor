@@ -96,10 +96,8 @@ class PlacePreview(TwoScreenRenderer):
         overlay_cam = k4pg.Camera(overlay, alignment=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
 
         for hint_coin in self.place.hintcoins:
-            k4pg.draw.circle(overlay_cam, pg.Color(230, 212, 14),
-                             pg.Vector2(hint_coin.x + hint_coin.diameter // 2,
-                                        hint_coin.y + hint_coin.diameter // 2),
-                             radius=hint_coin.diameter // 2)
+            hc_rect = pg.Rect(hint_coin.x, hint_coin.y, hint_coin.size, hint_coin.size)
+            k4pg.draw.rect(overlay_cam, pg.Color(230, 212, 14), hc_rect)
         for comment in self.place.comments:
             comment_rect = pg.Rect(comment.x, comment.y, comment.width, comment.height)
             k4pg.draw.rect(overlay_cam, pg.Color(14, 212, 230), comment_rect)
