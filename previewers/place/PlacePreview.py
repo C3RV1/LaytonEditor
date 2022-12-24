@@ -3,7 +3,6 @@ import pygame as pg
 from formats.place import Place
 from pg_utils.rom.RomSingleton import RomSingleton
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
-# from pg_utils.rom.rom_extract import load_smd
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
 
@@ -93,6 +92,25 @@ class PlacePreview(TwoScreenRenderer):
                                     sprite_sheet=True, convert_alpha=False)
             self.exits.append(exit_)
 
+        overlay = pg.Surface((256, 192), flags=pg.SRCALPHA)
+        overlay_cam = k4pg.Camera(overlay, alignment=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
+
+        for hint_coin in self.place.hintcoins:
+            k4pg.draw.circle(overlay_cam, pg.Color(230, 212, 14),
+                             pg.Vector2(hint_coin.x + hint_coin.diameter // 2,
+                                        hint_coin.y + hint_coin.diameter // 2),
+                             radius=hint_coin.diameter // 2)
+        for comment in self.place.comments:
+            comment_rect = pg.Rect(comment.x, comment.y, comment.width, comment.height)
+            k4pg.draw.rect(overlay_cam, pg.Color(14, 212, 230), comment_rect)
+        for obj in self.place.objects:
+            obj_rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
+            k4pg.draw.rect(overlay_cam, pg.Color(14, 230, 21), obj_rect)
+
+        self.overlay_sprite = k4pg.Sprite()
+        self.overlay_sprite.surf = overlay
+        self.overlay_sprite.alpha = 180
+
     def update(self, dt: float):
         for sprite in self.sprites:
             sprite.animate(dt)
@@ -120,6 +138,8 @@ class PlacePreview(TwoScreenRenderer):
         self.map_icon.draw(self.top_camera)
 
         self.btm_bg.draw(self.btm_camera)
+
+        self.overlay_sprite.draw(self.btm_camera)
 
         for sprite in self.sprites:
             sprite.draw(self.btm_camera)
