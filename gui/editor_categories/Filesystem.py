@@ -149,7 +149,6 @@ class AssetNode(EditorObject):
     def get_asset_compression(self):
         file = self.rom.open(self.path, "rb")
         header = file.read(4)
-        print(header)
         file.close()
         compression = 0
         if header[0] in [0x10, 0x30, 0x28, 0x24]:
