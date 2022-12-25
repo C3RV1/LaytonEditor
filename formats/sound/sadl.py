@@ -208,6 +208,7 @@ class SADL(FileFormat):
     def encode(self, decoded: np.ndarray, progress_callback: Union[Callable, None] = None):
         self.num_samples = decoded.shape[1]
         # Professor Layton 2 only supports Procyon encoding
+        # TODO: Implement option for INT_IMA encoding?
         self.coding = Coding.NDS_PROCYON
         self.buffer = np.zeros((decoded.shape[0], int(math.ceil(self.num_samples / 30)) * 16), dtype=np.uint8)
 
