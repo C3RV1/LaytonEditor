@@ -1,8 +1,10 @@
+import logging
 import os.path
+import struct
 from typing import List, Tuple, Callable, Any, Union
 
 from PySide6 import QtCore, QtWidgets, QtGui
-from formats.filesystem import Folder, PlzArchive, NintendoDSRom
+from formats.filesystem import Folder, PlzArchive, NintendoDSRom, CompressedIOWrapper
 from ..EditorTypes import EditorCategory, EditorObject
 from ..ui.MainEditor import MainEditorUI
 from ..SettingsManager import SettingsManager
@@ -144,6 +146,19 @@ class AssetNode(EditorObject):
         new_path = os.path.join(os.path.dirname(self.path), value).replace("\\", "/")
         self.path = new_path
 
+    def get_asset_compression(self):
+        file = self.rom.open(self.path, "rb")
+        header = file.read(4)
+        print(header)
+        file.close()
+        compression = 0
+        if header[0] in [0x10, 0x30, 0x28, 0x24]:
+            compression = 1
+        elif struct.unpack("<I", header)[0] in [1, 2, 3, 4]:
+            compression = 2
+        logging.info(f"Asset {self.path} detected compression level {compression}")
+        return compression
+
 
 class AssetNodeBasename(AssetNode):
     def data(self):
@@ -222,7 +237,10 @@ class FilesystemCategory(EditorCategory):
             return
         asset: AssetNode = index.internalPointer()
         with open(import_path, "rb") as import_file:
+            asset_compression = asset.get_asset_compression()
             asset_file = asset.rom.open(asset.path, "wb")
+            if asset_compression != 0:
+                asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
             asset_file.write(import_file.read())
             asset_file.close()
 
@@ -236,6 +254,9 @@ class FilesystemCategory(EditorCategory):
             return
         with open(export_path, "wb") as export_file:
             asset_file = asset.rom.open(asset.path, "rb")
+            asset_compression = asset.get_asset_compression()
+            if asset_compression != 0:
+                asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
             export_file.write(asset_file.read())
             asset_file.close()
 

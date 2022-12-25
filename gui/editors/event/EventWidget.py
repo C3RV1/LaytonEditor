@@ -54,6 +54,7 @@ class EventEditor(EventWidgetUI):
             ev_script = EventScript(text, self.event)
             ev_script.parse()
             self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+            self.character_widget.set_event(self.event)
         except Exception as e:
             logging.error(f"Error compiling EventScript: {e}")
 
@@ -64,5 +65,6 @@ class EventEditor(EventWidgetUI):
             ev_script.parse()
             self.event.save_to_rom()
             self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+            self.character_widget.set_event(self.event)
         except Exception as e:
             logging.error(f"Error compiling EventScript: {e}")
