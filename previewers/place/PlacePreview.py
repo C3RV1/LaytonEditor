@@ -109,6 +109,17 @@ class PlacePreview(TwoScreenRenderer):
         self.overlay_sprite.surf = overlay
         self.overlay_sprite.alpha = 180
 
+        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
+        self.overlay_toggle = k4pg.ButtonSprite(pressed_counter=0.05)
+        self.overlay_toggle.position = pg.Vector2(-128 + 5, -96 + 5)
+        self.overlay_toggle.scale = pg.Vector2(0.5, 0.5)
+        self.overlay_toggle.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
+        self.sprite_loader_os.load("overlay_icon.png", self.overlay_toggle, sprite_sheet=True, convert_alpha=False)
+        self.overlay_toggle.color_key = pg.Color(0, 255, 0)
+        self.overlay_toggle.set_tag("OFF")
+
+        self.overlay_active = True
+
     def update(self, dt: float):
         for sprite in self.sprites:
             sprite.animate(dt)
@@ -116,7 +127,13 @@ class PlacePreview(TwoScreenRenderer):
             obj.animate(dt)
         for exit_ in self.exits:
             exit_.animate(dt)
+
         self.bgm.update(dt)
+
+        if self.overlay_toggle.get_pressed(self.btm_camera, dt):
+            self.overlay_active = not self.overlay_active
+            self.overlay_toggle.set_tag("OFF" if self.overlay_active else "ON")
+
         if not self.move_mode:
             self.move_button.animate(dt)
             if self.move_button.get_pressed(self.btm_camera, dt):
@@ -137,7 +154,8 @@ class PlacePreview(TwoScreenRenderer):
 
         self.btm_bg.draw(self.btm_camera)
 
-        self.overlay_sprite.draw(self.btm_camera)
+        if self.overlay_active:
+            self.overlay_sprite.draw(self.btm_camera)
 
         for sprite in self.sprites:
             sprite.draw(self.btm_camera)
@@ -148,3 +166,5 @@ class PlacePreview(TwoScreenRenderer):
         else:
             for exit_ in self.exits:
                 exit_.draw(self.btm_camera)
+
+        self.overlay_toggle.draw(self.btm_camera)
