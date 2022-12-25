@@ -158,13 +158,14 @@ class PlacePreview(TwoScreenRenderer):
             sprite.draw(self.btm_camera)
         for obj in self.objects:
             obj.draw(self.btm_camera)
+
+        if self.overlay_active:
+            self.overlay_sprite.draw(self.btm_camera)
+        
         if not self.move_mode:
             self.move_button.draw(self.btm_camera)
         else:
             for exit_ in self.exits:
                 exit_.draw(self.btm_camera)
-
-        if self.overlay_active:
-            self.overlay_sprite.draw(self.btm_camera)
 
         self.overlay_toggle.draw(self.btm_camera)
