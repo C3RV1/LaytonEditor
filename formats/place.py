@@ -9,8 +9,8 @@ from formats.filesystem import FileFormat
 class PlaceHintcoin:
     x: int = 0
     y: int = 0
-    index: int = 0
-    size: int = 0
+    width: int = 0
+    height: int = 0
 
 
 @dataclass
@@ -86,8 +86,8 @@ class Place(FileFormat):
         for hintcoin in self.hintcoins:
             hintcoin.x = rdr.read_uint8()
             hintcoin.y = rdr.read_uint8()
-            hintcoin.index = rdr.read_uint8()
-            hintcoin.size = rdr.read_uint8()
+            hintcoin.width = rdr.read_uint8()
+            hintcoin.height = rdr.read_uint8()
         rdr.seek(0x2c)
         for comment in self.comments:
             comment.x = rdr.read_uint8()
@@ -138,8 +138,8 @@ class Place(FileFormat):
         for hintcoin in self.hintcoins:
             wtr.write_uint8(hintcoin.x)
             wtr.write_uint8(hintcoin.y)
-            wtr.write_uint8(hintcoin.index)
-            wtr.write_uint8(hintcoin.size)
+            wtr.write_uint8(hintcoin.width)
+            wtr.write_uint8(hintcoin.height)
         for comment in self.comments:
             wtr.write_uint8(comment.x)
             wtr.write_uint8(comment.y)

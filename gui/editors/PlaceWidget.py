@@ -96,7 +96,7 @@ class HintcoinModel(PlaceAbstractTableModel):
         if role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == QtCore.Qt.Horizontal:
-            return ["X", "Y", "Index", "Size"][section]
+            return ["X", "Y", "Width", "Height"][section]
         return f"Hintcoin {section}"
 
     def data(self, index: QtCore.QModelIndex, role: int = ...):
@@ -107,8 +107,8 @@ class HintcoinModel(PlaceAbstractTableModel):
         return [
             hintcoin.x,
             hintcoin.y,
-            hintcoin.index,
-            hintcoin.size
+            hintcoin.width,
+            hintcoin.height
         ][index.column()]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
@@ -126,9 +126,9 @@ class HintcoinModel(PlaceAbstractTableModel):
         elif index.column() == 1:
             hintcoin.y = value
         elif index.column() == 2:
-            hintcoin.index = value
+            hintcoin.width = value
         elif index.column() == 3:
-            hintcoin.size = value
+            hintcoin.height = value
         return True
 
 

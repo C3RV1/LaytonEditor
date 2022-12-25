@@ -96,7 +96,7 @@ class PlacePreview(TwoScreenRenderer):
         overlay_cam = k4pg.Camera(overlay, alignment=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
 
         for hint_coin in self.place.hintcoins:
-            hc_rect = pg.Rect(hint_coin.x, hint_coin.y, hint_coin.size, hint_coin.size)
+            hc_rect = pg.Rect(hint_coin.x, hint_coin.y, hint_coin.width, hint_coin.height)
             k4pg.draw.rect(overlay_cam, pg.Color(230, 212, 14), hc_rect)
         for comment in self.place.comments:
             comment_rect = pg.Rect(comment.x, comment.y, comment.width, comment.height)
@@ -154,9 +154,6 @@ class PlacePreview(TwoScreenRenderer):
 
         self.btm_bg.draw(self.btm_camera)
 
-        if self.overlay_active:
-            self.overlay_sprite.draw(self.btm_camera)
-
         for sprite in self.sprites:
             sprite.draw(self.btm_camera)
         for obj in self.objects:
@@ -166,5 +163,8 @@ class PlacePreview(TwoScreenRenderer):
         else:
             for exit_ in self.exits:
                 exit_.draw(self.btm_camera)
+
+        if self.overlay_active:
+            self.overlay_sprite.draw(self.btm_camera)
 
         self.overlay_toggle.draw(self.btm_camera)
