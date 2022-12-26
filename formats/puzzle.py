@@ -72,6 +72,9 @@ class Puzzle:
         self.hint3 = ""
         self.title = ""
 
+        self.unk0 = 0
+        self.unk1 = 0
+
         self.bg_btm_id = 0
         self.bg_location_id = 0
 
@@ -93,7 +96,7 @@ class Puzzle:
         rdr.seek(0)
 
         self.number = rdr.read_uint16()
-        rdr.read_uint16()  # 112
+        self.unk1 = rdr.read_uint16()  # 112
         self.title = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
         rdr.seek(0x34)
         self.tutorial_id = rdr.read_uint8()
@@ -103,7 +106,7 @@ class Puzzle:
         self.location_id = rdr.read_uint8()
         self.type = rdr.read_uint8()
         self.bg_btm_id = rdr.read_uint8()
-        rdr.read_uint16()
+        self.unk0 = rdr.read_uint16()
         self.bg_location_id = rdr.read_uint8()
         self.reward_id = rdr.read_uint8()
 
@@ -151,7 +154,7 @@ class Puzzle:
                                          encoding=self.encoding)
 
         wtr.write_uint16(self.number)
-        wtr.write_uint16(112)
+        wtr.write_uint16(self.unk1)  # 112
         wtr.write_string(subs.convert_substitutions(self.title, True), encoding=self.encoding, size=0x30)
         wtr.write_uint8(self.tutorial_id)
         for picarat in self.picarat_decay:
@@ -160,7 +163,7 @@ class Puzzle:
         wtr.write_uint8(self.location_id)
         wtr.write_uint8(self.type)
         wtr.write_uint8(self.bg_btm_id)
-        wtr.write(self.original[0x3c:0x3e])  # UnkSoundId
+        wtr.write_uint16(self.unk0)  # UnkSoundId
         wtr.write_uint8(self.bg_location_id)
         wtr.write_uint8(self.reward_id)
 

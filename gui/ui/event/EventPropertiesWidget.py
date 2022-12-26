@@ -17,12 +17,24 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.form_layout = QtWidgets.QFormLayout()
 
         self.map_top_id_input = QtWidgets.QSpinBox(self)
+        self.map_top_id_input.setMaximum(65535)
         self.map_top_id_input.valueChanged.connect(self.map_top_id_edit)
         self.form_layout.addRow("Map Top ID", self.map_top_id_input)
 
         self.map_btm_id_input = QtWidgets.QSpinBox(self)
+        self.map_btm_id_input.setMaximum(65535)
         self.map_btm_id_input.valueChanged.connect(self.map_btm_id_edit)
         self.form_layout.addRow("Map Bottom ID", self.map_btm_id_input)
+
+        self.unk0_input = QtWidgets.QSpinBox(self)
+        self.unk0_input.setMaximum(65535)
+        self.unk0_input.valueChanged.connect(self.unk0_edit)
+        self.form_layout.addRow("Unk0", self.unk0_input)
+
+        self.unk1_input = QtWidgets.QSpinBox(self)
+        self.unk1_input.setMaximum(65535)
+        self.unk1_input.valueChanged.connect(self.unk1_edit)
+        self.form_layout.addRow("Unk1", self.unk1_input)
 
         self.v_layout.addLayout(self.form_layout)
 
@@ -47,6 +59,12 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         pass
 
     def map_btm_id_edit(self, value: int):
+        pass
+
+    def unk0_edit(self, value: int):
+        pass
+
+    def unk1_edit(self, value: int):
         pass
 
     def add_character_click(self):

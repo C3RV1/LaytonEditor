@@ -31,6 +31,8 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
         self.flag_5_bit_checkbox.setChecked(self.puzzle.flag_bit5)
         self.judge_character_input.setValue(self.puzzle.judge_char)
+        self.unk0_input.setValue(self.puzzle.unk0)
+        self.unk1_input.setValue(self.puzzle.unk1)
 
     def number_spin_edit(self, value: int):
         self.puzzle.number = value
@@ -91,3 +93,9 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
 
     def judge_character_input_edit(self, value: int):
         self.puzzle.judge_char = value
+
+    def unk0_edit(self, value: int):
+        self.puzzle.unk0 = value
+
+    def unk1_edit(self, value: int):
+        self.puzzle.unk1 = value

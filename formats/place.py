@@ -65,7 +65,7 @@ class Place(FileFormat):
     map_y: int = 0
     background_image_index: int = 0
     map_image_index: int = 0
-    background_music_index: int = 0
+    background_music_index: int = 0  # how does that index work?
     hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
     sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
     objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
@@ -75,20 +75,28 @@ class Place(FileFormat):
     _compressed_default = 0
 
     def read_stream(self, stream):
+        # TODO: Polish
         rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-        self.index = rdr.read_uint16()
+        self.index = rdr.read_uint16()  # what does index represent?
+        # missing data?
         rdr.seek(0x18)
         self.map_x = rdr.read_uint8()
         self.map_y = rdr.read_uint8()
         self.background_image_index = rdr.read_uint8()
         self.map_image_index = rdr.read_uint8()
-        rdr.seek(0x1c)
+
+        self.hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
+        self.sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
+        self.objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
+        self.comments: List[PlaceComment] = [PlaceComment() for _ in range(16)]
+        self.exits: List[PlaceExit] = [PlaceExit() for _ in range(12)]  # maybe it's 16 exits
+
         for hintcoin in self.hintcoins:
             hintcoin.x = rdr.read_uint8()
             hintcoin.y = rdr.read_uint8()
             hintcoin.width = rdr.read_uint8()
             hintcoin.height = rdr.read_uint8()
-        rdr.seek(0x2c)
+        # pos: 0x2c
         for comment in self.comments:
             comment.x = rdr.read_uint8()
             comment.y = rdr.read_uint8()
@@ -97,12 +105,12 @@ class Place(FileFormat):
             comment.character_index = rdr.read_uint16()
             comment.text_index = rdr.read_uint16()
             comment.unk = rdr.read_uint16()
-        rdr.seek(0xcc)
+        # pos: 0xcc
         for sprite in self.sprites:
             sprite.x = rdr.read_uint8()
             sprite.y = rdr.read_uint8()
             sprite.filename = rdr.read_string(0x1e)
-        rdr.seek(0x24c)
+        # pos: 0x24c
         for plc_object in self.objects:
             plc_object.x = rdr.read_uint8()
             plc_object.y = rdr.read_uint8()
@@ -111,7 +119,7 @@ class Place(FileFormat):
             plc_object.character_index = rdr.read_uint8()
             plc_object.unk = rdr.read_uint8()
             plc_object.event_index = rdr.read_uint16()
-        rdr.seek(0x2cc)
+        # pos: 0x2cc
         for plc_exit in self.exits:
             plc_exit.x = rdr.read_uint8()
             plc_exit.y = rdr.read_uint8()
@@ -124,6 +132,7 @@ class Place(FileFormat):
             plc_exit.unk2 = rdr.read_uint8()
             plc_exit.unk3 = rdr.read_uint8()
             plc_exit.event_or_place_index = rdr.read_uint16()
+        # pos: 0x35c (if we make 16 exits it lines up so...?)
         rdr.seek(0x38c)
         self.background_music_index = rdr.read_uint16()
 

@@ -106,12 +106,20 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         self.char_table_model.set_event(ev)
         self.map_top_id_input.setValue(self.event.map_top_id)
         self.map_btm_id_input.setValue(self.event.map_bottom_id)
+        self.unk0_input.setValue(self.event.unk0)
+        self.unk1_input.setValue(self.event.unk1)
 
     def map_top_id_edit(self, value: int):
         self.event.map_top_id = value
 
     def map_btm_id_edit(self, value: int):
         self.event.map_bottom_id = value
+
+    def unk0_edit(self, value: int):
+        self.event.unk0 = value
+
+    def unk1_edit(self, value: int):
+        self.event.unk1 = value
 
     def add_character_click(self):
         self.char_table_model.add_character()

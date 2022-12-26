@@ -154,6 +154,14 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.judge_character_input.valueChanged.connect(self.judge_character_input_edit)
         self.form_layout.addRow("Judge Character (DEBUG)", self.judge_character_input)
 
+        self.unk0_input = QtWidgets.QSpinBox(self)
+        self.unk0_input.valueChanged.connect(self.unk0_edit)
+        self.form_layout.addRow("Unk0", self.unk0_input)
+
+        self.unk1_input = QtWidgets.QSpinBox(self)
+        self.unk1_input.valueChanged.connect(self.unk1_edit)
+        self.form_layout.addRow("Unk1 (112?)", self.unk1_input)
+
         self.setLayout(self.form_layout)
 
     def number_spin_edit(self, value: int):
@@ -214,5 +222,11 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         pass
 
     def judge_character_input_edit(self, value: int):
+        pass
+
+    def unk0_edit(self, value: int):
+        pass
+
+    def unk1_edit(self, value: int):
         pass
 
