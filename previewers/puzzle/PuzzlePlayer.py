@@ -12,6 +12,8 @@ from .PuzzleWinScreen import PuzzleWinScreen
 
 
 class PuzzlePlayer(TwoScreenRenderer):
+    MUSIC_ACTIVE = False
+
     def __init__(self, puzzle_data: pzd.Puzzle):
         super(PuzzlePlayer, self).__init__()
 
@@ -23,6 +25,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.inp = k4pg.Input()
 
         self.sprite_loader: k4pg.SpriteLoader = RomSingleton().get_sprite_loader()
+        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.font_loader: k4pg.FontLoader = RomSingleton().get_font_loader()
 
         self.top_bg = k4pg.Sprite()
@@ -95,7 +98,7 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         smd, swd_file, sample_bank = load_smd("data_lt2/sound/BG_035.SMD")
         self.puzzle_bg_music = SMDLStreamPlayer(loops=True)
-        self.puzzle_bg_music.set_volume(0.5)
+        self.puzzle_bg_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
         self.puzzle_bg_music.create_temporal_sf2(swd_file, sample_bank)
         self.puzzle_bg_music.load_sound(smd)
         self.puzzle_bg_music.play()
@@ -105,6 +108,14 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.on_win = False
 
         self.run_gds()
+
+        self.music_toggle = k4pg.ButtonSprite(pressed_counter=0.05)
+        self.music_toggle.position = pg.Vector2(-128 + 5, -96 + 5)
+        self.music_toggle.scale = pg.Vector2(0.5, 0.5)
+        self.music_toggle.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
+        self.sprite_loader_os.load("music_active.png", self.music_toggle, sprite_sheet=True, convert_alpha=False)
+        self.music_toggle.color_key = pg.Color(0, 255, 0)
+        self.music_toggle.set_tag("OFF" if PuzzlePlayer.MUSIC_ACTIVE else "ON")
 
     def run_gds_cmd(self, cmd):
         pass
@@ -147,6 +158,11 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.memo_btn.animate(dt)
         self.submit_btn.animate(dt)
         self.reset_btn.animate(dt)
+
+        if self.music_toggle.get_pressed(self.btm_camera, dt):
+            PuzzlePlayer.MUSIC_ACTIVE = not PuzzlePlayer.MUSIC_ACTIVE
+            self.music_toggle.set_tag("OFF" if PuzzlePlayer.MUSIC_ACTIVE else "ON")
+            self.puzzle_bg_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
 
         if self.text_pos < len(self.puzzle_data.text):
             self.current_between_letters += dt
@@ -198,3 +214,4 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.memo_btn.draw(self.btm_camera)
         self.submit_btn.draw(self.btm_camera)
         self.reset_btn.draw(self.btm_camera)
+        self.music_toggle.draw(self.btm_camera)

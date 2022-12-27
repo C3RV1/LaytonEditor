@@ -26,6 +26,10 @@ class SpriteEditor(SpriteWidgetUI):
         self.anims_model.set_sprite(sprite)
         self.anim_list.setModel(self.anims_model)
 
+        self.image_list.setCurrentIndex(QtCore.QModelIndex())
+        self.anim_list.setCurrentIndex(QtCore.QModelIndex())
+        self.frame_list.setCurrentIndex(QtCore.QModelIndex())
+
     def save_btn_click(self):
         self.sprite.save()
 

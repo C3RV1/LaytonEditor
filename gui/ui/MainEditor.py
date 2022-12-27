@@ -61,8 +61,8 @@ class MainEditorUI(QtWidgets.QMainWindow):
 
         self.ft_context_menu = QtWidgets.QMenu()
 
-        self.active_editor = QtWidgets.QWidget()
-        self.horizontal_layout.addWidget(self.active_editor, 3)
+        self.empty_editor = QtWidgets.QWidget()
+        self.horizontal_layout.addWidget(self.empty_editor, 3)
 
         self.window.setLayout(self.horizontal_layout)
         self.setCentralWidget(self.window)

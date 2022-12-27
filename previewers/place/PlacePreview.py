@@ -26,11 +26,14 @@ class FadeInOutBtn(k4pg.ButtonSprite):
 
 
 class PlacePreview(TwoScreenRenderer):
+    OVERLAY_ACTIVE = True  # keep overlay active between different previews
+
     def __init__(self, place: Place):
         super(PlacePreview, self).__init__()
         self.place = place
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
+        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.font_loader = RomSingleton().get_font_loader()
         self.inp = k4pg.Input()
 
@@ -109,16 +112,13 @@ class PlacePreview(TwoScreenRenderer):
         self.overlay_sprite.surf = overlay
         self.overlay_sprite.alpha = 180
 
-        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.overlay_toggle = k4pg.ButtonSprite(pressed_counter=0.05)
         self.overlay_toggle.position = pg.Vector2(-128 + 5, -96 + 5)
         self.overlay_toggle.scale = pg.Vector2(0.5, 0.5)
         self.overlay_toggle.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
         self.sprite_loader_os.load("overlay_icon.png", self.overlay_toggle, sprite_sheet=True, convert_alpha=False)
         self.overlay_toggle.color_key = pg.Color(0, 255, 0)
-        self.overlay_toggle.set_tag("OFF")
-
-        self.overlay_active = True
+        self.overlay_toggle.set_tag("OFF" if PlacePreview.OVERLAY_ACTIVE else "ON")
 
     def update(self, dt: float):
         for sprite in self.sprites:
@@ -131,8 +131,8 @@ class PlacePreview(TwoScreenRenderer):
         self.bgm.update(dt)
 
         if self.overlay_toggle.get_pressed(self.btm_camera, dt):
-            self.overlay_active = not self.overlay_active
-            self.overlay_toggle.set_tag("OFF" if self.overlay_active else "ON")
+            PlacePreview.OVERLAY_ACTIVE = not PlacePreview.OVERLAY_ACTIVE
+            self.overlay_toggle.set_tag("OFF" if PlacePreview.OVERLAY_ACTIVE else "ON")
 
         if not self.move_mode:
             self.move_button.animate(dt)
@@ -159,7 +159,7 @@ class PlacePreview(TwoScreenRenderer):
         for obj in self.objects:
             obj.draw(self.btm_camera)
 
-        if self.overlay_active:
+        if PlacePreview.OVERLAY_ACTIVE:
             self.overlay_sprite.draw(self.btm_camera)
         
         if not self.move_mode:

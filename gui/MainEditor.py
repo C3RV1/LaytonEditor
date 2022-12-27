@@ -37,6 +37,32 @@ class MainEditor(MainEditorUI):
         self.pg_previewer = PygamePreviewer()
         self.pg_previewer.start()
 
+        self.event_editor = EventEditor(self)
+        self.puzzle_editor = PuzzleEditor(self)
+        self.text_editor = TextEditor(self)
+        self.script_editor = ScriptEditor(self)
+        self.place_editor = PlaceEditor(self)
+        self.background_editor = BackgroundEditor(self)
+        self.sprite_editor = SpriteEditor(self)
+
+        self.event_editor.hide()
+        self.puzzle_editor.hide()
+        self.text_editor.hide()
+        self.script_editor.hide()
+        self.place_editor.hide()
+        self.background_editor.hide()
+        self.sprite_editor.hide()
+
+        self.horizontal_layout.addWidget(self.event_editor, 3)
+        self.horizontal_layout.addWidget(self.puzzle_editor, 3)
+        self.horizontal_layout.addWidget(self.text_editor, 3)
+        self.horizontal_layout.addWidget(self.script_editor, 3)
+        self.horizontal_layout.addWidget(self.place_editor, 3)
+        self.horizontal_layout.addWidget(self.background_editor, 3)
+        self.horizontal_layout.addWidget(self.sprite_editor, 3)
+
+        self.active_editor = self.empty_editor
+
     def file_menu_open(self):
         if self.last_path is not None:
             if not self.unsaved_data_dialog():
@@ -120,32 +146,30 @@ class MainEditor(MainEditorUI):
             logging.info(f"Opening {node.path}, category {type(node.category).__name__}")
 
         self.active_editor.hide()
-        self.horizontal_layout.removeWidget(self.active_editor)
-        self.active_editor.deleteLater()
         self.active_editor = None
 
         set_previewer = False
 
         if isinstance(node, EventNode):
-            self.active_editor = EventEditor(self)
+            self.active_editor = self.event_editor
             event = node.get_event()
-            self.active_editor.set_event(event)
+            self.event_editor.set_event(event)
 
             self.pg_previewer.start_renderer(EventPlayer(event))
             set_previewer = True
         elif isinstance(node, PuzzleNode):
-            self.active_editor = PuzzleEditor(self)
+            self.active_editor = self.puzzle_editor
             puzzle = node.get_puzzle()
-            self.active_editor.set_puzzle(puzzle)
+            self.puzzle_editor.set_puzzle(puzzle)
 
             self.pg_previewer.start_renderer(get_puzzle_player(puzzle))
             set_previewer = True
         elif isinstance(node, TextAsset):
-            self.active_editor = TextEditor(self)
-            self.active_editor.set_text(node)
+            self.active_editor = self.text_editor
+            self.text_editor.set_text(node)
         elif isinstance(node, ScriptAsset):
-            self.active_editor = ScriptEditor(self)
-            self.active_editor.set_script(node.to_gds())
+            self.active_editor = self.script_editor
+            self.script_editor.set_script(node.to_gds())
         elif isinstance(node, SADLNode):
             sadl_player = SADLStreamPlayer()
             self.pg_previewer.start_renderer(SoundPreview(sadl_player, node.get_sadl(),
@@ -160,25 +184,24 @@ class MainEditor(MainEditorUI):
                                                           node.data()))
             set_previewer = True
         elif isinstance(node, PlaceVersion):
-            self.active_editor = PlaceEditor(self)
-            self.active_editor.set_place(node.get_place())
+            self.active_editor = self.place_editor
+            self.place_editor.set_place(node.get_place())
 
             self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
             set_previewer = True
         elif isinstance(node, BackgroundAsset):
-            self.active_editor = BackgroundEditor(self)
-            self.active_editor.set_image(node.get_bg())
+            self.active_editor = self.background_editor
+            self.background_editor.set_image(node.get_bg())
         elif isinstance(node, SpriteAsset):
-            self.active_editor = SpriteEditor(self)
-            self.active_editor.set_sprite(node.get_sprite())
+            self.active_editor = self.sprite_editor
+            self.sprite_editor.set_sprite(node.get_sprite())
 
         if self.active_editor is None:
-            self.active_editor = QtWidgets.QWidget()
+            self.active_editor = self.empty_editor
 
         if not set_previewer:
             self.pg_previewer.stop_renderer()
 
-        self.horizontal_layout.addWidget(self.active_editor, 3)
         self.active_editor.show()
 
     def unsaved_data_dialog(self):
