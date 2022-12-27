@@ -30,12 +30,11 @@ class BackgroundsCategory(FilesystemCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(BackgroundsCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), BackgroundAsset):
-            bg_context_actions = [
+            default_context_menu.extend([
                 None,
                 ("Import PNG", lambda: self.import_png(index, refresh_function)),
                 ("Export PNG", lambda: self.export_png(index))
-            ]
-            default_context_menu.extend(bg_context_actions)
+            ])
         return default_context_menu
 
     def import_png(self, index: QtCore.QModelIndex, refresh_callback: Callable):

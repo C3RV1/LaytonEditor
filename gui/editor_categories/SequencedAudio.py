@@ -36,12 +36,11 @@ class SequencedAudioCategory(FilesystemCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(SequencedAudioCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SMDLNode):
-            wav_context_actions = [
+            default_context_menu.extend([
                 None,
                 ("Import MID", lambda: self.import_mid(index, refresh_function)),
                 ("Export MID", lambda: self.export_mid(index))
-            ]
-            default_context_menu.extend(wav_context_actions)
+            ])
         return default_context_menu
 
     def import_mid(self, index, refresh_callback):

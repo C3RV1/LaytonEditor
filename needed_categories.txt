@@ -5,7 +5,7 @@ Events - EDITING
 Puzzles - EDITING
 Places - PREVIEWING (missing comments, hint coins), EDITING
 Fonts -
-Movies -
+Movies - VIEWING
 Streamed Audio - EDITING
 Sequenced Audio - EDITING
 Sound Banks - EXPORTING

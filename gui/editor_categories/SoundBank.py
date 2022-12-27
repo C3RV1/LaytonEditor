@@ -26,11 +26,10 @@ class SoundBankCategory(FilesystemCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(SoundBankCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SWDLNode):
-            wav_context_actions = [
+            default_context_menu.extend([
                 None,
                 ("Export SF2", lambda: self.export_sf2(index)),
-            ]
-            default_context_menu.extend(wav_context_actions)
+            ])
         return default_context_menu
 
     def export_sf2(self, index: QtCore.QModelIndex):

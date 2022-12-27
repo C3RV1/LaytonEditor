@@ -22,6 +22,7 @@ class FolderNode(EditorObject):
             self.files = self.folder.filenames
         else:
             self.files = self.folder.files
+        self.files = list(self.files)
 
         if asset_class is None:
             asset_class = AssetNode

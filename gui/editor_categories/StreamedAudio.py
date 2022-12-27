@@ -30,12 +30,11 @@ class StreamedAudioCategory(FilesystemCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         default_context_menu = super(StreamedAudioCategory, self).get_context_menu(index, refresh_function)
         if isinstance(index.internalPointer(), SADLNode):
-            wav_context_actions = [
+            default_context_menu.extend([
                 None,
                 ("Import WAV", lambda: self.import_wav(index, refresh_function)),
                 ("Export WAV", lambda: self.export_wav(index))
-            ]
-            default_context_menu.extend(wav_context_actions)
+            ])
         return default_context_menu
 
     def import_wav(self, index: QtCore.QModelIndex, refresh_callback: Callable):
