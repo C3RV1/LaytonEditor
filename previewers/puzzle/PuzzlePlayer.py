@@ -12,7 +12,7 @@ from .PuzzleWinScreen import PuzzleWinScreen
 
 
 class PuzzlePlayer(TwoScreenRenderer):
-    MUSIC_ACTIVE = False
+    MUSIC_ACTIVE = True
 
     def __init__(self, puzzle_data: pzd.Puzzle):
         super(PuzzlePlayer, self).__init__()
@@ -34,9 +34,9 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         self.btm_bg = k4pg.Sprite()
         if not puzzle_data.bg_lang:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.internal_id}.arc", self.btm_bg)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.bg_btm_id}", self.btm_bg)
         else:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.internal_id}.arc", self.btm_bg,
+            self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.bg_btm_id}.arc", self.btm_bg,
                                     sprite_sheet=False)
 
         self.top_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 23),

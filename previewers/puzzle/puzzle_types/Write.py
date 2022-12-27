@@ -1,5 +1,5 @@
 from ..PuzzlePlayer import PuzzlePlayer
-from formats.puzzle import Puzzle
+from formats.puzzle import Puzzle, PuzzleType
 from formats.gds import GDSCommand
 import k4pg
 import pygame as pg
@@ -13,7 +13,7 @@ class Write(PuzzlePlayer):
         self.answer = ""
         self.current_ans = ""
         self.input_len = 1
-        self.allowed_chars = string.ascii_lowercase if puzzle_data.type == Puzzle.WRITE_CHARS else string.digits
+        self.allowed_chars = string.ascii_lowercase if puzzle_data.type == PuzzleType.WRITE_CHARS else string.digits
 
         super(Write, self).__init__(puzzle_data)
         self.reset_btn.visible = False
@@ -52,7 +52,7 @@ class Write(PuzzlePlayer):
         self.input_text = k4pg.Text(position=input_text_positions[self.input_len],
                                     center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.TOP),
                                     color=pg.Color(0, 0, 0))
-        if self.puzzle_data.type == Puzzle.WRITE_ALT:
+        if self.puzzle_data.type == PuzzleType.WRITE_ALT:
             self.input_text.position.update(0, -70)
         self.font_loader.load("font18", 12, self.input_text)
         self.input_text.visible = False
@@ -121,11 +121,11 @@ class Write(PuzzlePlayer):
                 ans.append(self.current_ans[i])
             else:
                 ans.append(" ")
-        if self.puzzle_data.type == Puzzle.WRITE_DATE:
+        if self.puzzle_data.type == PuzzleType.WRITE_DATE:
             self.input_text.text = f"{ans[0]} {ans[1]}   {ans[2]} {ans[3]}"
             return
         join_chars = "  " if self.input_len < 4 else " "
-        if self.puzzle_data.type == Puzzle.WRITE_ALT:
+        if self.puzzle_data.type == PuzzleType.WRITE_ALT:
             join_chars = "    "
         self.input_text.text = join_chars.join(ans).upper()
 

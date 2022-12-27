@@ -183,8 +183,10 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
 
     def save(self, *args, **kwargs):
         # Save all archives before saving the ROM.
+        self._get_archive_call = True
         for arch in self._loaded_archives:
             self._loaded_archives[arch].save()
+        self._get_archive_call = False
         return super(NintendoDSRom, self).save(*args, **kwargs)
 
     # TODO: Unify archive opening and make sure archive are opened only once

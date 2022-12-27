@@ -29,7 +29,7 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.bg_lang_checkbox.setChecked(self.puzzle.bg_lang)
         self.ans_bg_lang_checkbox.setChecked(self.puzzle.ans_bg_lang)
         self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
-        self.flag_5_bit_checkbox.setChecked(self.puzzle.flag_bit5)
+        self.puzzle_has_answer_bg_checkbox.setChecked(self.puzzle.puzzle_has_answer_bg)
         self.judge_character_input.setValue(self.puzzle.judge_char)
         self.unk0_input.setValue(self.puzzle.unk0)
         self.unk1_input.setValue(self.puzzle.unk1)
@@ -62,16 +62,20 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.puzzle.picarat_decay[idx] = value
 
     def bg_lang_checkbox_edit(self, state: int):
+        state = QtCore.Qt.CheckState(state)
         self.puzzle.bg_lang = state == QtCore.Qt.CheckState.Checked
 
     def ans_bg_lang_checkbox_edit(self, state: int):
+        state = QtCore.Qt.CheckState(state)
         self.puzzle.ans_bg_lang = state == QtCore.Qt.CheckState.Checked
 
     def flag_2_bit_checkbox_edit(self, state: int):
+        state = QtCore.Qt.CheckState(state)
         self.puzzle.flag_bit2 = state == QtCore.Qt.CheckState.Checked
 
-    def flag_5_bit_checkbox_edit(self, state: int):
-        self.puzzle.flag_bit5 = state == QtCore.Qt.CheckState.Checked
+    def puzzle_has_answer_bg_checkbox_edit(self, state: int):
+        state = QtCore.Qt.CheckState(state)
+        self.puzzle.puzzle_has_answer_bg = state == QtCore.Qt.CheckState.Checked
 
     def text_input_edit(self):
         self.puzzle.text = self.text_input.toPlainText()

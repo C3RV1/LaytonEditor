@@ -35,7 +35,7 @@ class TestPuzzleData(unittest.TestCase):
         assert pz_data.bg_location_id == 1
         assert pz_data.judge_char == 2
         assert pz_data.flag_bit2 is True
-        assert pz_data.flag_bit5 is True
+        assert pz_data.puzzle_has_answer_bg is True
         assert pz_data.bg_lang is False
         assert pz_data.ans_bg_lang is False
         assert len(pz_data.correct_answer) == 55  # Not checking full answer, but the length

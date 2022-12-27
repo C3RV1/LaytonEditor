@@ -238,9 +238,11 @@ class Event:
         GDS
             The dialogue data GDS.
         """
+        default_gds = formats.gds.GDS()
+        default_gds.params = [0, "", "", 3, ""]
         if self.rom is None:
-            return formats.gds.GDS()
-        return self.texts[text_num]
+            return default_gds
+        return self.texts.get(text_num, default_gds)
 
     def _list_event_texts(self):
         if self.rom is None:

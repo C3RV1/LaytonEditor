@@ -44,7 +44,7 @@ class PuzzleDCC:
             self.pz.bg_location_id = self.parser["pzd.bg_location_id"]
             self.pz.judge_char = self.parser["pzd.judge_char"]
             self.pz.flag_bit2 = self.parser["pzd.flag_bit2"]
-            self.pz.flag_bit5 = self.parser["pzd.flag_bit5"]
+            self.pz.puzzle_has_answer_bg = self.parser["pzd.puzzle_has_answer_bg"]
             self.pz.location_id = self.parser["pzd.location_id"]
             self.pz.picarat_decay = []
             for picarat in self.parser["pzd.picarat_decay::unnamed"]:
@@ -71,7 +71,7 @@ class PuzzleDCC:
             self.parser.set_named("pzd.bg_location_id", self.pz.bg_location_id)
             self.parser.set_named("pzd.judge_char", self.pz.judge_char)
             self.parser.set_named("pzd.flag_bit2", self.pz.flag_bit2)
-            self.parser.set_named("pzd.flag_bit5", self.pz.flag_bit5)
+            self.parser.set_named("pzd.puzzle_has_answer_bg", self.pz.puzzle_has_answer_bg)
             self.parser.set_named("pzd.bg_lang", self.pz.bg_lang)
             self.parser.set_named("pzd.ans_bg_lang", self.pz.ans_bg_lang)
             self.parser.get_path("pzd.picarat_decay", create=True)

@@ -287,12 +287,13 @@ class Puzzle:
         else:
             self._flags &= 0xFF - 0x2
 
+    # MAYBE WHETHER THE PUZZLE HAS ANSWER IMAGE
     @property
-    def flag_bit5(self):
+    def puzzle_has_answer_bg(self):
         return (self._flags & 0x10) > 0
 
-    @flag_bit5.setter
-    def flag_bit5(self, value):
+    @puzzle_has_answer_bg.setter
+    def puzzle_has_answer_bg(self, value):
         if value:
             self._flags |= 0x10
         else:

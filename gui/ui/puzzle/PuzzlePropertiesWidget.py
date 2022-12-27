@@ -147,13 +147,13 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.ans_bg_lang_checkbox.stateChanged.connect(self.ans_bg_lang_checkbox_edit)
         self.form_layout.addRow(self.ans_bg_lang_checkbox)
 
+        self.puzzle_has_answer_bg_checkbox = QtWidgets.QCheckBox("Puzzle Has Answer Background", self)
+        self.puzzle_has_answer_bg_checkbox.stateChanged.connect(self.puzzle_has_answer_bg_checkbox_edit)
+        self.form_layout.addRow(self.puzzle_has_answer_bg_checkbox)
+
         self.flag_2_bit_checkbox = QtWidgets.QCheckBox("Flag 2 bit (Unknown)", self)
         self.flag_2_bit_checkbox.stateChanged.connect(self.flag_2_bit_checkbox_edit)
         self.form_layout.addRow(self.flag_2_bit_checkbox)
-
-        self.flag_5_bit_checkbox = QtWidgets.QCheckBox("Flag 5 bit (Unknown)", self)
-        self.flag_5_bit_checkbox.stateChanged.connect(self.flag_5_bit_checkbox_edit)
-        self.form_layout.addRow(self.flag_5_bit_checkbox)
 
         # TODO: Judge character
 
@@ -210,7 +210,7 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
     def flag_2_bit_checkbox_edit(self, state: int):
         pass
 
-    def flag_5_bit_checkbox_edit(self, state: int):
+    def puzzle_has_answer_bg_checkbox_edit(self, state: int):
         pass
 
     def text_input_edit(self):
