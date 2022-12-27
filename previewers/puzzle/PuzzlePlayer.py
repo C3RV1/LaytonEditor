@@ -12,7 +12,7 @@ from .PuzzleWinScreen import PuzzleWinScreen
 
 
 class PuzzlePlayer(TwoScreenRenderer):
-    MUSIC_ACTIVE = True
+    MUSIC_ACTIVE = False
 
     def __init__(self, puzzle_data: pzd.Puzzle):
         super(PuzzlePlayer, self).__init__()
