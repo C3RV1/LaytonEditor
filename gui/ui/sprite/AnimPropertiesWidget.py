@@ -15,14 +15,17 @@ class AnimPropertiesWidgetUI(QtWidgets.QWidget):
         self.form_layout = QtWidgets.QFormLayout()
 
         self.child_x_input = QtWidgets.QSpinBox(self)
+        self.child_x_input.setMaximum(65535)
         self.child_x_input.valueChanged.connect(self.child_x_edit)
         self.form_layout.addRow("Child X Offset", self.child_x_input)
 
         self.child_y_input = QtWidgets.QSpinBox(self)
+        self.child_y_input.setMaximum(65535)
         self.child_y_input.valueChanged.connect(self.child_y_edit)
         self.form_layout.addRow("Child Y Offset", self.child_y_input)
 
         self.child_anim_index = QtWidgets.QSpinBox(self)
+        self.child_anim_index.setMaximum(255)
         self.child_anim_index.valueChanged.connect(self.child_anim_edit)
         self.form_layout.addRow("Child Animation Index", self.child_anim_index)
 

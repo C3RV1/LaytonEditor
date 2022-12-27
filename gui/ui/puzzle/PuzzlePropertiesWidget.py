@@ -63,6 +63,7 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.form_layout = QtWidgets.QFormLayout()
 
         self.number_spin = QtWidgets.QSpinBox(self)
+        self.number_spin.setMaximum(65535)
         self.number_spin.valueChanged.connect(self.number_spin_edit)
         self.form_layout.addRow("Number", self.number_spin)
 
@@ -75,22 +76,27 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.form_layout.addRow("Type", self.type_combo)
 
         self.bg_btm_id_spin = QtWidgets.QSpinBox(self)
+        self.bg_btm_id_spin.setMaximum(255)
         self.bg_btm_id_spin.valueChanged.connect(self.bg_btm_id_spin_edit)
         self.form_layout.addRow("Background Bottom ID", self.bg_btm_id_spin)
 
         self.bg_location_id_spin = QtWidgets.QSpinBox(self)
+        self.bg_location_id_spin.setMaximum(255)
         self.bg_location_id_spin.valueChanged.connect(self.bg_location_id_spin_edit)
         self.form_layout.addRow("Background Location ID", self.bg_location_id_spin)
 
         self.location_id_spin = QtWidgets.QSpinBox(self)
+        self.location_id_spin.setMaximum(255)
         self.location_id_spin.valueChanged.connect(self.location_id_spin_edit)
         self.form_layout.addRow("Location ID", self.location_id_spin)
 
         self.reward_id_spin = QtWidgets.QSpinBox(self)
+        self.reward_id_spin.setMaximum(255)
         self.reward_id_spin.valueChanged.connect(self.reward_id_spin_edit)
         self.form_layout.addRow("Reward ID", self.reward_id_spin)
 
         self.tutorial_id_spin = QtWidgets.QSpinBox(self)
+        self.tutorial_id_spin.setMaximum(255)
         self.tutorial_id_spin.valueChanged.connect(self.tutorial_id_spin_edit)
         self.form_layout.addRow("Tutorial ID", self.tutorial_id_spin)
 
@@ -102,6 +108,7 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.picarat_decay_spins = []
         for i in range(3):
             picarat_decay_spin = QtWidgets.QSpinBox(self)
+            picarat_decay_spin.setMaximum(255)
             picarat_decay_spin.valueChanged.connect(lambda value, idx=i: self.picarat_decay_edit(idx, value))
             self.picarat_decay_layout.addWidget(picarat_decay_spin)
             self.picarat_decay_spins.append(picarat_decay_spin)
@@ -151,14 +158,17 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         # TODO: Judge character
 
         self.judge_character_input = QtWidgets.QSpinBox(self)
+        self.judge_character_input.setMaximum(3)
         self.judge_character_input.valueChanged.connect(self.judge_character_input_edit)
         self.form_layout.addRow("Judge Character (DEBUG)", self.judge_character_input)
 
         self.unk0_input = QtWidgets.QSpinBox(self)
+        self.unk0_input.setMaximum(65535)
         self.unk0_input.valueChanged.connect(self.unk0_edit)
         self.form_layout.addRow("Unk0", self.unk0_input)
 
         self.unk1_input = QtWidgets.QSpinBox(self)
+        self.unk1_input.setMaximum(65535)
         self.unk1_input.valueChanged.connect(self.unk1_edit)
         self.form_layout.addRow("Unk1 (112?)", self.unk1_input)
 
