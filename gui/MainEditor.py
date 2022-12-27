@@ -138,7 +138,7 @@ class MainEditor(MainEditorUI):
             puzzle = node.get_puzzle()
             self.active_editor.set_puzzle(puzzle)
 
-            self.pg_previewer.start_renderer(PuzzlePlayer(puzzle))
+            self.pg_previewer.start_renderer(get_puzzle_player(puzzle))
             set_previewer = True
         elif isinstance(node, TextAsset):
             self.active_editor = TextEditor(self)
