@@ -127,7 +127,7 @@ class PuzzleWinScreen(TwoScreenRenderer):
                 else:
                     ans_bg_path = "data_lt2/bg/nazo/"
                 ans_filename = f"q{self.puzzle_data.internal_id}a.arc"
-                if self.puzzle_data.puzzle_has_answer_bg:
+                if self.puzzle_data.has_answer_bg:
                     self.sprite_loader.load(ans_bg_path + ans_filename, self.bg)
             else:
                 filename = f"nazo_fail{self.puzzle_data.bg_location_id}.arc"

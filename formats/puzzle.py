@@ -289,11 +289,11 @@ class Puzzle:
 
     # MAYBE WHETHER THE PUZZLE HAS ANSWER IMAGE
     @property
-    def puzzle_has_answer_bg(self):
+    def has_answer_bg(self):
         return (self._flags & 0x10) > 0
 
-    @puzzle_has_answer_bg.setter
-    def puzzle_has_answer_bg(self, value):
+    @has_answer_bg.setter
+    def has_answer_bg(self, value):
         if value:
             self._flags |= 0x10
         else:

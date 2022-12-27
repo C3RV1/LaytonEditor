@@ -143,13 +143,13 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
         self.bg_lang_checkbox.stateChanged.connect(self.bg_lang_checkbox_edit)
         self.form_layout.addRow(self.bg_lang_checkbox)
 
+        self.has_answer_bg_checkbox = QtWidgets.QCheckBox("Has Answer Background", self)
+        self.has_answer_bg_checkbox.stateChanged.connect(self.has_answer_bg_checkbox_edit)
+        self.form_layout.addRow(self.has_answer_bg_checkbox)
+
         self.ans_bg_lang_checkbox = QtWidgets.QCheckBox("Answer Background Language Dependant", self)
         self.ans_bg_lang_checkbox.stateChanged.connect(self.ans_bg_lang_checkbox_edit)
         self.form_layout.addRow(self.ans_bg_lang_checkbox)
-
-        self.puzzle_has_answer_bg_checkbox = QtWidgets.QCheckBox("Puzzle Has Answer Background", self)
-        self.puzzle_has_answer_bg_checkbox.stateChanged.connect(self.puzzle_has_answer_bg_checkbox_edit)
-        self.form_layout.addRow(self.puzzle_has_answer_bg_checkbox)
 
         self.flag_2_bit_checkbox = QtWidgets.QCheckBox("Flag 2 bit (Unknown)", self)
         self.flag_2_bit_checkbox.stateChanged.connect(self.flag_2_bit_checkbox_edit)
@@ -210,7 +210,7 @@ class PuzzlePropertiesWidgetUI(QtWidgets.QWidget):
     def flag_2_bit_checkbox_edit(self, state: int):
         pass
 
-    def puzzle_has_answer_bg_checkbox_edit(self, state: int):
+    def has_answer_bg_checkbox_edit(self, state: int):
         pass
 
     def text_input_edit(self):

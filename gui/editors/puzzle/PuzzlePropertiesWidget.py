@@ -29,10 +29,12 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.bg_lang_checkbox.setChecked(self.puzzle.bg_lang)
         self.ans_bg_lang_checkbox.setChecked(self.puzzle.ans_bg_lang)
         self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
-        self.puzzle_has_answer_bg_checkbox.setChecked(self.puzzle.puzzle_has_answer_bg)
+        self.has_answer_bg_checkbox.setChecked(self.puzzle.has_answer_bg)
         self.judge_character_input.setValue(self.puzzle.judge_char)
         self.unk0_input.setValue(self.puzzle.unk0)
         self.unk1_input.setValue(self.puzzle.unk1)
+
+        self.ans_bg_lang_checkbox.setEnabled(self.puzzle.has_answer_bg)
 
     def number_spin_edit(self, value: int):
         self.puzzle.number = value
@@ -73,9 +75,12 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         state = QtCore.Qt.CheckState(state)
         self.puzzle.flag_bit2 = state == QtCore.Qt.CheckState.Checked
 
-    def puzzle_has_answer_bg_checkbox_edit(self, state: int):
+    def has_answer_bg_checkbox_edit(self, state: int):
         state = QtCore.Qt.CheckState(state)
-        self.puzzle.puzzle_has_answer_bg = state == QtCore.Qt.CheckState.Checked
+        self.puzzle.has_answer_bg = state == QtCore.Qt.CheckState.Checked
+        self.ans_bg_lang_checkbox.setEnabled(self.puzzle.has_answer_bg)
+        if not self.puzzle.has_answer_bg:
+            self.ans_bg_lang_checkbox.setChecked(False)
 
     def text_input_edit(self):
         self.puzzle.text = self.text_input.toPlainText()
