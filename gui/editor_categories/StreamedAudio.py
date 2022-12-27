@@ -39,7 +39,7 @@ class StreamedAudioCategory(FilesystemCategory):
 
     def import_wav(self, index: QtCore.QModelIndex, refresh_callback: Callable):
         node: SADLNode = index.internalPointer()
-        import_path, _ = SettingsManager().import_file(None, "Import WAV...", "WAV Files (*.wav)")
+        import_path = SettingsManager().import_file(None, "Import WAV...", "WAV Files (*.wav)")
         if import_path == "":
             return
 

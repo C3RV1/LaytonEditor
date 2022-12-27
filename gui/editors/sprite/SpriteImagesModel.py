@@ -70,7 +70,7 @@ class ImagesModel(QtCore.QAbstractListModel):
     def append_image(self):
         self.beginInsertRows(QtCore.QModelIndex(), len(self.sprite.images),
                              len(self.sprite.images))
-        import_path, _ = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
+        import_path = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
         if import_path == "":
             return
 
@@ -79,7 +79,7 @@ class ImagesModel(QtCore.QAbstractListModel):
         self.endInsertRows()
 
     def replace_image(self, index: QtCore.QModelIndex):
-        import_path, _ = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
+        import_path = SettingsManager().import_file(None, "Import PNG...", "PNG Files (*.png)")
         if import_path == "":
             return
 

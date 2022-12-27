@@ -16,11 +16,11 @@ class AnimPropertiesWidgetUI(QtWidgets.QWidget):
 
         self.child_x_input = QtWidgets.QSpinBox(self)
         self.child_x_input.valueChanged.connect(self.child_x_edit)
-        self.form_layout.addRow("Child X", self.child_x_input)
+        self.form_layout.addRow("Child X Offset", self.child_x_input)
 
         self.child_y_input = QtWidgets.QSpinBox(self)
         self.child_y_input.valueChanged.connect(self.child_y_edit)
-        self.form_layout.addRow("Child Y", self.child_y_input)
+        self.form_layout.addRow("Child Y Offset", self.child_y_input)
 
         self.child_anim_index = QtWidgets.QSpinBox(self)
         self.child_anim_index.valueChanged.connect(self.child_anim_edit)

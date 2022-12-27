@@ -225,8 +225,8 @@ class FilesystemCategory(EditorCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         if isinstance(index.internalPointer(), AssetNode):
             return [
-                ("Replace", lambda: self.import_(index, refresh_function)),
-                ("Export", lambda: self.export(index))
+                ("Replace raw data", lambda: self.import_(index, refresh_function)),
+                ("Export raw data", lambda: self.export(index))
             ]
         return []
 
