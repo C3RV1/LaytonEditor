@@ -97,6 +97,10 @@ class _BaseBinaryWrapper:
 
 
 class BinaryReader(_BaseBinaryWrapper):
+    """
+    Class used to read binary data.
+    """
+
     # Read types
     def read_struct(self, fmt) -> Optional[Tuple[Any]]:
         chunksize = struct.calcsize("<" + fmt)
@@ -297,6 +301,9 @@ class BinaryReader(_BaseBinaryWrapper):
 
 
 class BinaryWriter(_BaseBinaryWrapper):
+    """
+    Class used to write binary data.
+    """
     # Write types
 
     def write_struct(self, fmt: AnyStr, *values):
@@ -476,4 +483,7 @@ class BinaryWriter(_BaseBinaryWrapper):
 
 
 class BinaryEditor(BinaryReader, BinaryWriter):
+    """
+    Class used for both reading and writing binary data.
+    """
     pass

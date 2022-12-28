@@ -8,15 +8,25 @@ from formats.filesystem import FileFormat
 
 @dataclass
 class GDSCommand:
+    """
+    Representation of a single GDS command.
+    """
     command: int
+    """The command of the GDS command."""
     params: List[Union[int, float, str]] = field(default_factory=list)
+    """The parameters of the GDS command."""
 
 
 class GDS(FileFormat):
+    """
+    A GDS Script.
+    """
     params: List[Union[int, float, str]] = []
+    """The list of parameters of the GDS script."""
     commands: List[GDSCommand] = []
+    """The list of commands of the GDS script."""
 
-    _compressed_default = False
+    _compressed_default = 0
 
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):

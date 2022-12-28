@@ -1,3 +1,6 @@
+"""
+Global configuration for the formats module.
+"""
 
 # Global language (from rom)
 LANG = "en"

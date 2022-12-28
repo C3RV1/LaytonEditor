@@ -1,7 +1,8 @@
-wxPython~=4.2.0
-pygame~=2.0.1
+PySide6~=6.4.1
+pygame~=2.1.2
+numpy~=1.23.5
 ndspy~=4.0.0
 Pillow~=9.3.0
-numpy~=1.21.2
 mido~=1.2.10
 pyFluidSynth~=1.3.1
+pyqtdarktheme~=2.0.0

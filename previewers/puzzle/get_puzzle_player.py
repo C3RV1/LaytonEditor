@@ -1,4 +1,4 @@
-from formats.puzzle import Puzzle
+from formats.puzzle import PuzzleType, Puzzle
 from .puzzle_types.NullPuzzle import NullPuzzle
 from .puzzle_types.MultipleChoice import MultipleChoice
 from .puzzle_types.OnOff import OnOff
@@ -9,15 +9,15 @@ from .puzzle_types.Write import Write
 
 
 PUZZLE_TYPE_DICT = {
-    Puzzle.MULTIPLE_CHOICE: MultipleChoice,
-    Puzzle.ON_OFF: OnOff,
-    Puzzle.SORT: Sort,
-    Puzzle.SLIDE: Slide,
-    Puzzle.AREA: Area,
-    Puzzle.WRITE_NUM: Write,
-    Puzzle.WRITE_CHARS: Write,
-    Puzzle.WRITE_ALT: Write,
-    Puzzle.WRITE_DATE: Write
+    PuzzleType.MULTIPLE_CHOICE: MultipleChoice,
+    PuzzleType.ON_OFF: OnOff,
+    PuzzleType.SORT: Sort,
+    PuzzleType.SLIDE: Slide,
+    PuzzleType.AREA: Area,
+    PuzzleType.WRITE_NUM: Write,
+    PuzzleType.WRITE_CHARS: Write,
+    PuzzleType.WRITE_ALT: Write,
+    PuzzleType.WRITE_DATE: Write
 }
 
 # TODO: CIRCLE_ANSWER, DRAW_LINE_PLAZA, LINE_DIVIDE, WEATHER, PILES_OF_PANCAKES,

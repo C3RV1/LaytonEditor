@@ -7,8 +7,11 @@ import numpy as np
 
 
 class NFTRHeader:
-    magic_value: bytes  # b"RTFN"
-    byte_order: int  # 0xFEFF
+    """
+    A class representing the data of the header chunk of a NFTR file.
+    """
+    magic_value: bytes = b"RTFN"
+    byte_order: int = 0xFEFF
     version: int  # 0x100 to 0x102
     decompressed_resource_size: int  # 0x000A3278
     offset_to_fnif: int  # Offset to the FNIF chunk or size of the NFTR header
@@ -25,8 +28,11 @@ class NFTRHeader:
         self.following_chunk_count = rdr.read_uint16()
 
 
-class FINFChunk:  # Font Info
-    chunk_id: bytes  # FINF
+class FINFChunk:
+    """
+    Font INFo chunk on a NFTR file.
+    """
+    chunk_id: bytes = b"FINF"
     chunk_size: int  # 0x1C if version < 0x102 else 0x20
     height: int
     unk0: int  # usually 00 sometimes 1F
@@ -54,7 +60,40 @@ class FINFChunk:  # Font Info
         rdr.read(self.chunk_size - 0x1C)
 
 
-def get_bit_steps(depth: int) -> int:
+def get_max_bit_steps(depth: int) -> int:
+    """
+    Used to determine how bits we can read at a time so as to line up with a byte for a certain bit depth.
+
+    In fact, gets the value of the first 1 in binary representation.
+
+    Examples
+    --------
+
+    >>> get_max_bit_steps(1)
+    1, because the binary is 0b1. We read one bit at a time.
+
+    >>> get_max_bit_steps(2)
+    2, because the binary is 0b10.
+    We can read 2 bits at a time and still align with a byte (aabbccdd eeffgghh: a value never lands between 2 bytes).
+
+    >>> get_max_bit_steps(3)
+    1, because the binary is 0b11, and the first 1 from the left is 0b1.
+    We can read 1 but at a time and still align with a byte (aaabbbcc cdddeeef ffggghhh, the last c is "alone").
+
+    >>> get_max_bit_steps(6)
+    2, because the binary is 0b110 and the first 1 from the left is 0b10.
+    We can read 2 bytes at a time and still align with a byte (aaaaaabb bbbbcccc ccdddddd, max "block" size is 2 bits).
+
+    Parameters
+    ----------
+    depth:
+        The bit depth for which to calculate the maximum bit steps.
+
+    Returns
+    -------
+    int
+        The numbers of bits that can be read at a time for the specified bit depth and still align with the bytes.
+    """
     if depth == 0:
         return 0
     bit_steps = 1
@@ -64,8 +103,11 @@ def get_bit_steps(depth: int) -> int:
     return bit_steps
 
 
-class CGLPChunk:  # Character Glyph
-    chunk_id: bytes  # CGLP
+class CGLPChunk:
+    """
+    Character GLyPh chunk on a NFTR file.
+    """
+    chunk_id: bytes = b"CGLP"
     chunk_size: int  # 10 + tile_count * size + padding
     tile_width: int
     tile_height: int
@@ -96,10 +138,13 @@ class CGLPChunk:  # Character Glyph
         tile_width = self.tile_width
         tile_height = self.tile_height
         tile_depth = self.tile_depth
-        # To avoid byte boundaries efficiently
-        # If bit depth is 2, we can read in blocks of 2
-        # If bit depth is 1, we can only read in blocks of 1
-        bit_steps = get_bit_steps(self.tile_depth)
+        # To always land in byte boundaries:
+        # If bit depth is 2, we can read in blocks of 2 bits
+        # If bit depth is 1, we can only read in blocks of 1 bit
+        # If bit depth is 3, we can only read in blocks of 1 bit
+        # If bit depth is 4, we can read in blocks of 4 bits
+        # ...
+        bit_steps = get_max_bit_steps(self.tile_depth)
         bit_mask = ((1 << bit_steps) - 1)
 
         for _ in range((self.chunk_size - 0x10) // tile_bytes):
@@ -133,9 +178,12 @@ class CGLPChunk:  # Character Glyph
 
 
 class CWDHChunk:  # Character width
-    chunk_id: bytes  # CWDH
+    """
+    Character WiDtH chunk on a NTFR file.
+    """
+    chunk_id: bytes = b"CWDH"
     chunk_size: int  # 0x10 + tile_count*3 + padding
-    first_tile_no: int  # 0
+    first_tile_no: int = 0
     last_tile_no: int  # tile_count - 1
     left_spacing: List[int]
     width: List[int]
@@ -164,6 +212,9 @@ class CWDHChunk:  # Character width
 
 
 class CMAPChunk:
+    """
+    Character MAP chunk on a NFTR file.
+    """
     chunk_id: bytes  # CMAP
     chunk_size: int
     first_character: int
@@ -210,6 +261,9 @@ class CMAPChunk:
 
 
 class NFTR(FileFormat):
+    """
+    Nitro FonT Resource file format.
+    """
     header: NFTRHeader
     font_info: FINFChunk
     char_glyph: CGLPChunk
@@ -256,4 +310,5 @@ class NFTR(FileFormat):
         return encoding_dict[self.font_info.encoding]
 
     def write_stream(self, stream):
+        # TODO: Implement NFTR saving.
         raise NotImplementedError("NTFR Saving not implemented")

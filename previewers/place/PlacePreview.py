@@ -3,7 +3,6 @@ import pygame as pg
 from formats.place import Place
 from pg_utils.rom.RomSingleton import RomSingleton
 from pg_utils.TwoScreenRenderer import TwoScreenRenderer
-# from pg_utils.rom.rom_extract import load_smd
 from pg_utils.sound.SMDLStreamPlayer import SMDLStreamPlayer
 
 
@@ -27,11 +26,14 @@ class FadeInOutBtn(k4pg.ButtonSprite):
 
 
 class PlacePreview(TwoScreenRenderer):
+    OVERLAY_ACTIVE = True  # keep overlay active between different previews
+
     def __init__(self, place: Place):
         super(PlacePreview, self).__init__()
         self.place = place
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
+        self.sprite_loader_os = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         self.font_loader = RomSingleton().get_font_loader()
         self.inp = k4pg.Input()
 
@@ -93,6 +95,31 @@ class PlacePreview(TwoScreenRenderer):
                                     sprite_sheet=True, convert_alpha=False)
             self.exits.append(exit_)
 
+        overlay = pg.Surface((256, 192), flags=pg.SRCALPHA)
+        overlay_cam = k4pg.Camera(overlay, alignment=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
+
+        for hint_coin in self.place.hintcoins:
+            hc_rect = pg.Rect(hint_coin.x, hint_coin.y, hint_coin.width, hint_coin.height)
+            k4pg.draw.rect(overlay_cam, pg.Color(230, 212, 14), hc_rect)
+        for comment in self.place.comments:
+            comment_rect = pg.Rect(comment.x, comment.y, comment.width, comment.height)
+            k4pg.draw.rect(overlay_cam, pg.Color(14, 212, 230), comment_rect)
+        for obj in self.place.objects:
+            obj_rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
+            k4pg.draw.rect(overlay_cam, pg.Color(14, 230, 21), obj_rect)
+
+        self.overlay_sprite = k4pg.Sprite()
+        self.overlay_sprite.surf = overlay
+        self.overlay_sprite.alpha = 180
+
+        self.overlay_toggle = k4pg.ButtonSprite(pressed_counter=0.05)
+        self.overlay_toggle.position = pg.Vector2(-128 + 5, -96 + 5)
+        self.overlay_toggle.scale = pg.Vector2(0.5, 0.5)
+        self.overlay_toggle.center = pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP)
+        self.sprite_loader_os.load("overlay_icon.png", self.overlay_toggle, sprite_sheet=True, convert_alpha=False)
+        self.overlay_toggle.color_key = pg.Color(0, 255, 0)
+        self.overlay_toggle.set_tag("OFF" if PlacePreview.OVERLAY_ACTIVE else "ON")
+
     def update(self, dt: float):
         for sprite in self.sprites:
             sprite.animate(dt)
@@ -100,7 +127,13 @@ class PlacePreview(TwoScreenRenderer):
             obj.animate(dt)
         for exit_ in self.exits:
             exit_.animate(dt)
+
         self.bgm.update(dt)
+
+        if self.overlay_toggle.get_pressed(self.btm_camera, dt):
+            PlacePreview.OVERLAY_ACTIVE = not PlacePreview.OVERLAY_ACTIVE
+            self.overlay_toggle.set_tag("OFF" if PlacePreview.OVERLAY_ACTIVE else "ON")
+
         if not self.move_mode:
             self.move_button.animate(dt)
             if self.move_button.get_pressed(self.btm_camera, dt):
@@ -125,8 +158,14 @@ class PlacePreview(TwoScreenRenderer):
             sprite.draw(self.btm_camera)
         for obj in self.objects:
             obj.draw(self.btm_camera)
+
+        if PlacePreview.OVERLAY_ACTIVE:
+            self.overlay_sprite.draw(self.btm_camera)
+        
         if not self.move_mode:
             self.move_button.draw(self.btm_camera)
         else:
             for exit_ in self.exits:
                 exit_.draw(self.btm_camera)
+
+        self.overlay_toggle.draw(self.btm_camera)

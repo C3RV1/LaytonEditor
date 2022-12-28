@@ -5,15 +5,15 @@ import formats.filesystem
 import formats.gds
 import formats.graphics.bg
 import formats.dlz
-import formats.parsers.dcc
 from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
 from formats import conf
 
+import enum
 
-class Puzzle:
-    encoding = "cp1252"
+
+class PuzzleType(enum.IntEnum):
     MATCHSTICK_UNUSED = 0
     UNUSED_1 = 1
     MULTIPLE_CHOICE = 2
@@ -51,6 +51,10 @@ class Puzzle:
     FIND_SHAPE = 0x22
     WRITE_DATE = 0x23
 
+
+class Puzzle:
+    encoding = "cp1252"
+
     def __init__(self, rom: formats.filesystem.NintendoDSRom = None, id_=0):
         self.rom = rom
         self.type = 0
@@ -67,6 +71,9 @@ class Puzzle:
         self.hint2 = ""
         self.hint3 = ""
         self.title = ""
+
+        self.unk0 = 0
+        self.unk1 = 0
 
         self.bg_btm_id = 0
         self.bg_location_id = 0
@@ -89,7 +96,7 @@ class Puzzle:
         rdr.seek(0)
 
         self.number = rdr.read_uint16()
-        rdr.read_uint16()  # 112
+        self.unk1 = rdr.read_uint16()  # 112
         self.title = subs.replace_substitutions(rdr.read_string(encoding=self.encoding), True)
         rdr.seek(0x34)
         self.tutorial_id = rdr.read_uint8()
@@ -99,7 +106,7 @@ class Puzzle:
         self.location_id = rdr.read_uint8()
         self.type = rdr.read_uint8()
         self.bg_btm_id = rdr.read_uint8()
-        rdr.read_uint16()
+        self.unk0 = rdr.read_uint16()
         self.bg_location_id = rdr.read_uint8()
         self.reward_id = rdr.read_uint8()
 
@@ -147,7 +154,7 @@ class Puzzle:
                                          encoding=self.encoding)
 
         wtr.write_uint16(self.number)
-        wtr.write_uint16(112)
+        wtr.write_uint16(self.unk1)  # 112
         wtr.write_string(subs.convert_substitutions(self.title, True), encoding=self.encoding, size=0x30)
         wtr.write_uint8(self.tutorial_id)
         for picarat in self.picarat_decay:
@@ -156,7 +163,7 @@ class Puzzle:
         wtr.write_uint8(self.location_id)
         wtr.write_uint8(self.type)
         wtr.write_uint8(self.bg_btm_id)
-        wtr.write(self.original[0x3c:0x3e])  # UnkSoundId
+        wtr.write_uint16(self.unk0)  # UnkSoundId
         wtr.write_uint8(self.bg_location_id)
         wtr.write_uint8(self.reward_id)
 
@@ -236,85 +243,6 @@ class Puzzle:
         self.gds.save()
         return True
 
-    def to_readable(self):
-        parser = formats.parsers.dcc.DCCParser()
-        parser.reset()
-        parser.get_path("pzd", create=True)
-        parser.set_named("pzd.title", self.title)
-        parser.set_named("pzd.type", self.type)
-        parser.set_named("pzd.number", self.number)
-        parser.set_named("pzd.location_id", self.location_id)
-        parser.set_named("pzd.tutorial_id", self.tutorial_id)
-        parser.set_named("pzd.reward_id", self.reward_id)
-        parser.set_named("pzd.bg_btm_id", self.bg_btm_id)
-        parser.set_named("pzd.bg_location_id", self.bg_location_id)
-        parser.set_named("pzd.judge_char", self.judge_char)
-        parser.set_named("pzd.flag_bit2", self.flag_bit2)
-        parser.set_named("pzd.flag_bit5", self.flag_bit5)
-        parser.set_named("pzd.bg_lang", self.bg_lang)
-        parser.set_named("pzd.ans_bg_lang", self.ans_bg_lang)
-        parser.get_path("pzd.picarat_decay", create=True)
-        for picarat in self.picarat_decay:
-            parser["pzd.picarat_decay::unnamed"].append(picarat)
-        parser.set_named("pzd.text", self.text)
-        parser.set_named("pzd.correct_answer", self.correct_answer)
-        parser.set_named("pzd.incorrect_answer", self.incorrect_answer)
-        parser.set_named("pzd.hint1", self.hint1)
-        parser.set_named("pzd.hint2", self.hint2)
-        parser.set_named("pzd.hint3", self.hint3)
-
-        from formats.parsers.gds_parsers import get_puzzle_gds_parser
-        gds_parser = get_puzzle_gds_parser(self)
-        gds_parser.parse_into_dcc(self.gds, parser)
-        return parser.serialize()
-
-    def from_readable(self, readable):
-        parser = formats.parsers.dcc.DCCParser()
-        try:
-            parser.parse(readable)
-        except Exception as e:
-            return False, str(e)
-
-        required_paths = ["pzd.title", "pzd.type", "pzd.number", "pzd.text",  "pzd.correct_answer",
-                          "pzd.incorrect_answer", "pzd.hint1", "pzd.hint2", "pzd.hint3", "pzd.tutorial_id",
-                          "pzd.reward_id", "pzd.bg_btm_id", "pzd.bg_location_id", "pzd.judge_char", "pzd.flag_bit2",
-                          "pzd.flag_bit5", "pzd.location_id", "pzd.picarat_decay", "pzd.bg_lang", "pzd.ans_bg_lang"]
-
-        for req_path in required_paths:
-            if not parser.exists(req_path):
-                return False, f"Missing {req_path}"
-
-        self.title = parser["pzd.title"]
-        self.type = parser["pzd.type"]
-        self.number = parser["pzd.number"]
-        self.text = parser["pzd.text"]
-        self.correct_answer = parser["pzd.correct_answer"]
-        self.incorrect_answer = parser["pzd.incorrect_answer"]
-        self.hint1 = parser["pzd.hint1"]
-        self.hint2 = parser["pzd.hint2"]
-        self.hint3 = parser["pzd.hint3"]
-
-        self.tutorial_id = parser["pzd.tutorial_id"]
-        self.reward_id = parser["pzd.reward_id"]
-        self.bg_btm_id = parser["pzd.bg_btm_id"]
-        self.bg_location_id = parser["pzd.bg_location_id"]
-        self.judge_char = parser["pzd.judge_char"]
-        self.flag_bit2 = parser["pzd.flag_bit2"]
-        self.flag_bit5 = parser["pzd.flag_bit5"]
-        self.location_id = parser["pzd.location_id"]
-        self.picarat_decay = []
-        for picarat in parser["pzd.picarat_decay::unnamed"]:
-            self.picarat_decay.append(picarat)
-
-        self.bg_lang = parser["pzd.bg_lang"]
-        self.ans_bg_lang = parser["pzd.ans_bg_lang"]
-        self.gds.commands = []
-
-        from formats.parsers.gds_parsers import get_puzzle_gds_parser
-        gds_parser = get_puzzle_gds_parser(self)
-        successful, error_msg = gds_parser.parse_from_dcc(self.gds, parser)
-        return successful, error_msg
-
     # FLAG PROPERTIES
 
     @property
@@ -359,12 +287,13 @@ class Puzzle:
         else:
             self._flags &= 0xFF - 0x2
 
+    # MAYBE WHETHER THE PUZZLE HAS ANSWER IMAGE
     @property
-    def flag_bit5(self):
+    def has_answer_bg(self):
         return (self._flags & 0x10) > 0
 
-    @flag_bit5.setter
-    def flag_bit5(self, value):
+    @has_answer_bg.setter
+    def has_answer_bg(self, value):
         if value:
             self._flags |= 0x10
         else:

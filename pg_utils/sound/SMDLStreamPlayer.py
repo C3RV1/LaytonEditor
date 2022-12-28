@@ -5,7 +5,8 @@ import numpy as np
 
 from pg_utils.sound.StreamPlayerAbstract import StreamPlayerAbstract
 from formats.sound import sample_transform
-from formats.sound import sf2, swdl
+from formats.sound import swdl
+from formats_parsed.sound import sf2
 from typing import Optional
 from pg_utils.sound.SMDLFluidSynthSequencer import SMDLFluidSynthSequencer
 

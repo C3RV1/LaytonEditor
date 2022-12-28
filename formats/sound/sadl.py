@@ -1,15 +1,39 @@
 import logging
 import math
+import multiprocessing
+import time
 
 from formats.binary import BinaryReader, BinaryWriter
 from formats.sound.compression import adpcm, procyon
-from formats.sound.wav import WAV
 from formats.filesystem import FileFormat
 import numpy as np
-from typing import List
+from typing import List, Callable, Union
+
+from multiprocessing import shared_memory
 
 
 # TODO: add loop support
+
+
+def encode_channel(src_shape, src_name, src_type, dst_shape, dst_name, channel, num_samples,
+                   progress_shape, progress_type, progress_name):
+    src_sh_m = shared_memory.SharedMemory(name=src_name)
+    dst_sh_m = shared_memory.SharedMemory(name=dst_name)
+    progress_sm = shared_memory.SharedMemory(name=progress_name)
+    decoded = np.ndarray(src_shape, dtype=src_type, buffer=src_sh_m.buf)
+    buffer = np.ndarray(dst_shape, dtype=np.uint8, buffer=dst_sh_m.buf)
+    progress_buf = np.ndarray(progress_shape, dtype=progress_type, buffer=progress_sm.buf)
+    buffer_off = 0
+    procyon_decoder = procyon.Procyon()
+    for i in range(0, num_samples, 30):
+        block = decoded[channel][i:i + 30]
+        destination = buffer[channel][buffer_off:buffer_off + 0x10]
+        procyon_decoder.encode_block(block, destination)
+        buffer_off += 0x10
+        progress_buf[channel] = i // 30
+    src_sh_m.close()
+    dst_sh_m.close()
+    progress_sm.close()
 
 
 class Coding:
@@ -91,6 +115,15 @@ class SADL(FileFormat):
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 
+    def reset_decoding(self):
+        self.offset = [0] * self.channels
+        self.ima_decoders = []
+        self.procyon_decoders = []
+        for i in range(self.channels):
+            self.ima_decoders.append(adpcm.Adpcm())
+            self.procyon_decoders.append(procyon.Procyon())
+        self.blocks_done = 0
+
     def write_stream(self, stream):
         if not isinstance(stream, BinaryWriter):
             wtr = BinaryWriter(stream)
@@ -111,6 +144,7 @@ class SADL(FileFormat):
             coding |= 2
         else:
             raise NotImplementedError()
+        wtr.write_uint8(coding)
 
         wtr.seek(0x100)
         buffer = self.buffer.copy()
@@ -122,16 +156,26 @@ class SADL(FileFormat):
         wtr.seek(0x40)
         wtr.write_uint32(size)
 
-    def decode(self, blocks=-1):
+    def decode(self, blocks=-1, progress_callback: Union[Callable, None] = None):
+        cancelled = False
         if self.coding == Coding.INT_IMA:
             if blocks == -1:
                 blocks = self.num_samples // 2 // 0x10 - self.blocks_done
             decoded = np.zeros((self.channels, blocks * 32), dtype=np.int16)
             for chan in range(self.channels):
+                if cancelled:
+                    break
                 for i in range(blocks):
+                    if cancelled:
+                        break
                     if i + self.blocks_done == self.num_samples // 2 // 0x10:
                         continue
+                    if progress_callback:
+                        if progress_callback(i + chan * blocks, blocks * self.channels):
+                            cancelled = True
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
+                    if block.shape[0] == 0:
+                        break
                     decoded_block = self.ima_decoders[chan].decompress(block)
                     self.offset[chan] += 0x10
                     decoded[chan][i*32:i*32+32] = decoded_block
@@ -141,62 +185,74 @@ class SADL(FileFormat):
                 blocks = self.num_samples // 30 - self.blocks_done
             decoded = np.zeros((self.channels, blocks * 30), dtype=np.int16)
             for chan in range(self.channels):
+                if cancelled:
+                    break
                 for i in range(blocks):
+                    if cancelled:
+                        break
                     if i + self.blocks_done >= self.num_samples // 30:
                         break
+                    if progress_callback:
+                        if progress_callback(i + chan * blocks, blocks * self.channels):
+                            cancelled = True
                     block = self.buffer[chan][self.offset[chan]:self.offset[chan]+0x10]
                     self.procyon_decoders[chan].decode_block(block, decoded[chan][i*30:(i*30)+30])
                     self.offset[chan] += 0x10
             self.blocks_done += blocks
         else:
             raise NotImplementedError()
+        if cancelled:
+            return None
         return decoded
 
-    def to_wav(self) -> WAV:
-        wav = WAV()
-        wav.fmt.num_channels = self.channels
-        wav.fmt.sample_rate = self.sample_rate
-        wav.fmt.bits_per_sample = 0x10
-        wav.data.data = self.decode()
-        return wav
-
-    def from_wav(self, wav: WAV):
-        self.channels = wav.fmt.num_channels
-        if self.channels > 2:
-            self.channels = 2
-        self.sample_rate = wav.fmt.sample_rate
-        if self.sample_rate <= 16364:
-            self.sample_rate = 16364
-        else:
-            self.sample_rate = 32728
-        wav.change_channels(self.channels)
-        wav.change_sample_rate(self.sample_rate)
-        decoded = wav.data.data
-        self.encode(decoded)
-
-    def encode(self, decoded: np.ndarray):
+    def encode(self, decoded: np.ndarray, progress_callback: Union[Callable, None] = None):
         self.num_samples = decoded.shape[1]
         # Professor Layton 2 only supports Procyon encoding
+        # TODO: Implement option for INT_IMA encoding?
         self.coding = Coding.NDS_PROCYON
         self.buffer = np.zeros((decoded.shape[0], int(math.ceil(self.num_samples / 30)) * 16), dtype=np.uint8)
 
+        src_sh_mem = shared_memory.SharedMemory(create=True, size=decoded.nbytes)
+        decoded_sh = np.ndarray(decoded.shape, dtype=decoded.dtype, buffer=src_sh_mem.buf)
+        decoded_sh[:] = decoded[:]
+        dst_sh_mem = shared_memory.SharedMemory(create=True, size=self.buffer.nbytes)
+        buffer_sh = np.ndarray(self.buffer.shape, dtype=self.buffer.dtype, buffer=dst_sh_mem.buf)
+        buffer_sh[:] = self.buffer[:]
+
+        progress_buffer = np.array([0]*self.channels)
+        sm_progress = shared_memory.SharedMemory(create=True, size=progress_buffer.nbytes)
+        sh_progress = np.ndarray(progress_buffer.shape, dtype=progress_buffer.dtype,
+                                 buffer=sm_progress.buf)
+
         self.procyon_decoders = []
         self.offset = []
+        processes = []
         for i in range(self.channels):
             self.procyon_decoders.append(procyon.Procyon())
             self.offset.append(0)
+            processes.append(multiprocessing.Process(target=encode_channel,
+                                                     args=(decoded.shape, src_sh_mem.name, decoded.dtype,
+                                                           self.buffer.shape, dst_sh_mem.name,
+                                                           i, self.num_samples,
+                                                           sh_progress.shape, sh_progress.dtype,
+                                                           sm_progress.name)))
+            processes[i].start()
 
-        logging.debug(f"Encoding {self.num_samples} samples")
+        while any(x.is_alive() for x in processes):
+            progress = sum(sh_progress)
+            if progress_callback:
+                if progress_callback(progress, (self.num_samples // 30) * self.channels):
+                    for process in processes:
+                        process.kill()
+                    src_sh_mem.close()
+                    dst_sh_mem.close()
+                    sm_progress.close()
+                    return False
+            time.sleep(0.05)
 
-        for chan in range(self.channels):
-            buffer_off = 0
-            for i in range(0, self.num_samples, 30):
-                block = decoded[chan][i:i+30]
-                destination = self.buffer[chan][buffer_off:buffer_off + 0x10]
-                self.procyon_decoders[chan].encode_block(block, destination)
-                if i % 200*30 == 0 and i != 0:
-                    logging.debug(f"Blocks done: {i // 30} of {self.num_samples // 30}")
-                buffer_off += 0x10
-            self.procyon_decoders[chan].reset()
-            self.offset[chan] = 0
-        self.blocks_done = 0
+        self.buffer[:] = buffer_sh[:]
+        src_sh_mem.close()
+        dst_sh_mem.close()
+        sm_progress.close()
+
+        return True

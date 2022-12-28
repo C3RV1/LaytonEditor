@@ -7,7 +7,8 @@ from typing import BinaryIO
 
 import ndspy.color
 import numpy as np
-import wx
+from PIL.ImageQt import ImageQt
+from PySide6 import QtGui
 from PIL import Image
 
 from formats.binary import BinaryReader, BinaryWriter, SEEK_CUR
@@ -16,6 +17,17 @@ from formats.filesystem import FileFormat
 
 # Calculate and write the sections
 def get_nearest_power_of_2(x: int):
+    """
+    Gets the nearest power of 2 to x.
+
+    Examples
+    --------
+    >>> get_nearest_power_of_2(10)
+    8
+
+    >>> get_nearest_power_of_2(324)
+    256
+    """
     possible_results = floor(log(x, 2)), ceil(log(x, 2))
     if x - 2 ** possible_results[1] < -7:
         return max(8, int(2 ** possible_results[0]))
@@ -24,6 +36,21 @@ def get_nearest_power_of_2(x: int):
 
 
 def calculate_power_of_2_steps(x: int):
+    """
+    Calculate how many powers of two are required to get to a number.
+
+    Notes
+    -----
+    This method is equivalent to counting the number of 1s in the binary
+    representation of the number.
+
+    Examples
+    --------
+    >>> calculate_power_of_2_steps(142)
+    4
+
+    For 142, we need to add 2 + 4 + 8 + 128 = 142, so 4 steps.
+    """
     ret = 0
     while x > 0:
         ret += 1
@@ -31,31 +58,134 @@ def calculate_power_of_2_steps(x: int):
     return ret
 
 
+def generate_palette(images: List[Image.Image], maximum_color_count: int):
+    """
+    Generate the palette for a list of images, respecting a maximum number of colors.
+
+    Parameters
+    ----------
+    images : List[Image.Image]
+        List of Pillow images for which to generate the palette.
+    maximum_color_count : int
+        Number of allowed colors in total.
+
+    Returns
+    -------
+    Tuple[np.ndarray, List[np.ndarray]]
+        A tuple representing the palette and the images converted to the palette.
+
+        The first element is the palette as an ndarray of shape (color_count, 4).
+        The second element are the images as a list of ndarrays. The images are represented
+        row-first, so they are accessed images[image_index][row][column].
+    """
+    comb_w = max([img.width for img in images])
+    comb_h = sum([img.height for img in images])
+    comb = Image.new("RGBA", (comb_w, comb_h))
+    comb_y = 0
+    for i in range(len(images)):
+        comb.paste(images[i], (0, comb_y))
+        comb_y += images[i].height
+    comb = comb.convert("P", colors=(maximum_color_count - 1))
+    colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))
+    indexes = np.asarray(comb, np.uint8)
+
+    # add the regular transparent color
+    colors = np.concatenate(([[0, 255, 0, 0]], colors[:(maximum_color_count - 1)]))
+    indexes = indexes + 1  # we added our transparent color at the front of the palette
+    for i, (*_, a) in enumerate(colors):
+        if a < 128:
+            indexes[indexes == i] = 0  # transparent color, change to the transparent type
+
+    palette = np.zeros((len(colors), 4), np.uint8)
+    palette[:len(colors)] = colors
+
+    images_numpy = []
+
+    comb_y = 0
+    for i in range(len(images)):
+        h, w = images[i].height, images[i].width
+        image_numpy = indexes[comb_y:comb_y + h, :w]
+        images_numpy.append(image_numpy)
+        comb_y += h
+
+    return palette, images_numpy
+
+
 @dataclass
 class AnimationFrame:
-    index: int
+    """
+    Dataclass representing a frame of an animation.
+    """
+    next_frame_index: int
+    """Frame to play after this one."""
     duration: int
+    """Duration of the frame in frames."""
     image_index: int
+    """Index of the image which should play when this frame is active."""
 
 
 @dataclass
 class Animation:
+    """
+    Dataclass representing an animation.
+    """
     name: str = "Create an Animation"
+    """The name of the animation."""
     frames: List[AnimationFrame] = field(default_factory=list)
+    """List of frames in this animation."""
     child_image_x: int = 0
+    """Position of the child image in the X axis."""
     child_image_y: int = 0
+    """Position of the child image in the Y axis."""
     child_image_animation_index: int = 0
+    """Animation index that the child should play."""
 
 
 class AniSprite(FileFormat):
-    colordepth: int = 8
+    """
+    Animation file on the Layton ROM.
+    """
+    color_depth: int = 8
+    """Bits needed to represent a single color (8 or 4)."""
     images: List[np.ndarray] = []
+    """
+    Images contained in the file, as numpy arrays.
+
+    Each image is represented row-first, so that they are accessed image[row][column].
+    Therefore, each image is of shape (height, width).
+    All entries on each image represent a color in the palette.
+    """
     animations: List[Animation] = [Animation()]
-    variables: dict = {f"Var{i}": [0, ] * 8 for i in range(16)}
+    """List of animations contained in the file, as Animation objects."""
+    variable_labels = [f"Var{i}" for i in range(16)]
+    """List of 16 strings, each corresponding to the name of a variable."""
+    variable_data = [[0] * 8 for i in range(16)]
+    """List of the data contained in each variable. Each variable is a list of 8 integers."""
     palette: np.ndarray = np.zeros((256, 4), np.uint8)
+    """
+    Array of colors used in the images.
+    
+    Each color is RGBA, all colors having alpha 255 except color 0, which is
+    transparent.
+    """
     child_image: str = ""
+    """Path of the child image, with the ".ani" extension (TODO: check for AniSubSprite)."""
 
     _compressed_default = 2
+
+    @property
+    def variables(self):
+        """
+        Dictionary representation of variable_labels and variable_data.
+
+        The dict returned by this function is read-only, although any modification made
+        to the variable data will change the underlying data, because list objects
+        share the same reference.
+        """
+        var_dict = {}
+        for label, values in zip(self.variable_labels, self.variable_data):
+            var_dict[label] = values
+        return var_dict
 
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):
@@ -64,7 +194,7 @@ class AniSprite(FileFormat):
             rdr = BinaryReader(stream)
 
         n_images = rdr.read_uint16()
-        self.colordepth = 4 if rdr.read_uint16() == 3 else 8
+        self.color_depth = 4 if rdr.read_uint16() == 3 else 8
 
         # import the images
         self.images = []
@@ -83,7 +213,7 @@ class AniSprite(FileFormat):
                 part_h = 2 ** (3 + rdr.read_uint16())
 
                 part: np.ndarray
-                if self.colordepth == 8:
+                if self.color_depth == 8:
                     part = np.frombuffer(rdr.read(part_h * part_w), np.uint8)
                     part = part.reshape((part_h, part_w))
                 else:
@@ -118,7 +248,7 @@ class AniSprite(FileFormat):
             frame_durations = rdr.read_uint32_array(n_frames)
             image_indexes = rdr.read_uint32_array(n_frames)
             animation_frame_sets.append([
-                AnimationFrame(index=frame_indexes[i], duration=frame_durations[i],
+                AnimationFrame(next_frame_index=frame_indexes[i], duration=frame_durations[i],
                                image_index=image_indexes[i])
                 for i in range(n_frames)])
         self.animations = [Animation(name=animation_names[i], frames=animation_frame_sets[i])
@@ -127,13 +257,11 @@ class AniSprite(FileFormat):
         if rdr.read_uint16() != 0x1234:
             return  # We hit end of stream
 
-        variable_labels = rdr.read_string_array(16, 16)
-        variable_data = [[] for _ in range(16)]
+        self.variable_labels = rdr.read_string_array(16, 16)
+        self.variable_data = [[] for _ in range(16)]
         for _ in range(8):
             for var_i in range(16):
-                variable_data[var_i].append(rdr.read_int16())
-
-        self.variables = {variable_labels[i]: variable_data[i] for i in range(16)}
+                self.variable_data[var_i].append(rdr.read_int16())
 
         for anim in self.animations:
             anim.child_image_x = rdr.read_uint16()
@@ -151,7 +279,7 @@ class AniSprite(FileFormat):
             wtr = BinaryWriter(stream)
 
         wtr.write_uint16(len(self.images))
-        wtr.write_uint16(3 if self.colordepth == 4 else 4)
+        wtr.write_uint16(3 if self.color_depth == 4 else 4)
 
         for img in self.images:
             img_h, img_w = img.shape
@@ -190,7 +318,7 @@ class AniSprite(FileFormat):
 
                     part[:part_h, :part_w] = img[part_y:part_y + part_h, part_x:part_x + part_w]
 
-                    if self.colordepth == 8:
+                    if self.color_depth == 8:
                         wtr.write(part.tobytes())
                     else:
                         h, w = part.shape
@@ -207,7 +335,8 @@ class AniSprite(FileFormat):
             self.palette[color_i]: np.ndarray
             self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
-            self.palette[color_i, 3] = 255
+            if color_i:
+                self.palette[color_i, 3] = 255
 
         wtr.write_zeros(0x1e)
         wtr.write_uint32(len(self.animations))
@@ -216,18 +345,17 @@ class AniSprite(FileFormat):
             wtr.write_string(anim.name, 0x1e)
         for anim in self.animations:
             wtr.write_uint32(len(anim.frames))
-            wtr.write_uint32_array([frame.index for frame in anim.frames])
+            wtr.write_uint32_array([frame.next_frame_index for frame in anim.frames])
             wtr.write_uint32_array([frame.duration for frame in anim.frames])
             wtr.write_uint32_array([frame.image_index for frame in anim.frames])
 
         wtr.write_uint16(0x1234)  # magic number probably
 
-        variable_labels = list(self.variables)
-        assert len(variable_labels) == 16
-        wtr.write_string_array(variable_labels, 16)
+        assert len(self.variable_labels) == 16
+        wtr.write_string_array(self.variable_labels, 16)
         for dat_i in range(8):
-            for var_l in variable_labels:
-                wtr.write_int16(self.variables[var_l][dat_i])
+            for var_l in self.variable_data:
+                wtr.write_int16(var_l[dat_i])
 
         for anim in self.animations:
             wtr.write_uint16(anim.child_image_x)
@@ -240,82 +368,105 @@ class AniSprite(FileFormat):
 
         return stream
 
-    @classmethod
-    def fromstream(cls, stream: BinaryIO):
-        return cls(file=stream)
+    def extract_image_pil(self, image_index: int) -> Image.Image:
+        """
+        Extract an image as a Pillow image.
 
-    @classmethod
-    def frombuffer(cls, buffer: bytes):
-        (ret := cls()).read_stream(BytesIO(buffer))
-        return ret
+        Parameters
+        ----------
+        image_index : int
+            The index of the image to extract.
 
-    def tobytes(self):
-        self.write_stream((stream := BytesIO()))
-        return stream.getvalue()
-
-    def extract_image_pil(self, image_index) -> Image.Image:
+        Returns
+        -------
+        Image.Image
+            The extracted Pillow image.
+        """
         return Image.fromarray(self.palette[self.images[image_index]].astype(np.uint8), "RGBA")
 
-    def extract_image_wx_bitmap(self, image_index) -> wx.Bitmap:
-        height, width = self.images[image_index].shape
-        image_array = self.palette[self.images[image_index]].astype(np.uint8)
-        return wx.Bitmap.FromBufferRGBA(width, height, image_array)
+    def extract_image_qt(self, image_index) -> QtGui.QPixmap:
+        """
+        Extracts an image as a QPixmap.
 
-    def replace_image_pil(self, image_index, image: Optional[Image.Image]):  # also used to recreate palette
-        # TODO: Change colordepth
-        if image_index is not None:
-            logging.info(f"Animation {self._last_filename} replacing image {image_index} to image of size {image.size}")
-            if image_index < 0:
-                image_index = len(self.images) + image_index
-            assert image_index < len(self.images)
+        Parameters
+        ----------
+        image_index : int
+            The index of the image to extract.
 
-            image = image.convert("RGBA")
-        else:
-            logging.info(f"Animation {self._last_filename} reworking palette")
-        # Create the new palette by adding all the images together into 1 pil Image and then quantizing it.
-        # TODO: Prioritize inserted image colors in palette
-        # TODO: Bulk import images instead?
-        comb_w = max([img.shape[1] for img in self.images])
-        comb_h = sum([img.shape[0] for img in self.images])
-        if image_index is not None:
-            comb_w = max(comb_w, image.width)
-            comb_h = comb_h + image.height
-        comb = Image.new("RGBA", (comb_w, comb_h))
-        comb_y = 0
-        for i in range(len(self.images)):
-            if i == image_index:
-                comb.paste(image, (0, comb_y))
-                comb_y += image.height
-            else:
-                comb.paste(self.extract_image_pil(i), (0, comb_y))
-                comb_y += self.images[i].shape[0]
-        comb = comb.convert("P", colors=(
-            255 if self.colordepth == 8 else 15))  # 255 because we need to add the transparent color
-        colors = np.frombuffer(comb.palette.palette, np.uint8).reshape((-1, 4))
-        indexes = np.asarray(comb, np.uint8)
+        Returns
+        -------
+        QtGui.QPixmap
+            The extracted QPixmap.
+        """
+        image = self.extract_image_pil(image_index)
+        width, height = image.size
+        image = image.resize((width * 2, height * 2), resample=Image.Resampling.NEAREST)
+        qim = ImageQt(image)
+        return QtGui.QPixmap.fromImage(qim)
 
-        # add the regular transparent color
-        colors = np.concatenate(([[0, 255, 0, 0]], colors[:(255 if self.colordepth == 8 else 15)]))
-        indexes = indexes + 1  # we added our transparent color at the front of the palette
-        for i, (*_, a) in enumerate(colors):
-            if a < 128:
-                indexes[indexes == i] = 0  # transparent color, change to the transparent type
+    def rework_palette(self):
+        """
+        Creates the palette again for the images contained in the file.
+        """
+        logging.info(f"Animation {self._last_filename} reworking palette")
+        images_pil = [self.extract_image_pil(i) for i in range(len(self.images))]
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
 
-        self.palette = np.zeros((len(colors), 4), np.uint8)
-        self.palette[:len(colors)] = colors
+    def replace_image_pil(self, image_index: int, image: Image.Image):
+        """
+        Replaces an image with a Pillow image, reworking the palette afterwards.
 
-        comb_y = 0
-        for i in range(len(self.images)):
-            h, w, *_ = self.images[i].shape if i != image_index else (image.height, image.width)
-            self.images[i] = indexes[comb_y:comb_y + h, :w]
-            comb_y += h
+        Parameters
+        ----------
+        image_index : int
+            Index of the image to replace.
+        image : Image.Image
+            Image with which to replace it.
+        """
+        logging.info(f"Animation {self._last_filename} replacing image at idx {image_index}")
+        images_pil = [self.extract_image_pil(i) for i in range(len(self.images))]
+        images_pil[image_index] = image
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
+
+    def bulk_import_images(self, images_pil: List[Image.Image]):
+        """
+        Imports a list of images, removing all current images in the process.
+
+        Parameters
+        ----------
+        images_pil : List[Image.Image]
+            List of all images.
+        """
+        logging.info(f"Animation {self._last_filename} bulk importing {len(images_pil)} images")
+        color_count = 256 if self.color_depth == 8 else 16
+        self.palette, self.images = generate_palette(images_pil, color_count)
 
     def append_image_pil(self, image: Image.Image):
+        """
+        Appends an image to the end of the image list.
+
+        Parameters
+        ----------
+        image : Image.Image
+            Pillow image to append.
+        """
         logging.info(f"Animation {self._last_filename} appending image of size {image.size}")
         self.images.append(np.ndarray((0, 0), np.uint8))
         self.replace_image_pil(-1, image)
 
-    def insert_image_pil(self, image_index, image: Image.Image):
+    def insert_image_pil(self, image_index: int, image: Image.Image):
+        """
+        Inserts the given image at image_index.
+
+        Parameters
+        ----------
+        image_index : int
+            Index at which to insert the image.
+        image : Image.Image
+            Image to insert.
+        """
         logging.info(f"Animation {self._last_filename} inserting image of size {image.size} to idx {image_index}")
         self.images.insert(image_index, np.ndarray((0, 0), np.uint8))
         for anim in self.animations:
@@ -324,7 +475,18 @@ class AniSprite(FileFormat):
                     anim.frames[i].image_index += 1
         self.replace_image_pil(image_index, image)
 
-    def remove_image(self, image_index):
+    def remove_image(self, image_index: int):
+        """
+        Removes the image at the specified index.
+
+        When removing an image, it also modifies all existing animations to remove
+        this image from any frame.
+
+        Parameters
+        ----------
+        image_index : int
+            Index of the image to remove.
+        """
         logging.info(f"Animation {self._last_filename} removing image of idx {image_index}")
         self.images.pop(image_index)
 
@@ -337,18 +499,21 @@ class AniSprite(FileFormat):
                     anim.frames[i].image_index -= 1
             for frame in frames_to_remove:
                 anim.frames.remove(frame)
-        self.replace_image_pil(None, None)  # Recreate palette
-
-    def __bytes__(self):
-        return self.tobytes()
+        self.rework_palette()  # Recreate palette
 
 
 class AniSubSprite(AniSprite):
+    """
+    Animation file on the Layton ROM for images shown on the sub engine.
+
+    For attributes look at base class (AniSprite).
+    """
+
     def read_stream(self, stream: BinaryIO):
         rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
 
         n_images = rdr.read_uint16()
-        self.colordepth = 4 if rdr.read_uint16() == 3 else 8
+        self.color_depth = 4 if rdr.read_uint16() == 3 else 8
         palette_length = rdr.read_uint32()
 
         # import the images
@@ -369,7 +534,7 @@ class AniSubSprite(AniSprite):
                 part_w = 2 ** (3 + rdr.read_uint16())
                 part_h = 2 ** (3 + rdr.read_uint16())
                 part: np.ndarray
-                if self.colordepth == 8:
+                if self.color_depth == 8:
                     part = np.frombuffer(rdr.read(part_h * part_w), np.uint8)
                 else:
                     bufpart = np.frombuffer(rdr.read(part_h * part_w // 2), np.uint8)
@@ -394,7 +559,7 @@ class AniSubSprite(AniSprite):
 
             self.images.append(img)
 
-        self.palette = np.zeros((256, 4), np.uint8)
+        self.palette = np.zeros((palette_length, 4), np.uint8)
         for color_i in range(palette_length):
             self.palette[color_i] = ndspy.color.unpack255(rdr.read_uint16())
             if color_i:
@@ -410,7 +575,7 @@ class AniSubSprite(AniSprite):
             frame_durations = rdr.read_uint32_array(n_frames)
             image_indexes = rdr.read_uint32_array(n_frames)
             animation_frame_sets.append([
-                AnimationFrame(index=frame_indexes[i], duration=frame_durations[i],
+                AnimationFrame(next_frame_index=frame_indexes[i], duration=frame_durations[i],
                                image_index=image_indexes[i])
                 for i in range(n_frames)])
         self.animations = [Animation(name=animation_names[i], frames=animation_frame_sets[i])
@@ -419,13 +584,11 @@ class AniSubSprite(AniSprite):
         if rdr.read_uint16() != 0x1234:
             return  # We hit end of stream
 
-        variable_labels = rdr.read_string_array(16, 16)
-        variable_data = [[] for _ in range(16)]
+        self.variable_labels = rdr.read_string_array(16, 16)
+        self.variable_data = [[] for _ in range(16)]
         for _ in range(8):
             for var_i in range(16):
-                variable_data[var_i].append(rdr.read_int16())
-
-        self.variables = {variable_labels[i]: variable_data[i] for i in range(16)}
+                self.variable_data[var_i].append(rdr.read_int16())
 
         for anim in self.animations:
             anim.child_image_x = rdr.read_int16()
@@ -440,65 +603,120 @@ class AniSubSprite(AniSprite):
         wtr = stream if isinstance(stream, BinaryWriter) else BinaryWriter(stream)
 
         wtr.write_uint16(len(self.images))
-        wtr.write_uint16(3 if self.colordepth == 4 else 4)
-        wtr.write_uint32(256 if self.colordepth == 8 else 16)
+        wtr.write_uint16(3 if self.color_depth == 4 else 4)
+        wtr.write_uint32(len(self.palette))
 
         for img in self.images:
+            # TODO: Maybe improve algorithm to use less parts
+
             img_h, img_w = img.shape
             wtr.write_uint16(img_w)
             wtr.write_uint16(img_h)
 
-            # number of parts
-            wtr.write_uint16(calculate_power_of_2_steps(img_w) *
-                             calculate_power_of_2_steps(img_h))
+            count_position = wtr.tell()
+            wtr.write_uint16(0)
             wtr.write_zeros(2)
+
+            def get_flags(_part_w, _part_h):
+                if _part_w == _part_h:
+                    shape = 0
+                    if _part_w == 8:
+                        size_flag = 0
+                    elif _part_w == 16:
+                        size_flag = 1
+                    elif _part_w == 32:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                elif _part_w > _part_h:
+                    shape = 1
+                    if _part_w == 16:
+                        size_flag = 0
+                    elif _part_w == 32 and _part_h == 8:
+                        size_flag = 1
+                    elif _part_w == 32 and _part_h == 16:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                else:
+                    shape = 2
+                    if _part_h == 16:
+                        size_flag = 0
+                    elif _part_h == 32 and _part_w == 8:
+                        size_flag = 1
+                    elif _part_h == 32 and _part_w == 16:
+                        size_flag = 2
+                    else:
+                        size_flag = 3
+                return shape << 14, size_flag << 14
+
+            count = 0
+
+            def add_part(_part_x, _part_y, _part_w, _part_h):
+                nonlocal count
+                shape_flag, size_flag = get_flags(_part_w, _part_h)
+                wtr.write_uint16(shape_flag)
+                wtr.write_uint16(size_flag)
+                wtr.write_uint16(_part_x)
+                wtr.write_uint16(_part_y)
+                wtr.write_uint16(int(log(_part_w, 2)) - 3)
+                wtr.write_uint16(int(log(_part_h, 2)) - 3)
+
+                part = np.zeros((_part_h // 8, _part_w // 8, 8, 8), np.uint8)
+
+                if _part_x + _part_w > img_w:
+                    _part_w += img_w - _part_x - _part_w
+                if _part_y + _part_h > img_h:
+                    _part_h += img_h - _part_y - _part_h
+
+                for yt, yslice in enumerate(part):
+                    for xt, xslice in enumerate(yslice):
+                        xslice[:_part_h - 8 * yt, :_part_w - 8 * xt] = \
+                            img[_part_y + yt * 8:min(_part_y + yt * 8 + 8, _part_y + _part_h),
+                                _part_x + xt * 8:min(_part_x + xt * 8 + 8, _part_x + _part_w)]
+
+                if self.color_depth == 8:
+                    wtr.write(part.tobytes())
+                else:
+                    _, hw = part.shape
+                    part_4bit: np.ndarray = part[:hw // 2] << 4 | part[hw // 2:]
+                    wtr.write(part_4bit.tobytes())
+                count += 1
 
             w_left, h_left = img_w, img_h
             part_x, part_y = 0, 0
             while h_left > 0:
-                part_h = get_nearest_power_of_2(h_left)
-                good_h = part_h
-                h_left -= part_h
+                part_h = min(get_nearest_power_of_2(h_left), 64)
                 w_left = img_w
                 part_x = 0
                 while w_left > 0:
-                    part_w = get_nearest_power_of_2(w_left)
-                    w_left -= part_w
-                    part_h = good_h
+                    part_w = min(get_nearest_power_of_2(w_left), 64)
 
-                    wtr.write_uint16(part_x)  # TODO: THIS
-                    wtr.write_uint16(part_y)
-                    wtr.write_uint16(part_x)
-                    wtr.write_uint16(part_y)
-                    wtr.write_uint16(int(log(part_w, 2)) - 3)
-                    wtr.write_uint16(int(log(part_h, 2)) - 3)
-
-                    part = np.zeros((part_h // 8, part_w // 8, 8, 8), np.uint8)
-
-                    if part_x + part_w > img_w:
-                        part_w += img_w - part_x - part_w
-                    if part_y + part_h > img_h:
-                        part_h += img_h - part_y - part_h
-
-                    for yt, yslice in enumerate(part):
-                        for xt, xslice in enumerate(yslice):
-                            xslice[:part_h - 8 * yt, :part_w - 8 * xt] = \
-                                img[part_y + yt * 8:min(part_y + yt * 8 + 8, part_y + part_h),
-                                    part_x + xt * 8:min(part_x + xt * 8 + 8, part_x + part_w)]
-
-                    if self.colordepth == 8:
-                        wtr.write(part.tobytes())
+                    if part_w == 64 and part_h < 32:
+                        add_part(part_x, part_y, 32, part_h)
+                        add_part(part_x + 32, part_y, 32, part_h)
+                    elif part_w < 32 and part_h == 64:
+                        add_part(part_x, part_y, part_w, 32)
+                        add_part(part_x, part_y + 32, part_w, 32)
                     else:
-                        _, hw = part.shape
-                        part_4bit: np.ndarray = part[:hw // 2] << 4 | part[hw // 2:]
-                        wtr.write(part_4bit.tobytes())
+                        add_part(part_x, part_y, part_w, part_h)
 
                     part_x += part_w
+                    w_left -= part_w
                 part_y += part_h
+                h_left -= part_h
 
-        for color_i in range(256 if self.colordepth == 8 else 16):
+            last_pos = wtr.tell()
+            wtr.seek(count_position)
+            wtr.write_uint16(count)
+            wtr.seek(last_pos)
+
+        for color_i in range(len(self.palette)):
             self.palette[color_i]: np.ndarray
+            self.palette[color_i, 3] = 0
             wtr.write_uint16(ndspy.color.pack255(*self.palette[color_i]))
+            if color_i:
+                self.palette[color_i, 3] = 255
 
         wtr.write_zeros(0x1e)
         wtr.write_uint32(len(self.animations))
@@ -507,18 +725,17 @@ class AniSubSprite(AniSprite):
             wtr.write_string(anim.name, 0x1e)
         for anim in self.animations:
             wtr.write_uint32(len(anim.frames))
-            wtr.write_uint32_array([frame.index for frame in anim.frames])
+            wtr.write_uint32_array([frame.next_frame_index for frame in anim.frames])
             wtr.write_uint32_array([frame.duration for frame in anim.frames])
             wtr.write_uint32_array([frame.image_index for frame in anim.frames])
 
         wtr.write_uint16(0x1234)  # magic number probably
 
-        variable_labels = list(self.variables)
-        assert len(variable_labels) == 16
-        wtr.write_string_array(variable_labels, 16)
+        assert len(self.variable_labels) == 16
+        wtr.write_string_array(self.variable_labels, 16)
         for dat_i in range(8):
-            for var_l in variable_labels:
-                wtr.write_uint16(self.variables[var_l][dat_i])
+            for var_l in self.variable_data:
+                wtr.write_uint16(var_l[dat_i])
 
         for anim in self.animations:
             wtr.write_int16(anim.child_image_x)

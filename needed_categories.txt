@@ -1,0 +1,14 @@
+Filesystem - REPLACING, EXPORTING
+Sprites - EDITING
+Backgrounds - EDITING
+Events - EDITING
+Puzzles - EDITING
+Places - PREVIEWING (missing comments, hint coins), EDITING
+Fonts -
+Movies - VIEWING
+Streamed Audio - EDITING
+Sequenced Audio - EDITING
+Sound Banks - EXPORTING, TODO Importing (and Playing Samples?)
+Sound Effects -
+Text - EDITING
+Scripts - EDITING
