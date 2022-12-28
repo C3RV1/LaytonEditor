@@ -15,8 +15,8 @@ class ExitsModel(PlaceAbstractTableModel):
         if role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == QtCore.Qt.Horizontal:
-            return ["X", "Y", "Width", "Height", "Image Index", "Action",
-                    "Unk0", "Unk1", "Unk2", "Unk3", "Event or Place Index"][section]
+            return ["X", "Y", "Width", "Height", "Image Index", "Unk0",
+                    "Unk1", "Unk2", "Next Map X", "Next Map Y", "Event or Place Index"][section]
         return f"Exit {section}"
 
     def data(self, index: QtCore.QModelIndex, role: int = ...):
@@ -30,11 +30,11 @@ class ExitsModel(PlaceAbstractTableModel):
             exit_.width,
             exit_.height,
             exit_.image_index,
-            exit_.action,
             exit_.unk0,
             exit_.unk1,
             exit_.unk2,
-            exit_.unk3,
+            exit_.next_map_x,
+            exit_.next_map_y,
             exit_.event_or_place_index,
         ][index.column()]
 
@@ -59,15 +59,15 @@ class ExitsModel(PlaceAbstractTableModel):
         elif index.column() == 4:
             exit_.image_index = value
         elif index.column() == 5:
-            exit_.action = value
-        elif index.column() == 6:
             exit_.unk0 = value
-        elif index.column() == 7:
+        elif index.column() == 6:
             exit_.unk1 = value
-        elif index.column() == 8:
+        elif index.column() == 7:
             exit_.unk2 = value
+        elif index.column() == 8:
+            exit_.next_map_x = value
         elif index.column() == 9:
-            exit_.unk3 = value
+            exit_.next_map_y = value
         elif index.column() == 10:
             exit_.event_or_place_index = value
         return True

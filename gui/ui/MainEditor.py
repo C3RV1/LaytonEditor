@@ -67,7 +67,8 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.window.setLayout(self.horizontal_layout)
         self.setCentralWidget(self.window)
 
-        self.setFixedSize(QtCore.QSize(1280, 720))
+        self.setMinimumSize(QtCore.QSize(1280, 720))
+        self.setBaseSize(QtCore.QSize(1280, 720))
 
         self.show()
 

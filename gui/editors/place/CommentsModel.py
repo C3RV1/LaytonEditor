@@ -9,13 +9,13 @@ class CommentsModel(PlaceAbstractTableModel):
         return 0
 
     def columnCount(self, parent: QtCore.QModelIndex) -> int:
-        return 7
+        return 6
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = ...):
         if role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         if orientation == QtCore.Qt.Horizontal:
-            return ["X", "Y", "Width", "Height", "Character Index", "Text Index", "Unk"][section]
+            return ["X", "Y", "Width", "Height", "Character Index", "Text Index"][section]
         return f"Comment {section}"
 
     def data(self, index: QtCore.QModelIndex, role: int = ...):
@@ -30,7 +30,6 @@ class CommentsModel(PlaceAbstractTableModel):
             comment.height,
             comment.character_index,
             comment.text_index,
-            comment.unk
         ][index.column()]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
@@ -55,6 +54,4 @@ class CommentsModel(PlaceAbstractTableModel):
             comment.character_index = value
         elif index.column() == 5:
             comment.text_index = value
-        elif index.column() == 6:
-            comment.unk = value
         return True

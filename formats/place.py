@@ -20,11 +20,11 @@ class PlaceExit:
     width: int = 0
     height: int = 0
     image_index: int = 0
-    action: int = 0
     unk0: int = 0
     unk1: int = 0
     unk2: int = 0
-    unk3: int = 0
+    next_map_x: int = 0
+    next_map_y: int = 0
     event_or_place_index: int = 0
 
 
@@ -36,7 +36,6 @@ class PlaceComment:
     height: int = 0
     character_index: int = 0
     text_index: int = 0
-    unk: int = 0
 
 
 @dataclass
@@ -104,7 +103,7 @@ class Place(FileFormat):
             comment.height = rdr.read_uint8()
             comment.character_index = rdr.read_uint16()
             comment.text_index = rdr.read_uint16()
-            comment.unk = rdr.read_uint16()
+            rdr.read_uint16()  # 0
         # pos: 0xcc
         for sprite in self.sprites:
             sprite.x = rdr.read_uint8()
@@ -126,11 +125,11 @@ class Place(FileFormat):
             plc_exit.width = rdr.read_uint8()
             plc_exit.height = rdr.read_uint8()
             plc_exit.image_index = rdr.read_uint8()
-            plc_exit.action = rdr.read_uint8()
             plc_exit.unk0 = rdr.read_uint8()
             plc_exit.unk1 = rdr.read_uint8()
             plc_exit.unk2 = rdr.read_uint8()
-            plc_exit.unk3 = rdr.read_uint8()
+            plc_exit.next_map_x = rdr.read_uint8()
+            plc_exit.next_map_y = rdr.read_uint8()
             plc_exit.event_or_place_index = rdr.read_uint16()
         # pos: 0x35c (if we make 16 exits it lines up so...?)
         rdr.seek(0x38c)
@@ -156,7 +155,7 @@ class Place(FileFormat):
             wtr.write_uint8(comment.height)
             wtr.write_uint16(comment.character_index)
             wtr.write_uint16(comment.text_index)
-            wtr.write_uint16(comment.unk)
+            wtr.write_uint16(0)
         for sprite in self.sprites:
             wtr.write_uint8(sprite.x)
             wtr.write_uint8(sprite.y)
@@ -175,11 +174,11 @@ class Place(FileFormat):
             wtr.write_uint8(plc_exit.width)
             wtr.write_uint8(plc_exit.height)
             wtr.write_uint8(plc_exit.image_index)
-            wtr.write_uint8(plc_exit.action)
             wtr.write_uint8(plc_exit.unk0)
             wtr.write_uint8(plc_exit.unk1)
             wtr.write_uint8(plc_exit.unk2)
-            wtr.write_uint8(plc_exit.unk3)
+            wtr.write_uint8(plc_exit.next_map_x)
+            wtr.write_uint8(plc_exit.next_map_y)
             wtr.write_uint16(plc_exit.event_or_place_index)
         wtr.seek(0x38c)
         wtr.write_uint16(self.background_music_index)
