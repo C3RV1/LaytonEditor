@@ -1,19 +1,12 @@
 # Layton Editor
 
 Rom editor for a professor layton romhack. Created by Team Top Hat.
-The instructions on how to use the editor are on the `wiki` page.
+The instructions on how to use the editor are on the `wiki` page. You can also find there the installation instructions on the *Home* page.
 
 Japanese is not yet supported.
 
 Current support is limited to Professor Layton 2. Other games have not been
-tested, but would probably lack many features and give many errors.
-
-## Installation
-
-To install the LaytonEditor just clone this repository and install the
-dependencies listed on `requirements.txt`.
-
-To run just execute `python laytonEditor.py`.
+tested, but would probably lack many features, and stability is not guaranteed.
 
 ## Thanks to...
 
