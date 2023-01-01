@@ -23,7 +23,7 @@ class SortTile(k4pg.Sprite):
                 tag_num = self.get_tag_num()
                 tag_num %= self.tag_count - 1
                 tag_num += 1
-                self.set_tag_by_num(tag_num)
+                self.set_tag_num(tag_num)
                 self.current_tag = self.get_tag().name
 
     def load_sprite(self, *args, **kwargs):

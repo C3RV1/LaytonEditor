@@ -133,7 +133,14 @@ class Sprite(Renderable):
                         f"tags: {[tag.name for tag in self._tag_info]})")
         return
 
-    def set_tag_by_num(self, num: int):
+    def get_tag_by_num(self, num: int):
+        if num >= len(self._tag_info):
+            logging.warning(f"Sprite tag num bigger than number of animations (num: {num}, "
+                            f"count: {len(self._tag_info)})")
+            return None
+        return self._tag_info[num].name
+
+    def set_tag_num(self, num: int):
         if num >= len(self._tag_info):
             logging.warning(f"Sprite tag num bigger than number of animations (num: {num}, "
                             f"count: {len(self._tag_info)})")
@@ -148,7 +155,7 @@ class Sprite(Renderable):
     def tag_names(self):
         return [tag.name for tag in self._tag_info]
 
-    def get_tag(self):
+    def get_tag(self) -> Tag:
         return self._active_tag
 
     def get_tag_num(self):
