@@ -59,7 +59,7 @@ class EventPlayer(TwoScreenRenderer):
         self.inp = k4pg.Input()
         self.wait_tap = False
 
-        self.run_events_until_busy()
+        # self.run_events_until_busy()
 
     def run_events_until_busy(self):
         while True:
@@ -71,7 +71,8 @@ class EventPlayer(TwoScreenRenderer):
             self.execute_gds_command(command)
 
             if self.is_busy():
-                return
+                break
+        self.gm.tick()
 
     def execute_gds_command(self, command: gds.GDSCommand):
         fade_out = 1

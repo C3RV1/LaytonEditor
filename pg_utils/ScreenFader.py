@@ -62,10 +62,7 @@ class ScreenFader(k4pg.Sprite):
         self.run_on_finish_fade = run_fade_finish
 
     def update_fade(self):
-        if self.current_time <= 0:
-            percentage = 0
-        else:
-            percentage = 1 - min(max(self.current_time / self.fade_time, 0), 1)  # Clamp between 0 and 1
+        percentage = 1 - min(max(self.current_time / self.fade_time, 0), 1)  # Clamp between 0 and 1
         if self.fade == self.FADING_OUT:
             self.alpha = self.max_fade * percentage
             if self.current_time <= 0:

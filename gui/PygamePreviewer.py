@@ -7,6 +7,9 @@ import pygame as pg
 import gc
 
 
+# TODO: Move resource loading to pygame thread, as to not lag pyside thread
+
+
 class PreviewerDefaultRenderer(TwoScreenRenderer):
     def __init__(self):
         super(PreviewerDefaultRenderer, self).__init__()

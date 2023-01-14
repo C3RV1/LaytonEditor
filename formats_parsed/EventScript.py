@@ -59,6 +59,10 @@ def match_syntax(split, syntax, optional=()):
     return True
 
 
+def remove_comment(line):
+    return line.split("#")[0].strip()
+
+
 class EventScript:
     def __init__(self, data: str, ev=None):
         self.ev = ev
@@ -73,14 +77,16 @@ class EventScript:
         self.text_gds_number = 100
 
     def get_line(self):
+        if not self.lines:
+            return ""
         r = self.lines[0]
         self.lines = self.lines[1:]
         self.line_num += 1
-        return r
+        return remove_comment(r)
 
     def peek_line(self):
         if self.lines:
-            return self.lines[0]
+            return remove_comment(self.lines[0])
         else:
             return ""
 
@@ -113,9 +119,9 @@ class EventScript:
                 value = int(line_split[2])
             except ValueError:
                 raise TypeError(f"Set: Invalid value (line {self.line_num})")
-            if field == "top image":
+            if field == "top":
                 self.ev.map_top_id = value
-            elif field == "bottom image":
+            elif field == "bottom":
                 self.ev.map_bottom_id = value
             else:
                 raise SyntaxError(f"Field {field} not recognized (line {self.line_num})")
@@ -295,10 +301,6 @@ class EventScript:
                 event_gds_parser.reverse_command_name("bg_opacity", optional + [opacity])
             )
         elif line_split[0] in self.defined_characters:
-            line_split_dialogue = split_quoted(line, separator=":", remove_quotes=False)
-            cmd = line_split_dialogue[0]
-            lines = [":".join(line_split_dialogue[1:])[1:]]
-            line_split = split_quoted(cmd)
             if not match_syntax(line_split, (None, None, None, None), (("voice", None),)):
                 raise SyntaxError(f"Dialogue does not match syntax (line {self.line_num})")
             if len(line_split) > 4:
@@ -318,8 +320,9 @@ class EventScript:
                 sound_pitch = int(line_split[3])
             except ValueError:
                 raise TypeError(f"Dialogue: Invalid sound pitch (line {self.line_num})")
-            while self.peek_line().startswith("    "):
-                lines.append(self.get_line()[4:])
+            lines = []
+            while self.peek_line() != "":
+                lines.append(self.get_line())
             self.ev.gds.commands.append(
                 event_gds_parser.reverse_command_name("dial", [gds_number, character_id, start_animation, end_animation,
                                                                sound_pitch, "\n".join(lines)])
@@ -410,11 +413,16 @@ class EventScript:
 
 
 if __name__ == '__main__':
-    with open("../../e10_030.txt", "rb") as f:
-        p = EventScript(f.read().decode("utf-8").replace("\r\n", "\n"))
-        try:
-            p.parse()
-        except Exception as e:
+    import cProfile
+    from pstats import SortKey
+
+    with cProfile.Profile() as prof:
+        with open("../../../event_omelas.txt", "rb") as f:
+            p = EventScript(f.read().decode("utf-8").replace("\r\n", "\n"))
+            try:
+                p.parse()
+            except Exception as e:
+                print(p.ev.gds.commands)
+                raise e
             print(p.ev.gds.commands)
-            raise e
-        print(p.ev.gds.commands)
+        prof.print_stats(sort=SortKey.CALLS)
