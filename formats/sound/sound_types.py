@@ -27,6 +27,10 @@ class Sample:
     decay2: int = 0x7F
     release: int = 0x28
 
+    def copy_data(self, other: 'Sample'):
+        self._pcm16 = other._pcm16
+        self._adpcm = other._adpcm
+
     @property
     def pcm16(self):
         if self._pcm16 is None and self._adpcm is not None:
@@ -49,6 +53,9 @@ class Sample:
     def adpcm(self, v: np.ndarray):
         self._adpcm = v
         self._pcm16 = None
+
+    def empty(self):
+        return self._adpcm is None and self._pcm16 is None
 
 
 class KeyGroup:

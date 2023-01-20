@@ -1329,8 +1329,8 @@ class SoundFont:
         for sample_id, sample in sample_data.items():
             if sample_id not in self.samples:
                 continue
-            self.samples[sample_id].pcm16 = sample.pcm16
-        if any([s.pcm16 is None for s in self.samples.values()]):
+            self.samples[sample_id].copy_data(sample)
+        if any(s.empty() for s in self.samples.values()):
             logging.warning("Sample data not fully set")
 
     def construct(self):

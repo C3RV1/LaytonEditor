@@ -1,11 +1,8 @@
 import hashlib
-from typing import Dict
 
 from formats.binary import BinaryWriter
 from formats.sound.smdl import smdl
 from formats_parsed.sound import SMDLMidiSequencer, SMDLBuilder
-from formats.sound import swdl
-from formats.sound import sound_types
 from formats import binary
 from formats.filesystem import NintendoDSRom
 import unittest
