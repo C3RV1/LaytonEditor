@@ -121,6 +121,9 @@ class EventPlayer(TwoScreenRenderer):
             if 0 <= command.params[0] <= 7:
                 if char := self.characters[command.params[0]]:
                     char.set_visibility(command.params[1] > 0)
+        elif command.command == 0x2d:
+            # show chapter
+            pass
         elif command.command == 0x30:
             if 0 <= command.params[0] <= 7:
                 if char := self.characters[command.params[0]]:
@@ -147,6 +150,9 @@ class EventPlayer(TwoScreenRenderer):
             self.next_voice = command.params[0]
         elif command.command == 0x5d:
             self.event_sound.play_sadl(f"data_lt2/stream/ST_{str(command.params[0]).zfill(3)}.SAD")
+        elif command.command == 0x5e:
+            # sfx sed
+            pass
         elif command.command == 0x62:
             self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD", command.params[1])
         elif command.command == 0x69:
@@ -156,7 +162,7 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x6b:
             self.top_bg.shake()
         elif command.command == 0x71:
-            # Something about mysteries -> hides all character
+            # Reveal mystery -> hides all character
             for char in self.characters:
                 if char:
                     char.hide()

@@ -21,6 +21,8 @@ class EventBG:
         if fade_type == self.fader.fade:
             return
         self.fader.set_fade(fade_type, False, instant_time=instant)
+        if fade_time == 0:
+            instant = True
         if fade_time is not None:
             self.fader.current_time = fade_time / 60.0
             self.fader.fade_time = fade_time / 60.0
