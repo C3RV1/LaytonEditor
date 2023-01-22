@@ -16,8 +16,8 @@ class PreviewerDefaultRenderer(TwoScreenRenderer):
         sprite_loader = k4pg.SpriteLoaderOS(base_path_os="data_permanent/sprites")
         font_loader = k4pg.FontLoaderOS(base_path_os="data_permanent/fonts", fall_back_font_os="../font_default.json")
         self.tth_logo = k4pg.Sprite()
-        sprite_loader.load("team_top_hat_logo.png", self.tth_logo)
-        self.tth_logo.set_size([128, 128], conserve_ratio=True, ratio_type=self.tth_logo.SNAP_MIN)
+        sprite_loader.load("layton_editor_logo.png", self.tth_logo)
+        self.tth_logo.set_size([240, 180], conserve_ratio=True, ratio_type=self.tth_logo.SNAP_MIN)
         self.previewer_text = k4pg.Text(text="Game Previewer", color=pg.Color(240, 240, 240))
         font_loader.load("consolas", 24, self.previewer_text)
 
@@ -28,8 +28,8 @@ class PreviewerDefaultRenderer(TwoScreenRenderer):
     def draw(self):
         self.top_camera.clear(pg.Color(40, 40, 40))
         self.btm_camera.clear(pg.Color(40, 40, 40))
-        self.tth_logo.draw(self.btm_camera)
-        self.previewer_text.draw(self.top_camera)
+        self.tth_logo.draw(self.top_camera)
+        self.previewer_text.draw(self.btm_camera)
 
 
 class PygamePreviewer(threading.Thread):
