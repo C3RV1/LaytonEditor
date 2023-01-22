@@ -49,7 +49,7 @@ class SoundBankCategory(FilesystemCategory):
         sf.samples = swd.samples
 
         if not path.lower().endswith("999.swd"):
-            main_bank_path = "/".join(path.split("/")[:-1]) + "/BG_999.SWD"
+            main_bank_path = path[:-7] + "999.SWD"
             main_bank = SWDL(main_bank_path, rom=node.rom)
             sf.set_sample_data(main_bank.samples)
 
