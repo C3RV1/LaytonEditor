@@ -14,6 +14,9 @@ class PlaceVersion(EditorObject):
         self.version = version
         self.archive: Archive = archive
 
+    def name_str(self):
+        return f"Place {self.top} {self.version}"
+
     def data(self):
         return f"Version {self.version}"
 
@@ -26,6 +29,9 @@ class PlaceTop(EditorObject):
         self.category = category
         self.top = top
         self.versions = []
+
+    def name_str(self):
+        return f"PlaceTop {self.top}"
 
     def add_version(self, version: PlaceVersion):
         self.versions.append(version)

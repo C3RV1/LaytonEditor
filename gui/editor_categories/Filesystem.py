@@ -28,6 +28,9 @@ class FolderNode(EditorObject):
             asset_class = AssetNode
         self.asset_class = asset_class
 
+    def name_str(self):
+        return self.path
+
     def reset_children(self):
         self.children = {}
 
@@ -57,6 +60,7 @@ class FolderNode(EditorObject):
                 name: str = self.files[row2]
                 if name.endswith(".plz"):
                     path = self.path + "/" + name
+                    print(path)
                     self.children[row] = self.create_folder(self.category, self.path + "/" + name,
                                                             self.category.rom.get_archive(path), parent_idx)
                 else:
@@ -135,6 +139,9 @@ class AssetNode(EditorObject):
         self.path = path
         self.parent = parent_idx
         self.rom: Union[NintendoDSRom, PlzArchive] = rom
+
+    def name_str(self):
+        return self.path
 
     def data(self):
         return os.path.basename(self.path)
@@ -225,13 +232,15 @@ class FilesystemCategory(EditorCategory):
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
         if isinstance(index.internalPointer(), AssetNode):
             return [
-                ("Replace raw data", lambda: self.import_(index, refresh_function)),
-                ("Export raw data", lambda: self.export(index))
+                ("Replace raw data", lambda: self.import_(index, refresh_function, False)),
+                ("Export raw data", lambda: self.export(index, False)),
+                ("Replace compressed data", lambda: self._import(index, refresh_function, True)),
+                ("Export compressed data", lambda: self.export(index, True)),
             ]
         return []
 
     def import_(self, index: QtCore.QModelIndex,
-                refresh_function: Callable):
+                refresh_function: Callable, compressed):
         import_path = SettingsManager().import_file(None, "Import file...")
         if import_path == "":
             return
@@ -239,14 +248,15 @@ class FilesystemCategory(EditorCategory):
         with open(import_path, "rb") as import_file:
             asset_compression = asset.get_asset_compression()
             asset_file = asset.rom.open(asset.path, "wb")
-            if asset_compression != 0:
-                asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
+            if compressed:
+                if asset_compression != 0:
+                    asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
             asset_file.write(import_file.read())
             asset_file.close()
 
         refresh_function(index, index)
 
-    def export(self, index: QtCore.QModelIndex):
+    def export(self, index: QtCore.QModelIndex, compressed):
         asset: AssetNode = index.internalPointer()
         filename = os.path.basename(asset.path)
         export_path = SettingsManager().export_file(None, "Export file...", filename)
@@ -254,9 +264,10 @@ class FilesystemCategory(EditorCategory):
             return
         with open(export_path, "wb") as export_file:
             asset_file = asset.rom.open(asset.path, "rb")
-            asset_compression = asset.get_asset_compression()
-            if asset_compression != 0:
-                asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
+            if compressed:
+                asset_compression = asset.get_asset_compression()
+                if asset_compression != 0:
+                    asset_file = CompressedIOWrapper(asset_file, asset_compression == 2)
             export_file.write(asset_file.read())
             asset_file.close()
 

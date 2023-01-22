@@ -12,6 +12,9 @@ class EventNode(EditorObject):
         self.category = category
         self.top, self.btm = top, btm
 
+    def name_str(self):
+        return f"Event {self.top} {self.btm}"
+
     def data(self):
         event_id = str(self.top * 1000 + self.btm)
         return f"Event {event_id.zfill(5)}"
@@ -28,6 +31,9 @@ class EventTopNode(EditorObject):
         self.category = category
         self.num = number
         self.event_nodes = []
+
+    def name_str(self):
+        return f"EventTop {self.num}"
 
     def child_count(self):
         return len(self.event_nodes)

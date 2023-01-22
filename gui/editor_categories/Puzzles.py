@@ -12,6 +12,9 @@ class PuzzleNode(EditorObject):
         self.category = category
         self.internal_id = internal_id
 
+    def name_str(self):
+        return f"Puzzle {self.internal_id}"
+
     def data(self):
         return f"Puzzle {self.internal_id}"
 

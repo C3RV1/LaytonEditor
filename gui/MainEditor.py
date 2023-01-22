@@ -144,6 +144,7 @@ class MainEditor(MainEditorUI):
 
         if isinstance(node, FolderNode) or isinstance(node, AssetNode):
             logging.info(f"Opening {node.path}, category {type(node.category).__name__}")
+        logging.info(f"Opening {node.name_str()}, category {node.category_str()}")
 
         self.active_editor.hide()
         self.active_editor = None

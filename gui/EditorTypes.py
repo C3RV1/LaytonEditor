@@ -10,12 +10,21 @@ if TYPE_CHECKING:
 class EditorObject:
     category: 'EditorCategory'
 
+    def name_str(self):
+        return type(self).__name__
+
+    def category_str(self):
+        return type(self.category).__name__
+
 
 class EditorCategory(EditorObject):
     def __init__(self):
         self.name = ""
         self.category = self
         self.rom: NintendoDSRom = None
+
+    def name_str(self):
+        return f"Category {self.name}"
 
     def set_rom(self, rom):
         self.rom = rom
