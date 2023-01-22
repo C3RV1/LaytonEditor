@@ -36,7 +36,7 @@ class GDS(FileFormat):
 
         self.commands = []
         self.params = []
-        file_length = rdr.read_uint32()
+        file_length = rdr.read_uint32() + 4
 
         while rdr.c < file_length:
             datatype = rdr.read_uint16()
