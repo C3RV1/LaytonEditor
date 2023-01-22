@@ -175,6 +175,8 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
         PlzArchive
             The PLZ archive as a PlzArchive object.
         """
+        if not path[0] == "/":
+            raise ValueError("Path should start with slash.")
         if path not in self._loaded_archives:
             self._get_archive_call = True
             self._loaded_archives[path] = PlzArchive(path, rom=self)

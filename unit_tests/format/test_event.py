@@ -19,7 +19,7 @@ class TestEventData(unittest.TestCase):
         ev.load_from_rom()
 
         prefix, postfix, complete = ev._resolve_event_id()
-        events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
+        events_packed = self.rom.get_archive(f"/data_lt2/event/ev_d{complete}.plz")
         file = events_packed.open(f"d{prefix}_{postfix}.dat", "rb")
         original = file.read()
         file.close()

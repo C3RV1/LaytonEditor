@@ -183,7 +183,7 @@ class Puzzle:
         if bank > 3:
             bank = 3
 
-        plz: formats.filesystem.PlzArchive = rom.get_archive(f"data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
+        plz: formats.filesystem.PlzArchive = rom.get_archive(f"/data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
         if f"n{self.internal_id}.dat" not in plz.filenames:
             logging.error(f"Nazo dat not found (internal id {self.internal_id})")
             return None
@@ -229,7 +229,7 @@ class Puzzle:
         return res
 
     def load_gds(self):
-        gds_plz_file = self.rom.get_archive("data_lt2/script/puzzle.plz")
+        gds_plz_file = self.rom.get_archive("/data_lt2/script/puzzle.plz")
 
         gds_filename = f"q{self.internal_id}_param.gds"
 

@@ -102,7 +102,7 @@ class Event:
         if self.rom is None:
             return
         prefix, postfix, complete = self._resolve_event_id()
-        events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
+        events_packed = self.rom.get_archive(f"/data_lt2/event/ev_d{complete}.plz")
         file = events_packed.open(f"d{prefix}_{postfix}.dat", "rb")
         self.read_stream(file)
         file.close()
@@ -116,7 +116,7 @@ class Event:
         if self.rom is None:
             return
         prefix, postfix, complete = self._resolve_event_id()
-        events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
+        events_packed = self.rom.get_archive(f"/data_lt2/event/ev_d{complete}.plz")
         file = events_packed.open(f"d{prefix}_{postfix}.dat", "wb")
         self.write_stream(file)
         file.close()
@@ -185,22 +185,20 @@ class Event:
         if self.rom is None:
             return
         prefix, postfix, complete = self._resolve_event_id()
-        events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
+        events_packed = self.rom.get_archive(f"/data_lt2/event/ev_d{complete}.plz")
         self.gds = formats.gds.GDS(f"e{prefix}_{postfix}.gds", rom=events_packed)
 
     def _save_gds(self):
         if self.rom is None:
             return
         prefix, postfix, complete = self._resolve_event_id()
-        events_packed = self.rom.get_archive(f"data_lt2/event/ev_d{complete}.plz")
-        gds_file = events_packed.open(f"e{prefix}_{postfix}.gds", "wb+")
-        self.gds.write_stream(gds_file)
-        gds_file.close()
+        events_packed = self.rom.get_archive(f"/data_lt2/event/ev_d{complete}.plz")
+        self.gds.save(filename=f"e{prefix}_{postfix}.gds", rom=events_packed)
 
     @property
     def _texts_archive(self):
         prefix, postfix, complete = self._resolve_event_id()
-        return self.rom.get_archive(f"data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
+        return self.rom.get_archive(f"/data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
 
     def _load_texts(self):
         if self.rom is None:
