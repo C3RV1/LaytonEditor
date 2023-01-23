@@ -23,12 +23,13 @@ class EditorTree(QtCore.QAbstractItemModel):
                 PlaceCategory(),
                 FontsCategory(),
                 MoviesCategory(),
+                SoundEffectCategory(),
+                TextsCategory(),
+                ScriptsCategory(),
                 StreamedAudioCategory(),
                 SequencedAudioCategory(),
                 SoundBankCategory(),
-                SoundEffectCategory(),
-                TextsCategory(),
-                ScriptsCategory()
+                SoundProfileCategory()
             ]
         else:
             self.categories = [
@@ -73,6 +74,7 @@ class EditorTree(QtCore.QAbstractItemModel):
         if not _parent or not _parent.isValid():
             if row < len(self.categories):
                 return self.createIndex(row, column, self.categories[row])
+            return QtCore.QModelIndex()
         editor_obj: EditorObject = _parent.internalPointer()
         return editor_obj.category.index(row, column, _parent, self)
 

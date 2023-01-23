@@ -212,12 +212,8 @@ class Puzzle:
         self.export_data(dat_file)
         dat_file.close()
 
-        nz_lst_dlz = formats.dlz.Dlz(filename="data_lt2/rc/?/nz_lst.dlz".replace("?", conf.LANG), rom=self.rom)
-        nazo_list = [list(i) for i in nz_lst_dlz.unpack("<hh48sh")]
-        for item in nazo_list:
-            if item[0] == self.internal_id:
-                item[2] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
-        nz_lst_dlz.pack("<hh48sh", nazo_list)
+        nz_lst_dlz = formats.dlz.NazoListDlz(filename="data_lt2/rc/?/nz_lst.dlz".replace("?", conf.LANG), rom=self.rom)
+        nz_lst_dlz[self.internal_id] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
         nz_lst_dlz.save()
 
         self.save_gds()
@@ -251,10 +247,9 @@ class Puzzle:
 
     @bg_lang.setter
     def bg_lang(self, value: bool):
+        self._flags &= ~0x20
         if value:
             self._flags |= 0x20
-        else:
-            self._flags &= 0xFF - 0x20
 
     @property
     def ans_bg_lang(self):
@@ -262,10 +257,9 @@ class Puzzle:
 
     @ans_bg_lang.setter
     def ans_bg_lang(self, value: bool):
+        self._flags &= ~0x40
         if value:
             self._flags |= 0x40
-        else:
-            self._flags &= 0xFF - 0x40
 
     @property
     def judge_char(self):
@@ -273,7 +267,7 @@ class Puzzle:
 
     @judge_char.setter
     def judge_char(self, value):
-        self._flags &= 0xFF - 0b11
+        self._flags &= ~0b11
         self._flags += value & 0b11
 
     @property
@@ -282,10 +276,9 @@ class Puzzle:
 
     @flag_bit2.setter
     def flag_bit2(self, value):
+        self._flags &= ~0x2
         if value:
             self._flags |= 0x2
-        else:
-            self._flags &= 0xFF - 0x2
 
     # MAYBE WHETHER THE PUZZLE HAS ANSWER IMAGE
     @property
@@ -294,7 +287,6 @@ class Puzzle:
 
     @has_answer_bg.setter
     def has_answer_bg(self, value):
+        self._flags &= ~0x10
         if value:
             self._flags |= 0x10
-        else:
-            self._flags &= 0xFF - 0x10

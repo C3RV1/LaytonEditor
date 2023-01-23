@@ -5,11 +5,12 @@ from PySide6 import QtCore
 from ..EditorTypes import EditorCategory, EditorObject
 from formats.filesystem import Folder
 from formats.event import Event
+from formats.dlz import Dlz
 
 
 class EventNode(EditorObject):
     def __init__(self, category, top, btm):
-        self.category = category
+        self.category: EventCategory = category
         self.top, self.btm = top, btm
 
     def name_str(self):
@@ -17,7 +18,8 @@ class EventNode(EditorObject):
 
     def data(self):
         event_id = str(self.top * 1000 + self.btm)
-        return f"Event {event_id.zfill(5)}"
+        name = self.category.event_names.get(self.top * 1000 + self.btm, "NO NAME")
+        return f"Event {event_id.zfill(5)} [{name}]"
 
     def get_event(self) -> Event:
         ev = Event(self.category.rom)
@@ -50,6 +52,7 @@ class EventCategory(EditorCategory):
         super(EventCategory, self).__init__()
         self.name = "Events"
         self._event_top_nodes: Dict[int, EventTopNode] = {}
+        self.event_names: Dict[int, str] = {}
 
     def reset_file_system(self):
         self._event_top_nodes = {}
@@ -75,6 +78,11 @@ class EventCategory(EditorCategory):
                         self._event_top_nodes[top] = EventTopNode(self, top)
                     new_node = EventNode(self, top, btm)
                     self._event_top_nodes[top].add_event_node(new_node)
+
+        dlz_file = Dlz("/data_lt2/rc/en/ev_lch.dlz", rom=self.rom)
+        entries = dlz_file.unpack("<I48s")
+        for entry_id, name in entries:
+            self.event_names[entry_id] = name.rstrip(b'\x00').decode("shift-jis")
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
         if index.internalPointer() != self:
@@ -107,6 +115,6 @@ class EventCategory(EditorCategory):
                                  0, self._event_top_nodes[top_id])
 
     def data(self, index: QtCore.QModelIndex, role, model: QtCore.QAbstractItemModel):
-        if index.isValid() and role == QtCore.Qt.DisplayRole:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
             return index.internalPointer().data()
         return None

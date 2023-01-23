@@ -10,5 +10,6 @@ Streamed Audio - EDITING
 Sequenced Audio - EDITING
 Sound Banks - EXPORTING, TODO Importing (and Playing Samples?)
 Sound Effects -
+Dlz Files (Sound Profiles (snd_fix.dlz), autoevent2.dlz, ev_inf2.dlz...)
 Text - EDITING
 Scripts - EDITING

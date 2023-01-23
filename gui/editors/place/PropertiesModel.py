@@ -22,7 +22,7 @@ class PropertiesModel(PlaceAbstractTableModel):
             "Map Y",
             "Background Image Index",
             "Map Image Index",
-            "Background Music Index?"
+            "Sound Profile"
         ][section]
 
     def data(self, index: QtCore.QModelIndex, role: int = ...):
@@ -35,7 +35,7 @@ class PropertiesModel(PlaceAbstractTableModel):
             self.place.map_y,
             self.place.background_image_index,
             self.place.map_image_index,
-            self.place.background_music_index
+            self.place.sound_profile
         ][index.row()]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
@@ -58,5 +58,5 @@ class PropertiesModel(PlaceAbstractTableModel):
         elif index.row() == 4:
             self.place.map_image_index = value
         elif index.row() == 5:
-            self.place.background_music_index = value
+            self.place.sound_profile = value
         return True

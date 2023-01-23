@@ -31,10 +31,10 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.unk0_input.valueChanged.connect(self.unk0_edit)
         self.form_layout.addRow("Unk0", self.unk0_input)
 
-        self.unk1_input = QtWidgets.QSpinBox(self)
-        self.unk1_input.setMaximum(65535)
-        self.unk1_input.valueChanged.connect(self.unk1_edit)
-        self.form_layout.addRow("Unk1", self.unk1_input)
+        self.sound_profile_input = QtWidgets.QSpinBox(self)
+        self.sound_profile_input.setMaximum(65535)
+        self.sound_profile_input.valueChanged.connect(self.sound_profile_edit)
+        self.form_layout.addRow("Sound Profile", self.sound_profile_input)
 
         self.v_layout.addLayout(self.form_layout)
 
@@ -64,7 +64,7 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
     def unk0_edit(self, value: int):
         pass
 
-    def unk1_edit(self, value: int):
+    def sound_profile_edit(self, value: int):
         pass
 
     def add_character_click(self):

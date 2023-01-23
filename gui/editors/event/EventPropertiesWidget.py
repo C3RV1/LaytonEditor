@@ -107,7 +107,7 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         self.map_top_id_input.setValue(self.event.map_top_id)
         self.map_btm_id_input.setValue(self.event.map_bottom_id)
         self.unk0_input.setValue(self.event.unk0)
-        self.unk1_input.setValue(self.event.unk1)
+        self.sound_profile_input.setValue(self.event.sound_profile)
 
     def map_top_id_edit(self, value: int):
         self.event.map_top_id = value
@@ -118,8 +118,8 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
     def unk0_edit(self, value: int):
         self.event.unk0 = value
 
-    def unk1_edit(self, value: int):
-        self.event.unk1 = value
+    def sound_profile_edit(self, value: int):
+        self.event.sound_profile = value
 
     def add_character_click(self):
         self.char_table_model.add_character()

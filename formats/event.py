@@ -60,7 +60,8 @@ class Event:
         self.characters_anim_index = [0, 0, 0, 0, 0, 0, 0, 0]
         """List of the animation indexes of the characters when the event starts."""
 
-        self.unk1 = 0
+        self.sound_profile = 0
+        """Sound profile in snd_fix.dlz"""
 
     def _resolve_event_id(self):
         """
@@ -152,7 +153,7 @@ class Event:
         for _indexChar in range(8):
             self.characters_anim_index.append(reader.read_uint8())
 
-        self.unk1 = reader.read_uint16()
+        self.sound_profile = reader.read_uint16()
 
     def write_stream(self, wtr: Union[binary.BinaryWriter, io.BytesIO]):
         """
@@ -177,7 +178,7 @@ class Event:
         for char_anim in self.characters_anim_index:
             wtr.write_uint8(char_anim)
 
-        wtr.write_uint16(self.unk1)
+        wtr.write_uint16(self.sound_profile)
 
         return wtr.data
 

@@ -12,3 +12,4 @@ from .SequencedAudio import SequencedAudioCategory, SMDLNode
 from .SoundBank import SoundBankCategory
 from .SoundEffect import SoundEffectCategory
 from .Places import PlaceCategory, PlaceVersion
+from .SoundProfile import SoundProfileCategory, SoundProfileNode

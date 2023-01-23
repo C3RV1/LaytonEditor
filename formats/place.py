@@ -64,7 +64,7 @@ class Place(FileFormat):
     map_y: int = 0
     background_image_index: int = 0
     map_image_index: int = 0
-    background_music_index: int = 0  # how does that index work?
+    sound_profile: int = 0
     hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
     sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
     objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
@@ -133,7 +133,7 @@ class Place(FileFormat):
             plc_exit.event_or_place_index = rdr.read_uint16()
         # pos: 0x35c (if we make 16 exits it lines up so...?)
         rdr.seek(0x38c)
-        self.background_music_index = rdr.read_uint16()
+        self.sound_profile = rdr.read_uint16()
 
     def write_stream(self, stream):
         wtr = BinaryWriter(stream)
@@ -181,5 +181,5 @@ class Place(FileFormat):
             wtr.write_uint8(plc_exit.next_map_y)
             wtr.write_uint16(plc_exit.event_or_place_index)
         wtr.seek(0x38c)
-        wtr.write_uint16(self.background_music_index)
+        wtr.write_uint16(self.sound_profile)
 
