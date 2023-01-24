@@ -8,6 +8,7 @@ import formats.filesystem as fs
 from typing import Optional, Union
 
 from formats import conf
+from formats.dlz import EventLchDlz
 
 
 class Event:
@@ -63,6 +64,9 @@ class Event:
         self.sound_profile = 0
         """Sound profile in snd_fix.dlz"""
 
+        self.name = ""
+        """Event name in ev_lch.dlz"""
+
     def _resolve_event_id(self):
         """
         Resolves the event id into its prefix, postfix and complete values.
@@ -109,6 +113,7 @@ class Event:
         file.close()
         self._load_gds()
         self._load_texts()
+        self._load_name()
 
     def save_to_rom(self):
         """
@@ -124,6 +129,7 @@ class Event:
         self._save_gds()
         self._clear_event_texts()
         self._save_texts()
+        self._save_name()
 
     def read_stream(self, reader: Union[binary.BinaryReader, io.BytesIO]):
         """
@@ -181,6 +187,18 @@ class Event:
         wtr.write_uint16(self.sound_profile)
 
         return wtr.data
+
+    def _load_name(self):
+        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_lch.dlz")
+        self.name = event_lch.get(self.event_id, "")
+
+    def _save_name(self):
+        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_lch.dlz")
+        if self.name != "":
+            event_lch[self.event_id] = self.name
+        else:
+            event_lch.pop(self.event_id)
+        event_lch.save()
 
     def _load_gds(self):
         if self.rom is None:

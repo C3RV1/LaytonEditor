@@ -104,10 +104,16 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
     def set_event(self, ev: Event):
         self.event = ev
         self.char_table_model.set_event(ev)
+        self.name_input.setText(self.event.name)
         self.map_top_id_input.setValue(self.event.map_top_id)
         self.map_btm_id_input.setValue(self.event.map_bottom_id)
         self.unk0_input.setValue(self.event.unk0)
         self.sound_profile_input.setValue(self.event.sound_profile)
+
+    def name_input_edit(self, value: str):
+        self.event.name = value[:48]
+        if len(value) > 48:
+            self.name_input.setText(value[:48])
 
     def map_top_id_edit(self, value: int):
         self.event.map_top_id = value

@@ -157,7 +157,7 @@ class MainEditor(MainEditorUI):
         if isinstance(node, EventNode):
             self.active_editor = self.event_editor
             event = node.get_event()
-            self.event_editor.set_event(event)
+            self.event_editor.set_event(event, current)
 
             self.pg_previewer.start_renderer(EventPlayer(event))
             set_previewer = True

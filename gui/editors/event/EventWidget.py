@@ -13,19 +13,23 @@ if TYPE_CHECKING:
 
 
 from .EventPropertiesWidget import EventPropertiesWidget
+from PySide6 import QtCore
+from gui.editor_categories.Events import EventCategory, EventNode
 
 
 class EventEditor(EventWidgetUI):
     def __init__(self, main_editor):
         super(EventEditor, self).__init__()
         self.event = None
+        self.event_node: QtCore.QModelIndex = None
         self.main_editor: MainEditor = main_editor
 
     def get_event_properties_widget(self):
         return EventPropertiesWidget(self)
 
-    def set_event(self, ev: Event):
+    def set_event(self, ev: Event, ev_index: QtCore.QModelIndex):
         self.event = ev
+        self.event_node = ev_index
         self.character_widget.set_event(ev)
         dcc_text = EventDCC(ev)
         serialized = dcc_text.serialize(include_character=False)
@@ -44,6 +48,10 @@ class EventEditor(EventWidgetUI):
         is_ok, error = EventDCC(self.event).parse(text, include_character=False)
         if is_ok:
             self.event.save_to_rom()
+            event_node: EventNode = self.event_node.internalPointer()
+            category: EventCategory = event_node.category
+            category.load_event_names()
+            self.main_editor.tree_model.dataChanged.emit(self.event_node, self.event_node)
             self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
         else:
             logging.error(f"Error compiling DCC: {error}")

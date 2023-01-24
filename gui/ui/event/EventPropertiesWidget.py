@@ -16,6 +16,10 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
 
         self.form_layout = QtWidgets.QFormLayout()
 
+        self.name_input = QtWidgets.QLineEdit(self)
+        self.name_input.textChanged.connect(self.name_input_edit)
+        self.form_layout.addRow("Event Name", self.name_input)
+
         self.map_top_id_input = QtWidgets.QSpinBox(self)
         self.map_top_id_input.setMaximum(65535)
         self.map_top_id_input.valueChanged.connect(self.map_top_id_edit)
@@ -54,6 +58,9 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.v_layout.addLayout(self.character_buttons_layout)
 
         self.setLayout(self.v_layout)
+
+    def name_input_edit(self, value: str):
+        pass
 
     def map_top_id_edit(self, value: int):
         pass

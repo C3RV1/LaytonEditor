@@ -143,7 +143,7 @@ class SoundProfileDlz(Dlz):
 
     def read_stream(self, stream: BinaryIO):
         super(SoundProfileDlz, self).read_stream(stream)
-        unpacked_data = self.unpack("HHHH")
+        unpacked_data = self.unpack("<HHHH")
         for snd_profile in unpacked_data:
             self.sound_profiles[snd_profile[0]] = SoundProfile.from_list(snd_profile[1:])
 
@@ -152,5 +152,37 @@ class SoundProfileDlz(Dlz):
         for snd_id, snd_profile in self.sound_profiles.items():
             constructed.append([snd_id] + snd_profile.to_list())
         constructed.sort(key=lambda x: x[0])
-        self.pack("HHHH", constructed)
+        self.pack("<HHHH", constructed)
         super(SoundProfileDlz, self).write_stream(stream)
+
+
+class EventLchDlz(Dlz):
+    def __init__(self, *args, **kwargs):
+        self.event_names: Dict[int, str] = {}
+        super(EventLchDlz, self).__init__(*args, **kwargs)
+
+    def __getitem__(self, item):
+        return self.event_names[item]
+
+    def __setitem__(self, key, value):
+        self.event_names[key] = value
+
+    def pop(self, key, default=None):
+        return self.event_names.pop(key, default)
+
+    def get(self, key, default=None):
+        return self.event_names.get(key, default)
+
+    def read_stream(self, stream: BinaryIO):
+        super(EventLchDlz, self).read_stream(stream)
+        unpacked_data = self.unpack("<I48s")
+        for ev_data in unpacked_data:
+            self.event_names[ev_data[0]] = ev_data[1].split(b'\0')[0].decode("shift-jis")
+
+    def write_stream(self, stream: BinaryIO):
+        constructed = []
+        for ev_id, ev_name in self.event_names.items():
+            constructed.append([ev_id, ev_name.encode("shift-jis").ljust(48, b'\0')])
+        constructed.sort(key=lambda x: x[0])
+        self.pack("<I48s", constructed)
+        super(EventLchDlz, self).write_stream(stream)
