@@ -29,7 +29,7 @@ def is_hex(var):
 
 class DCCParser:
     def __init__(self):
-        self.code: typing.Union[str, dict] = ""
+        self.code: typing.Union[str, dict] = {"unnamed": [], "named": {}, "calls": []}
         self.converted_paths = []
         self.imported = {}
 
@@ -416,7 +416,7 @@ class DCCParser:
         self.revert_path(None)
 
     def get_path(self, path, create=False, index=0) -> typing.Union[dict, str, None]:
-        if path is not None:
+        if path is not None and path != "":
             path = path.split(".")
         else:
             path = []

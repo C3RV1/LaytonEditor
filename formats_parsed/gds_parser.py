@@ -37,25 +37,21 @@ class GDSParser:
         raise ValueError(f"{command} is not a valid command")
 
     def serialize_into_dcc(self, gds: formats.gds.GDS, dcc_parser: DCCParser):
-        dcc_parser.get_path("script", create=True)
         for param in gds.params:
-            dcc_parser["script::unnamed"].append(param)
+            dcc_parser["::unnamed"].append(param)
         for cmd in gds.commands:
             cmd_text, params, _ = self.parse_command_name(cmd)
-            dcc_parser["script::calls"].append({
+            dcc_parser["::calls"].append({
                 "func": cmd_text,
                 "parameters": params.copy()
             })
 
     def parse_from_dcc(self, gds: formats.gds.GDS, dcc_parser: DCCParser):
-        if not dcc_parser.exists("script"):
-            return False, "Missing script"
-
         gds.commands = []
         gds.params = []
-        for param in dcc_parser["script::unnamed"]:
+        for param in dcc_parser["::unnamed"]:
             gds.params.append(param)
-        for call in dcc_parser["script::calls"]:
+        for call in dcc_parser["::calls"]:
             func = call["func"]
             params = call["parameters"]
             command = self.reverse_command_name(func, params)

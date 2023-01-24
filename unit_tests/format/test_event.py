@@ -2,7 +2,8 @@ import io
 
 import formats.event as evdat
 from formats.filesystem import NintendoDSRom
-from formats_parsed.EventDCC import EventDCC
+from formats_parsed.dcc import DCCParser
+from formats_parsed.gds_parsers.EventGDSParser import EventGDSParser
 import unittest
 import os
 
@@ -27,18 +28,26 @@ class TestEventData(unittest.TestCase):
         return ev, original
 
     def test_loading_saving(self):
-        pz_data, original = self.get_ev()
+        ev, original = self.get_ev()
         write_stream = io.BytesIO()
-        pz_data.write_stream(write_stream)
+        ev.write_stream(write_stream)
         assert write_stream.getvalue() == original
 
     def test_readable(self):
-        pz_data, original = self.get_ev()
-        readable = EventDCC(pz_data).serialize()
-        pz_data2, original = self.get_ev()
-        assert EventDCC().parse(readable)[0] is True
+        ev, original = self.get_ev()
+        ev2, original = self.get_ev()
+
+        dcc_parser = DCCParser()
+        dcc_parser.reset()
+        EventGDSParser(ev).serialize_into_dcc(ev.gds, dcc_parser)
+        readable = dcc_parser.serialize()
+
+        dcc_parser.reset()
+        dcc_parser.parse(readable)
+        assert EventGDSParser(ev).parse_from_dcc(ev.gds, dcc_parser)[0] is True
+
         write_stream = io.BytesIO()
-        pz_data.write_stream(write_stream)
+        ev.write_stream(write_stream)
         assert write_stream.getvalue() == original
-        assert repr(pz_data.gds.params) == repr(pz_data2.gds.params)
-        assert repr(pz_data.gds.commands) == repr(pz_data2.gds.commands)
+        assert repr(ev.gds.params) == repr(ev2.gds.params)
+        assert repr(ev.gds.commands) == repr(ev2.gds.commands)
