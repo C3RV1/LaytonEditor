@@ -238,7 +238,7 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
 
         rom_file = RomFile(self, fileid, match[0][0])
         if text:
-            return io.TextIOWrapper(rom_file)
+            return io.TextIOWrapper(rom_file, encoding="cp1252")
         return rom_file
 
     def add_file(self, file: str) -> Optional[int]:

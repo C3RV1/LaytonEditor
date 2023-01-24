@@ -15,9 +15,16 @@ class TextEditor(TextWidgetUI):
 
     def set_text(self, text: AssetNode):
         self.text_asset = text
-        f = text.rom.open(text.path, "r")
-        self.text_editor.setPlainText(f.read())
-        f.close()
+        f = text.rom.open(text.path, "rb")
+        data = f.read()
+        try:
+            self.text_editor.setPlainText(data.decode("cp1252"))
+            self.save_btn.setEnabled(True)
+        except UnicodeDecodeError:
+            self.text_editor.setPlainText(data.decode("shift-jis"))
+            self.save_btn.setEnabled(False)
+        finally:
+            f.close()
 
     def save_btn_click(self):
         f = self.text_asset.rom.open(self.text_asset.path, "w")

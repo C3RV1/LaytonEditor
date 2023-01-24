@@ -186,3 +186,37 @@ class EventLchDlz(Dlz):
         constructed.sort(key=lambda x: x[0])
         self.pack("<I48s", constructed)
         super(EventLchDlz, self).write_stream(stream)
+
+
+class EventInf2Dlz(Dlz):
+    def __init__(self, *args, **kwargs):
+        self.event_inf: Dict[int, list] = {}
+        super(EventInf2Dlz, self).__init__(*args, **kwargs)
+
+    def __getitem__(self, item):
+        return self.event_inf[item][0]
+
+    def __setitem__(self, key, value):
+        if key not in self.event_inf:
+            self.event_inf[key] = [0, "\xff" * 6]
+        self.event_inf[key][0] = value
+
+    def pop(self, key, default=None):
+        return self.event_inf.pop(key, default)
+
+    def get(self, key, default=None):
+        return self.event_inf.get(key, default)
+
+    def read_stream(self, stream: BinaryIO):
+        super(EventInf2Dlz, self).read_stream(stream)
+        unpacked_data = self.unpack("<IH6s")
+        for ev_data in unpacked_data:
+            self.event_inf[ev_data[0]] = list(ev_data[1:])
+
+    def write_stream(self, stream: BinaryIO):
+        constructed = []
+        for ev_id, sound_id in self.event_inf.items():
+            constructed.append([ev_id] + sound_id)
+        constructed.sort(key=lambda x: x[0])
+        self.pack("<IH6s", constructed)
+        super(EventInf2Dlz, self).write_stream(stream)

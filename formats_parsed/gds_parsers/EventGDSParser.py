@@ -41,30 +41,46 @@ class EventGDSParser(GDSParser):
             0x69: "wait_tap",
             0x6a: "bg_shake",  # unk0, Screen
             0x6b: "bg_shake",  # unk0, Screen
+            0x6c: "wait_tap_or_frames",  # Frames
+            0x70: "unlock_diary",  # Diary ID
             0x71: "reveal_mystery",  # Mystery ID
             0x72: "fade",
+            0x73: "start_tea",  # Hint ID, Solution Tea ID
+            0x76: "send_to_granny_riddleton",  # puzzle group?
+            0x77: "pick_up_item",  # Item ID
+            0x79: "unlock_minigame",  # Minigame ID
+            0x7a: "remove_item",  # Item ID
+            0x78: "save_progress",  # After Load Event ID?
+            0x7d: "solve_mystery",  # Mystery ID
+            0x7e: "chr_shake",  # Character Index, Duration?
+            0x7f: "fade",
             0x80: "fade",
+            0x81: "fade",
+            0x82: "flash_btm",
             0x87: "fade",
             0x88: "fade",
             0x8a: "bgm_fade_out",
             0x8b: "bgm_fade_in",
             0x8c: "bg_music2",  # Music ID, Volume, unk2
+            0x96: "add_companion",  # Companion ID?
+            0x97: "remove_companion",  # Companion ID?
             0x99: "dialogue_sfx",
+            0xa1: "complete_game"
         }
 
     def parse_command_name(self, command: formats.gds.GDSCommand, is_code=True):
         p = super(EventGDSParser, self).parse_command_name(command)
         func, params = p
-        if command.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x80, 0x87, 0x88]:  # fade
+        if command.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x7f, 0x80, 0x81, 0x87, 0x88]:  # fade
             params_1 = [False, 0, None]
-            params_1[0] = command.command in [0x2, 0x32, 0x80, 0x88]
+            params_1[0] = command.command in [0x2, 0x32, 0x80, 0x81, 0x88]
             if command.command in [0x2, 0x3, 0x72, 0x80]:
                 params_1[1] = 2  # both screens
-            elif command.command in [0x32, 0x33]:
+            elif command.command in [0x32, 0x33, 0x7f, 0x81]:
                 params_1[1] = 0  # btm screen
             elif command.command in [0x87, 0x88]:
                 params_1[1] = 1  # top screen
-            if command.command in [0x72, 0x80, 0x87, 0x88]:
+            if command.command in [0x72, 0x7f, 0x80, 0x81, 0x87, 0x88]:
                 params_1[2] = params[0]  # timed
             params = params_1
         elif command.command in [0x21, 0x22]:  # BG Load
@@ -91,31 +107,37 @@ class EventGDSParser(GDSParser):
         gds_cmd = super(EventGDSParser, self).reverse_command_name(command, params)
         if command == "fade":  # fade
             gds_cmd.params = []
-            if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
+            if params[0] is True:  # [0x2, 0x32, 0x80, 0x81, 0x88]
                 if params[1] == 2:  # [0x2, 0x80]
                     if params[2] is None or params[2] == -1:  # [0x2]
                         gds_cmd.command = 0x2
                     else:  # [0x80]
                         gds_cmd.command = 0x80
-                elif params[1] == 0:  # [0x32]
-                    gds_cmd.command = 0x32
+                elif params[1] == 0:  # [0x32, 0x81]
+                    if params[2] is None or params[2] == -1:
+                        gds_cmd.command = 0x32
+                    else:
+                        gds_cmd.command = 0x81
                 elif params[1] == 1:  # [0x88]
                     gds_cmd.command = 0x88
                     if params[2] is None or params[2] == -1:
                         params[2] = 42
-            else:  # [0x3, 0x33, 0x72, 0x87]
+            else:  # [0x3, 0x33, 0x72, 0x7f, 0x87]
                 if params[1] == 2:  # [0x3, 0x72]
                     if params[2] is None or params[2] == -1:  # [0x3]
                         gds_cmd.command = 0x3
                     else:  # [0x72]
                         gds_cmd.command = 0x72
-                elif params[1] == 0:  # [0x33]
-                    gds_cmd.command = 0x33
+                elif params[1] == 0:  # [0x33, 0x7f]
+                    if params[2] is None or params[2] == -1:
+                        gds_cmd.command = 0x33
+                    else:
+                        gds_cmd.command = 0x7f
                 elif params[1] == 1:  # [0x87]
                     gds_cmd.command = 0x87
                     if params[2] is None or params[2] == -1:
                         params[2] = 42
-            if gds_cmd.command in [0x72, 0x80, 0x87, 0x88]:
+            if gds_cmd.command in [0x72, 0x7f, 0x80, 0x81, 0x87, 0x88]:
                 gds_cmd.params = params[2:]
         elif command == "bg_load":
             gds_cmd.command = 0x21 if params[-1] == 0 else 0x22
