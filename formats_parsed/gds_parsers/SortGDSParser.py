@@ -5,5 +5,5 @@ class SortGDSParser(GDSParser):
     def __init__(self):
         super(SortGDSParser, self).__init__()
         self.command_name_table = {
-            0x2e: ["create_tile", "Create Tile"]
+            0x2e: "create_tile",
         }

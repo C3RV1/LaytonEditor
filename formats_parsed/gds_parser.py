@@ -6,33 +6,16 @@ class GDSParser:
     def __init__(self):
         self.command_name_table = {}
 
-    def parse_cmd(self, code: str, is_code=True):
-        for v in self.command_name_table.values():
-            if len(v) == 3:
-                code_, not_code, _ = v
-            else:
-                code_, not_code = v
-            if is_code:
-                if code == code_:
-                    return not_code
-            else:
-                if code == not_code:
-                    return code_
-        return code
-
-    def parse_command_name(self, command: formats.gds.GDSCommand, is_code=True):
-        param_names = [f"unk{i}" for i in range(len(command.params))]
+    def parse_command_name(self, command: formats.gds.GDSCommand):
         if command.command not in self.command_name_table.keys():
-            return f"gds_{hex(command.command)}", command.params, param_names
-        if len(self.command_name_table[command.command]) == 3:
-            param_names = self.command_name_table[command.command][2]
-        return self.command_name_table[command.command][0 if is_code else 1], command.params.copy(), param_names
+            return f"gds_{hex(command.command)}", command.params.copy()
+        return self.command_name_table[command.command], command.params.copy()
 
-    def reverse_command_name(self, command: str, params, is_code=True):
+    def reverse_command_name(self, command: str, params):
         if command.startswith("gds_"):
             return formats.gds.GDSCommand(int(command[4:], 16), params.copy())
         for key in self.command_name_table.keys():
-            if self.command_name_table[key][0 if is_code else 1] == command:
+            if self.command_name_table[key] == command:
                 return formats.gds.GDSCommand(key, params.copy())
         raise ValueError(f"{command} is not a valid command")
 
@@ -40,7 +23,7 @@ class GDSParser:
         for param in gds.params:
             dcc_parser["::unnamed"].append(param)
         for cmd in gds.commands:
-            cmd_text, params, _ = self.parse_command_name(cmd)
+            cmd_text, params = self.parse_command_name(cmd)
             dcc_parser["::calls"].append({
                 "func": cmd_text,
                 "parameters": params.copy()

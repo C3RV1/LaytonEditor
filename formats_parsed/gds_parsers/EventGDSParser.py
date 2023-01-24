@@ -10,51 +10,51 @@ class EventGDSParser(GDSParser):
     def __init__(self, ev: 'event.Event' = None):
         super(EventGDSParser, self).__init__()
         self.ev: 'event.Event' = ev
-        fade = ["fade", "Fade", ["Fade In", "Fade Screen", "Fade Frames"]]
-        bg_load = ["bg_load", "Load Background", ["Path", "Screen"]]
+        # fade: fade_in, fade_screen, fade_frames
+        # bg_load: Path, Screen
         self.command_name_table = {
-            0x2: fade,
-            0x3: fade,
-            0x4: ["dial", "Dialogue", ["Text GDS Number", "Character ID", "Start Animation",
-                                       "End Animation", "Sound Pitch?", "Text"]],
-            0x5: ["set_room", "Set Room", ["Room ID"]],
-            0x6: ["set_mode", "Set Mode", ["Mode"]],
-            0x7: ["set_next_mode", "Set Next Mode", ["Mode"]],
-            0x8: ["set_movie", "Set Movie", ["Movie ID"]],
-            0x9: ["set_event", "Set Event", ["Event ID"]],
-            0xb: ["set_puzzle", "Set Puzzle", ["Puzzle ID"]],
-            0x21: bg_load,
-            0x22: bg_load,
-            0x2a: ["chr_show", "Show Character", ["Character Index"]],
-            0x2b: ["chr_hide", "Hide Character", ["Character Index"]],
-            0x2c: ["chr_visibility", "Set Character Visibility", ["Character Index", "Visibility"]],
-            0x2d: ["show_chapter", "Show Chapter", ["Chapter Number"]],
-            0x30: ["chr_slot", "Set Character Slot", ["Character Index", "Slot"]],
-            0x31: ["wait", "Wait", ["Wait Frames"]],
-            0x32: fade,
-            0x33: fade,
-            0x37: ["bg_opacity", "Set Background Opacity"],
-            0x3f: ["chr_anim", "Set Character Animation", ["Character ID", "Animation"]],
-            0x5c: ["set_voice", "Set Voice", ["Voice ID"]],
-            0x5d: ["sfx_sad", "Play SAD SFX", ["SFX ID"]],
-            0x5e: ["sfx_sed", "Play SED SFX", ["SFX ID"]],
-            0x62: ["bg_music", "Play Background Music", ["Music ID", "Volume", "unk2"]],
-            0x69: ["wait_tap", "Wait Tap"],
-            0x6a: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
-            0x6b: ["bg_shake", "Shake Background", ["unk0", "Screen"]],
-            0x71: ["reveal_mystery", "Reveal Mystery", ["Mystery ID"]],
-            0x72: fade,
-            0x80: fade,
-            0x87: fade,
-            0x88: fade,
-            0x8a: ["bgm_fade_out", "Fade Out BG Music"],
-            0x8b: ["bgm_fade_in", "Fade In BG Music"],
-            0x8c: ["bg_music2", "Play Background Music", ["Music ID", "Volume", "unk2"]],
-            0x99: ["dialogue_sfx", "Set Dialogue SFX"],
+            0x2: "fade",
+            0x3: "fade",
+            0x4: "dial",  # Text GDS Number, Character ID, Start Animation, End Animation, Sound Pitch?, Text
+            0x5: "set_room",  # Room ID
+            0x6: "set_mode",  # Mode
+            0x7: "set_next_mode",  # Mode
+            0x8: "set_movie",  # Movie ID
+            0x9: "set_event",  # Event ID
+            0xb: "set_puzzle",  # Puzzle ID
+            0x21: "bg_load",
+            0x22: "bg_load",
+            0x2a: "chr_show",  # Character Index
+            0x2b: "chr_hide",  # Character Index
+            0x2c: "chr_visibility",  # Character Index, Visibility
+            0x2d: "show_chapter",  # Chapter Number
+            0x30: "chr_slot",  # Character Index, Slot
+            0x31: "wait",  # Wait Frames
+            0x32: "fade",
+            0x33: "fade",
+            0x37: "bg_opacity",  # unk0, unk1, unk2, Opacity
+            0x3f: "chr_anim",  # Character ID, Animation
+            0x5c: "set_voice",  # Voice ID
+            0x5d: "sfx_sad",  # SFX ID
+            0x5e: "sfx_sed",  # SFX ID
+            0x62: "bg_music",  # Music ID, Volume, unk2
+            0x69: "wait_tap",
+            0x6a: "bg_shake",  # unk0, Screen
+            0x6b: "bg_shake",  # unk0, Screen
+            0x71: "reveal_mystery",  # Mystery ID
+            0x72: "fade",
+            0x80: "fade",
+            0x87: "fade",
+            0x88: "fade",
+            0x8a: "bgm_fade_out",
+            0x8b: "bgm_fade_in",
+            0x8c: "bg_music2",  # Music ID, Volume, unk2
+            0x99: "dialogue_sfx",
         }
 
     def parse_command_name(self, command: formats.gds.GDSCommand, is_code=True):
-        func, params, param_names = super(EventGDSParser, self).parse_command_name(command, is_code=is_code)
+        p = super(EventGDSParser, self).parse_command_name(command)
+        func, params = p
         if command.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x80, 0x87, 0x88]:  # fade
             params_1 = [False, 0, None]
             params_1[0] = command.command in [0x2, 0x32, 0x80, 0x88]
@@ -85,15 +85,10 @@ class EventGDSParser(GDSParser):
                     params.append(subs.replace_substitutions(dial_gds.params[4]))
             else:
                 params.extend([0, "NONE", "NONE", 2, ""])
-        elif command.command == 0x37:
-            param_names[3] = "Opacity"
-        elif command.command == 0x99:
-            param_names[0] = "SAD SFX ID"
-        return func, params, param_names
+        return func, params
 
-    def reverse_command_name(self, command: str, params, is_code=True):
-        gds_cmd = super(EventGDSParser, self).reverse_command_name(command, params, is_code=is_code)
-        command = self.parse_cmd(command, is_code=False)
+    def reverse_command_name(self, command: str, params):
+        gds_cmd = super(EventGDSParser, self).reverse_command_name(command, params)
         if command == "fade":  # fade
             gds_cmd.params = []
             if params[0] is True:  # [0x2, 0x32, 0x80, 0x88]
