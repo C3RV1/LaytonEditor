@@ -194,12 +194,12 @@ class EventInf2Dlz(Dlz):
         super(EventInf2Dlz, self).__init__(*args, **kwargs)
 
     def __getitem__(self, item):
-        return self.event_inf[item][0]
+        return self.event_inf[item][1]
 
     def __setitem__(self, key, value):
         if key not in self.event_inf:
-            self.event_inf[key] = [0, "\xff" * 6]
-        self.event_inf[key][0] = value
+            self.event_inf[key] = [0, 0, "\xff" * 6]
+        self.event_inf[key][1] = value
 
     def pop(self, key, default=None):
         return self.event_inf.pop(key, default)
@@ -209,7 +209,7 @@ class EventInf2Dlz(Dlz):
 
     def read_stream(self, stream: BinaryIO):
         super(EventInf2Dlz, self).read_stream(stream)
-        unpacked_data = self.unpack("<IH6s")  # TODO: figure out other 6
+        unpacked_data = self.unpack("<HHH6s")  # e_id, unk0, snd_profile, unk1...6 TODO: figure out other
         for ev_data in unpacked_data:
             self.event_inf[ev_data[0]] = list(ev_data[1:])
 

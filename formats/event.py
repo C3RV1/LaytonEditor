@@ -207,7 +207,6 @@ class Event:
         event_inf2[self.event_id] = self.sound_profile
         event_inf2.save()
 
-
     def _load_gds(self):
         if self.rom is None:
             return

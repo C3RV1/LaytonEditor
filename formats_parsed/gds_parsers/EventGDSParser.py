@@ -59,12 +59,14 @@ class EventGDSParser(GDSParser):
             0x82: "flash_btm",
             0x87: "fade",
             0x88: "fade",
+            0x89: "stop_train_sound",
             0x8a: "bgm_fade_out",
             0x8b: "bgm_fade_in",
-            0x8c: "bg_music2",  # Music ID, Volume, unk2
+            0x8c: "bg_music2",  # Music ID, Volume, unk2 (2)
             0x96: "add_companion",  # Companion ID?
             0x97: "remove_companion",  # Companion ID?
             0x99: "dialogue_sfx",
+            0x9f: "play_train_sound",  # Unk0(always 100)
             0xa1: "complete_game"
         }
 
