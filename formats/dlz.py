@@ -209,7 +209,7 @@ class EventInf2Dlz(Dlz):
 
     def read_stream(self, stream: BinaryIO):
         super(EventInf2Dlz, self).read_stream(stream)
-        unpacked_data = self.unpack("<IH6s")
+        unpacked_data = self.unpack("<IH6s")  # TODO: figure out other 6
         for ev_data in unpacked_data:
             self.event_inf[ev_data[0]] = list(ev_data[1:])
 
