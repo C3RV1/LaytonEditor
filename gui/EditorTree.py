@@ -29,7 +29,7 @@ class EditorTree(QtCore.QAbstractItemModel):
                 StreamedAudioCategory(),
                 SequencedAudioCategory(),
                 SoundBankCategory(),
-                SoundProfileCategory()
+                DLZCategory()
             ]
         else:
             self.categories = [

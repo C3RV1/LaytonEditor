@@ -125,6 +125,22 @@ class SoundProfileDlz(Dlz):
         self.sound_profiles: Dict[int, SoundProfile] = {}
         super(SoundProfileDlz, self).__init__(*args, **kwargs)
 
+    def __getitem__(self, item):
+        return self.sound_profiles[item]
+
+    def __setitem__(self, key, value):
+        self.sound_profiles[key] = value
+
+    def pop(self, key, default=None):
+        return self.sound_profiles.pop(key, default)
+
+    def index_key(self, i):
+        keys = self.sound_profiles.keys()
+        return list(keys)[i]
+
+    def __len__(self):
+        return len(self.sound_profiles)
+
     def read_stream(self, stream: BinaryIO):
         super(SoundProfileDlz, self).read_stream(stream)
         unpacked_data = self.unpack("HHHH")

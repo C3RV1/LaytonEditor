@@ -49,6 +49,7 @@ class EventGDSParser(GDSParser):
             0x88: fade,
             0x8a: ["bgm_fade_out", "Fade Out BG Music"],
             0x8b: ["bgm_fade_in", "Fade In BG Music"],
+            0x8c: ["bg_music2", "Play Background Music", ["Music ID", "Volume", "unk2"]],
             0x99: ["dialogue_sfx", "Set Dialogue SFX"],
         }
 

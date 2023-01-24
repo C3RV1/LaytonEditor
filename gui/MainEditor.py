@@ -198,7 +198,7 @@ class MainEditor(MainEditorUI):
             self.background_editor.set_image(node.get_bg())
         elif isinstance(node, SoundProfileNode):
             self.active_editor = self.sound_profile_editor
-            self.sound_profile_editor.set_snd_profile(node.get_sound_profile(), node.save)
+            self.sound_profile_editor.set_snd_profile(node.get_sound_profile_dlz())
         elif isinstance(node, SpriteAsset):
             self.active_editor = self.sprite_editor
             self.sprite_editor.set_sprite(node.get_sprite())
