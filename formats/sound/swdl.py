@@ -660,19 +660,32 @@ class SWDL(FileFormat):
     key_groups: Dict[int, KeyGroup]
     programs: Dict[int, Program]
 
+    swd_header: Optional[SWDHeader] = None
+    wavi_chunk: Optional[WaviChunk] = None
+    prgi_chunk: Optional[PrgiChunk] = None
+    pcmd_chunk: Optional[PcmdChunk] = None
+    kgrp_chunk: Optional[KgrpChunk] = None
+    eod_chunk: Optional[EodChunk] = None
+
     def __init__(self, filename: str = None, file=None, compressed=None, rom: NintendoDSRom = None, **kwargs):
         self.samples = {}
         self.key_groups = {}
         self.programs = {}
+        self.swd_header = SWDHeader()
+        self.wavi_chunk: Optional[WaviChunk] = None
+        self.prgi_chunk: Optional[PrgiChunk] = None
+        self.pcmd_chunk: Optional[PcmdChunk] = None
+        self.kgrp_chunk: Optional[KgrpChunk] = None
+        self.eod_chunk = EodChunk()
         super(SWDL, self).__init__(filename=filename, file=file, compressed=compressed, rom=rom, **kwargs)
 
     def read_stream(self, stream):
-        swd_header = SWDHeader()
-        wavi_chunk: Optional[WaviChunk] = None
-        prgi_chunk: Optional[PrgiChunk] = None
-        pcmd_chunk: Optional[PcmdChunk] = None
-        kgrp_chunk: Optional[KgrpChunk] = None
-        eod_chunk = EodChunk()
+        self.swd_header = SWDHeader()
+        self.wavi_chunk: Optional[WaviChunk] = None
+        self.prgi_chunk: Optional[PrgiChunk] = None
+        self.pcmd_chunk: Optional[PcmdChunk] = None
+        self.kgrp_chunk: Optional[KgrpChunk] = None
+        self.eod_chunk = EodChunk()
         if isinstance(stream, BinaryReader):
             rdr = stream
         else:
@@ -683,37 +696,49 @@ class SWDL(FileFormat):
             chunk_name = rdr.read(4)
             rdr.seek(pos)
             if chunk_name == b"swdl":
-                swd_header.read(rdr)
+                self.swd_header.read(rdr)
             elif chunk_name == b"wavi":
-                wavi_chunk = WaviChunk()
-                wavi_chunk.read(rdr, swd_header.wavi_slot_count)
+                self.wavi_chunk = WaviChunk()
+                self.wavi_chunk.read(rdr, self.swd_header.wavi_slot_count)
             elif chunk_name == b"prgi":
-                prgi_chunk = PrgiChunk()
-                prgi_chunk.read(rdr, swd_header.prgi_slot_count)
+                self.prgi_chunk = PrgiChunk()
+                self.prgi_chunk.read(rdr, self.swd_header.prgi_slot_count)
             elif chunk_name == b"kgrp":
-                kgrp_chunk = KgrpChunk()
-                kgrp_chunk.read(rdr)
+                self.kgrp_chunk = KgrpChunk()
+                self.kgrp_chunk.read(rdr)
             elif chunk_name == b"pcmd":
-                pcmd_chunk = PcmdChunk()
-                pcmd_chunk.read(rdr)
+                self.pcmd_chunk = PcmdChunk()
+                self.pcmd_chunk.read(rdr)
             elif chunk_name == b"eod ":
-                eod_chunk.read(rdr)
+                self.eod_chunk.read(rdr)
                 break
 
         self.samples = {}
         self.key_groups = {}
         self.programs = {}
+
+        if self.wavi_chunk is None:
+            raise ValueError("SWD should contain wavi chunk!")
+        if not self.swd_header.is_sample_bank:
+            if self.prgi_chunk is None or self.kgrp_chunk is None:
+                raise ValueError("SWD program bank should contain prgi and kgrp chunk!")
+        else:
+            if self.pcmd_chunk is None:
+                raise ValueError("SWD sample bank should contain pcmd chunk!")
+
         # Construct data structures
-        if wavi_chunk is not None:
-            for sample_info_entry in wavi_chunk.sample_info_table:
-                sample = sample_info_entry.to_sample(pcmd_chunk)
-                self.samples[sample_info_entry.id_] = sample
-        if kgrp_chunk is not None:
-            for swd_key_group in kgrp_chunk.key_groups:
+
+        for sample_info_entry in self.wavi_chunk.sample_info_table:
+            sample = sample_info_entry.to_sample(self.pcmd_chunk)
+            self.samples[sample_info_entry.id_] = sample
+
+        if self.kgrp_chunk is not None:
+            for swd_key_group in self.kgrp_chunk.key_groups:
                 key_group = swd_key_group.to_key_group()
                 self.key_groups[swd_key_group.id_] = key_group
-        if prgi_chunk is not None:
-            for swd_program in prgi_chunk.program_info_table:
+
+        if self.prgi_chunk is not None:
+            for swd_program in self.prgi_chunk.program_info_table:
                 program = swd_program.to_program(self.samples, self.key_groups)
                 self.programs[swd_program.id_] = program
 

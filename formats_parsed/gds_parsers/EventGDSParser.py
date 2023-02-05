@@ -50,7 +50,7 @@ class EventGDSParser(GDSParser):
             0x77: "pick_up_item",  # Item ID
             0x79: "unlock_minigame",  # Minigame ID
             0x7a: "remove_item",  # Item ID
-            0x78: "save_progress",  # After Load Event ID?
+            0x7b: "save_progress",  # After Load Event ID?
             0x7d: "solve_mystery",  # Mystery ID
             0x7e: "chr_shake",  # Character Index, Duration?
             0x7f: "fade",

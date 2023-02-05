@@ -2,9 +2,10 @@ import numpy as np
 
 
 class Adpcm:
-    def __init__(self):
+    def __init__(self, do_first):
         self.index = 0
         self.new_sample = 0
+        self.first = do_first
 
         self.predicted_sample = 0
 
@@ -17,13 +18,26 @@ class Adpcm:
     def decompress(self, data: np.ndarray) -> np.ndarray:
         step_size_table = Adpcm.STEP_SIZE_TABLE
         index_table = Adpcm.INDEX_TABLE
-        iter_len = data.shape[0] * 2
-        result = np.zeros((iter_len,), dtype=np.int16)
-        result[::2] = data[:] & 0x0f
-        result[1::2] = data[:] >> 4
-        index = self.index
-        new_sample = self.new_sample
-        for i in range(iter_len):
+        if self.first:  # First time we load new_sample and index from the preamble
+            iter_len = (data.shape[0] - 4) * 2
+            iter_start = 1
+            result = np.zeros((iter_len + 1,), dtype=np.int16)
+            result[1::2] = data[4:] & 0x0f
+            result[2::2] = data[4:] >> 4
+
+            new_sample = data[0] | data[1] << 8
+            result[0] = new_sample
+            index = (data[2] | data[3] << 8) & 0x7f
+            self.first = False
+        else:
+            iter_len = data.shape[0] * 2
+            iter_start = 0
+            result = np.zeros((iter_len,), dtype=np.int16)
+            result[::2] = data[:] & 0x0f
+            result[1::2] = data[:] >> 4
+            index = self.index
+            new_sample = self.new_sample
+        for i in range(iter_start, iter_len + iter_start):
             d = int(result[i])
             step = step_size_table[index]
             difference = step >> 3

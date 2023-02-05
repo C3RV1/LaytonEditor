@@ -5,7 +5,7 @@ class ScreenShaker(k4pg.Sprite):
     def __init__(self, *args, **kwargs):
         super(ScreenShaker, self).__init__(*args, **kwargs)
         self.shaking = False
-        self.shake_intensity = 5
+        self.shake_intensity = 3
         self.shake_rotation = 0
         self.shake_rotation_speed = .5
         self.shake_time = 1.5

@@ -34,7 +34,7 @@ class Sample:
     @property
     def pcm16(self):
         if self._pcm16 is None and self._adpcm is not None:
-            self._pcm16 = Adpcm().decompress(self._adpcm)
+            self._pcm16 = Adpcm(True).decompress(self._adpcm)
             self._pcm16 = self._pcm16.reshape((self._pcm16.shape[0], 1))
         return self._pcm16
 
@@ -46,7 +46,7 @@ class Sample:
     @property
     def adpcm(self):
         if self._adpcm is None and self._pcm16 is not None:
-            self._adpcm = Adpcm().compress(self._pcm16.reshape((self._pcm16.shape[0],)))
+            self._adpcm = Adpcm(True).compress(self._pcm16.reshape((self._pcm16.shape[0],)))
         return self._adpcm
 
     @adpcm.setter

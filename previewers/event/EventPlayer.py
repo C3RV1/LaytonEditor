@@ -57,7 +57,6 @@ class EventPlayer(TwoScreenRenderer):
         self.dialogue.init_text(self.font_loader)
 
         self.inp = k4pg.Input()
-        self.wait_tap = False
 
         # self.run_events_until_busy()
 
@@ -100,6 +99,18 @@ class EventPlayer(TwoScreenRenderer):
                                          self.next_dialogue_sfx, self.sprite_loader)
             self.next_voice = -1
             self.next_dialogue_sfx = -1
+        elif command.command == 0x5:
+            logging.info(f"[EventPlayer]    Setting room: {command.params[0]}")
+        elif command.command == 0x6:
+            logging.info(f"[EventPlayer]    Setting mode: {command.params[0]}")
+        elif command.command == 0x7:
+            logging.info(f"[EventPlayer]    Setting next mode: {command.params[0]}")
+        elif command.command == 0x8:
+            logging.info(f"[EventPlayer]    Setting movie: {command.params[0]}")
+        elif command.command == 0x9:
+            logging.info(f"[EventPlayer]    Setting event: {command.params[0]}")
+        elif command.command == 0xb:
+            logging.info(f"[EventPlayer]    Setting puzzle: {command.params[0]}")
         elif command.command == 0x21:
             bg_path = command.params[0]
             self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg)
@@ -151,16 +162,20 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x5d:
             self.event_sound.play_sadl(f"data_lt2/stream/ST_{str(command.params[0]).zfill(3)}.SAD")
         elif command.command == 0x5e:
-            # sfx sed
-            pass
+            logging.info(f"[EventPlayer]    Playing SED sfx: {command.params[0]}")
         elif command.command == 0x62:
             self.event_sound.play_smdl(f"data_lt2/sound/BG_{str(command.params[0]).zfill(3)}.SMD", command.params[1])
         elif command.command == 0x69:
-            self.wait_tap = True
+            self.waiter.do_wait_tap()
         elif command.command == 0x6a:
             self.btm_bg.shake()
         elif command.command == 0x6b:
             self.top_bg.shake()
+        elif command.command == 0x6c:
+            self.waiter.wait(command.params[0])
+            self.waiter.do_wait_tap()
+        elif command.command == 0x70:
+            logging.info(f"[EventPlayer]    Unlocking diary entry: {command.params[0]}")
         elif command.command == 0x71:
             # Reveal mystery -> hides all character
             for char in self.characters:
@@ -169,8 +184,14 @@ class EventPlayer(TwoScreenRenderer):
         elif command.command == 0x72:
             self.top_bg.fade(fade_out, command.params[0], False)
             self.btm_bg.fade(fade_out, command.params[0], False)
+        elif command.command == 0x73:
+            logging.info(f"[EventPlayer]    Starting tea hint: {command.params[0]} solution: {command.params[1]}")
+        elif command.command == 0x7f:
+            self.btm_bg.fade(fade_out, command.params[0], False)
         elif command.command == 0x80:
             self.top_bg.fade(fade_in, command.params[0], False)
+            self.btm_bg.fade(fade_in, command.params[0], False)
+        elif command.command == 0x81:
             self.btm_bg.fade(fade_in, command.params[0], False)
         elif command.command == 0x87:
             self.top_bg.fade(fade_out, command.params[0], False)
@@ -214,9 +235,6 @@ class EventPlayer(TwoScreenRenderer):
         for character in self.characters:
             if character:
                 character.animate(dt)
-        if self.wait_tap:
-            if self.inp.get_mouse_down(1):
-                self.wait_tap = False
         if not self.is_busy():
             self.run_events_until_busy()
 
@@ -246,4 +264,4 @@ class EventPlayer(TwoScreenRenderer):
             if character is not None:
                 if character.busy():
                     return True
-        return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy() or self.wait_tap
+        return self.top_bg.busy() or self.btm_bg.busy() or self.waiter.busy() or self.dialogue.busy()

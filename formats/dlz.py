@@ -194,6 +194,9 @@ class EventInf2Dlz(Dlz):
         super(EventInf2Dlz, self).__init__(*args, **kwargs)
 
     def __getitem__(self, item):
+        if item not in self.event_inf:
+            logging.warning(f"Event {item} not found in ev_inf2.dlz")
+            return 0
         return self.event_inf[item][1]
 
     def __setitem__(self, key, value):

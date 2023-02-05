@@ -12,6 +12,10 @@ class SWDLNode(AssetNodeBasename):
     def get_swdl(self):
         return SWDL(self.path, rom=self.rom)
 
+    @property
+    def is_sample_bank(self):
+        return self.path.lower().endswith("999.SWD")
+
 
 class SoundBankCategory(FilesystemCategory):
     def __init__(self):

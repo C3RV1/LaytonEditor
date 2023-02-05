@@ -111,7 +111,7 @@ class SADL(FileFormat):
         self.ima_decoders = []
         self.procyon_decoders = []
         for i in range(self.channels):
-            self.ima_decoders.append(adpcm.Adpcm())
+            self.ima_decoders.append(adpcm.Adpcm(False))
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 
@@ -120,7 +120,7 @@ class SADL(FileFormat):
         self.ima_decoders = []
         self.procyon_decoders = []
         for i in range(self.channels):
-            self.ima_decoders.append(adpcm.Adpcm())
+            self.ima_decoders.append(adpcm.Adpcm(False))
             self.procyon_decoders.append(procyon.Procyon())
         self.blocks_done = 0
 
