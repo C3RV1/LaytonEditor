@@ -9,23 +9,32 @@ class ProgramEditWidgetUI(QtWidgets.QWidget):
         self.setLayout(self.form_layout)
 
         # TODO: Sliders instead of spinbox?
-        self.fine_tune = QtWidgets.QSpinBox()
-        self.coarse_tune = QtWidgets.QSpinBox()
-        self.root_key = QtWidgets.QSpinBox()
         self.volume = QtWidgets.QSpinBox()
+        self.form_layout.addRow("Volume", self.volume)
+
         self.pan = QtWidgets.QSpinBox()
-        self.loop_enabled = QtWidgets.QCheckBox()
-        self.sample_rate = QtWidgets.QSpinBox()
+        self.form_layout.addRow("Pan", self.pan)
 
-        # TODO: Loop live preview?
-        self.loop_beginning = QtWidgets.QSpinBox()
-        self.loop_length = QtWidgets.QSpinBox()
+        self.lfo_v_layout = QtWidgets.QVBoxLayout()
+        self.form_layout.addRow(self.lfo_v_layout)
 
-        self.enable_envelope = QtWidgets.QCheckBox()
-        self.attack_volume = QtWidgets.QSpinBox()
-        self.attack = QtWidgets.QSpinBox()
-        self.decay = QtWidgets.QSpinBox()
-        self.decay2 = QtWidgets.QSpinBox()
-        self.sustain = QtWidgets.QSpinBox()
-        self.hold = QtWidgets.QSpinBox()
-        self.release = QtWidgets.QSpinBox()
+        self.lfo_label = QtWidgets.QLabel("LFOs")
+        self.lfo_v_layout.addWidget(self.lfo_label)
+
+        self.lfo_h_layout = QtWidgets.QHBoxLayout()
+        self.lfo_v_layout.addLayout(self.lfo_h_layout)
+
+        self.lfo_list = QtWidgets.QListView()
+        self.lfo_h_layout.addWidget(self.lfo_list)
+
+        self.split_v_layout = QtWidgets.QVBoxLayout()
+        self.form_layout.addRow(self.split_v_layout)
+
+        self.split_label = QtWidgets.QLabel("Splits")
+        self.split_v_layout.addWidget(self.split_label)
+
+        self.split_h_layout = QtWidgets.QHBoxLayout()
+        self.split_v_layout.addLayout(self.split_h_layout)
+
+        self.split_list = QtWidgets.QListView()
+        self.split_h_layout.addWidget(self.split_list)

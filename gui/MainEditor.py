@@ -45,6 +45,7 @@ class MainEditor(MainEditorUI):
         self.background_editor = BackgroundEditor(self)
         self.sprite_editor = SpriteEditor(self)
         self.sound_profile_editor = SoundProfileEditor()
+        self.sound_bank_editor = SoundBankEditor()
 
         self.event_editor.hide()
         self.puzzle_editor.hide()
@@ -54,6 +55,7 @@ class MainEditor(MainEditorUI):
         self.background_editor.hide()
         self.sprite_editor.hide()
         self.sound_profile_editor.hide()
+        self.sound_bank_editor.hide()
 
         self.horizontal_layout.addWidget(self.event_editor, 3)
         self.horizontal_layout.addWidget(self.puzzle_editor, 3)
@@ -63,6 +65,7 @@ class MainEditor(MainEditorUI):
         self.horizontal_layout.addWidget(self.background_editor, 3)
         self.horizontal_layout.addWidget(self.sprite_editor, 3)
         self.horizontal_layout.addWidget(self.sound_profile_editor, 3)
+        self.horizontal_layout.addWidget(self.sound_bank_editor, 3)
 
         self.active_editor = self.empty_editor
 
@@ -202,6 +205,8 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, SpriteAsset):
             self.active_editor = self.sprite_editor
             self.sprite_editor.set_sprite(node.get_sprite())
+        elif isinstance(node, SWDLNode):
+            self.active_editor = self.sound_bank_editor
 
         if self.active_editor is None:
             self.active_editor = self.empty_editor

@@ -9,7 +9,7 @@ from .Events import EventCategory, EventNode
 from .Puzzles import PuzzleCategory, PuzzleNode
 from .Scripts import ScriptsCategory, ScriptAsset
 from .SequencedAudio import SequencedAudioCategory, SMDLNode
-from .SoundBank import SoundBankCategory
+from .SoundBank import SoundBankCategory, SWDLNode
 from .SoundEffect import SoundEffectCategory
 from .Places import PlaceCategory, PlaceVersion
 from .DLZCategory import DLZCategory, SoundProfileNode

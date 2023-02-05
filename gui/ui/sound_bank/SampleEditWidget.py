@@ -32,42 +32,62 @@ class SampleEditWidgetUI(QtWidgets.QWidget):
         self.loop_enabled = QtWidgets.QCheckBox("Loop Enabled")
         self.form_layout.addRow(self.loop_enabled)
 
-        self.sample_rate = QtWidgets.QSpinBox()
-        self.form_layout.addRow("Sample Rate", self.sample_rate)
-
         # TODO: Sample format?
+
+        self.sample_rate = QtWidgets.QSpinBox()
+        self.sample_rate.setRange(0, 16_777_215)
+        self.form_layout.addRow("Sample Rate", self.sample_rate)
 
         # TODO: Loop live preview?
         self.loop_beginning = QtWidgets.QSpinBox()
+        self.loop_beginning.setRange(0, 16_777_215)
         self.form_layout.addRow("Loop Beginning", self.loop_beginning)
 
         self.loop_length = QtWidgets.QSpinBox()
+        self.loop_length.setRange(0, 16_777_215)
         self.form_layout.addRow("Loop Length", self.loop_length)
 
         self.enable_envelope = QtWidgets.QCheckBox("Enable Envelope")
         self.form_layout.addRow(self.enable_envelope)
 
         self.attack_volume = QtWidgets.QSpinBox()
+        self.attack_volume.setRange(0, 127)
         self.form_layout.addRow("Attack Volume", self.attack_volume)
 
         self.attack = QtWidgets.QSpinBox()
+        self.attack.setRange(0, 127)
         self.form_layout.addRow("Attack", self.attack)
 
         self.decay = QtWidgets.QSpinBox()
+        self.decay.setRange(0, 127)
         self.form_layout.addRow("Decay", self.decay)
 
         self.decay2 = QtWidgets.QSpinBox()
+        self.decay2.setRange(0, 127)
         self.form_layout.addRow("Decay2", self.decay2)
 
         self.sustain = QtWidgets.QSpinBox()
+        self.sustain.setRange(0, 127)
         self.form_layout.addRow("Sustain", self.sustain)
 
         self.hold = QtWidgets.QSpinBox()
+        self.hold.setRange(0, 127)
         self.form_layout.addRow("Hold", self.hold)
 
         self.release = QtWidgets.QSpinBox()
+        self.release.setRange(0, 127)
         self.form_layout.addRow("Release", self.release)
+
+        self.button_layout = QtWidgets.QHBoxLayout()
+        self.form_layout.addRow(self.button_layout)
 
         play_pixmap = QtWidgets.QStyle.StandardPixmap.SP_MediaPlay
         play_icon = self.style().standardIcon(play_pixmap)
-        self.play_button = QtWidgets.QPushButton(play_icon)
+        self.play_button = QtWidgets.QPushButton(play_icon, "Play")
+        self.button_layout.addWidget(self.play_button)
+
+        self.import_button = QtWidgets.QPushButton("Import")
+        self.button_layout.addWidget(self.import_button)
+
+        self.export_button = QtWidgets.QPushButton("Export")
+        self.button_layout.addWidget(self.export_button)

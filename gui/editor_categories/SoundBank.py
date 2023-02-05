@@ -49,6 +49,7 @@ class SoundBankCategory(FilesystemCategory):
         swd = node.get_swdl()
         sf = sf2.SoundFont()
         sf.info_chunk.isft_chunk = sf2.ISFTChunk(sound_font_tool="Layton Editor")
+        sf.info_chunk.inam_chunk = sf2.INAMChunk(name=swd.swd_header.file_name.decode("cp1252"))
         sf.programs = swd.programs
         sf.samples = swd.samples
 

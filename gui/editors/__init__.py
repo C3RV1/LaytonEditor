@@ -1,5 +1,6 @@
 from .BackgroundWidget import BackgroundEditor
 from .event.EventWidget import EventEditor
+from .sound_bank.SoundBankWidget import SoundBankEditor
 from gui.editors.place.PlaceWidget import PlaceEditor
 from gui.editors.puzzle.PuzzleWidget import PuzzleEditor
 from .ScriptWidget import ScriptEditor

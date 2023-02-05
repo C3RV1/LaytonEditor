@@ -1,4 +1,7 @@
 from PySide6 import QtCore, QtWidgets, QtGui
+from .SampleEditWidget import SampleEditWidgetUI
+from .ProgramEditWidget import ProgramEditWidgetUI
+from .KeyGroupEditWidget import KeyGroupEditWidgetUI
 
 
 class SoundBankWidgetUI(QtWidgets.QWidget):
@@ -22,11 +25,11 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.sample_h_layout.addWidget(self.sample_list, 1)
 
         self.sample_edit = self.get_sample_edit_widget()
-        self.sample_edit.hide()
-        self.sample_h_layout.addWidget(self.sample_edit, 1)
+        # self.sample_edit.hide()
+        self.sample_h_layout.addWidget(self.sample_edit, 2)
 
         self.key_group_tab = QtWidgets.QWidget()
-        self.tab_widget.addTab(self.sample_tab, "Key Groups")
+        self.tab_widget.addTab(self.key_group_tab, "Key Groups")
 
         self.key_group_h_layout = QtWidgets.QHBoxLayout()
         self.key_group_tab.setLayout(self.key_group_h_layout)
@@ -36,11 +39,11 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.key_group_h_layout.addWidget(self.key_group_list, 1)
 
         self.key_group_edit = self.get_key_group_edit_widget()
-        self.key_group_edit.hide()
-        self.key_group_h_layout.addWidget(self.key_group_edit, 1)
+        # self.key_group_edit.hide()
+        self.key_group_h_layout.addWidget(self.key_group_edit, 2)
 
         self.program_tab = QtWidgets.QWidget()
-        self.tab_widget.addTab(self.sample_tab, "Programs")
+        self.tab_widget.addTab(self.program_tab, "Programs")
 
         self.program_h_layout = QtWidgets.QHBoxLayout()
         self.program_tab.setLayout(self.program_h_layout)
@@ -50,21 +53,21 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.program_h_layout.addWidget(self.program_list, 1)
 
         self.program_edit = self.get_program_edit_widget()
-        self.program_edit.hide()
-        self.program_h_layout.addWidget(self.program_edit, 1)
+        # self.program_edit.hide()
+        self.program_h_layout.addWidget(self.program_edit, 2)
 
         self.save_btn = QtWidgets.QPushButton("Save")
         self.save_btn.clicked.connect(self.save_btn_click)
         self.v_layout.addWidget(self.save_btn, 1)
 
     def get_sample_edit_widget(self):
-        return QtWidgets.QWidget()
+        return SampleEditWidgetUI()
 
     def get_key_group_edit_widget(self):
-        return QtWidgets.QWidget()
+        return KeyGroupEditWidgetUI()
 
     def get_program_edit_widget(self):
-        return QtWidgets.QWidget()
+        return ProgramEditWidgetUI()
 
     def sample_list_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
         QtWidgets.QListView.selectionChanged(self.sample_list, selected, deselected)
