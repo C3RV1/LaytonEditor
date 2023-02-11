@@ -112,6 +112,11 @@ class MainEditor(MainEditorUI):
         self.file_save_as_action.setEnabled(True)
         self.tree_model.set_rom(self.rom)
 
+        self.active_editor.hide()
+        self.active_editor = self.empty_editor
+        self.active_editor.show()
+        self.pg_previewer.stop_renderer()
+
     def file_menu_save(self):
         if not self.overwrite_data_dialogue():
             return
