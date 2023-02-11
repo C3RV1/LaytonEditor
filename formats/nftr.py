@@ -1,8 +1,10 @@
 # http://problemkaputt.de/gbatek.htm#dscartridgenitrofontresourceformat
-from typing import List, Dict
+from typing import List, Dict, Tuple
+
+import numpy
 
 from formats.filesystem import FileFormat
-from formats.binary import BinaryReader
+from formats.binary import BinaryReader, BinaryWriter
 import numpy as np
 
 
@@ -13,7 +15,7 @@ class NFTRHeader:
     magic_value: bytes = b"RTFN"
     byte_order: int = 0xFEFF
     version: int  # 0x100 to 0x102
-    decompressed_resource_size: int  # 0x000A3278
+    file_size: int  # 0x000A3278
     offset_to_fnif: int  # Offset to the FNIF chunk or size of the NFTR header
     following_chunk_count: int  # 3 + char map count
 
@@ -23,9 +25,19 @@ class NFTRHeader:
             raise ValueError("NFTRHeader does not start with magic value")
         self.byte_order = rdr.read_uint16()
         self.version = rdr.read_uint16()
-        self.decompressed_resource_size = rdr.read_uint32()
+        self.file_size = rdr.read_uint32()
         self.offset_to_fnif = rdr.read_uint16()
         self.following_chunk_count = rdr.read_uint16()
+
+    def write(self, wtr: BinaryWriter, chunk_count: int):
+        wtr.write(b"NFTR"[::-1])
+        wtr.write_uint16(0xFEFF)
+        wtr.write_uint16(0x100)  # TODO: Version 0x102
+        file_size_pos = wtr.tell()
+        wtr.write_uint32(0)  # placeholder file size
+        wtr.write_uint16(0x10)
+        wtr.write_uint16(chunk_count)
+        return file_size_pos
 
 
 class FINFChunk:
@@ -52,12 +64,30 @@ class FINFChunk:
         self.unk0 = rdr.read_uint8()
         rdr.read(2)
         self.width = rdr.read_uint8()
-        rdr.read(1)  # Width bis
+        rdr.read(1)  # Width bis or width + 1?
         self.encoding = rdr.read_uint8()
         self.offset_to_cglp_chunk = rdr.read_uint32() - 8
         self.offset_to_cwdh_chunk = rdr.read_uint32() - 8
         self.offset_to_cmap_chunk = rdr.read_uint32() - 8
         rdr.read(self.chunk_size - 0x1C)
+
+    def write(self, wtr: BinaryWriter):
+        wtr.write(b"FINF"[::-1])
+        wtr.write_uint32(0x1C)
+        wtr.write_uint8(0)
+        wtr.write_uint8(self.height)
+        wtr.write_uint8(self.unk0)
+        wtr.write_uint16(0)
+        wtr.write_uint8(self.width)
+        wtr.write_uint8(self.width)
+        wtr.write_uint8(self.encoding)
+        offset_to_cglp_pos = wtr.tell()
+        wtr.write_uint32(0)
+        offset_to_cwdh_pos = wtr.tell()
+        wtr.write_uint32(0)
+        offset_to_cmap_pos = wtr.tell()
+        wtr.write_uint32(0)
+        return offset_to_cglp_pos, offset_to_cwdh_pos, offset_to_cmap_pos
 
 
 def get_max_bit_steps(depth: int) -> int:
@@ -176,6 +206,49 @@ class CGLPChunk:
             bitmap.shape = tile_height, tile_width
             self.tile_bitmaps.append(bitmap)
 
+    def write(self, wtr: BinaryWriter):
+        chunk_start = wtr.tell()
+        wtr.write(b"CGLP"[::-1])
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)
+        wtr.write_uint8(self.tile_width)
+        wtr.write_uint8(self.tile_height)
+        tile_bytes = (self.tile_width * self.tile_height * self.tile_depth + 7) // 8
+        wtr.write_uint16(tile_bytes)
+
+        wtr.write_uint8(self.underline_location)
+        wtr.write_uint8(self.max_proportional_width)
+        wtr.write_uint8(self.tile_depth)
+        wtr.write_uint8(self.tile_rotation)
+
+        bitmap_items = self.tile_width * self.tile_height
+
+        for bitmap in self.tile_bitmaps:
+            bitmap = bitmap.copy()
+            bitmap.shape = bitmap_items,
+
+            buffer = [0] * tile_bytes
+
+            current_bit = 0
+            for i in range(bitmap_items):
+                value = bitmap[i]
+                for bit in range(self.tile_depth):
+                    bit_value = (value >> (self.tile_depth - bit - 1)) & 1
+
+                    bit_i = current_bit % 8
+                    byte_i = (current_bit - bit_i) // 8
+
+                    buffer[byte_i] += bit_value << (7 - bit_i)
+                    current_bit += 1
+
+            wtr.write(bytes(buffer))
+
+        wtr.align(4)
+        chunk_end = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(chunk_end - chunk_start)
+        wtr.seek(chunk_end)
+
 
 class CWDHChunk:  # Character width
     """
@@ -209,6 +282,25 @@ class CWDHChunk:  # Character width
             self.left_spacing.append(left_spacing)
             self.width.append(width)
             self.total_width.append(total_width)
+
+    def write(self, wtr: BinaryWriter):
+        chunk_start = wtr.tell()
+        wtr.write(b"CWDH"[::-1])
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)
+        wtr.write_uint16(self.first_tile_no)
+        wtr.write_uint16(self.last_tile_no)
+        wtr.write_uint32(0)
+        for left_spacing, width, total_width in zip(self.left_spacing, self.width, self.total_width):
+            wtr.write_uint8(left_spacing)
+            wtr.write_uint8(width)
+            wtr.write_uint8(total_width)
+        wtr.align(4)
+
+        chunk_end = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(chunk_end - chunk_start)
+        wtr.seek(chunk_end)
 
 
 class CMAPChunk:
@@ -259,6 +351,69 @@ class CMAPChunk:
                 char_map[ch] = tile
         self.char_map = char_map
 
+    def write(self, wtr: BinaryWriter):
+        chunk_start = wtr.tell()
+        wtr.write(b"CMAP"[::-1])
+        chunk_size_pos = wtr.tell()
+        wtr.write_uint32(0)
+
+        characters: List[Tuple] = list(self.char_map.items())
+        if len(characters) == 0:
+            raise ValueError()
+        characters.sort(key=lambda x: x[0])
+        first, last = characters[0], characters[-1]
+
+        ch_increasing = True
+        tile_increasing = True
+        for i, (ch, tile) in enumerate(characters[:-1]):
+            next_ch, next_tile = characters[i + 1]
+            if ch != next_ch - 1:
+                ch_increasing = False
+                break
+            elif tile != next_tile - 1:
+                tile_increasing = False
+
+        if ch_increasing and tile_increasing:
+            map_type = 0
+        else:
+            map_type_1_len = last[0] - first[0] + 1
+            map_type_2_len = len(characters) * 2
+            if map_type_2_len < map_type_1_len:
+                map_type = 2
+            else:
+                map_type = 1
+
+        if map_type == 0 or map_type == 1:
+            wtr.write_uint16(first[0])
+            wtr.write_uint16(last[0])
+        else:
+            wtr.write_uint16(0)
+            wtr.write_uint16(0xFFFF)
+
+        wtr.write_uint32(map_type)
+        offset_to_next_cmap_pos = wtr.tell()
+        wtr.write_uint32(0)
+
+        if map_type == 0:
+            wtr.write_uint16(characters[0][1])
+        elif map_type == 1:
+            for ch in range(first[0], last[0] + 1):
+                wtr.write_uint16(self.char_map.get(ch, 0xFFFF))
+        else:
+            wtr.write_uint16(len(characters))
+            for ch, tile in characters:
+                wtr.write_uint16(ch)
+                wtr.write_uint16(tile)
+
+        wtr.align(4)
+
+        chunk_end = wtr.tell()
+        wtr.seek(chunk_size_pos)
+        wtr.write_uint32(chunk_end - chunk_start)
+        wtr.seek(chunk_end)
+
+        return offset_to_next_cmap_pos
+
 
 class NFTR(FileFormat):
     """
@@ -300,6 +455,39 @@ class NFTR(FileFormat):
             self.char_maps.append(cmap)
             next_offset = cmap.offset_to_next_cmap
 
+    def write_stream(self, stream: any):
+        if isinstance(stream, BinaryWriter):
+            wtr = stream
+        else:
+            wtr = BinaryWriter(stream)
+
+        file_size_pos = self.header.write(wtr, 3 + len(self.char_maps))
+        offset_to_cglp_pos, offset_to_cwdh_pos, offset_to_cmap_pos = self.font_info.write(wtr)
+
+        def write_pos_seek_back(wtr_pos, add = 0):
+            pos = wtr.tell()
+            wtr.seek(wtr_pos)
+            wtr.write_uint32(pos + add)
+            wtr.seek(pos)
+
+        write_pos_seek_back(offset_to_cglp_pos, add=8)
+        self.char_glyph.write(wtr)
+
+        write_pos_seek_back(offset_to_cwdh_pos, add=8)
+        self.char_width.write(wtr)
+
+        cmap_wtr_pos = offset_to_cmap_pos
+        for cmap_chunk in self.char_maps:
+            write_pos_seek_back(cmap_wtr_pos, add=8)
+            cmap_wtr_pos = cmap_chunk.write(wtr)
+
+        write_pos_seek_back(file_size_pos)
+
+        # Match file size after alignment
+        if len(wtr.getvalue()) != wtr.tell():
+            wtr.seek(wtr.tell() - 1)
+            wtr.write(b"\0")
+
     def get_encoding_str(self):
         encoding_dict = {
             0: "utf8",
@@ -308,7 +496,3 @@ class NFTR(FileFormat):
             3: "cp1252"
         }
         return encoding_dict[self.font_info.encoding]
-
-    def write_stream(self, stream):
-        # TODO: Implement NFTR saving.
-        raise NotImplementedError("NTFR Saving not implemented")
