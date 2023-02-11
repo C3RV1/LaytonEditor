@@ -31,6 +31,9 @@ class Sample:
         self._pcm16 = other._pcm16
         self._adpcm = other._adpcm
 
+    def has_data(self):
+        return self._pcm16 is not None or self._adpcm is not None
+
     @property
     def pcm16(self):
         if self._pcm16 is None and self._adpcm is not None:

@@ -212,6 +212,7 @@ class MainEditor(MainEditorUI):
             self.sprite_editor.set_sprite(node.get_sprite())
         elif isinstance(node, SWDLNode):
             self.active_editor = self.sound_bank_editor
+            self.sound_bank_editor.set_swdl(node.get_swdl())
 
         if self.active_editor is None:
             self.active_editor = self.empty_editor

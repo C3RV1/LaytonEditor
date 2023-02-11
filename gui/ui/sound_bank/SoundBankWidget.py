@@ -25,7 +25,7 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.sample_h_layout.addWidget(self.sample_list, 1)
 
         self.sample_edit = self.get_sample_edit_widget()
-        # self.sample_edit.hide()
+        self.sample_edit.hide()
         self.sample_h_layout.addWidget(self.sample_edit, 3)
 
         self.key_group_tab = QtWidgets.QWidget()
@@ -39,7 +39,7 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.key_group_h_layout.addWidget(self.key_group_list, 1)
 
         self.key_group_edit = self.get_key_group_edit_widget()
-        # self.key_group_edit.hide()
+        self.key_group_edit.hide()
         self.key_group_h_layout.addWidget(self.key_group_edit, 3)
 
         self.program_tab = QtWidgets.QWidget()
@@ -53,7 +53,7 @@ class SoundBankWidgetUI(QtWidgets.QWidget):
         self.program_h_layout.addWidget(self.program_list, 1)
 
         self.program_edit = self.get_program_edit_widget()
-        # self.program_edit.hide()
+        self.program_edit.hide()
         self.program_h_layout.addWidget(self.program_edit, 3)
 
         self.save_btn = QtWidgets.QPushButton("Save")
