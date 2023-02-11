@@ -223,6 +223,7 @@ class CGLPChunk:
 
         bitmap_items = self.tile_width * self.tile_height
 
+        # TODO: optimize bitmap saving as with loading
         for bitmap in self.tile_bitmaps:
             bitmap = bitmap.copy()
             bitmap.shape = bitmap_items,
@@ -283,18 +284,18 @@ class CWDHChunk:  # Character width
             self.width.append(width)
             self.total_width.append(total_width)
 
-    def write(self, wtr: BinaryWriter):
+    def write(self, wtr: BinaryWriter, tile_count: int):
         chunk_start = wtr.tell()
         wtr.write(b"CWDH"[::-1])
         chunk_size_pos = wtr.tell()
         wtr.write_uint32(0)
-        wtr.write_uint16(self.first_tile_no)
-        wtr.write_uint16(self.last_tile_no)
+        wtr.write_uint16(0)
+        wtr.write_uint16(tile_count - 1)
         wtr.write_uint32(0)
-        for left_spacing, width, total_width in zip(self.left_spacing, self.width, self.total_width):
-            wtr.write_uint8(left_spacing)
-            wtr.write_uint8(width)
-            wtr.write_uint8(total_width)
+        for i in range(tile_count):
+            wtr.write_uint8(self.left_spacing[i])
+            wtr.write_uint8(self.width[i])
+            wtr.write_uint8(self.total_width[i])
         wtr.align(4)
 
         chunk_end = wtr.tell()
@@ -464,7 +465,7 @@ class NFTR(FileFormat):
         file_size_pos = self.header.write(wtr, 3 + len(self.char_maps))
         offset_to_cglp_pos, offset_to_cwdh_pos, offset_to_cmap_pos = self.font_info.write(wtr)
 
-        def write_pos_seek_back(wtr_pos, add = 0):
+        def write_pos_seek_back(wtr_pos, add=0):
             pos = wtr.tell()
             wtr.seek(wtr_pos)
             wtr.write_uint32(pos + add)
@@ -474,7 +475,7 @@ class NFTR(FileFormat):
         self.char_glyph.write(wtr)
 
         write_pos_seek_back(offset_to_cwdh_pos, add=8)
-        self.char_width.write(wtr)
+        self.char_width.write(wtr, len(self.char_glyph.tile_bitmaps))
 
         cmap_wtr_pos = offset_to_cmap_pos
         for cmap_chunk in self.char_maps:
