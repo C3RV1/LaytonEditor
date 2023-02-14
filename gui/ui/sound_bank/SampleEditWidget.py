@@ -10,10 +10,12 @@ class SampleEditWidgetUI(QtWidgets.QWidget):
 
         # TODO: Sliders instead of spinbox?
         self.fine_tune = QtWidgets.QSpinBox()
+        self.fine_tune.setToolTip("Pitch fine tuning in cents.")
         self.fine_tune.setRange(-128, 127)
         self.form_layout.addRow("Fine Tune", self.fine_tune)
 
         self.coarse_tune = QtWidgets.QSpinBox()
+        self.coarse_tune.setToolTip("Pitch coarse tuning in semitones (default -7)")
         self.coarse_tune.setRange(-128, 127)
         self.form_layout.addRow("Coarse Tune", self.coarse_tune)
 
