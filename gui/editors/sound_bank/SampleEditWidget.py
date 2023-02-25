@@ -9,9 +9,9 @@ class SampleEditor(SampleEditWidgetUI):
 
     def set_sample(self, sample: Sample):
         self.sample = sample
-        self.play_button.setEnabled(sample.has_data())
-        self.import_button.setEnabled(sample.has_data())
-        self.export_button.setEnabled(sample.has_data())
+        self.play_button.setEnabled(not sample.empty())
+        self.import_button.setEnabled(not sample.empty())
+        self.export_button.setEnabled(not sample.empty())
 
         self.fine_tune.setValue(self.sample.fine_tune)
         self.coarse_tune.setValue(self.sample.coarse_tune)
