@@ -1,3 +1,4 @@
+import json
 import os
 from PySide6 import QtCore, QtGui, QtWidgets
 
@@ -19,6 +20,13 @@ class SettingsManager(object):
             self.export_path = str(self.qt_setting.value("exportPath", ""))
             self.import_path = str(self.qt_setting.value("importPath", ""))
             self.theme = str(self.qt_setting.value("theme", "dark"))
+            self.character_id_to_name = {}
+            self.character_name_to_id = {}
+            with open("data_permanent/character_names.json", "r") as character_names_f:
+                data: dict = json.load(character_names_f)
+                for key, value in data.items():
+                    self.character_id_to_name[int(key)] = value
+                    self.character_name_to_id[value] = int(key)
             SettingsManager.__inited = True
 
     def open_rom(self, parent: QtWidgets.QWidget) -> str:
