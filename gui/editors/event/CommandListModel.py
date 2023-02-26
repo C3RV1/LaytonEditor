@@ -1,12 +1,15 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from formats.event import Event
 from formats.gds import GDS, GDSCommand
+from gui.SettingsManager import SettingsManager
+from utility.replace_substitutions import replace_substitutions
 
 
 class CommandListModel(QtCore.QAbstractListModel):
     def __init__(self):
         super(CommandListModel, self).__init__()
-        self._event: [Event] = None
+        self._event: Event = None
+        self.settings_manager = SettingsManager()
 
     def set_event(self, event):
         self.layoutAboutToBeChanged.emit()
@@ -52,6 +55,26 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             return f"Fade {'In' if fade_in else 'Out'}\n" \
                    f"{screens} ({duration})"
+        elif command.command == 0x4:
+            text_id = command.params[0]
+            text = self._event.get_text(text_id)
+
+            char_id = text.params[0]
+            if char_id != 0:
+                char_name = self.settings_manager.character_id_to_name[char_id]
+            else:
+                char_name = "Narrator"
+
+            text_parsed = replace_substitutions(text.params[4])
+
+            text_one_line = text_parsed.split('\n')
+            if len(text_one_line) > 1:
+                text_one_line = text_one_line[0] + "..."
+            else:
+                text_one_line = text_one_line[0]
+
+            return f"Dialogue {char_name} [{text.params[1]}, {text.params[2]}] ({text.params[3]} voice pitch)\n" \
+                   f"{text_one_line}"
         elif command.command in [0x5, 0x8, 0x9, 0xb]:
             mode = {
                 0x5: "Place",
@@ -62,7 +85,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Set Mode ID\n" \
                    f"{mode} to {command.params[0]}"
         elif command.command in [0x6, 0x7]:
-            return f"{'Next Mode' if command.command is 0x6 else 'Queue Following Mode'}\n" \
+            return f"{'Next Mode' if command.command == 0x6 else 'Queue Following Mode'}\n" \
                    f"Mode: {command.params[0]}"
         elif command.command in [0x31, 0x69, 0x6c]:
             if command.command == 0x31:
@@ -81,7 +104,11 @@ class CommandListModel(QtCore.QAbstractListModel):
             else:
                 show = command.params[1] > 0
             alpha = "" if command.command != 0x2c else ' (alpha)'
-            return f"Character {command.params[0]} Visibility\n" \
+
+            char_id = self._event.characters[command.params[0]]
+            char_name = self.settings_manager.character_id_to_name[char_id]
+
+            return f"Character {char_id}: {char_name} Visibility\n" \
                    f"{'Show' if show else 'Hide'}{alpha}"
         else:
             return f"Command {hex(command.command)}\n" \

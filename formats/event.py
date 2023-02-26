@@ -240,7 +240,7 @@ class Event:
             text: formats.gds.GDS
             text.save(filename=f"t{prefix}_{postfix}_{dial_id}.gds", rom=self._texts_archive)
 
-    def get_text(self, text_num):
+    def get_text(self, text_num) -> formats.gds.GDS:
         """
         Gets the dialogue GDS from the dialogue ID.
 

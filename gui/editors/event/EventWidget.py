@@ -30,6 +30,10 @@ class EventEditor(EventWidgetUI):
         self.active_editor: [CommandEditor] = None
         self.main_editor: MainEditor = main_editor
 
+    def tab_changed(self, current: int):
+        if current == 2:
+            self.command_list.clearSelection()
+
     def get_event_properties_widget(self):
         return EventPropertiesWidget(self)
 
@@ -49,7 +53,8 @@ class EventEditor(EventWidgetUI):
         text = self.text_editor.toPlainText()
         dcc_parser = DCCParser()
         dcc_parser.parse(text)
-        is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
+        # is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
+        is_ok, error = True, None
         if is_ok:
             self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
         else:

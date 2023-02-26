@@ -9,6 +9,7 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.v_layout = QtWidgets.QVBoxLayout()
 
         self.tab_widget = QtWidgets.QTabWidget(self)
+        self.tab_widget.currentChanged.connect(self.tab_changed)
 
         self.character_widget = self.get_event_properties_widget()
         self.tab_widget.addTab(self.character_widget, "Properties")
@@ -55,6 +56,9 @@ class EventWidgetUI(QtWidgets.QWidget):
             self.command_list_selection(selected.indexes()[0])
         else:
             self.command_list_selection(QtCore.QModelIndex())
+
+    def tab_changed(self, current: int):
+        pass
 
     def command_list_selection(self, selected: QtCore.QModelIndex):
         pass

@@ -57,10 +57,6 @@ class SpriteLoaderROM(k4pg.SpriteLoaderOS):
                 surf.blit(img_surf, frames[i].position)
 
             for animation in ani_sprite.animations:
-                vars_tag = dict()
-                vars_tag["child_index"] = animation.child_image_animation_index
-                vars_tag["child_x"] = animation.child_image_x
-                vars_tag["child_y"] = animation.child_image_y
                 durations = [f.duration / 60.0 for f in animation.frames]
                 if len(durations) != 0:
                     if animation.frames[-1].next_frame_index != 0:
