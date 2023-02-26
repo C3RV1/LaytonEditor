@@ -14,7 +14,7 @@ class DialogueCommand(CommandEditor, DialogueCommandUI):
         text = event.get_text(text_num)
         settings = SettingsManager()
 
-        self.character.addItem("Narrator: 0", 0)
+        self.character.addItem("Narrator", 0)
         index = 0
         for i, char_id in enumerate(event.characters):
             if char_id == 0:

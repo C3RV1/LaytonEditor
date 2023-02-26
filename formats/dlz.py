@@ -221,5 +221,5 @@ class EventInf2Dlz(Dlz):
         for ev_id, sound_id in self.event_inf.items():
             constructed.append([ev_id] + sound_id)
         constructed.sort(key=lambda x: x[0])
-        self.pack("<IH6s", constructed)
+        self.pack("<HHH6s", constructed)
         super(EventInf2Dlz, self).write_stream(stream)
