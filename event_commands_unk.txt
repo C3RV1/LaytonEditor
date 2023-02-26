@@ -1,0 +1,88 @@
+unknown event commands
+0x8e 10030 10085 10120 10140 11100 11170 11175
+0x70 10030 11020 11170
+0x77 10035 11170
+0x36 10050 10060 11050 11060 11100 11175
+0x49 10140 11170
+0x78 11100 11175 14110 16130
+0x9f 11100 11170 11175
+0x89 11100 11170 11175
+0x79 11100 11175
+0x74 11100 11175 18000 20003
+0x75 18000 20003
+0x96 11310
+0x7f 11330 14090
+0x7a 11330 15160
+0x7b 11420 11450 12310 (used when changing chapter)
+0x7d 11330 13120 15200 16060
+0x76 12240 16100
+0x82 16050
+0x87 11330
+0x81 12190 14090
+0x97 14070
+0x84 14250 15230 (get photo scraps?)
+0x90 14340 14350 14370
+0x91 15040
+0x83 17020
+0x6c 18390
+0x9b 18450
+0xa1 18460 (save?)
+0x9e 18490 18500
+0x73 30... (start tea?)
+
+menu mode 18010 18430
+challenge mode 18020
+sub herb mode 18400
+sub camera mode 18410
+sub ham mode 18420
+passcode mode 18440 18510
+
+broken 17040
+japan 19...
+puzzles 2x...
+
+2xyy0 start puzzle
+2xyy1 retry puzzle
+2xyy2 retry puzzle 2?
+2xyy3 completed puzzle
+2xyy4 quit puzzle
+
+30xx0 start tea
+30xx1 completed tea
+30xx2 fail tea
+30xx3 give up tea
+30xx4 retry tea
+
+autoevent2.dat
+each room contains 0x40 data, 0x4 for version (0x2 is event sometimes), max of 16 versions
+
+storyflag2.dat
+each entry is 0x22 in size
+
+placeflag.dat
+
+exit can be clicked without shoe: 1 1 1, 3 2 2
+
+goal_inf.dlz
+event_id, unk0, goal_id
+
+chp_inf.dlz
+unk0, story_so_far_id
+
+ht- herbal tea
+
+100 - 4
+200 - 6
+400 - 12
+401 - 9
+
+snd_fix.dlz
+snd_group_id, bg_file, (3 - train track sound, 1 - just bg music, 0xff?), unk0
+
+event unk0
+1   - 0000 0000 0001 (starts bg music)
+3   - 0000 0000 0011 (post ev tea, solved or failed)
+256 - 0001 0000 0000 (17190, staff)
+257 - 0001 0000 0001 (10150)
+259 - 0001 0000 0011 (10000, narration)
+513 - 0010 0000 0001 (10130, movies)

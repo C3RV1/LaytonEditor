@@ -14,8 +14,10 @@ if TYPE_CHECKING:
 
 
 from .EventPropertiesWidget import EventPropertiesWidget
-from PySide6 import QtCore
+from PySide6 import QtCore, QtWidgets
 from gui.editor_categories.Events import EventCategory, EventNode
+from .CommandListModel import CommandListModel
+from .command import get_command_widget
 
 
 class EventEditor(EventWidgetUI):
@@ -23,6 +25,8 @@ class EventEditor(EventWidgetUI):
         super(EventEditor, self).__init__()
         self.event = None
         self.event_node: QtCore.QModelIndex = None
+        self.command_model = CommandListModel()
+        self.active_editor: [QtWidgets.QWidget] = None
         self.main_editor: MainEditor = main_editor
 
     def get_event_properties_widget(self):
@@ -36,6 +40,9 @@ class EventEditor(EventWidgetUI):
         EventGDSParser(ev).serialize_into_dcc(ev.gds, dcc_parser)
         serialized = dcc_parser.serialize()
         self.text_editor.setPlainText(serialized)
+
+        self.command_model.set_event(self.event)
+        self.command_list.setModel(self.command_model)
 
     def preview_dcc_btn_click(self):
         text = self.text_editor.toPlainText()
@@ -86,3 +93,16 @@ class EventEditor(EventWidgetUI):
         category: EventCategory = event_node.category
         category.load_event_names()
         self.main_editor.tree_model.dataChanged.emit(self.event_node, self.event_node)
+
+    def command_list_selection(self, selected: QtCore.QModelIndex):
+        if self.active_editor is not None:
+            self.active_editor: QtWidgets.QWidget
+            self.script_layout.removeWidget(self.active_editor)
+            self.active_editor.deleteLater()
+            self.active_editor = None
+
+        if not selected.isValid():
+            return
+
+        self.active_editor = get_command_widget(selected.data(QtCore.Qt.ItemDataRole.UserRole), self.event)
+        self.script_layout.addWidget(self.active_editor, 1)

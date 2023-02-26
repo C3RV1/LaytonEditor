@@ -16,6 +16,16 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.text_editor = QtWidgets.QPlainTextEdit(self.tab_widget)
         self.tab_widget.addTab(self.text_editor, "Script")
 
+        self.script_editor = QtWidgets.QWidget()
+        self.tab_widget.addTab(self.script_editor, "Visual Script")
+
+        self.script_layout = QtWidgets.QHBoxLayout()
+        self.script_editor.setLayout(self.script_layout)
+
+        self.command_list = QtWidgets.QListView()
+        self.command_list.selectionChanged = self.command_list_selection_ui
+        self.script_layout.addWidget(self.command_list, 1)
+
         self.btn_window_layout = QtWidgets.QGridLayout()
 
         self.preview_dcc_btn = QtWidgets.QPushButton("Preview DCC")
@@ -38,6 +48,16 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.v_layout.addLayout(self.btn_window_layout, 1)
 
         self.setLayout(self.v_layout)
+
+    def command_list_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
+        QtWidgets.QListView.selectionChanged(self.command_list, selected, deselected)
+        if selected.indexes():
+            self.command_list_selection(selected.indexes()[0])
+        else:
+            self.command_list_selection(QtCore.QModelIndex())
+
+    def command_list_selection(self, selected: QtCore.QModelIndex):
+        pass
 
     def get_event_properties_widget(self):
         return EventPropertiesWidgetUI(self)

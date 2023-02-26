@@ -1,0 +1,126 @@
+-- setup --
+set "top image" 0
+set "bottom image" 1
+character Layton with id 1 slot 0 animation 1 isn't visible
+character Luke with id 2 slot 2 animation 1 isn't visible
+character Schrader with id 3 slot 0 animation 1 isn't visible
+
+-- script --
+load bottom "ebg/?/ebg_29.bgx"
+fade in both
+wait 120 frames
+fade out bottom
+show Layton
+show Luke
+load bottom "map/main1.bgx"
+load top "event/sub1.bgx"
+opacity 120
+fade in both
+
+Layton "b1 normal" "" 2 voice 12: Luke, have a look here.
+Luke "b1 normal" "" 3 voice 13: What's that, professor?
+Layton "b2 normal" "" 2 voice 14: It's a letter from my dear friend
+    and mentor, Dr Andrew Schrader.
+Luke "b1 shout" "" 3 voice 15: Is everything all right?!
+
+bgm fade out
+wait 2 frames
+fade out both in 60 frames
+hide Layton
+hide Luke
+load bottom "ebg/ebg_2.bgx"
+load top "event/sub0.bgx"
+0x8e 3
+bgm play 23 at volume 1
+fade in both
+
+Schrader "" "" 2 voice 16: My dear Hershel. As an archaeologist
+    you are sure to have heard of the
+    item known as the Elysian Box.
+
+fade out top in 30 frames
+load top "ebg/ebg_101.bgx"
+fade in top in 30 frames
+
+Schrader "" "" 2 voice 412: Of course, it is more commonly
+    known as ”Pandora's Box”, in
+    reference to the famous myth.
+
+fade out top in 30 frames
+load top "ebg/ebg_102.bgx"
+fade in top in 30 frames
+
+Schrader "" "" 2 voice 410: This nickname would appear to be
+    well deserved, since it is rumoured
+    to kill whoever opens it.@p@c
+    I'm dubious of this reputation, of
+    course, but when my interest is
+    piqued I simply must investigate.@p@c
+    That's why I'm pleased as punch to
+    tell you that the elusive item is
+    finally in my possession.@p@c
+    What's more, I believe I'm on the
+    cusp of unravelling a great
+    mystery tied to this box.@p@c
+    For the moment, let's just say I
+    have a theory, though I haven't
+    been able to prove it yet.
+
+fade out top in 30 frames
+load top "ebg/ebg_103.bgx"
+fade in top in 16 frames
+
+Schrader "" "" 2 voice 411: Initially, it was my intention to
+    finish my research before daring
+    to open its lid.@p@c
+    But I must confess that my
+    curiosity is simply overpowering.@p@c
+    In the unlikely event that anything
+    should happen to me, please finish
+    the work I've started here.@p@c
+    Your friend,
+    Andrew Schrader
+
+fade out both
+show Layton
+show Luke
+load bottom "map/main1.bgx"
+load top "event/sub1.bgx"
+opacity 120
+animation Layton "b4 normal"
+animation Luke "b1 normal"
+bgm fade out
+0x8e 2
+bgm play 4 at volume 1
+wait 75 frames
+fade in both
+
+Layton "b4 normal" "" 2 voice 17: According to the postmark, this
+    letter was sent two days ago. We
+    should go pay the doctor a visit.@p@c
+    I just can't shake the feeling that
+    something awful has happened...
+Luke "b1 smile" "" 3 voice 18: Well, your intuition's usually
+    spot-on!@p I say we head out
+    right away!
+
+bgm fade out
+0x8e 251
+0x71 1
+show Layton
+show Luke
+load bottom "map/main1.bgx"
+load top "event/sub1.bgx"
+opacity 120
+bgm fade in
+fade in both
+
+Layton "b4 normal" "" 2: Luke, before we go, would you be so
+    kind as to fetch my car keys?@p@c
+    They're in one of the drawers in
+    that desk.
+Luke "b1 smile" "" 3: Will do, Professor!@p Erm...
+Layton "b1 smile" "" 2: If there's something you wish to
+    interact with, Luke, you need only
+    reach out and touch it.
+0x70 1
