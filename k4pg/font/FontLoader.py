@@ -3,34 +3,37 @@ import pygame as pg
 import json
 
 from .Font import PygameFont, FontMap, CharMap
-from ..sprite.Text import Text
+from .FontSupportive import FontSupportive
 
 
 class FontLoader:
-    def load(self, path: str, size: int, text: Text):
-        FontLoader._load(self, path, size, text)
+    def load(self, path: str, size: int, target: FontSupportive):
+        FontLoader._load(self, path, size, target)
 
-    def _load(self, path: str, size: int, text: Text) -> bool:
-        text.font = PygameFont(pg.font.Font(pg.font.get_default_font(), size))
+    def _load(self, path: str, size: int, target: FontSupportive) -> bool:
+        target.set_font(PygameFont(pg.font.Font(pg.font.get_default_font(), size)))
         return True
 
 
 class FontLoaderSYS(FontLoader):
     def __init__(self, fall_back_font_sys=None):
         self.fall_back_font_sys = fall_back_font_sys
+        self.font_list = {}
 
-    def _load(self, path: str, size: int, text: Text) -> bool:
+    def _load(self, path: str, size: int, target: FontSupportive) -> bool:
         if path not in pg.font.get_fonts():
             return False
-        text.font = PygameFont(pg.font.SysFont(path, size))
+        if (path, size) not in self.font_list:
+            self.font_list[(path, size)] = PygameFont(pg.font.SysFont(path, size))
+        target.set_font(self.font_list[(path, size)])
         return True
 
-    def load(self, path: str, size: int, text: Text):
-        if FontLoaderSYS._load(self, path, size, text):
+    def load(self, path: str, size: int, target: FontSupportive):
+        if FontLoaderSYS._load(self, path, size, target):
             return
-        if FontLoaderSYS._load(self, self.fall_back_font_sys, size, text):
+        if FontLoaderSYS._load(self, self.fall_back_font_sys, size, target):
             return 
-        super(FontLoaderSYS, self).load(path, size, text)
+        super(FontLoaderSYS, self).load(path, size, target)
 
 
 class FontLoaderOS(FontLoaderSYS):
@@ -39,15 +42,15 @@ class FontLoaderOS(FontLoaderSYS):
         self.base_path_os = base_path_os
         self.fall_back_font_os = fall_back_font_os
 
-    def load(self, path: str, size: int, text: Text):
-        if FontLoaderOS._load(self, path, size, text):
+    def load(self, path: str, size: int, target: FontSupportive):
+        if FontLoaderOS._load(self, path, size, target):
             return
         if self.fall_back_font_os:
-            if FontLoaderOS._load(self, self.fall_back_font_os, size, text):
+            if FontLoaderOS._load(self, self.fall_back_font_os, size, target):
                 return
-        super(FontLoaderOS, self).load(path, size, text)
+        super(FontLoaderOS, self).load(path, size, target)
 
-    def _load(self, path: str, size: int, text: Text):
+    def _load(self, path: str, size: int, target: FontSupportive):
         if self.base_path_os:
             real_path = os.path.join(self.base_path_os, path)
         else:
@@ -64,7 +67,7 @@ class FontLoaderOS(FontLoaderSYS):
         path = real_path
         if ext == ".ttf" or ext == ".otf":
             pg_font = pg.font.Font(path, size)
-            text.font = PygameFont(pg_font)
+            target.set_font(PygameFont(pg_font))
             return True
         elif ext == ".json":
             # font_map
@@ -107,6 +110,6 @@ class FontLoaderOS(FontLoaderSYS):
             font = FontMap(font_surf, surf_tile_width, encoding, char_map,
                            current_color, mask_color, tile_width, tile_height,
                            separator_size, character_spacing, color_commands, color_command_prefix)
-            text.font = font
+            target.set_font(font)
             return True
         return False

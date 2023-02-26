@@ -1,20 +1,24 @@
-from k4pg import Sprite, Camera, Alignment
+from typing import Tuple
 import pygame as pg
 
-from k4pg.font.Font import Font
+from ..font.Font import Font
+from ..font.FontSupportive import FontSupportive
+from ..sprite.Sprite import Sprite
+from ..Camera import Camera
+from ..Alignment import Alignment
 
 
-class Text(Sprite):
+class Text(Sprite, FontSupportive):
     def __init__(self, *args, text: str = "", color: pg.Color = pg.Color(255, 255, 255),
-                 bg_color: [pg.Color, None] = None, font: Font = None, line_spacing: int = 0,
-                 align: int = Alignment.LEFT, **kwargs):
+                 bg_color: [pg.Color, None] = None, line_spacing: int = 0,
+                 align: int = Alignment.LEFT, antialiasing=True, **kwargs):
         super(Text, self).__init__(*args, **kwargs)
         self._text: str = text
         self._color: pg.Color = color
         self._bg_color: [None, pg.Color] = bg_color
         self._line_spacing: int = line_spacing
         self._align: int = align
-        self._font: Font = font
+        self._antialiasing = antialiasing
         self._render_needed = True
 
     @property
@@ -50,15 +54,10 @@ class Text(Sprite):
         self._bg_color = v
         self._render_needed = True
 
-    @property
-    def font(self):
-        return self._font
-
-    @font.setter
-    def font(self, v: Font):
-        if self._font == v:
+    def set_font(self, f: Font):
+        if self._font == f:
             return
-        self._font = v
+        self._font = f
         self._render_needed = True
 
     @property
@@ -82,7 +81,26 @@ class Text(Sprite):
             return
         self._align = v
         self._render_needed = True
-        
+
+    @property
+    def antialiasing(self):
+        return self._antialiasing
+
+    @antialiasing.setter
+    def antialiasing(self, v: bool):
+        if v == self._antialiasing:
+            return
+        self._antialiasing = v
+        self._render_needed = True
+
+    def get_world_rect(self) -> pg.Rect:
+        self._render()
+        return super(Text, self).get_world_rect()
+
+    def get_screen_rect(self, *args, **kwargs) -> Tuple[pg.Rect, pg.Rect]:
+        self._render()
+        return super(Text, self).get_screen_rect(*args, **kwargs)
+
     def _render(self):
         if self._font is None:
             return 
@@ -91,7 +109,8 @@ class Text(Sprite):
         self._render_needed = False
         self.surf, self.color_key = self._font.render(self._text, self._color, self._bg_color,
                                                       line_spacing=self._line_spacing,
-                                                      h_align=self._align)
+                                                      h_align=self._align,
+                                                      antialiasing=self._antialiasing)
         
     def draw(self, cam: Camera):
         if self._font is None:

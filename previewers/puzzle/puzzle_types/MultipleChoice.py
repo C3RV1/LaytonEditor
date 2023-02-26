@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from ..PuzzlePlayer import PuzzlePlayer
 from formats.puzzle import Puzzle
@@ -24,7 +24,7 @@ class MultipleChoiceButton(k4pg.ButtonSprite):
 
 class MultipleChoice(PuzzlePlayer):
     def __init__(self, puzzle_data: Puzzle):
-        self.buttons = []
+        self.buttons: List[MultipleChoiceButton] = []
         self.pressed_btn: Optional[MultipleChoiceButton] = None
 
         super(MultipleChoice, self).__init__(puzzle_data)
@@ -35,12 +35,12 @@ class MultipleChoice(PuzzlePlayer):
         if cmd.command == 0x14:  # add_button
             x, y, path, is_solution, _ = cmd.params
             btn = MultipleChoiceButton(is_solution == 1, position=pg.Vector2(-256//2 + x, -192//2 + y))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/freebutton/{path}", btn, True)
             self.buttons.append(btn)
 
     def update_submitted(self, dt):
         for button in self.buttons:
-            if button.get_pressed(self.btm_camera, dt):
+            if button.get_pressed(self.btm_camera):
                 self.pressed_btn = button
                 button.animate(dt)
                 return True

@@ -57,7 +57,7 @@ class SlideTile(k4pg.Sprite):
 
             # Check if we should interact
             if self.inp.get_mouse_down(1):
-                mouse_pos = self.inp.get_mouse_pos()
+                mouse_pos = pg.Vector2(self.inp.get_mouse_pos())
                 mouse_pos = cam.from_screen(mouse_pos)
                 for collider in self.get_world_colliders():
                     if collider.collidepoint(mouse_pos.x, mouse_pos.y):
@@ -65,7 +65,7 @@ class SlideTile(k4pg.Sprite):
                         self.interact_off = self.internal_pos - mouse_pos
         else:
             mouse_pos = self.inp.get_mouse_pos()
-            mouse_pos = cam.from_screen(mouse_pos)
+            mouse_pos = pg.Vector2(cam.from_screen(mouse_pos))
 
             # Move in steps towards the destination
             self.move_steps(mouse_pos + self.interact_off, dt)
@@ -172,7 +172,7 @@ class Slide(PuzzlePlayer):
         for i in range(4):
             move_counter_digit = k4pg.Sprite(position=pg.Vector2(current_x, 11 - 192 // 2),
                                              center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
-            self.sprite_loader.load("data_lt2/ani/nazo/common/counter_number.arc", move_counter_digit)
+            self.sprite_loader.load("data_lt2/ani/nazo/common/counter_number.arc", move_counter_digit, True)
             move_counter_digit.set_tag("0")
             current_x += 6
             self.move_counters.append(move_counter_digit)
@@ -199,7 +199,7 @@ class Slide(PuzzlePlayer):
         elif cmd.command == 0x52:  # Add Tile
             _unk, anim, _anim2, tile_x, tile_y = cmd.params
             tile = SlideTile(self.board, pg.Vector2(tile_x, tile_y))
-            self.sprite_loader.load(self.tilemap, tile)
+            self.sprite_loader.load(self.tilemap, tile, True)
             tile.set_tag(anim)
             self.board.add_tile(tile)
         elif cmd.command == 0x53:  # Add Tile Collider

@@ -53,7 +53,7 @@ class EventPlayer(TwoScreenRenderer):
 
         self.dialogue = EventDialogue(self, position=pg.Vector2(0, 192//2 + 3),
                                       center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM))
-        self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue)
+        self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue, True)
         self.dialogue.init_text(self.font_loader)
 
         self.inp = k4pg.Input()
@@ -113,11 +113,11 @@ class EventPlayer(TwoScreenRenderer):
             logging.info(f"[EventPlayer]    Setting puzzle: {command.params[0]}")
         elif command.command == 0x21:
             bg_path = command.params[0]
-            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg)
+            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.btm_bg.bg, False)
             self.btm_bg.set_opacity(0)
         elif command.command == 0x22:
             bg_path = command.params[0]
-            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg)
+            self.sprite_loader.load(f"data_lt2/bg/{bg_path}", self.top_bg.bg, False)
             self.top_bg.set_opacity(0)
         elif command.command == 0x2a:
             if 0 <= command.params[0] <= 7:
@@ -237,6 +237,7 @@ class EventPlayer(TwoScreenRenderer):
                 character.animate(dt)
         if not self.is_busy():
             self.run_events_until_busy()
+        super(EventPlayer, self).update(dt)
 
     def draw(self):
         self.top_bg.draw_back(self.top_camera)
@@ -248,13 +249,9 @@ class EventPlayer(TwoScreenRenderer):
                 character.draw(self.btm_camera)
         self.dialogue.draw(self.btm_camera)
         self.btm_bg.draw_front(self.btm_camera)
+        super(EventPlayer, self).draw()
 
     def unload(self):
-        self.top_bg.unload()
-        self.btm_bg.unload()
-        for character in self.characters:
-            if character:
-                character.unload()
         self.dialogue.unload()
         self.event_sound.stop_smdl()
         self.event_sound.stop_sadl()

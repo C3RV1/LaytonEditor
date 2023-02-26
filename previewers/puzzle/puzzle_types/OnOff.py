@@ -42,7 +42,7 @@ class OnOff(PuzzlePlayer):
         if cmd.command == 0x14:
             x, y, path, solution_set, _ = cmd.params
             option = OnOffToggle(solution_set == 1, position=pg.Vector2(-256//2 + x, -192//2 + y))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/onoff/{path}", option)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/onoff/{path}", option, True)
             self.options.append(option)
 
     def check_solution(self):

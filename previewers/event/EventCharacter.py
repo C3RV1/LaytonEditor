@@ -30,7 +30,7 @@ class EventCharacter(k4pg.Sprite):
         self.talking = False
 
         self.load_character(loader)
-        self.set_tag_num(anim_num)
+        self.set_tag_by_num(anim_num)
         self.update_visibility(visibility)
 
         self.fading = False
@@ -80,7 +80,7 @@ class EventCharacter(k4pg.Sprite):
             self.character_mouth.position.update(world_rect.x + mouth_offset[0],
                                                  self.position.y - world_rect.h + mouth_offset[1])
             self.character_mouth.center[1] = k4pg.Alignment.TOP
-            self.character_mouth.set_tag_num(self._active_tag.child_index)
+            self.character_mouth.set_tag_by_num(self._active_tag.child_index)
             if self._active_tag.child_index == 0:
                 self.character_mouth.visible = False
             elif self.visible and not self.character_mouth.visible:
@@ -131,12 +131,12 @@ class EventCharacter(k4pg.Sprite):
 
     def load_character(self, loader: k4pg.SpriteLoader):
         if loader:
-            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self)
+            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, True)
         if (drawoff := self.vars.get("drawoff", None)) is not None:
             self.position += pg.Vector2(drawoff[:2])
         if self.vars.get('child_image', "") != "" and loader:
-            loader.load(f"data_lt2/ani/sub/{self.vars['child_image']}", self.character_mouth)
-        self.set_tag_num(1)
+            loader.load(f"data_lt2/ani/sub/{self.vars['child_image']}", self.character_mouth, True)
+        self.set_tag_by_num(1)
 
     def animate(self, dt: float):
         super(EventCharacter, self).animate(dt)
@@ -146,8 +146,8 @@ class EventCharacter(k4pg.Sprite):
     def set_talking(self):
         self.talking = True
         current_tag = self.get_tag().name
-        if not current_tag.startswith("*"):
-            new_tag = self.get_tag_by_num(self.get_tag_num() + 1) or ""
+        if not current_tag.startswith("*") and self.get_tag_num() + 1 < self.tag_count:
+            new_tag = self.tag_names[self.get_tag_num() + 1]
             if new_tag.startswith("*"):
                 self.set_tag(new_tag)
 

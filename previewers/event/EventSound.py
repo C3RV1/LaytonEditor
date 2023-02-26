@@ -15,7 +15,7 @@ class EventSound:
         self.bg_player.create_temporal_sf2(swd_file, sample_bank)
         self.bg_player.load_sound(smd_obj)
         self.bg_player.play()
-        self.bg_player.set_volume(vol)
+        self.bg_player.set_volume(vol * 0.3)  # Cap at 0.3 volume
 
     def stop_smdl(self):
         self.bg_player.stop()

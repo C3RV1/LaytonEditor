@@ -151,8 +151,8 @@ class FontLoaderROM(k4pg.FontLoaderOS):
             "g": pg.Color(0, 255, 0)
         }
 
-        text.font = k4pg.FontMap(
+        text.set_font(k4pg.FontMap(
             tileset, 16, encoding, char_map,
             current_color, mask_color, tile_w, tile_h,
             0, 1, color_commands
-        )
+        ))

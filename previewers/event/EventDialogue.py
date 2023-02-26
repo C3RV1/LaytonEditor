@@ -55,7 +55,6 @@ class EventDialogue(k4pg.Sprite):
     def unload(self):
         self.voice_player.stop()
         self.dialogue_sfx_player.stop()
-        super(EventDialogue, self).unload()
 
     def show(self):
         self.visible = True

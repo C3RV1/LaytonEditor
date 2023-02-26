@@ -1,8 +1,7 @@
-from typing import Union, List, Tuple
-
 import pygame as pg
 
-from k4pg import Alignment
+from .Alignment import Alignment
+from .Screen import Screen
 
 
 class Camera:
@@ -10,15 +9,15 @@ class Camera:
                  viewport: [pg.Rect, list, tuple] = None, zoom: pg.Vector2 = None):
         self.world_position = pg.Vector2(0, 0)
         if world_position is not None:
-            self.world_position.update(world_position)
+            self.world_position.update(world_position.x, world_position.y)
 
         self.alignment = pg.Vector2(Alignment.CENTER, Alignment.CENTER)
         if alignment is not None:
-            self.alignment.update(alignment)
+            self.alignment.update(alignment.x, alignment.y)
 
         self.zoom = pg.Vector2(1, 1)
         if zoom is not None:
-            self.zoom.update(zoom)
+            self.zoom.update(zoom.x, zoom.y)
 
         if viewport is not None:
             self.viewport = viewport
@@ -28,7 +27,7 @@ class Camera:
             self.viewport = pg.Rect(0, 0, surf.get_width(), surf.get_height())
         self.surf = surf
 
-    def to_screen(self, point: Union[pg.Vector2, List, Tuple], use_world=True) -> pg.Vector2:
+    def to_screen(self, point: pg.Vector2, use_world=True):
         point = pg.Vector2(point)
         if use_world:
             point -= self.world_position
@@ -37,7 +36,7 @@ class Camera:
         point += pg.Vector2(self.viewport[2], self.viewport[3]) * self.alignment.elementwise()
         return point
 
-    def from_screen(self, point: Union[pg.Vector2, List, Tuple], use_world=True) -> pg.Vector2:
+    def from_screen(self, point: pg.Vector2, use_world=True):
         point = pg.Vector2(point)
         point -= pg.Vector2(self.viewport[2], self.viewport[3]) * self.alignment.elementwise()
         point -= pg.Vector2(self.viewport[0], self.viewport[1])
@@ -65,3 +64,15 @@ class Camera:
     def clear(self, color: pg.Color):
         self.set_surf_clip()
         self.surf.fill(color, self.viewport)
+
+    def _zoom_from_expected(self, actual: tuple, expected: tuple):
+        actual = pg.Vector2(actual)
+        expected = pg.Vector2(expected)
+        zoom = min(actual.x / expected.x, actual.y / expected.y)
+        self.zoom = pg.Vector2(zoom, zoom)
+
+    def zoom_from_expected_viewport(self, expected_viewport: tuple):
+        self._zoom_from_expected(self.viewport.size, expected_viewport)
+
+    def zoom_from_expected_screen(self, expected_screen: tuple):
+        self._zoom_from_expected(Screen.screen_size(), expected_screen)

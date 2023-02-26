@@ -25,17 +25,17 @@ class PuzzleHints(TwoScreenRenderer):
         self.back_btn = k4pg.ButtonSprite(position=pg.Vector2(256 // 2, -192 // 2),
                                           center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/modoru_memo.arc", self.back_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/modoru_memo.arc", self.back_btn, True)
 
         self.unlock_btn = k4pg.ButtonSprite(position=pg.Vector2(-80, 40),
                                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                             not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.unlock_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.unlock_btn, True)
 
         self.no_unlock_btn = k4pg.ButtonSprite(position=pg.Vector2(80, 40),
                                                center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                                not_pressed_tag=btn_off, pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_unlock_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_unlock_btn, True)
 
         self.text = k4pg.Text(position=pg.Vector2(-256 // 2 + 20, -192 // 2 + 42),
                               center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
@@ -50,7 +50,7 @@ class PuzzleHints(TwoScreenRenderer):
                                             center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
                                             not_pressed_tag=btn_off, pressed_tag=btn_on)
             hint_select.visible = False
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/hint{i + 1}.arc", hint_select, True)
             current_x += hint_select.get_world_rect().w + 1
             self.selected_btns.append(hint_select)
 
@@ -88,23 +88,24 @@ class PuzzleHints(TwoScreenRenderer):
                                     sprite_sheet=False)
 
     def update(self, dt: float):
-        if self.back_btn.get_pressed(self.btm_camera, dt):
+        if self.back_btn.get_pressed(self.btm_camera):
             return False
         self.back_btn.animate(dt)
 
         for i in range(min(3, self.used + 1)):
-            if self.selected_btns[i].get_pressed(self.btm_camera, dt):
+            if self.selected_btns[i].get_pressed(self.btm_camera):
                 self.view_hint(i)
             self.selected_btns[i].animate(dt)
 
         if self.selected == self.used:
-            if self.unlock_btn.get_pressed(self.btm_camera, dt):
+            if self.unlock_btn.get_pressed(self.btm_camera):
                 self.view_hint(self.progress_hints() - 1)
             self.unlock_btn.animate(dt)
 
-            if self.no_unlock_btn.get_pressed(self.btm_camera, dt):
+            if self.no_unlock_btn.get_pressed(self.btm_camera):
                 return False
             self.no_unlock_btn.animate(dt)
+        super(PuzzleHints, self).update(dt)
         return True
 
     def draw(self):
@@ -117,3 +118,4 @@ class PuzzleHints(TwoScreenRenderer):
         self.back_btn.draw(self.btm_camera)
         for hint_select in self.selected_btns:
             hint_select.draw(self.btm_camera)
+        super(PuzzleHints, self).draw()

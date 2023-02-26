@@ -13,17 +13,18 @@ class ButtonSprite(Button, Sprite):
 
     def load_sprite(self, loader: 'SpriteLoader', surface: pg.Surface, frame_info, tag_info, vars_=None):
         super(ButtonSprite, self).load_sprite(loader, surface, frame_info, tag_info, vars_=vars_)
-        if self._not_pressed_tag:
-            self.set_tag(self.not_pressed_tag)
+        self.set_tag(self.not_pressed_tag)
 
     def get_hover(self, cam):
+        if not self.visible:
+            return False
         mouse_pos = self.inp.get_mouse_pos()
-        if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]) and self.visible:
+        if self.get_screen_rect(cam)[0].collidepoint(mouse_pos[0], mouse_pos[1]):
             return True
         return False
 
     def get_press(self):
-        if self.inp.get_mouse_down(1) and self.visible:
+        if self.inp.get_mouse_down(1):
             return True
         return False
 

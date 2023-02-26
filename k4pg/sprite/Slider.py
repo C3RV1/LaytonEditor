@@ -1,5 +1,4 @@
 from .Sprite import Sprite
-from ..input.Input import Input
 from ..Camera import Camera
 from ..Alignment import Alignment
 
@@ -8,7 +7,6 @@ class Slider(Sprite):
     def __init__(self, *args, min_value=0, max_value=100, start_value=0, **kwargs):
         super(Slider, self).__init__(*args, **kwargs)
         self.child = Sprite()
-        self.inp = Input()
         self.range = [min_value, max_value - min_value]
         self.percentage = (start_value - min_value) / self.range[1]
         self.interacting = False
@@ -33,7 +31,7 @@ class Slider(Sprite):
         if self.interacting:
             if self.inp.get_mouse_up(1, id(self)):
                 self.interacting = False
-                self.inp.release_mouse()
+                self.inp.release_mouse(id(self))
             else:
                 screen_pos = self.inp.get_mouse_pos(id(self))
                 self.percentage = (screen_pos[0] - screen_rect.x) / screen_rect.w

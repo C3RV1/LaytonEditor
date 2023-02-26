@@ -181,6 +181,8 @@ class PlacePreview(TwoScreenRenderer):
 
     def __init__(self, place: Place):
         super(PlacePreview, self).__init__()
+        self.show_cursor_pos = True
+
         self.place = place
 
         self.sprite_loader = RomSingleton().get_sprite_loader()
@@ -196,14 +198,14 @@ class PlacePreview(TwoScreenRenderer):
                                 sprite_sheet=False, convert_alpha=False)
         self.map_icon = k4pg.Sprite(position=pg.Vector2(self.place.map_x - 256 // 2, self.place.map_y - 192 // 2),
                                     center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP))
-        self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon,
+        self.sprite_loader.load(f"data_lt2/ani/map/mapicon.arj", self.map_icon, True,
                                 convert_alpha=False)
 
         self.move_mode = False
         self.move_button = k4pg.ButtonSprite(position=pg.Vector2(256 // 2 - 3, 192 // 2 - 3),
-                                             center=[k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM],
+                                             center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                              pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button,
+        self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button, True,
                                 convert_alpha=False)
 
         self.bgm = SMDLStreamPlayer()
@@ -268,23 +270,25 @@ class PlacePreview(TwoScreenRenderer):
 
         self.bgm.update(dt)
 
-        if self.overlay_toggle.get_pressed(self.btm_camera, dt):
+        if self.overlay_toggle.get_pressed(self.btm_camera):
             PlacePreview.OVERLAY_ACTIVE = not PlacePreview.OVERLAY_ACTIVE
             self.overlay_toggle.set_tag("OFF" if PlacePreview.OVERLAY_ACTIVE else "ON")
 
         if not self.move_mode:
             self.move_button.animate(dt)
-            if self.move_button.get_pressed(self.btm_camera, dt):
+            if self.move_button.get_pressed(self.btm_camera):
                 self.move_mode = True
         else:
             for exit_ in self.exits:
-                if exit_.get_pressed(self.btm_camera, dt):
+                if exit_.get_pressed(self.btm_camera):
                     break
                 if exit_._pressed:
                     break
             else:
                 if self.inp.get_mouse_down(1):
                     self.move_mode = False
+        
+        super(PlacePreview, self).update(dt)
 
     def draw(self):
         self.top_bg.draw(self.top_camera)
@@ -307,3 +311,4 @@ class PlacePreview(TwoScreenRenderer):
                 exit_.draw(self.btm_camera)
 
         self.overlay_toggle.draw(self.btm_camera)
+        super(PlacePreview, self).draw()

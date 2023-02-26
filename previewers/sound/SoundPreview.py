@@ -52,10 +52,6 @@ class SoundPreview(TwoScreenRenderer):
 
     def unload(self):
         super(SoundPreview, self).unload()
-        self.now_playing_text.unload()
-        self.track_name.unload()
-        self.explanation_text.unload()
-        self.play_btn.unload()
         self.player.stop()
 
     def check_playable(self):
@@ -80,11 +76,12 @@ class SoundPreview(TwoScreenRenderer):
         self.playing = False
 
     def update(self, dt: float):
-        if self.play_btn.get_pressed(self.btm_camera, dt):
+        if self.play_btn.get_pressed(self.btm_camera):
             self.toggle_sound()
         self.play_btn.animate(dt)
         if self.playing:
             self.player.update(dt)
+        super(SoundPreview, self).update(dt)
 
     def draw(self):
         self.top_camera.clear(pg.Color(40, 40, 40))
@@ -97,3 +94,4 @@ class SoundPreview(TwoScreenRenderer):
         if changed:
             self.player.set_volume(slider_value)
         self.volume_slider.draw(self.btm_camera)
+        super(SoundPreview, self).draw()

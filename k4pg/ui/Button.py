@@ -1,15 +1,15 @@
-from ..input.Input import Input
 from ..Camera import Camera
+from ..GameManager import GameManager
 
 
 class Button:
     def __init__(self, *args, pressed_counter=0.1, **kwargs):
         super(Button, self).__init__(*args, **kwargs)
-        self.inp = Input()
         self._pressed = False
         self._hovering = False
         self.pressed_counter = pressed_counter
         self._current_pressed_counter = 0
+        self.gm = GameManager()
 
     def on_not_pressed(self):
         pass
@@ -26,7 +26,7 @@ class Button:
     def get_press(self):
         return False
 
-    def get_pressed(self, cam: Camera, dt: float):
+    def get_pressed(self, cam: Camera):
         self._hovering = False
         if not self._pressed:
             if self.get_hover(cam):
@@ -34,19 +34,16 @@ class Button:
                     self._pressed = True
                     self.on_pressed()
                     self._current_pressed_counter = self.pressed_counter
-                    return False
                 else:
                     self.on_hover()
                     self._hovering = True
             else:
                 self.on_not_pressed()
         else:
-            if self._current_pressed_counter is None:
-                self._pressed = False
-                return True
             if self._current_pressed_counter <= 0:
                 self.on_not_pressed()
-                self._current_pressed_counter = None
-                return False
-            self._current_pressed_counter -= dt
+                self._current_pressed_counter = 0
+                self._pressed = False
+                return True
+            self._current_pressed_counter -= self.gm.delta_time
         return False

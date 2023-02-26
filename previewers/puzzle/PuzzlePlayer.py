@@ -16,6 +16,7 @@ class PuzzlePlayer(TwoScreenRenderer):
 
     def __init__(self, puzzle_data: pzd.Puzzle):
         super(PuzzlePlayer, self).__init__()
+        self.show_cursor_pos = True
 
         self.text_pos = 0
         self.between_letters = 0.017
@@ -34,10 +35,9 @@ class PuzzlePlayer(TwoScreenRenderer):
 
         self.btm_bg = k4pg.Sprite()
         if not puzzle_data.bg_lang:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.bg_btm_id}", self.btm_bg)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/q{puzzle_data.bg_btm_id}", self.btm_bg, False)
         else:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.bg_btm_id}.arc", self.btm_bg,
-                                    sprite_sheet=False)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/?/q{puzzle_data.bg_btm_id}.arc", self.btm_bg, False)
 
         self.top_text = k4pg.Text(position=pg.Vector2(-256//2 + 8, -192 // 2 + 23),
                                   center=pg.Vector2(k4pg.Alignment.LEFT, k4pg.Alignment.TOP),
@@ -48,7 +48,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.header_top_left = []
         for i in range(4):
             header_item = k4pg.Sprite(center=pg.Vector2(k4pg.Alignment.TOP, k4pg.Alignment.LEFT))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_item)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/system/?/nazo_text.arc", header_item, True)
             if i == 0:
                 header_item.set_tag("nazo")
                 header_item.position.update(-256 // 2 + 5, -192 // 2 + 4)
@@ -68,30 +68,30 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.hints_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                            position=pg.Vector2(256 // 2, current_y), not_pressed_tag="0_off",
                                            pressed_tag="0_on")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/hint.arc", self.hints_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/hint.arc", self.hints_btn, True)
 
         current_y += self.hints_btn.get_world_rect().h
         self.quit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           position=pg.Vector2(256 // 2, current_y), not_pressed_tag=btn_off,
                                           pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/atode.arc", self.quit_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/atode.arc", self.quit_btn, True)
 
         current_y += self.quit_btn.get_world_rect().h
         self.memo_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                           position=pg.Vector2(256//2, current_y), not_pressed_tag=btn_off,
                                           pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/memo.arc", self.memo_btn, True)
 
         current_y += self.memo_btn.get_world_rect().h
         self.reset_btn = k4pg.ButtonSprite(position=pg.Vector2(256 // 2, current_y),
                                            center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                            not_pressed_tag="off", pressed_tag="on")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/reset.arc", self.reset_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/reset.arc", self.reset_btn, True)
 
         self.submit_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                             position=pg.Vector2(256//2, 192//2), not_pressed_tag=btn_off,
                                             pressed_tag=btn_on)
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/hantei.arc", self.submit_btn, True)
 
         self.hints = PuzzleHints(self.puzzle_data, self.sprite_loader, self.font_loader)
         self.on_hints = False
@@ -125,7 +125,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.run_gds_cmd(cmd)
 
     def update_submitted(self, dt):
-        if self.submit_btn.get_pressed(self.btm_camera, dt):
+        if self.submit_btn.get_pressed(self.btm_camera):
             return True
         return False
 
@@ -159,7 +159,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.submit_btn.animate(dt)
         self.reset_btn.animate(dt)
 
-        if self.music_toggle.get_pressed(self.btm_camera, dt):
+        if self.music_toggle.get_pressed(self.btm_camera):
             PuzzlePlayer.MUSIC_ACTIVE = not PuzzlePlayer.MUSIC_ACTIVE
             self.music_toggle.set_tag("OFF" if PuzzlePlayer.MUSIC_ACTIVE else "ON")
             self.puzzle_bg_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
@@ -175,13 +175,13 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.top_text.text = self.puzzle_data.text[:self.text_pos]
             return
 
-        if self.hints_btn.get_pressed(self.btm_camera, dt):
+        if self.hints_btn.get_pressed(self.btm_camera):
             self.hints.view_hint(min(2, self.hints.used))
             self.on_hints = True
             return
-        self.quit_btn.get_pressed(self.btm_camera, dt)
-        self.memo_btn.get_pressed(self.btm_camera, dt)
-        if self.reset_btn.get_pressed(self.btm_camera, dt):
+        self.quit_btn.get_pressed(self.btm_camera)
+        self.memo_btn.get_pressed(self.btm_camera)
+        if self.reset_btn.get_pressed(self.btm_camera):
             self.restart()
             return
         if self.update_submitted(dt):
@@ -189,6 +189,7 @@ class PuzzlePlayer(TwoScreenRenderer):
             self.on_win = True
             self.puzzle_bg_music.fade(1, False)
             return
+        super(PuzzlePlayer, self).update(dt)
 
     def restart(self):
         pass
@@ -215,3 +216,4 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.submit_btn.draw(self.btm_camera)
         self.reset_btn.draw(self.btm_camera)
         self.music_toggle.draw(self.btm_camera)
+        super(PuzzlePlayer, self).draw()

@@ -11,20 +11,20 @@ class NullPuzzle(PuzzlePlayer):
 
         self.no_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                         position=pg.Vector2(256//2, 192//2), pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/no.arc", self.no_btn, True)
 
         self.yes_btn = k4pg.ButtonSprite(center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.BOTTOM),
                                          position=pg.Vector2(256//2, 192//2 - self.no_btn.get_world_rect().h),
                                          pressed_tag="on", not_pressed_tag="off")
-        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.yes_btn)
+        self.sprite_loader.load("data_lt2/ani/system/btn/?/yes.arc", self.yes_btn, True)
 
         self.is_correct = False
 
     def update_submitted(self, dt):
-        if self.no_btn.get_pressed(self.btm_camera, dt):
+        if self.no_btn.get_pressed(self.btm_camera):
             self.is_correct = False
             return True
-        elif self.yes_btn.get_pressed(self.btm_camera, dt):
+        elif self.yes_btn.get_pressed(self.btm_camera):
             self.is_correct = True
             return True
         self.no_btn.animate(dt)

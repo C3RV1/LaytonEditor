@@ -18,7 +18,7 @@ class Write(PuzzlePlayer):
         super(Write, self).__init__(puzzle_data)
         self.reset_btn.visible = False
 
-        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_hantei.arc", self.submit_btn)
+        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_hantei.arc", self.submit_btn, True)
         self.submit_btn.position.update(0, 192//2)
         self.submit_btn.center.update(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM)
         self.submit_btn.visible = False
@@ -28,19 +28,19 @@ class Write(PuzzlePlayer):
                                                                  k4pg.Alignment.BOTTOM),
                                                not_pressed_tag="off",
                                                pressed_tag="on")
-        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_kaito.arc", self.write_ans_btn)
+        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_kaito.arc", self.write_ans_btn, True)
 
         pos = pg.Vector2(self.hints_btn.get_world_rect().bottomright)
         self.clear_btn = k4pg.ButtonSprite(position=pos, center=pg.Vector2(k4pg.Alignment.RIGHT, k4pg.Alignment.TOP),
                                            not_pressed_tag="off", pressed_tag="on")
-        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_allreset.arc", self.clear_btn)
+        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_allreset.arc", self.clear_btn, True)
         self.clear_btn.visible = False
 
         self.back_btn = k4pg.ButtonSprite(position=pg.Vector2(256//2, 192//2),
                                           center=pg.Vector2(k4pg.Alignment.RIGHT,
                                                             k4pg.Alignment.BOTTOM),
                                           not_pressed_tag="off", pressed_tag="on")
-        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_modoru.arc", self.back_btn)
+        self.sprite_loader.load("data_lt2/ani/nazo/drawinput/?/di_modoru.arc", self.back_btn, True)
         self.back_btn.visible = False
 
         input_text_positions = {
@@ -59,7 +59,7 @@ class Write(PuzzlePlayer):
 
     def run_gds_cmd(self, cmd: GDSCommand):
         if cmd.command == 0x43:
-            self.sprite_loader.load(f"data_lt2/bg/nazo/drawinput/{cmd.params[0]}", self.write_bg)
+            self.sprite_loader.load(f"data_lt2/bg/nazo/drawinput/{cmd.params[0]}", self.write_bg, False)
         elif cmd.command == 0x42:
             self.answer = cmd.params[1]
         elif cmd.command == 0x41:
@@ -99,11 +99,11 @@ class Write(PuzzlePlayer):
         self.clear_btn.animate(dt)
         self.back_btn.animate(dt)
         super(Write, self).update_base(dt)
-        if self.write_ans_btn.get_pressed(self.btm_camera, dt):
+        if self.write_ans_btn.get_pressed(self.btm_camera):
             self.enter_writing()
-        if self.clear_btn.get_pressed(self.btm_camera, dt):
+        if self.clear_btn.get_pressed(self.btm_camera):
             self.current_ans = ""
-        if self.back_btn.get_pressed(self.btm_camera, dt):
+        if self.back_btn.get_pressed(self.btm_camera):
             self.exit_writing()
         if self.writing_answer:
             for char in self.allowed_chars:

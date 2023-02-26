@@ -7,7 +7,6 @@ from ..input.Input import Input
 class SplineEditor(SplineRenderer):
     def __init__(self, *args, **kwargs):
         super(SplineEditor, self).__init__(*args, **kwargs)
-        self.inp = Input()
         self.point_i = -1
         self.editing_point = False
         self.mouse_prev = pg.Vector2(0, 0)

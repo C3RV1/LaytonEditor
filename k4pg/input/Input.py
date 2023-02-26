@@ -43,6 +43,7 @@ class Input(object):
             self._key_down = {}
             self._key_updated = []
             self._key_grab_id = None
+            self._should_release_key = False
 
             self._mouse_down = {}
             self._mouse_updated = []
@@ -50,7 +51,12 @@ class Input(object):
             self._mouse_position_updated = False
             self._mouse_position_pre_grab = [0, 0]
             self._mouse_motion = [0, 0]
+            self._mouse_scroll = [0, 0]
             self._mouse_grab_id = None
+            self._should_release_mouse = False
+            self._last_mouse_pos = [0, 0]
+
+            self._dropped_files = []
 
             self._joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
             for joystick in self._joysticks:
@@ -69,15 +75,20 @@ class Input(object):
         return len(self._joysticks)
 
     def update_events(self, events: list) -> None:
-        self._key_grab_id = None
-        self._mouse_grab_id = None
+        if self._should_release_key:
+            self._key_grab_id = None
+            self._should_release_key = False
+        if self._should_release_mouse:
+            self._mouse_grab_id = None
+            self._should_release_mouse = False
         self._mouse_position_updated = False
         self.last_events = events
         self._key_updated = []
         self._mouse_updated = []
         self._mouse_motion = [0, 0]
+        self._mouse_scroll = [0, 0]
+        self._dropped_files = []
         self._joystick_buttons_updated = [[] for _ in range(len(self._joysticks))]
-        self.quit = False
         for event in events:
             if event.type == pygame.KEYDOWN:
                 key = event.key
@@ -97,7 +108,8 @@ class Input(object):
                 self._mouse_updated.append(button)
             elif event.type == pygame.MOUSEMOTION:
                 self._mouse_position = event.pos
-                self._mouse_motion = event.rel
+                self._mouse_motion[0] = self._mouse_position[0] - self._last_mouse_pos[0]
+                self._mouse_motion[1] = self._mouse_position[1] - self._last_mouse_pos[1]
                 self._mouse_position_updated = True
             elif event.type == pygame.QUIT:
                 self.quit = True
@@ -108,13 +120,19 @@ class Input(object):
                 self._joystick_hat[event.joy] = event.value
                 self._joystick_hat_or_axis[event.joy] = 1
             elif event.type == pygame.JOYBUTTONDOWN:
+                print(event.button)
                 self._joystick_buttons_down[event.joy][event.button] = True
                 self._joystick_buttons_updated[event.joy].append(event.button)
             elif event.type == pygame.JOYBUTTONUP:
                 self._joystick_buttons_down[event.joy][event.button] = False
                 self._joystick_buttons_updated[event.joy].append(event.button)
+            elif event.type == pygame.MOUSEWHEEL:
+                self._mouse_scroll = [event.x, event.y]
             elif event.type == pygame.JOYDEVICEADDED:
                 print("DEVICE ADDED", event)
+            elif event.type == pygame.DROPFILE:
+                self._dropped_files.append(event.file)
+        self._last_mouse_pos = self._mouse_position
 
     def get_key_down(self, key: int, grab_id=None) -> bool:
         if self._key_grab_id is not None and self._key_grab_id != grab_id:
@@ -164,6 +182,11 @@ class Input(object):
             return 0, 0
         return tuple(self._mouse_motion)
 
+    def get_mouse_scroll(self, grab_id=None) -> tuple:
+        if self._mouse_grab_id is not None and self._mouse_grab_id != grab_id:
+            return 0, 0
+        return tuple(self._mouse_scroll)
+
     def get_joystick_button_down(self, joy_id: int, button: int):
         if button not in self._joystick_buttons_updated[joy_id]:
             return False
@@ -199,13 +222,33 @@ class Input(object):
         if self._key_grab_id is None:
             self._key_grab_id = grab_id
 
-    def release_keyboard(self):
-        self._key_grab_id = None
+    def grabbed_keyboard(self, grab_id) -> bool:
+        if self._key_grab_id == grab_id:
+            return True
+        return False
+
+    def release_keyboard(self, grab_id) -> None:
+        if self._key_grab_id == grab_id:
+            self._should_release_key = True
 
     def grab_mouse(self, grab_id) -> None:
         if self._mouse_grab_id is None:
             self._mouse_position_pre_grab = self._mouse_position
             self._mouse_grab_id = grab_id
 
-    def release_mouse(self):
-        self._mouse_grab_id = None
+    def grabbed_mouse(self, grab_id) -> bool:
+        if self._mouse_grab_id == grab_id:
+            return True
+        return False
+
+    def release_mouse(self, grab_id, immediate=False) -> None:
+        if self._mouse_grab_id == grab_id:
+            if immediate:
+                self._mouse_grab_id = None
+            else:
+                self._should_release_mouse = True
+
+    def get_dropped_file(self, grab_id):
+        if self._mouse_grab_id == grab_id:
+            return self._dropped_files
+        return []

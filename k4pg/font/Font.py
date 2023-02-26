@@ -6,13 +6,10 @@ from ..Alignment import Alignment
 
 
 class Font:
-
     def render(self, text: str, color: pg.Color, bg_color: pg.Color, line_spacing=0,
-               h_align: int = Alignment.LEFT) -> Tuple[pg.Surface, Any]:
+               h_align: int = Alignment.LEFT, antialiasing: bool = False) -> Tuple[pg.Surface, Any]:
         lines = text.split("\n")
         alpha = bg_color is None
-        if alpha:
-            bg_color = pg.Color(255 - color.r, 255 - color.g, 255 - color.b)
         self._set_color(color)
         self._set_bg_color(bg_color)
         widths, heights = list(), list()
@@ -22,16 +19,15 @@ class Font:
             heights.append(h)
         surf_w = max(widths)
         surf_h = sum(heights) + line_spacing * (len(heights) - 1)
-        surf = pg.Surface((surf_w, surf_h))
-        surf.fill(bg_color)
+        surf = pg.Surface((surf_w, surf_h), flags=(pg.SRCALPHA if alpha else 0))
+        if not alpha:
+            surf.fill(bg_color)
         current_y = 0
         for i, line in enumerate(lines):
             w, h = widths[i], heights[i]
             line_surf_pos = (int(surf_w * h_align - w * h_align), current_y)
-            self._render_line(surf, line_surf_pos, line)
+            self._render_line(surf, line_surf_pos, line, antialiasing)
             current_y += h + line_spacing
-        if alpha:
-            return surf, bg_color
         return surf, None
 
     def _set_color(self, color: pg.Color):
@@ -43,7 +39,7 @@ class Font:
     def _get_line_size(self, line: str) -> tuple:
         pass
 
-    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str):
+    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str, antialiasing: bool):
         pass
 
 
@@ -62,8 +58,8 @@ class PygameFont(Font):
     def _get_line_size(self, line: str) -> tuple:
         return self._pg_font.size(line)
 
-    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str):
-        surf.blit(self._pg_font.render(text, False, self._color, self._bg_color), pos)
+    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str, antialiasing: bool):
+        surf.blit(self._pg_font.render(text, antialiasing, self._color, self._bg_color), pos)
 
 
 @dataclass
@@ -132,7 +128,7 @@ class FontMap(Font):
         pg.transform.threshold(self._font_surface, self._font_surface, self._color, set_color=color, inverse_set=True)
         self._color = color
 
-    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str):
+    def _render_line(self, surf: pg.Surface, pos: Tuple[int, int], text: str, antialiasing: bool):
         pos = list(pos)
         i = 0
         chars_rendered = 0

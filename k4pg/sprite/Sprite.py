@@ -1,6 +1,6 @@
 import logging
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, TYPE_CHECKING, Tuple, Dict
 
 import pygame as pg
@@ -37,6 +37,7 @@ class Tag:
     name: str
     frames: List[int]
     frame_durations: List[float]
+    draw_off: List[pg.Vector2] = field(default_factory=list)
     child_x: int = 0
     child_y: int = 0
     child_index: int = 0
@@ -61,7 +62,6 @@ class Sprite(Renderable):
         self._scale = scale
         self._rotation = rotation
         self.transformed_surf: Dict[int, pg.Surface] = {}
-        self.loop_tag = True
 
         self._frame_info: List[Frame] = []
         self._active_frame: [Frame] = None
@@ -133,14 +133,9 @@ class Sprite(Renderable):
                         f"tags: {[tag.name for tag in self._tag_info]})")
         return
 
-    def get_tag_by_num(self, num: int):
-        if num >= len(self._tag_info):
-            logging.warning(f"Sprite tag num bigger than number of animations (num: {num}, "
-                            f"count: {len(self._tag_info)})")
-            return None
-        return self._tag_info[num].name
-
-    def set_tag_num(self, num: int):
+    def set_tag_by_num(self, num: int):
+        if num < 0:
+            num = len(self._tag_info) + num
         if num >= len(self._tag_info):
             logging.warning(f"Sprite tag num bigger than number of animations (num: {num}, "
                             f"count: {len(self._tag_info)})")
@@ -148,17 +143,17 @@ class Sprite(Renderable):
         self.set_tag(self._tag_info[num].name)
 
     @property
-    def tag_count(self):
+    def tag_count(self) -> int:
         return len(self._tag_info)
 
     @property
-    def tag_names(self):
+    def tag_names(self) -> List[str]:
         return [tag.name for tag in self._tag_info]
 
     def get_tag(self) -> Tag:
         return self._active_tag
 
-    def get_tag_num(self):
+    def get_tag_num(self) -> int:
         if self._active_tag not in self._tag_info:
             return None
         return self._tag_info.index(self._active_tag)
@@ -175,10 +170,7 @@ class Sprite(Renderable):
         duration = tag.frame_durations[self._tag_frame]
         while self._tag_time > duration != 0:
             self._tag_frame += 1
-            if self.loop_tag:
-                self._tag_frame %= len(tag.frames)
-            else:
-                self._tag_frame = min(self._tag_frame, len(tag.frames) - 1)
+            self._tag_frame %= len(tag.frames)
             self._tag_time -= duration
             duration = tag.frame_durations[self._tag_frame]
         self.set_frame(tag.frames[self._tag_frame])
@@ -252,6 +244,8 @@ class Sprite(Renderable):
         if v == self._surf:
             return
         self._surf = v
+        if self._surf is None:
+            return
         self._size = self._surf.get_size()
         self.predict_real_size()
         # update cropped if sprite_sheet
@@ -337,9 +331,8 @@ class Sprite(Renderable):
         transformed_surf = surf
         self._transform_needed[id(cam)] = False
 
-        if not transformed_surf.get_flags() & pg.SRCALPHA:
-            if self._color_key:
-                transformed_surf.set_colorkey(self._color_key)
+        if self._color_key:
+            transformed_surf.set_colorkey(self._color_key)
         if self._alpha is not None:
             transformed_surf.set_alpha(int(self._alpha))
 
@@ -355,8 +348,7 @@ class Sprite(Renderable):
             return
         self._color_key = v
         for transformed_surf in self.transformed_surf.values():
-            if transformed_surf.get_flags() & pg.SRCALPHA:
-                transformed_surf.set_colorkey(self._color_key)
+            transformed_surf.set_colorkey(self._color_key)
 
     @property
     def alpha(self):
@@ -370,10 +362,23 @@ class Sprite(Renderable):
         for transformed_surf in self.transformed_surf.values():
             transformed_surf.set_alpha(int(self._alpha))
 
+    def get_draw_off(self) -> pg.Vector2:
+        if self._active_tag and self._tag_frame < len(self._active_tag.draw_off):
+            self._active_tag: Tag
+            return self._active_tag.draw_off[self._tag_frame]
+        return pg.Vector2(0, 0)
+
     def get_world_rect(self) -> pg.Rect:
-        return pg.Rect(self.position.x - self._real_size[0] * self.center.x,
-                       self.position.y - self._real_size[1] * self.center.y,
+        draw_off = self.get_draw_off()
+        return pg.Rect(self.position.x - self._real_size[0] * self.center.x + draw_off.x,
+                       self.position.y - self._real_size[1] * self.center.y + draw_off.y,
                        self._real_size[0], self._real_size[1])
+
+    def _position_to_screen(self, cam: Camera):
+        draw_off = self.get_draw_off()
+        self.position += draw_off
+        super(Sprite, self)._position_to_screen(cam)
+        self.position -= draw_off
 
     def get_screen_rect(self, cam: Camera, update_pos=True, do_clip=True) -> Tuple[pg.Rect, pg.Rect]:
         self._position_to_screen(cam)
@@ -389,15 +394,17 @@ class Sprite(Renderable):
             clip = r.copy()
             clip[0] = 0
             clip[1] = 0
+        r[0] = math.ceil(r[0])
+        r[1] = math.ceil(r[1])
         return pg.Rect(r), pg.Rect(clip)
 
     def draw(self, cam: Camera):
         super(Sprite, self).draw(cam)
         if self._surf is None:
             return
+        self.update_transforms(cam)
         position, clip = self.get_screen_rect(cam, update_pos=False)
         if self.visible:
-            self.update_transforms(cam)
             cam.surf.blit(self.transformed_surf[id(cam)], (position.x, position.y), area=clip,
                           special_flags=self.special_flags)
 

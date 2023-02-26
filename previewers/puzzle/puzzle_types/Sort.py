@@ -23,7 +23,7 @@ class SortTile(k4pg.Sprite):
                 tag_num = self.get_tag_num()
                 tag_num %= self.tag_count - 1
                 tag_num += 1
-                self.set_tag_num(tag_num)
+                self.set_tag_by_num(tag_num)
                 self.current_tag = self.get_tag().name
 
     def load_sprite(self, *args, **kwargs):
@@ -45,7 +45,7 @@ class Sort(PuzzlePlayer):
         if cmd.command == 0x2e:
             x, y, path, initial, solution = cmd.params
             tile = SortTile(str(initial), solution, position=pg.Vector2(-256//2 + x, -192//2 + y))
-            self.sprite_loader.load(f"data_lt2/ani/nazo/touch/{path}", tile)
+            self.sprite_loader.load(f"data_lt2/ani/nazo/touch/{path}", tile, True)
             self.tiles.append(tile)
 
     def update_submitted(self, dt):

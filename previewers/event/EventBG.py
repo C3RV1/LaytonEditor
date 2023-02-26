@@ -48,11 +48,6 @@ class EventBG:
     def set_opacity(self, opacity):
         self.translucent.alpha = opacity
 
-    def unload(self):
-        self.bg.unload()
-        self.fader.unload()
-        self.translucent.unload()
-
     def update_(self, dt: float):
         self.fader.update(dt)
         self.bg.update(dt)

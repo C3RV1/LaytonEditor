@@ -20,7 +20,7 @@ class GameManagerConfig:
 class GameManager(object):
     __instance = None
     __inited = False
-    version = "k4pg v1.1.2"
+    version = "k4pg v1.3.0"
 
     @staticmethod
     def __new__(cls, *args, **kwargs):
@@ -65,10 +65,6 @@ class GameManager(object):
 
             GameManager.__inited = True
 
-    def post_load_clear(self):
-        self._delta_time = 0
-        self.input_manager.update_events([])
-
     def tick(self):
         if not self._running:
             return
@@ -78,7 +74,7 @@ class GameManager(object):
         self.input_manager.update_events(self._events)
 
         if self.log_fps:
-            print(f"FPS: { 1 / self._delta_time }", self)
+            print(f"FPS: { 1 / self._delta_time }")
 
     @property
     def delta_time(self):
