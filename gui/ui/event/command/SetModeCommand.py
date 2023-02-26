@@ -13,5 +13,23 @@ class SetModeCommandUI(QtWidgets.QWidget):
         self.next_mode_type.addItem("Queue Following Mode", 0x7)
         self.form_layout.addRow(self.next_mode_type)
 
-        self.value = QtWidgets.QLineEdit()
-        self.form_layout.addRow("Mode", self.value)
+        self.mode = QtWidgets.QComboBox()
+        self.mode_list = {
+            "narration": "Narration",
+            "movie": "Movie",
+            "puzzle": "Puzzle",
+            "drama event": "Event",
+            "room": "Place",
+            "name": "Name",
+            "staff": "Staff",
+            "nazoba": "Nazoba",
+            "menu": "Menu",
+            "challenge": "Challenge",
+            "sub herb": "Herbal tea",
+            "sub camera": "Camera",
+            "sub ham": "Hamster",
+            "passcode": "Passcode"
+        }
+        for key, value in self.mode_list.items():
+            self.mode.addItem(value, key)
+        self.form_layout.addRow("Mode", self.mode)

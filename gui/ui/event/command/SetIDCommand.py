@@ -17,4 +17,4 @@ class SetIDCommandUI(QtWidgets.QWidget):
 
         self.value = QtWidgets.QSpinBox()
         self.value.setRange(0, 100000)
-        self.form_layout.addRow("Value", self.value)
+        self.form_layout.addRow("ID", self.value)

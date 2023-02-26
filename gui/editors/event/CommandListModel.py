@@ -85,8 +85,24 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Set Mode ID\n" \
                    f"{mode} to {command.params[0]}"
         elif command.command in [0x6, 0x7]:
+            mode = {
+                "narration": "Narration",
+                "movie": "Movie",
+                "puzzle": "Puzzle",
+                "drama event": "Event",
+                "room": "Place",
+                "name": "Name",
+                "staff": "Staff",
+                "nazoba": "Nazoba",
+                "menu": "Menu",
+                "challenge": "Challenge",
+                "sub herb": "Herbal tea",
+                "sub camera": "Camera",
+                "sub ham": "Hamster",
+                "passcode": "Passcode"
+            }[command.params[0]]
             return f"{'Next Mode' if command.command == 0x6 else 'Queue Following Mode'}\n" \
-                   f"Mode: {command.params[0]}"
+                   f"Mode: {mode}"
         elif command.command in [0x31, 0x69, 0x6c]:
             if command.command == 0x31:
                 line = f"{command.params[0]} Frames"

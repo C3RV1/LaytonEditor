@@ -13,8 +13,9 @@ class SetModeCommand(CommandEditor, SetModeCommandUI):
             0x7: 1
         }
         self.next_mode_type.setCurrentIndex(next_index[command.command])
-        self.value.setText(command.params[0])
+        mode_keys = list(self.mode_list.keys())
+        self.mode.setCurrentIndex(mode_keys.index(command.params[0]))
 
     def save(self):
         self.command.command = self.next_mode_type.currentData(QtCore.Qt.ItemDataRole.UserRole)
-        self.command.params = [self.value.text()]
+        self.command.params = [self.mode.currentData(QtCore.Qt.ItemDataRole.UserRole)]
