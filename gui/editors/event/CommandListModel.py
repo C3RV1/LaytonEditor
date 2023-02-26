@@ -52,12 +52,37 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             return f"Fade {'In' if fade_in else 'Out'}\n" \
                    f"{screens} ({duration})"
+        elif command.command in [0x5, 0x8, 0x9, 0xb]:
+            mode = {
+                0x5: "Place",
+                0x8: "Movie",
+                0x9: "Event",
+                0xb: "Puzzle"
+            }[command.command]
+            return f"Set Mode ID\n" \
+                   f"{mode} to {command.params[0]}"
+        elif command.command in [0x6, 0x7]:
+            return f"{'Next Mode' if command.command is 0x6 else 'Queue Following Mode'}\n" \
+                   f"Mode: {command.params[0]}"
+        elif command.command in [0x31, 0x69, 0x6c]:
+            if command.command == 0x31:
+                line = f"{command.params[0]} Frames"
+            elif command.command == 0x69:
+                line = f"Tap"
+            else:
+                line = f"Tap or {command.params[0]} Frames"
+            return f"Wait {line}"
         elif command.command in [0x21, 0x22]:
             return f"Load {'Bottom' if command.command == 0x21 else 'Top'} Background\n" \
                    f"{command.params[0]}"
-        elif command.command == 0x2c:
-            return f"Set Character {command.params[0]} Visibility\n" \
-                   f"{'Show' if command.params[1] > 0 else 'Hide'}"
+        elif command.command in [0x2a, 0x2b, 0x2c]:
+            if command.command in [0x2a, 0x2b]:
+                show = command.command == 0x2a
+            else:
+                show = command.params[1] > 0
+            alpha = "" if command.command != 0x2c else ' (alpha)'
+            return f"Character {command.params[0]} Visibility\n" \
+                   f"{'Show' if show else 'Hide'}{alpha}"
         else:
             return f"Command {hex(command.command)}\n" \
                    f"Parameters: {command.params}"

@@ -18,6 +18,7 @@ from PySide6 import QtCore, QtWidgets
 from gui.editor_categories.Events import EventCategory, EventNode
 from .CommandListModel import CommandListModel
 from .command import get_command_widget
+from .command.CommandEditor import CommandEditor
 
 
 class EventEditor(EventWidgetUI):
@@ -26,7 +27,7 @@ class EventEditor(EventWidgetUI):
         self.event = None
         self.event_node: QtCore.QModelIndex = None
         self.command_model = CommandListModel()
-        self.active_editor: [QtWidgets.QWidget] = None
+        self.active_editor: [CommandEditor] = None
         self.main_editor: MainEditor = main_editor
 
     def get_event_properties_widget(self):
@@ -96,13 +97,16 @@ class EventEditor(EventWidgetUI):
 
     def command_list_selection(self, selected: QtCore.QModelIndex):
         if self.active_editor is not None:
-            self.active_editor: QtWidgets.QWidget
-            self.script_layout.removeWidget(self.active_editor)
-            self.active_editor.deleteLater()
+            self.active_editor: CommandEditor
+            self.active_editor.save()
+            if isinstance(self.active_editor, QtWidgets.QWidget):
+                self.script_layout.removeWidget(self.active_editor)
+                self.active_editor.deleteLater()
             self.active_editor = None
 
         if not selected.isValid():
             return
 
         self.active_editor = get_command_widget(selected.data(QtCore.Qt.ItemDataRole.UserRole), self.event)
-        self.script_layout.addWidget(self.active_editor, 1)
+        if isinstance(self.active_editor, QtWidgets.QWidget):
+            self.script_layout.addWidget(self.active_editor, 1)

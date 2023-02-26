@@ -24,4 +24,8 @@ class FadeCommandUI(QtWidgets.QWidget):
         self.form_layout.addRow("Duration (frames)", self.fade_duration)
 
         self.default_duration = QtWidgets.QCheckBox("Default duration")
+        self.default_duration.stateChanged.connect(self.default_duration_edit)
         self.form_layout.addWidget(self.default_duration)
+
+    def default_duration_edit(self, state: int):
+        pass
