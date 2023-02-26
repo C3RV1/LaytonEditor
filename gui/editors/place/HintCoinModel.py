@@ -2,10 +2,10 @@ from .PlaceAbstractTableModel import PlaceAbstractTableModel
 from PySide6 import QtCore, QtGui, QtWidgets
 
 
-class HintcoinModel(PlaceAbstractTableModel):
+class HintCoinModel(PlaceAbstractTableModel):
     def rowCount(self, parent: QtCore.QModelIndex) -> int:
         if not parent.isValid():
-            return len(self.place.hintcoins)
+            return len(self.place.hint_coins)
         return 0
 
     def columnCount(self, parent: QtCore.QModelIndex) -> int:
@@ -14,24 +14,24 @@ class HintcoinModel(PlaceAbstractTableModel):
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = ...):
         if role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
-        if orientation == QtCore.Qt.Horizontal:
+        if orientation == QtCore.Qt.Orientation.Horizontal:
             return ["X", "Y", "Width", "Height"][section]
-        return f"Hintcoin {section}"
+        return f"Hint Coin {section}"
 
     def data(self, index: QtCore.QModelIndex, role: int = ...):
         if not index.isValid() or (role != QtCore.Qt.ItemDataRole.DisplayRole and
                                    role != QtCore.Qt.ItemDataRole.EditRole):
             return None
-        hintcoin = self.place.hintcoins[index.row()]
+        hint_coin = self.place.hint_coins[index.row()]
         return [
-            hintcoin.x,
-            hintcoin.y,
-            hintcoin.width,
-            hintcoin.height
+            hint_coin.x,
+            hint_coin.y,
+            hint_coin.width,
+            hint_coin.height
         ][index.column()]
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
-        default_flags = super(HintcoinModel, self).flags(index)
+        default_flags = super(HintCoinModel, self).flags(index)
         if not index.isValid():
             return default_flags
         return default_flags | QtCore.Qt.ItemFlag.ItemIsEditable
@@ -39,13 +39,13 @@ class HintcoinModel(PlaceAbstractTableModel):
     def setData(self, index: QtCore.QModelIndex, value, role: int = ...) -> bool:
         if not index.isValid():
             return False
-        hintcoin = self.place.hintcoins[index.row()]
+        hint_coin = self.place.hint_coins[index.row()]
         if index.column() == 0:
-            hintcoin.x = value
+            hint_coin.x = value
         elif index.column() == 1:
-            hintcoin.y = value
+            hint_coin.y = value
         elif index.column() == 2:
-            hintcoin.width = value
+            hint_coin.width = value
         elif index.column() == 3:
-            hintcoin.height = value
+            hint_coin.height = value
         return True

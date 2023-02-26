@@ -6,7 +6,7 @@ from formats.filesystem import FileFormat
 
 
 @dataclass
-class PlaceHintcoin:
+class PlaceHintCoin:
     x: int = 0
     y: int = 0
     width: int = 0
@@ -65,7 +65,7 @@ class Place(FileFormat):
     background_image_index: int = 0
     map_image_index: int = 0
     sound_profile: int = 0
-    hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
+    hint_coins: List[PlaceHintCoin] = [PlaceHintCoin() for _ in range(4)]
     sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
     objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
     comments: List[PlaceComment] = [PlaceComment() for _ in range(16)]
@@ -84,17 +84,17 @@ class Place(FileFormat):
         self.background_image_index = rdr.read_uint8()
         self.map_image_index = rdr.read_uint8()
 
-        self.hintcoins: List[PlaceHintcoin] = [PlaceHintcoin() for _ in range(4)]
+        self.hint_coins: List[PlaceHintCoin] = [PlaceHintCoin() for _ in range(4)]
         self.sprites: List[PlaceSprite] = [PlaceSprite() for _ in range(12)]
         self.objects: List[PlaceObject] = [PlaceObject() for _ in range(16)]
         self.comments: List[PlaceComment] = [PlaceComment() for _ in range(16)]
         self.exits: List[PlaceExit] = [PlaceExit() for _ in range(12)]  # maybe it's 16 exits
 
-        for hintcoin in self.hintcoins:
-            hintcoin.x = rdr.read_uint8()
-            hintcoin.y = rdr.read_uint8()
-            hintcoin.width = rdr.read_uint8()
-            hintcoin.height = rdr.read_uint8()
+        for hint_coin in self.hint_coins:
+            hint_coin.x = rdr.read_uint8()
+            hint_coin.y = rdr.read_uint8()
+            hint_coin.width = rdr.read_uint8()
+            hint_coin.height = rdr.read_uint8()
         # pos: 0x2c
         for comment in self.comments:
             comment.x = rdr.read_uint8()
@@ -143,11 +143,11 @@ class Place(FileFormat):
         wtr.write_uint8(self.map_y)
         wtr.write_uint8(self.background_image_index)
         wtr.write_uint8(self.map_image_index)
-        for hintcoin in self.hintcoins:
-            wtr.write_uint8(hintcoin.x)
-            wtr.write_uint8(hintcoin.y)
-            wtr.write_uint8(hintcoin.width)
-            wtr.write_uint8(hintcoin.height)
+        for hint_coin in self.hint_coins:
+            wtr.write_uint8(hint_coin.x)
+            wtr.write_uint8(hint_coin.y)
+            wtr.write_uint8(hint_coin.width)
+            wtr.write_uint8(hint_coin.height)
         for comment in self.comments:
             wtr.write_uint8(comment.x)
             wtr.write_uint8(comment.y)
@@ -182,4 +182,3 @@ class Place(FileFormat):
             wtr.write_uint16(plc_exit.event_or_place_index)
         wtr.seek(0x38c)
         wtr.write_uint16(self.sound_profile)
-

@@ -197,9 +197,10 @@ class MainEditor(MainEditorUI):
             set_previewer = True
         elif isinstance(node, PlaceVersion):
             self.active_editor = self.place_editor
-            self.place_editor.set_place(node.get_place())
+            place = node.get_place()
+            self.place_editor.set_place(place)
 
-            self.pg_previewer.start_renderer(PlacePreview(node.get_place()))
+            self.pg_previewer.start_renderer(PlacePreview(place))
             set_previewer = True
         elif isinstance(node, BackgroundAsset):
             self.active_editor = self.background_editor

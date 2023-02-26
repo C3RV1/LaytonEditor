@@ -28,18 +28,11 @@ class PlaceWidgetUI(QtWidgets.QWidget):
 
         self.v_layout.addWidget(self.tab_widget, 4)
 
-        self.preview_btn = QtWidgets.QPushButton("Preview")
-        self.preview_btn.clicked.connect(self.preview_click)
-        self.v_layout.addWidget(self.preview_btn, 1)
-
         self.save_btn = QtWidgets.QPushButton("Save")
         self.save_btn.clicked.connect(self.save_click)
         self.v_layout.addWidget(self.save_btn, 1)
 
         self.setLayout(self.v_layout)
-
-    def preview_click(self):
-        pass
 
     def save_click(self):
         pass

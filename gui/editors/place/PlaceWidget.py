@@ -1,7 +1,7 @@
 from gui.ui.PlaceWidget import PlaceWidgetUI
 from formats.place import Place
 from .PropertiesModel import PropertiesModel
-from .HintcoinModel import HintcoinModel
+from .HintCoinModel import HintCoinModel
 from .SpritesModel import SpritesModel
 from .ObjectsModel import ObjectsModel
 from .CommentsModel import CommentsModel
@@ -32,7 +32,7 @@ class PlaceEditor(PlaceWidgetUI):
         ]
         self.place_models = [
             PropertiesModel(),
-            HintcoinModel(),
+            HintCoinModel(),
             SpritesModel(),
             ObjectsModel(),
             CommentsModel(),
@@ -44,9 +44,6 @@ class PlaceEditor(PlaceWidgetUI):
         for view, model in zip(self.place_views, self.place_models):
             model.set_place(place)
             view.setModel(model)
-
-    def preview_click(self):
-        self.main_editor.pg_previewer.start_renderer(PlacePreview(self.place))
 
     def save_click(self):
         self.main_editor.pg_previewer.start_renderer(PlacePreview(self.place))
