@@ -11,7 +11,9 @@ class CharacterVisibilityCommandUI(QtWidgets.QWidget):
         self.character = QtWidgets.QComboBox()
         self.form_layout.addRow("Character", self.character)
 
-        self.shown = QtWidgets.QCheckBox("Show")
+        self.shown = QtWidgets.QComboBox()
+        self.shown.addItem("Show", True)
+        self.shown.addItem("Hide", False)
         self.form_layout.addWidget(self.shown)
 
         self.alpha = QtWidgets.QCheckBox("Alpha")

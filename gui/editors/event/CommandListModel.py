@@ -144,6 +144,16 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             return f"Character {char_id}: {char_name} Slot\n" \
                    f"Moving to slot {slot_name}"
+        elif command.command == 0x5c:
+            return f"Set Voice Clip {command.params[0]}"
+        elif command.command in [0x5d, 0x5e]:
+            return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command == 0x82:
+            return "Flash Bottom Screen"
+        elif command.command == 0x89:
+            return "Stop Train Sound"
+        elif command.command == 0xa1:
+            return "Complete Game"
         else:
             return f"Command {hex(command.command)}\n" \
                    f"Parameters: {command.params}"
