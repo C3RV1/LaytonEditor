@@ -73,7 +73,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             else:
                 text_one_line = text_one_line[0]
 
-            return f"Dialogue {char_name} [{text.params[1]}, {text.params[2]}] ({text.params[3]} voice pitch)\n" \
+            return f"Dialogue {char_name}: {char_id} [{text.params[1]}, {text.params[2]}] ({text.params[3]} voice pitch)\n" \
                    f"{text_one_line}"
         elif command.command in [0x5, 0x8, 0x9, 0xb]:
             mode = {
@@ -124,7 +124,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             char_id = self._event.characters[command.params[0]]
             char_name = self.settings_manager.character_id_to_name[char_id]
 
-            return f"Character {char_id}: {char_name} Visibility\n" \
+            return f"Character {char_name}: {char_id} Visibility\n" \
                    f"{'Show' if show else 'Hide'}{alpha}"
         elif command.command == 0x2d:
             return f"Show Chapter {command.params[0]}"
@@ -142,12 +142,23 @@ class CommandListModel(QtCore.QAbstractListModel):
                 6: "Right 2"
             }[command.params[1]]
 
-            return f"Character {char_id}: {char_name} Slot\n" \
+            return f"Character {char_name}: {char_id} Slot\n" \
                    f"Moving to slot {slot_name}"
+        elif command.command == 0x3f:
+            char_id = command.params[0]
+            char_name = self.settings_manager.character_id_to_name[char_id]
+
+            return f"Character {char_name}: {char_id} Animation\n" \
+                   f"Setting animation to {command.params[1]}"
         elif command.command == 0x5c:
             return f"Set Voice Clip {command.params[0]}"
         elif command.command in [0x5d, 0x5e]:
             return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command == 0x7e:
+            char_id = self._event.characters[command.params[0]]
+            char_name = self.settings_manager.character_id_to_name[char_id]
+            return f"Character {char_name}: {char_id} Shake\n" \
+                   f"Duration?: {command.params[1]}"
         elif command.command == 0x82:
             return "Flash Bottom Screen"
         elif command.command == 0x89:

@@ -10,6 +10,8 @@ from .DialogueCommand import DialogueCommand
 from .CharacterSlotCommand import CharacterSlotCommand
 from .ShowChapterCommand import ShowChapterCommand
 from .SetVoiceCommand import SetVoiceCommand
+from .CharacterAnimationCommand import CharacterAnimationCommand
+from .CharacterShakeCommand import CharacterShakeCommand
 from .SFXCommand import SFXCommand
 from formats.gds import GDSCommand
 from formats.event import Event
@@ -34,10 +36,14 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
         widget = ShowChapterCommand()
     elif command.command == 0x30:
         widget = CharacterSlotCommand()
+    elif command.command == 0x3f:
+        widget = CharacterAnimationCommand()
     elif command.command == 0x5c:
         widget = SetVoiceCommand()
     elif command.command in [0x5d, 0x5e]:
         widget = SFXCommand()
+    elif command.command == 0x7e:
+        widget = CharacterShakeCommand()
     elif command.command in [0x82, 0x89, 0xa1]:
         return None
     else:
