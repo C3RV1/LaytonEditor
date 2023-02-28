@@ -11,6 +11,7 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         self.event: Event = None
         self.char_count = 0
         self.char_combobox = []
+        self.pos_combobox = []
         self.view = view
         self.settings = SettingsManager()
 
@@ -27,6 +28,7 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
 
     def generate_combobox(self):
         self.char_combobox = []
+        self.pos_combobox = []
         for i, character in enumerate(self.event.characters[:self.char_count]):
             combobox = QtWidgets.QComboBox()
             index = 0
@@ -36,11 +38,30 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
                     index = j
             if index != 0:
                 combobox.setCurrentIndex(index)
-            combobox.currentIndexChanged.connect(lambda _idx, combo_i=i: self.combobox_change(combo_i))
+            combobox.currentIndexChanged.connect(lambda _idx, combo_i=i: self.char_combobox_change(combo_i))
             self.char_combobox.append(combobox)
             self.view.setIndexWidget(self.index(i, 0), combobox)
 
-    def combobox_change(self, char_idx):
+        slot_names = {
+            0: "Left 1",
+            1: "Center (right)",
+            2: "Right 1",
+            3: "Left 2",
+            4: "Left Center",
+            5: "Right Center",
+            6: "Right 2"
+        }
+        for i, char_pos in enumerate(self.event.characters_pos[:self.char_count]):
+            combobox = QtWidgets.QComboBox()
+            for j in range(6):
+                combobox.addItem(slot_names[j], j)
+            combobox.setCurrentIndex(char_pos)
+
+            combobox.currentIndexChanged.connect(lambda _idx, combo_i=i: self.pos_combobox_change(combo_i))
+            self.pos_combobox.append(combobox)
+            self.view.setIndexWidget(self.index(i, 1), combobox)
+
+    def char_combobox_change(self, char_idx):
         combobox: QtWidgets.QComboBox = self.char_combobox[char_idx]
         data = combobox.currentData(QtCore.Qt.ItemDataRole.UserRole)
         old = self.event.characters[char_idx]
@@ -54,6 +75,11 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
             elif gds_command.command == 0x3f:
                 if gds_command.params[0] == old:
                     gds_command.params[0] = data
+
+    def pos_combobox_change(self, char_idx):
+        combobox: QtWidgets.QComboBox = self.pos_combobox[char_idx]
+        data = combobox.currentData(QtCore.Qt.ItemDataRole.UserRole)
+        self.event.characters_pos[char_idx] = data
 
     def rowCount(self, parent: QtCore.QModelIndex) -> int:
         if not parent.isValid():

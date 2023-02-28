@@ -7,6 +7,7 @@ from .SetModeCommand import SetModeCommand
 from .WaitCommand import WaitCommand
 from .CharacterVisibilityCommand import CharacterVisibilityCommand
 from .DialogueCommand import DialogueCommand
+from .CharacterSlotCommand import CharacterSlotCommand
 from formats.gds import GDSCommand
 from formats.event import Event
 
@@ -26,6 +27,8 @@ def get_command_widget(command: GDSCommand, event: Event) -> CommandEditor:
         widget = WaitCommand()
     elif command.command in [0x2a, 0x2b, 0x2c]:
         widget = CharacterVisibilityCommand()
+    elif command.command == 0x30:
+        widget = CharacterSlotCommand()
     else:
         widget = UnknownCommand()
     widget.set_command(command, event)

@@ -126,6 +126,24 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             return f"Character {char_id}: {char_name} Visibility\n" \
                    f"{'Show' if show else 'Hide'}{alpha}"
+        elif command.command == 0x2d:
+            return f"Show Chapter {command.params[0]}"
+        elif command.command == 0x30:
+            char_id = self._event.characters[command.params[0]]
+            char_name = self.settings_manager.character_id_to_name[char_id]
+
+            slot_name = {
+                0: "Left 1",
+                1: "Center (looking right)",
+                2: "Right 1",
+                3: "Left 2",
+                4: "Left Center",
+                5: "Right Center",
+                6: "Right 2"
+            }[command.params[1]]
+
+            return f"Character {char_id}: {char_name} Slot\n" \
+                   f"Moving to slot {slot_name}"
         else:
             return f"Command {hex(command.command)}\n" \
                    f"Parameters: {command.params}"
