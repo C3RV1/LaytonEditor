@@ -154,8 +154,10 @@ class SADL(FileFormat):
     def decode(self, blocks=-1, progress_callback: Union[Callable, None] = None):
         cancelled = False
         if self.coding == Coding.INT_IMA:
+            max_blocks = self.num_samples // 2 // 0x10 - self.blocks_done
             if blocks == -1:
-                blocks = self.num_samples // 2 // 0x10 - self.blocks_done
+                blocks = max_blocks
+            blocks = min(max_blocks, blocks)
             decoded = np.zeros((self.channels, blocks * 32), dtype=np.int16)
             for chan in range(self.channels):
                 if cancelled:
@@ -176,8 +178,10 @@ class SADL(FileFormat):
                     decoded[chan][i*32:i*32+32] = decoded_block
             self.blocks_done += blocks
         elif self.coding == Coding.NDS_PROCYON:
+            max_blocks = self.num_samples // 30 - self.blocks_done
             if blocks == -1:
-                blocks = self.num_samples // 30 - self.blocks_done
+                blocks = max_blocks
+            blocks = min(max_blocks, blocks)
             decoded = np.zeros((self.channels, blocks * 30), dtype=np.int16)
             for chan in range(self.channels):
                 if cancelled:
