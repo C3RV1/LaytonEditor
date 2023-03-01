@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 
 
-class SFXCommandUI(QtWidgets.QWidget):
+class SFXUI(QtWidgets.QWidget):
     def __init__(self):
-        super(SFXCommandUI, self).__init__()
+        super(SFXUI, self).__init__()
 
         self.form_layout = QtWidgets.QFormLayout()
         self.setLayout(self.form_layout)

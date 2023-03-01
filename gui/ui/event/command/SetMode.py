@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 
 
-class SetModeCommandUI(QtWidgets.QWidget):
+class SetModeUI(QtWidgets.QWidget):
     def __init__(self):
-        super(SetModeCommandUI, self).__init__()
+        super(SetModeUI, self).__init__()
 
         self.form_layout = QtWidgets.QFormLayout()
         self.setLayout(self.form_layout)

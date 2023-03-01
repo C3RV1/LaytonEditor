@@ -1,4 +1,4 @@
-from gui.ui.event.command.DialogueCommand import DialogueCommandUI
+from gui.ui.event.command.Dialogue import DialogueUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
@@ -7,9 +7,9 @@ from gui.SettingsManager import SettingsManager
 from utility.replace_substitutions import replace_substitutions, convert_substitutions
 
 
-class DialogueCommand(CommandEditor, DialogueCommandUI):
+class Dialogue(CommandEditor, DialogueUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(DialogueCommand, self).set_command(command, event)
+        super(Dialogue, self).set_command(command, event)
         text_num = command.params[0]
         text = event.get_text(text_num)
         settings = SettingsManager()

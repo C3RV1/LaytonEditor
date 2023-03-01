@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 
 
-class LoadBGCommandUI(QtWidgets.QWidget):
+class LoadBGUI(QtWidgets.QWidget):
     def __init__(self):
-        super(LoadBGCommandUI, self).__init__()
+        super(LoadBGUI, self).__init__()
 
         self.form_layout = QtWidgets.QFormLayout()
         self.setLayout(self.form_layout)

@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets
 
 
-class UnknownCommandUI(QtWidgets.QWidget):
+class UnknownUI(QtWidgets.QWidget):
     def __init__(self):
-        super(UnknownCommandUI, self).__init__()
+        super(UnknownUI, self).__init__()
 
         self.sizer = QtWidgets.QFormLayout()
 

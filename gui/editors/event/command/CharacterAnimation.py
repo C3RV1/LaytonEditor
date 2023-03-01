@@ -1,4 +1,4 @@
-from gui.ui.event.command.CharacterAnimationCommand import CharacterAnimationCommandUI
+from gui.ui.event.command.CharacterAnimation import CharacterAnimationUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
@@ -6,9 +6,9 @@ from PySide6 import QtCore
 from gui.SettingsManager import SettingsManager
 
 
-class CharacterAnimationCommand(CommandEditor, CharacterAnimationCommandUI):
+class CharacterAnimation(CommandEditor, CharacterAnimationUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(CharacterAnimationCommand, self).set_command(command, event)
+        super(CharacterAnimation, self).set_command(command, event)
         settings = SettingsManager()
 
         index = -1

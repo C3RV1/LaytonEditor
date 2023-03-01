@@ -1,13 +1,13 @@
-from gui.ui.event.command.SFXCommand import SFXCommandUI
+from gui.ui.event.command.SFX import SFXUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class SFXCommand(CommandEditor, SFXCommandUI):
+class SFX(CommandEditor, SFXUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(SFXCommand, self).set_command(command, event)
+        super(SFX, self).set_command(command, event)
         self.sfx_id.setValue(command.params[0])
         self.sfx_type.setCurrentIndex(0 if command.command == 0x5d else 1)
 

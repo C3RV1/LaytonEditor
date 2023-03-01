@@ -1,13 +1,13 @@
-from gui.ui.event.command.WaitCommand import WaitCommandUI
+from gui.ui.event.command.Wait import WaitUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class WaitCommand(CommandEditor, WaitCommandUI):
+class Wait(CommandEditor, WaitUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(WaitCommand, self).set_command(command, event)
+        super(Wait, self).set_command(command, event)
         self.tap_checkbox.setChecked(command.command in [0x69, 0x6c])
         if command.command in [0x31, 0x6c]:
             self.frames_checkbox.setChecked(True)

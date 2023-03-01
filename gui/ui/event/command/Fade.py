@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 
 
-class FadeCommandUI(QtWidgets.QWidget):
+class FadeUI(QtWidgets.QWidget):
     def __init__(self):
-        super(FadeCommandUI, self).__init__()
+        super(FadeUI, self).__init__()
 
         self.form_layout = QtWidgets.QFormLayout()
         self.setLayout(self.form_layout)

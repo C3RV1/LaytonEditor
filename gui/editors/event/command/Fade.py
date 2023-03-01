@@ -1,13 +1,13 @@
-from gui.ui.event.command.FadeCommand import FadeCommandUI
+from gui.ui.event.command.Fade import FadeUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class FadeCommand(CommandEditor, FadeCommandUI):
+class Fade(CommandEditor, FadeUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(FadeCommand, self).set_command(command, event)
+        super(Fade, self).set_command(command, event)
         self.fade_type.setCurrentIndex(0 if command.command in [0x2, 0x32, 0x80, 0x81, 0x88] else 1)
         fade_screens = 0
         if command.command in [0x2, 0x3, 0x72, 0x80]:

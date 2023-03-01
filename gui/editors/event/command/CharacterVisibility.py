@@ -1,6 +1,6 @@
 import logging
 
-from gui.ui.event.command.CharacterVisibilityCommand import CharacterVisibilityCommandUI
+from gui.ui.event.command.CharacterVisibility import CharacterVisibilityUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
@@ -8,9 +8,9 @@ from PySide6 import QtCore
 from gui.SettingsManager import SettingsManager
 
 
-class CharacterVisibilityCommand(CommandEditor, CharacterVisibilityCommandUI):
+class CharacterVisibility(CommandEditor, CharacterVisibilityUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(CharacterVisibilityCommand, self).set_command(command, event)
+        super(CharacterVisibility, self).set_command(command, event)
         settings = SettingsManager()
 
         for i, char_id in enumerate(self.event.characters):

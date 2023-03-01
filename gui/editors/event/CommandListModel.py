@@ -154,6 +154,8 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Set Voice Clip {command.params[0]}"
         elif command.command in [0x5d, 0x5e]:
             return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command in [0x71, 0x7d]:
+            return f"{'Reveal' if command.command == 0x71 else 'Solve'} Mystery {command.params[0]}"
         elif command.command == 0x7e:
             char_id = self._event.characters[command.params[0]]
             char_name = self.settings_manager.character_id_to_name[char_id]
@@ -163,6 +165,8 @@ class CommandListModel(QtCore.QAbstractListModel):
             return "Flash Bottom Screen"
         elif command.command == 0x89:
             return "Stop Train Sound"
+        elif command.command in [0x96, 0x97]:
+            return f"{'Add' if command.command == 0x96 else 'Remove'} Companion {command.params[0]}"
         elif command.command == 0xa1:
             return "Complete Game"
         else:

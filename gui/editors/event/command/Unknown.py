@@ -1,13 +1,13 @@
-from gui.ui.event.command.UnknownCommand import UnknownCommandUI
+from gui.ui.event.command.Unknown import UnknownUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
 from formats_parsed.dcc import DCCParser
 
 
-class UnknownCommand(CommandEditor, UnknownCommandUI):
+class Unknown(CommandEditor, UnknownUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(UnknownCommand, self).set_command(command, event)
+        super(Unknown, self).set_command(command, event)
         dcc_parser = DCCParser()
         dcc_parser.reset()
         dcc_parser["::calls"].append({

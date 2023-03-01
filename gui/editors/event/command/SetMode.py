@@ -1,13 +1,13 @@
-from gui.ui.event.command.SetModeCommand import SetModeCommandUI
+from gui.ui.event.command.SetMode import SetModeUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class SetModeCommand(CommandEditor, SetModeCommandUI):
+class SetMode(CommandEditor, SetModeUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(SetModeCommand, self).set_command(command, event)
+        super(SetMode, self).set_command(command, event)
         next_index = {
             0x6: 0,
             0x7: 1

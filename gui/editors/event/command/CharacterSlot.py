@@ -1,4 +1,4 @@
-from gui.ui.event.command.CharacterShakeCommand import CharacterShakeCommandUI
+from gui.ui.event.command.CharacterSlot import CharacterSlotUI
 from .CommandEditor import CommandEditor
 from formats.gds import GDSCommand
 from formats.event import Event
@@ -6,9 +6,9 @@ from PySide6 import QtCore
 from gui.SettingsManager import SettingsManager
 
 
-class CharacterShakeCommand(CommandEditor, CharacterShakeCommandUI):
+class CharacterSlot(CommandEditor, CharacterSlotUI):
     def set_command(self, command: GDSCommand, event: Event):
-        super(CharacterShakeCommand, self).set_command(command, event)
+        super(CharacterSlot, self).set_command(command, event)
         settings = SettingsManager()
 
         for i, char_id in enumerate(self.event.characters):
@@ -18,10 +18,10 @@ class CharacterShakeCommand(CommandEditor, CharacterShakeCommandUI):
             self.character.addItem(f"{char_name}: {char_id}", i)
         self.character.setCurrentIndex(command.params[0])
 
-        self.duration.setValue(command.params[1])
+        self.slot.setCurrentIndex(command.params[1])
 
     def save(self):
         self.command.params = [
             self.character.currentData(QtCore.Qt.ItemDataRole.UserRole),
-            self.duration.value()
+            self.slot.currentData(QtCore.Qt.ItemDataRole.UserRole)
         ]
