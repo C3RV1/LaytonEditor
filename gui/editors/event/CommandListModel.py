@@ -144,6 +144,8 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             return f"Character {char_name}: {char_id} Slot\n" \
                    f"Moving to slot {slot_name}"
+        elif command.command == 0x37:
+            return f"Background Tint (RGBA: {command.params})"
         elif command.command == 0x3f:
             char_id = command.params[0]
             char_name = self.settings_manager.character_id_to_name[char_id]
@@ -154,8 +156,14 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Set Voice Clip {command.params[0]}"
         elif command.command in [0x5d, 0x5e]:
             return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command == 0x70:
+            return f"Unlocking Journal {command.params[0]}"
         elif command.command in [0x71, 0x7d]:
             return f"{'Reveal' if command.command == 0x71 else 'Solve'} Mystery {command.params[0]}"
+        elif command.command in [0x77, 0x7a]:
+            return f"{'Pick up' if command.command == 0x77 else 'Remove'} Item {command.params[0]}"
+        elif command.command == 0x79:
+            return f"Unlocking Minigame {command.params[0]}"
         elif command.command == 0x7e:
             char_id = self._event.characters[command.params[0]]
             char_name = self.settings_manager.character_id_to_name[char_id]

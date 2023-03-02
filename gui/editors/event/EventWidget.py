@@ -31,7 +31,7 @@ class EventEditor(EventWidgetUI):
         self.main_editor: MainEditor = main_editor
 
     def tab_changed(self, current: int):
-        if current == 0:
+        if current != 1:
             self.command_list.clearSelection()
 
     def get_event_properties_widget(self):
@@ -45,6 +45,11 @@ class EventEditor(EventWidgetUI):
         self.command_model.set_event(self.event)
         self.command_list.setModel(self.command_model)
 
+        dcc_parser = DCCParser()
+        EventGDSParser(ev).serialize_into_dcc(ev.gds, dcc_parser)
+        serialized = dcc_parser.serialize()
+        self.text_editor.setPlainText(serialized)
+
     def preview_click(self):
         if isinstance(self.active_editor, CommandEditor):
             self.active_editor.save()
@@ -56,6 +61,28 @@ class EventEditor(EventWidgetUI):
         self.event.save_to_rom()
         self.reload_category_preview()
         self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+
+    def preview_dcc_btn_click(self):
+        text = self.text_editor.toPlainText()
+        dcc_parser = DCCParser()
+        dcc_parser.parse(text)
+        is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
+        if is_ok:
+            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+        else:
+            logging.error(f"Error compiling DCC: {error}")
+
+    def save_dcc_btn_click(self):
+        text = self.text_editor.toPlainText()
+        dcc_parser = DCCParser()
+        dcc_parser.parse(text)
+        is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
+        if is_ok:
+            self.event.save_to_rom()
+            self.reload_category_preview()
+            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+        else:
+            logging.error(f"Error compiling DCC: {error}")
 
     def reload_category_preview(self):
         event_node: EventNode = self.event_node.internalPointer()

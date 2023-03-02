@@ -133,7 +133,7 @@ class EventDialogue(k4pg.Sprite):
 
         # See if we have to progress the text
         self.current_time_between_progress += self.gm.delta_time
-        while self.current_time_between_progress > self.time_to_progress:
+        while self.current_time_between_progress > self.time_to_progress and not self.paused:
             self.current_time_between_progress -= self.time_to_progress
             self.progress_text()
 

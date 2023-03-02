@@ -11,9 +11,7 @@ class EventBG:
         self.fader.load_fader()
         self.translucent = k4pg.Sprite()
         surf = pg.Surface([256, 192])
-        surf.fill(pg.Color(0, 0, 0))
         self.translucent.surf = surf
-        self.translucent.alpha = 0
 
         self.name = name
 
@@ -45,8 +43,10 @@ class EventBG:
     def fading(self):
         return self.fader.fading
 
-    def set_opacity(self, opacity):
-        self.translucent.alpha = opacity
+    def set_tint(self, colors):
+        self.translucent.surf.fill(pg.Color(colors[:3]))
+        self.translucent.surf_updated()
+        self.translucent.alpha = colors[-1]
 
     def update_(self, dt: float):
         self.fader.update(dt)

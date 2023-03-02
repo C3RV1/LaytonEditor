@@ -17,7 +17,7 @@
 0x31: wait - Wait Frames
 0x32: fade
 0x33: fade
-0x37: bg_opacity - unk0, unk1, unk2, Opacity
+0x37: bg_tint - red, green, blue, Opacity
 0x3f: chr_anim - Character ID, Animation
 0x5c: set_voice - Voice ID
 0x5d: sfx_sad - SFX ID
@@ -27,7 +27,7 @@
 0x6a: bg_shake - unk0, Screen
 0x6b: bg_shake - unk0, Screen
 0x6c: wait_tap_or_frames - Frames
-0x70: unlock_diary - Diary ID
+0x70: unlock_journal - Entry ID
 0x71: reveal_mystery - Mystery ID
 0x72: fade
 0x73: start_tea - Hint ID, Solution Tea ID

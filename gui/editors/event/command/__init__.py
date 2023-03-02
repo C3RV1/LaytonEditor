@@ -15,6 +15,10 @@ from .CharacterShake import CharacterShake
 from .SFX import SFX
 from .Companion import Companion
 from .Mystery import Mystery
+from .Item import Item
+from .UnlockJournal import UnlockJournal
+from .UnlockMinigame import UnlockMinigame
+from .BackgroundTint import BackgroundTint
 from formats.gds import GDSCommand
 from formats.event import Event
 
@@ -38,14 +42,22 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
         widget = ShowChapter()
     elif command.command == 0x30:
         widget = CharacterSlot()
+    elif command.command == 0x37:
+        widget = BackgroundTint()
     elif command.command == 0x3f:
         widget = CharacterAnimation()
     elif command.command == 0x5c:
         widget = SetVoice()
     elif command.command in [0x5d, 0x5e]:
         widget = SFX()
+    elif command.command == 0x70:
+        widget = UnlockJournal()
     elif command.command in [0x71, 0x7d]:
         widget = Mystery()
+    elif command.command in [0x77, 0x7a]:
+        widget = Item()
+    elif command.command == 0x79:
+        widget = UnlockMinigame()
     elif command.command == 0x7e:
         widget = CharacterShake()
     elif command.command in [0x96, 0x97]:

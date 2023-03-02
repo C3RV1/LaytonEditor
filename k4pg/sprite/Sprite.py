@@ -252,6 +252,9 @@ class Sprite(Renderable):
         self._update_cropped()
         self._force_transform(False)
 
+    def surf_updated(self):
+        self._force_transform(False)
+
     @property
     def flipped(self):
         return self._flipped
