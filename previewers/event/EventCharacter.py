@@ -17,27 +17,37 @@ class EventCharacter(k4pg.Sprite):
 
     FADE_TIME = 0.2
 
-    def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
+    slot: int
+    char_id: int
+    fading: bool
+    fade_in: int
+    current_fade_time: [int, float]
+    talking: bool
+
+    def __init__(self, *args, **kwargs):
         super(EventCharacter, self).__init__(*args, **kwargs)
         self.orientation = EventCharacter.FACING_RIGHT
         self.center.y = k4pg.Alignment.BOTTOM
         self.position.y = 192 // 2
-        self.slot = slot
         self.character_mouth: k4pg.Sprite = k4pg.Sprite()
 
-        self.char_id = character_id
-
+    def setup(self, char_id, slot, anim_num, visibility):
+        self.char_id = char_id
+        self.slot = slot
         self.talking = False
-
-        self.load_character(loader)
-        self.set_tag_by_num(anim_num)
-        self.update_visibility(visibility)
 
         self.fading = False
         self.fade_in = ScreenFader.FADING_IN
         self.current_fade_time = 0
 
+        if char_id == 0:
+            return
+        self.load_character()
+        self.set_tag_by_num(anim_num)
+        self.update_visibility(visibility)
+
     def set_tag(self, name: str):
+        print(name)
         super(EventCharacter, self).set_tag(name)
         self.update_()
 
@@ -98,21 +108,24 @@ class EventCharacter(k4pg.Sprite):
     def hide(self):
         self.update_visibility(False)
 
-    def set_visibility(self, visibility):
+    def set_visibility(self, visibility, instant):
         self.fade_in = ScreenFader.FADING_IN if visibility else ScreenFader.FADING_OUT
         self.current_fade_time = self.FADE_TIME
-        self.update_fade(0)
+        self.calc_fade()
         self.update_visibility(True)
+
+    def calc_fade(self):
+        alpha = int(255 * max(self.current_fade_time / self.FADE_TIME, 0.0))
+        if self.fade_in == ScreenFader.FADING_IN:
+            alpha = 255 - alpha
+        self.alpha = alpha
+        if self.character_mouth is not None:
+            self.character_mouth.alpha = alpha
 
     def update_fade(self, dt: float):
         if self.current_fade_time > 0:
             self.current_fade_time -= dt
-            alpha = int(255 * max(self.current_fade_time / self.FADE_TIME, 0.0))
-            if self.fade_in == ScreenFader.FADING_IN:
-                alpha = 255 - alpha
-            self.alpha = alpha
-            if self.character_mouth is not None:
-                self.character_mouth.alpha = alpha
+            self.calc_fade()
 
     def busy(self):
         return self.current_fade_time > 0.0
@@ -129,13 +142,14 @@ class EventCharacter(k4pg.Sprite):
         else:
             self.set_not_talking()
 
-    def load_character(self, loader: k4pg.SpriteLoader):
-        if loader:
-            loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, True)
+    def load_character(self):
+        if self.char_id == 0:
+            return
+        self.loader.load(f"data_lt2/ani/eventchr/chr{self.char_id}.arc", self, True)
         if (drawoff := self.vars.get("drawoff", None)) is not None:
             self.position += pg.Vector2(drawoff[:2])
-        if self.vars.get('child_image', "") != "" and loader:
-            loader.load(f"data_lt2/ani/sub/{self.vars['child_image']}", self.character_mouth, True)
+        if self.vars.get('child_image', "") != "":
+            self.loader.load(f"data_lt2/ani/sub/chr{self.char_id}_face.arc", self.character_mouth, True)
         self.set_tag_by_num(1)
 
     def animate(self, dt: float):
@@ -158,9 +172,6 @@ class EventCharacter(k4pg.Sprite):
             current_tag = current_tag[:-1]
         if current_tag.startswith("*"):
             self.set_tag(current_tag[1:])
-
-    def get_char_id(self):
-        return self.char_id
 
     def __str__(self):
         return f"<Character {self.char_id}>"

@@ -26,39 +26,50 @@ class EventPlayer(TwoScreenRenderer):
         self.font_loader = RomSingleton().get_font_loader()
 
         self.top_bg = EventBG("top")
-        self.sprite_loader.load(f"data_lt2/bg/event/sub{self.event.map_top_id}.arc", self.top_bg.bg,
-                                sprite_sheet=False)
-        self.top_bg.fade(2, None, True)
-        self.top_bg.set_tint([0, 0, 0, 0])
         self.btm_bg = EventBG("btm")
-        self.sprite_loader.load(f"data_lt2/bg/map/main{self.event.map_bottom_id}.arc", self.btm_bg.bg,
-                                sprite_sheet=False)
-        self.btm_bg.set_tint([15, 5, 0, 120])
-        self.btm_bg.fade(2, None, True)
 
         self.waiter = EventWaiter()
         self.event_sound = EventSound()
 
-        self.characters: List[Optional[EventCharacter]] = [None]*8
+        self.characters: List[EventCharacter] = []
 
         for i in range(8):
-            if self.event.characters[i] == 0:
-                continue
-            char_id = self.event.characters[i]
-            slot = self.event.characters_pos[i]
-            anim = self.event.characters_anim_index[i]
-            visibility = self.event.characters_shown[i]
-            char = EventCharacter(char_id, slot, anim, visibility, self.sprite_loader)
-            self.characters[i] = char
+            char = EventCharacter()
+            char.set_loader(self.sprite_loader)
+            self.characters.append(char)
 
         self.dialogue = EventDialogue(self, position=pg.Vector2(0, 192//2 + 3),
                                       center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM))
         self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue, True)
-        self.dialogue.init_text(self.font_loader)
+        self.font_loader.load("fontevent", 12, self.dialogue)
 
         self.inp = k4pg.Input()
 
-        # self.run_events_until_busy()
+        self.setup()
+
+        self.live_preview_command = -1
+
+    def setup(self):
+        self.sprite_loader.load(f"data_lt2/bg/event/sub{self.event.map_top_id}.arc", self.top_bg.bg, False)
+        self.top_bg.fade(2, None, True)
+        self.top_bg.set_tint([0, 0, 0, 0])
+
+        self.sprite_loader.load(f"data_lt2/bg/map/main{self.event.map_bottom_id}.arc", self.btm_bg.bg, False)
+        self.btm_bg.fade(2, None, True)
+        self.btm_bg.set_tint([15, 5, 0, 120])
+
+        for i in range(8):
+            char_id = self.event.characters[i]
+            slot = self.event.characters_pos[i]
+            anim = self.event.characters_anim_index[i]
+            visibility = self.event.characters_shown[i]
+            self.characters[i].setup(char_id, slot, anim, visibility)
+
+        self.dialogue.setup()
+
+    def set_live_preview_command(self, live_preview_command):
+        self.setup()
+        self.live_preview_command = live_preview_command
 
     def run_events_until_busy(self):
         while True:
@@ -74,14 +85,18 @@ class EventPlayer(TwoScreenRenderer):
         self.gm.tick()
 
     def execute_gds_command(self, command: gds.GDSCommand):
+        instant = False
+        if self.live_preview_command != -1:
+            instant = self.live_preview_command != self.current_command
+
         fade_out = 1
         fade_in = 2
         if command.command == 0x2:
-            self.top_bg.fade(fade_in, None, False)
-            self.btm_bg.fade(fade_in, None, False)
+            self.top_bg.fade(fade_in, None, instant)
+            self.btm_bg.fade(fade_in, None, instant)
         elif command.command == 0x3:
-            self.top_bg.fade(fade_out, None, False)
-            self.btm_bg.fade(fade_out, None, False)
+            self.top_bg.fade(fade_out, None, instant)
+            self.btm_bg.fade(fade_out, None, instant)
         elif command.command == 0x4:
             if len(command.params) == 0:
                 return
@@ -90,13 +105,13 @@ class EventPlayer(TwoScreenRenderer):
                 return
             character = None
             for char in self.characters:
-                if char is None:
+                if char.char_id == 0:
                     continue
-                if char.get_char_id() == dialogue_gds.params[0]:
+                if char.char_id == dialogue_gds.params[0]:
                     character = char
                     break
-            self.dialogue.start_dialogue(character, dialogue_gds.params[1], dialogue_gds.params[4], self.next_voice,
-                                         self.next_dialogue_sfx, self.sprite_loader)
+            self.dialogue.start_dialogue(character, dialogue_gds.params[1], dialogue_gds.params[4],
+                                         self.next_voice, self.next_dialogue_sfx)
             self.next_voice = -1
             self.next_dialogue_sfx = -1
         elif command.command == 0x5:
@@ -152,7 +167,7 @@ class EventPlayer(TwoScreenRenderer):
             for char in self.characters:
                 if char is None:
                     continue
-                if char.get_char_id() == command.params[0]:
+                if char.char_id == command.params[0]:
                     character = char
                     break
             if character:
@@ -217,7 +232,7 @@ class EventPlayer(TwoScreenRenderer):
             character = None
             for char in self.characters:
                 char: EventCharacter
-                if char.get_char_id() == int(command_split[1]):
+                if char.char_id == int(command_split[1]):
                     character = char
                     break
             if character:
@@ -225,7 +240,7 @@ class EventPlayer(TwoScreenRenderer):
 
     def update(self, dt: float):
         for character in self.characters:
-            if character is not None:
+            if character.char_id != 0:
                 character.update_fade(dt)
         self.waiter.update_(dt)
         self.event_sound.update_(dt)
@@ -233,7 +248,7 @@ class EventPlayer(TwoScreenRenderer):
         self.btm_bg.update_(dt)
         self.dialogue.interact(self.btm_camera, dt)
         for character in self.characters:
-            if character:
+            if character.char_id != 0:
                 character.animate(dt)
         if not self.is_busy():
             self.run_events_until_busy()
@@ -257,6 +272,8 @@ class EventPlayer(TwoScreenRenderer):
         self.event_sound.stop_sadl()
 
     def is_busy(self):
+        if self.live_preview_command != -1:
+            return self.current_command == self.live_preview_command
         for character in self.characters:
             if character is not None:
                 if character.busy():
