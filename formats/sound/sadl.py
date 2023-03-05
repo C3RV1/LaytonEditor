@@ -104,16 +104,11 @@ class SADL(FileFormat):
         rdr.seek(0x100)
         buffer = rdr.read(self.file_size - 0x100)
         buffer = np.frombuffer(buffer, dtype=np.uint8)
+        buffer = np.copy(buffer)  # needed for cython
         buffer = buffer.reshape(((self.file_size - 0x100) // 0x10 // self.channels, self.channels, 0x10))
         buffer = buffer.swapaxes(0, 1)
         self.buffer = buffer.reshape((buffer.shape[0], buffer.shape[1] * buffer.shape[2]))
-        self.offset = [0] * self.channels
-        self.ima_decoders = []
-        self.procyon_decoders = []
-        for i in range(self.channels):
-            self.ima_decoders.append(adpcm.Adpcm(False))
-            self.procyon_decoders.append(procyon.Procyon())
-        self.blocks_done = 0
+        self.reset_decoding()
 
     def reset_decoding(self):
         self.offset = [0] * self.channels

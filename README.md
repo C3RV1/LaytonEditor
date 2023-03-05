@@ -8,6 +8,16 @@ Japanese is not yet supported.
 Current support is limited to Professor Layton 2. Other games have not been
 tested, but would probably lack many features, and stability is not guaranteed.
 
+## Compiling
+
+Note: LaytonEditor requires Python3 (developed under 3.9).
+
+To install LaytonEditor, just clone the repository and install the required dependencies from the
+requirements.txt file using pip install -r requirements.txt. Then, run
+`python .\setup.py build_ext --inplace` to compile the cython sources.
+
+To start the editor, run `python laytonEditor.py`.
+
 ## Thanks to...
 
 * nwhitehead for [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)

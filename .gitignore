@@ -28,3 +28,6 @@ _test*
 data_extracted
 data_permanent/fonts
 exported
+formats/sound/compression/*.c
+formats/sound/compression/*.pyd
+formats/sound/compression/*.html
