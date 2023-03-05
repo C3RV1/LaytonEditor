@@ -156,12 +156,24 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Set Voice Clip {command.params[0]}"
         elif command.command in [0x5d, 0x5e]:
             return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command in [0x6a, 0x6b]:
+            return f"Shake {'Bottom' if command.command == 0x6a else 'Top'} Screen\n" \
+                   f"Unk0: {command.params[0]}"
         elif command.command == 0x70:
             return f"Unlocking Journal {command.params[0]}"
         elif command.command in [0x71, 0x7d]:
             return f"{'Reveal' if command.command == 0x71 else 'Solve'} Mystery {command.params[0]}"
+        elif command.command == 0x73:
+            return f"Start Tea\n" \
+                   f"Hint ID: {command.params[0]}, Solution ID: {command.params[1]}"
+        elif command.command == 0x76:
+            return f"Send Puzzles to Granny Riddleton\n" \
+                   f"Puzzle Group: {command.params[0]}"
         elif command.command in [0x77, 0x7a]:
             return f"{'Pick up' if command.command == 0x77 else 'Remove'} Item {command.params[0]}"
+        elif command.command == 0x7b:
+            return f"Save Progress Prompt\n" \
+                   f"Next Event: {command.params[0]}"
         elif command.command == 0x79:
             return f"Unlocking Minigame {command.params[0]}"
         elif command.command == 0x7e:

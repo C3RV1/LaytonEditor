@@ -1,7 +1,7 @@
 from .Fade import Fade
 from .Unknown import Unknown
 from .CommandEditor import CommandEditor
-from .LoadBG import LoadBG
+from .BackgroundLoad import BackgroundLoad
 from .SetID import SetID
 from .SetMode import SetMode
 from .Wait import Wait
@@ -19,8 +19,12 @@ from .Item import Item
 from .UnlockJournal import UnlockJournal
 from .UnlockMinigame import UnlockMinigame
 from .BackgroundTint import BackgroundTint
+from .BackgroundShake import BackgroundShake
+from .StartTea import StartTea
+from .SaveProgress import SaveProgress
 from formats.gds import GDSCommand
 from formats.event import Event
+from PySide6 import QtWidgets
 
 
 def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
@@ -29,7 +33,7 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
     elif command.command == 0x4:
         widget = Dialogue()
     elif command.command in [0x21, 0x22]:
-        widget = LoadBG()
+        widget = BackgroundLoad()
     elif command.command in [0x5, 0x8, 0x9, 0xb]:
         widget = SetID()
     elif command.command in [0x6, 0x7]:
@@ -50,12 +54,18 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
         widget = SetVoice()
     elif command.command in [0x5d, 0x5e]:
         widget = SFX()
+    elif command.command in [0x6a, 0x6b]:
+        widget = BackgroundShake()
     elif command.command == 0x70:
         widget = UnlockJournal()
     elif command.command in [0x71, 0x7d]:
         widget = Mystery()
+    elif command.command == 0x73:
+        widget = StartTea()
     elif command.command in [0x77, 0x7a]:
         widget = Item()
+    elif command.command == 0x7b:
+        widget = SaveProgress()
     elif command.command == 0x79:
         widget = UnlockMinigame()
     elif command.command == 0x7e:
@@ -63,7 +73,7 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
     elif command.command in [0x96, 0x97]:
         widget = Companion()
     elif command.command in [0x82, 0x89, 0xa1]:
-        return None
+        widget = QtWidgets.QWidget()
     else:
         widget = Unknown()
     widget.set_command(command, event)
