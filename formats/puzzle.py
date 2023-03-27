@@ -212,7 +212,7 @@ class Puzzle:
         self.export_data(dat_file)
         dat_file.close()
 
-        nz_lst_dlz = formats.dlz.NazoListDlz(filename="data_lt2/rc/?/nz_lst.dlz".replace("?", conf.LANG), rom=self.rom)
+        nz_lst_dlz = formats.dlz.NazoListDlz(filename=f"data_lt2/rc/{conf.LANG}/nz_lst.dlz", rom=self.rom)
         nz_lst_dlz[self.internal_id] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
         nz_lst_dlz.save()
 

@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from formats.event import Event
 from formats.gds import GDS, GDSCommand
+from formats.dlz import TimeDefinitionsDlz
 from gui.SettingsManager import SettingsManager
 from utility.replace_substitutions import replace_substitutions
 
@@ -103,13 +104,17 @@ class CommandListModel(QtCore.QAbstractListModel):
             }[command.params[0]]
             return f"{'Next Mode' if command.command == 0x6 else 'Queue Following Mode'}\n" \
                    f"Mode: {mode}"
-        elif command.command in [0x31, 0x69, 0x6c]:
+        elif command.command in [0x31, 0x69, 0x6c, 0x8e]:
             if command.command == 0x31:
                 line = f"{command.params[0]} Frames"
             elif command.command == 0x69:
                 line = f"Tap"
-            else:
+            elif command.command == 0x6c:
                 line = f"Tap or {command.params[0]} Frames"
+            elif command.command == 0x8e:
+                tm_def = TimeDefinitionsDlz(rom=self._event.rom, filename="data_lt2/rc/tm_def.dlz")
+                frames = tm_def[command.params[0]]
+                line = f"Time Definition {command.params[0]} ({frames} Frames)"
             return f"Wait {line}"
         elif command.command in [0x21, 0x22]:
             return f"Load {'Bottom' if command.command == 0x21 else 'Top'} Background\n" \

@@ -38,7 +38,7 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
         widget = SetID()
     elif command.command in [0x6, 0x7]:
         widget = SetMode()
-    elif command.command in [0x31, 0x69, 0x6c]:
+    elif command.command in [0x31, 0x69, 0x6c, 0x8e]:
         widget = Wait()
     elif command.command in [0x2a, 0x2b, 0x2c]:
         widget = CharacterVisibility()
