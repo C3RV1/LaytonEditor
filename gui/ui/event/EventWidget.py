@@ -23,6 +23,12 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.script_editor.setLayout(self.script_layout)
 
         self.command_list = QtWidgets.QListView()
+        self.command_list.setMovement(QtWidgets.QListView.Movement.Snap)
+        self.command_list.setDragDropMode(QtWidgets.QListView.DragDropMode.InternalMove)
+        self.command_list.setSelectionMode(QtWidgets.QListView.SelectionMode.SingleSelection)
+        self.command_list.setAcceptDrops(True)
+        self.command_list.setDragEnabled(True)
+        self.command_list.setDropIndicatorShown(True)
         self.command_list.selectionChanged = self.command_list_selection_ui
         self.script_layout.addWidget(self.command_list, 1)
 

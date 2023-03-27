@@ -22,7 +22,7 @@
 0x5c: set_voice - Voice ID
 0x5d: sfx_sad - SFX ID
 0x5e: sfx_sed - SFX ID
-0x62: bg_music - Music ID, Volume, Fade In Frames?
+0x62: bg_music - Music ID, Volume, Fade In Frames
 0x69: wait_tap
 0x6a: bg_shake - unk0, Screen
 0x6b: bg_shake - unk0, Screen

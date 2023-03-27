@@ -52,8 +52,6 @@ class ImagesModel(QtCore.QAbstractListModel):
         image = self.sprite.images[src_row]
         self.sprite.images.pop(src_row)
         self.sprite.images.insert(row, image)
-        max_row = max(src_row, row)
-        min_row = min(src_row, row)
         for animation in self.sprite.animations:
             for frame in animation.frames:
                 if frame.image_index == src_row:

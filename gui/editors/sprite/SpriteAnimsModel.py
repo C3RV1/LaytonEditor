@@ -33,12 +33,12 @@ class AnimsModel(QtCore.QAbstractListModel):
         return QtCore.Qt.DropAction.MoveAction
 
     def mimeData(self, indexes: List[QtCore.QModelIndex]) -> QtCore.QMimeData:
-        mimeData = super().mimeData(indexes)
+        mime_data = super().mimeData(indexes)
         if not indexes:
-            return mimeData
+            return mime_data
         index = indexes[0].row()
-        mimeData.setText(str(index))
-        return mimeData
+        mime_data.setText(str(index))
+        return mime_data
 
     def dropMimeData(self, data: QtCore.QMimeData, action: QtCore.Qt.DropAction, row: int, column: int,
                      parent: QtCore.QModelIndex) -> bool:

@@ -1,0 +1,35 @@
+Screen:
+    Fade,
+    Load Background,
+    Show Chapter,
+    Bottom Tint,
+    Shake,
+    Flash Bottom
+Dialogue:
+    Dialogue Line,
+    Voice Clip
+Character:
+    Set Visibility,
+    Set Slot,
+    Set Animation,
+    Shake
+Sequencing:
+    Set Mode,
+    Set Mode ID
+Wait
+---
+Audio
+    Sound Effect,
+    Stop Train Sound,
+    Play Music,
+    Fade Music
+Progression
+    Unlock Journal,
+    Reveal/Solve Mystery,
+    Send Puzzles to Granny Riddleton,
+    Pick Up/Remove Item,
+    Save Progress Prompt,
+    Unlock Minigame,
+    Add/Remove Companion
+    Complete Game
+Start Tea

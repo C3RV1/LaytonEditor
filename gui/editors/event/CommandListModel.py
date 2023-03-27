@@ -1,3 +1,5 @@
+from typing import List
+
 from PySide6 import QtWidgets, QtGui, QtCore
 from formats.event import Event
 from formats.gds import GDS, GDSCommand
@@ -32,6 +34,39 @@ class CommandListModel(QtCore.QAbstractListModel):
             return command
         return None
 
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+        default_flags = super().flags(index)
+        if not index.isValid():
+            return default_flags | QtCore.Qt.ItemFlag.ItemIsDropEnabled
+        return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
+
+    def supportedDropActions(self) -> QtCore.Qt.DropAction:
+        return QtCore.Qt.DropAction.MoveAction
+
+    def mimeData(self, indexes: List[QtCore.QModelIndex]) -> QtCore.QMimeData:
+        mime_data = super().mimeData(indexes)
+        if not indexes:
+            return mime_data
+        index = indexes[0].row()
+        mime_data.setText(str(index))
+        return mime_data
+
+    def dropMimeData(self, data: QtCore.QMimeData, action: QtCore.Qt.DropAction, row: int, column: int,
+                     parent: QtCore.QModelIndex) -> bool:
+        if row == -1:
+            return False
+        src_row = int(data.text())
+        if src_row < row:
+            row -= 1
+        if src_row == row:
+            return False
+        self.layoutAboutToBeChanged.emit()
+        command = self._event.gds.commands[src_row]
+        self._event.gds.commands.pop(src_row)
+        self._event.gds.commands.insert(row, command)
+        self.layoutChanged.emit()
+        return True
+
     def parse_command(self, command: GDSCommand):
         if command.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x7f, 0x80, 0x81, 0x87, 0x88]:  # fade
             fade_in = command.command in [0x2, 0x32, 0x80, 0x81, 0x88]
@@ -54,7 +89,7 @@ class CommandListModel(QtCore.QAbstractListModel):
 
             duration = "Default frames" if fade_time is None else f"{fade_time} frames"
 
-            return f"Fade {'In' if fade_in else 'Out'}\n" \
+            return f"Screen: Fade {'In' if fade_in else 'Out'}\n" \
                    f"{screens} ({duration})"
         elif command.command == 0x4:
             text_id = command.params[0]
@@ -83,7 +118,7 @@ class CommandListModel(QtCore.QAbstractListModel):
                 0x9: "Event",
                 0xb: "Puzzle"
             }[command.command]
-            return f"Set Mode ID\n" \
+            return f"Sequencing: Set Mode ID\n" \
                    f"{mode} to {command.params[0]}"
         elif command.command in [0x6, 0x7]:
             mode = {
@@ -102,7 +137,7 @@ class CommandListModel(QtCore.QAbstractListModel):
                 "sub ham": "Hamster",
                 "passcode": "Passcode"
             }[command.params[0]]
-            return f"{'Next Mode' if command.command == 0x6 else 'Queue Following Mode'}\n" \
+            return f"Sequencing: {'Next Mode' if command.command == 0x6 else 'Queue Following Mode'}\n" \
                    f"Mode: {mode}"
         elif command.command in [0x31, 0x69, 0x6c, 0x8e]:
             if command.command == 0x31:
@@ -115,9 +150,9 @@ class CommandListModel(QtCore.QAbstractListModel):
                 tm_def = TimeDefinitionsDlz(rom=self._event.rom, filename="data_lt2/rc/tm_def.dlz")
                 frames = tm_def[command.params[0]]
                 line = f"Time Definition {command.params[0]} ({frames} frames)"
-            return f"Wait {line}"
+            return f"Wait: {line}"
         elif command.command in [0x21, 0x22]:
-            return f"Load {'Bottom' if command.command == 0x21 else 'Top'} Background\n" \
+            return f"Screen: Load {'Bottom' if command.command == 0x21 else 'Top'} Background\n" \
                    f"{command.params[0]}"
         elif command.command in [0x2a, 0x2b, 0x2c]:
             if command.command in [0x2a, 0x2b]:
@@ -132,7 +167,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Character {char_name}: {char_id} Visibility\n" \
                    f"{'Show' if show else 'Hide'}{alpha}"
         elif command.command == 0x2d:
-            return f"Show Chapter {command.params[0]}"
+            return f"Screen: Show Chapter {command.params[0]}"
         elif command.command == 0x30:
             char_id = self._event.characters[command.params[0]]
             char_name = self.settings_manager.character_id_to_name[char_id]
@@ -150,7 +185,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Character {char_name}: {char_id} Slot\n" \
                    f"Moving to slot {slot_name}"
         elif command.command == 0x37:
-            return f"Background Tint (RGBA: {command.params})"
+            return f"Screen: Bottom Tint (RGBA: {command.params})"
         elif command.command == 0x3f:
             char_id = command.params[0]
             char_name = self.settings_manager.character_id_to_name[char_id]
@@ -158,47 +193,54 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Character {char_name}: {char_id} Animation\n" \
                    f"Setting animation to {command.params[1]}"
         elif command.command == 0x5c:
-            return f"Set Voice Clip {command.params[0]}"
+            return f"Dialogue: Set Voice Clip {command.params[0]}"
         elif command.command in [0x5d, 0x5e]:
-            return f"Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+            return f"Audio: Sound Effect {command.params[0]} ({'SAD' if command.command == 0x5d else 'SED'})"
+        elif command.command in [0x62, 0x8c]:
+            if command.command == 0x62:
+                return f"Audio: Play Music {command.params[0]} at {command.params[1]} Volume\n" \
+                       f"Fade In {command.params[2]} Frames"
+            else:
+                return f"Audio: Play Music {command.params[0]} at {command.params[1]} Volume\n" \
+                       f"Variation Command? (0x8c)"
         elif command.command in [0x6a, 0x6b]:
-            return f"Shake {'Bottom' if command.command == 0x6a else 'Top'} Screen\n" \
+            return f"Screen: Shake {'Bottom' if command.command == 0x6a else 'Top'}\n" \
                    f"Unk0: {command.params[0]}"
         elif command.command == 0x70:
-            return f"Unlocking Journal {command.params[0]}"
+            return f"Progression: Unlocking Journal {command.params[0]}"
         elif command.command in [0x71, 0x7d]:
-            return f"{'Reveal' if command.command == 0x71 else 'Solve'} Mystery {command.params[0]}"
+            return f"Progression: {'Reveal' if command.command == 0x71 else 'Solve'} Mystery {command.params[0]}"
         elif command.command == 0x73:
-            return f"Start Tea\n" \
+            return f"Minigame: Start Tea\n" \
                    f"Hint ID: {command.params[0]}, Solution ID: {command.params[1]}"
         elif command.command == 0x76:
-            return f"Send Puzzles to Granny Riddleton\n" \
+            return f"Progression: Send Puzzles to Granny Riddleton\n" \
                    f"Puzzle Group: {command.params[0]}"
         elif command.command in [0x77, 0x7a]:
-            return f"{'Pick up' if command.command == 0x77 else 'Remove'} Item {command.params[0]}"
+            return f"Progression: {'Pick Up' if command.command == 0x77 else 'Remove'} Item {command.params[0]}"
         elif command.command == 0x7b:
-            return f"Save Progress Prompt\n" \
+            return f"Progression: Save Progress Prompt\n" \
                    f"Next Event: {command.params[0]}"
         elif command.command == 0x79:
-            return f"Unlocking Minigame {command.params[0]}"
+            return f"Progression: Unlocking Minigame {command.params[0]}"
         elif command.command == 0x7e:
             char_id = self._event.characters[command.params[0]]
             char_name = self.settings_manager.character_id_to_name[char_id]
             return f"Character {char_name}: {char_id} Shake\n" \
                    f"Duration?: {command.params[1]}"
         elif command.command == 0x82:
-            return "Flash Bottom Screen"
+            return "Screen: Flash Bottom Screen"
         elif command.command == 0x89:
-            return "Stop Train Sound"
+            return "Audio: Stop Train Sound"
         elif command.command in [0x8a, 0x8b]:
             tm_def = TimeDefinitionsDlz(rom=self._event.rom, filename="data_lt2/rc/tm_def.dlz")
             frames = tm_def[command.params[1]]
-            return f"Music Fade {'Out' if command.command == 0x8a else 'In'}\n" \
+            return f"Audio: Fade Music {'Out' if command.command == 0x8a else 'In'}\n" \
                    f"In Time Definition {command.params[1]} ({frames} frames)"
         elif command.command in [0x96, 0x97]:
-            return f"{'Add' if command.command == 0x96 else 'Remove'} Companion {command.params[0]}"
+            return f"Progression: {'Add' if command.command == 0x96 else 'Remove'} Companion {command.params[0]}"
         elif command.command == 0xa1:
-            return "Complete Game"
+            return "Progression: Complete Game"
         else:
             return f"Command {hex(command.command)}\n" \
                    f"Parameters: {command.params}"
