@@ -107,8 +107,8 @@ class NazoListDlz(Dlz):
 
 
 class SoundProfile:
-    def __init__(self, bg_music_id, unk0, unk1):
-        self.bg_music_id = bg_music_id
+    def __init__(self, music_id, unk0, unk1):
+        self.music_id = music_id
         self.unk0 = unk0
         self.unk1 = unk1
 
@@ -117,7 +117,7 @@ class SoundProfile:
         return cls(lst[0], lst[1], lst[2])
 
     def to_list(self):
-        return [self.bg_music_id, self.unk0, self.unk1]
+        return [self.music_id, self.unk0, self.unk1]
 
 
 class SoundProfileDlz(Dlz):

@@ -22,6 +22,7 @@ from .BackgroundTint import BackgroundTint
 from .BackgroundShake import BackgroundShake
 from .StartTea import StartTea
 from .SaveProgress import SaveProgress
+from .MusicFade import MusicFade
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtWidgets
@@ -72,9 +73,12 @@ def get_command_widget(command: GDSCommand, event: Event) -> [CommandEditor]:
         widget = CharacterShake()
     elif command.command in [0x96, 0x97]:
         widget = Companion()
+    elif command.command in [0x8a, 0x8b]:
+        widget = MusicFade()
     elif command.command in [0x82, 0x89, 0xa1]:
         widget = QtWidgets.QWidget()
     else:
         widget = Unknown()
-    widget.set_command(command, event)
+    if isinstance(widget, CommandEditor):
+        widget.set_command(command, event)
     return widget

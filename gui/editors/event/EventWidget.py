@@ -93,7 +93,8 @@ class EventEditor(EventWidgetUI):
     def command_list_selection(self, selected: QtCore.QModelIndex):
         if self.active_editor is not None:
             self.active_editor: CommandEditor
-            self.active_editor.save()
+            if isinstance(self.active_editor, CommandEditor):
+                self.active_editor.save()
             if isinstance(self.active_editor, QtWidgets.QWidget):
                 self.script_layout.removeWidget(self.active_editor)
                 self.active_editor.deleteLater()

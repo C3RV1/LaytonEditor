@@ -208,7 +208,7 @@ class PlacePreview(TwoScreenRenderer):
         self.sprite_loader.load(f"data_lt2/ani/map/movemode.arc", self.move_button, True,
                                 convert_alpha=False)
 
-        self.bgm = SMDLStreamPlayer()
+        self.music = SMDLStreamPlayer()
 
         self.sprites = []
         self.objects = []
@@ -268,7 +268,7 @@ class PlacePreview(TwoScreenRenderer):
         for comment in self.comments:
             comment.update()
 
-        self.bgm.update(dt)
+        self.music.update(dt)
 
         if self.overlay_toggle.get_pressed(self.btm_camera):
             PlacePreview.OVERLAY_ACTIVE = not PlacePreview.OVERLAY_ACTIVE

@@ -97,14 +97,14 @@ class PuzzlePlayer(TwoScreenRenderer):
         self.on_hints = False
 
         smd, swd_file, sample_bank = load_smd("data_lt2/sound/BG_035.SMD")
-        self.puzzle_bg_music = SMDLStreamPlayer(loops=True)
-        self.puzzle_bg_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
-        self.puzzle_bg_music.create_temporal_sf2(swd_file, sample_bank)
-        self.puzzle_bg_music.load_sound(smd)
-        self.puzzle_bg_music.play()
+        self.puzzle_music = SMDLStreamPlayer(loops=True)
+        self.puzzle_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
+        self.puzzle_music.create_temporal_sf2(swd_file, sample_bank)
+        self.puzzle_music.load_sound(smd)
+        self.puzzle_music.play()
 
         self.win_screen = PuzzleWinScreen(self.puzzle_data, self.sprite_loader, self.font_loader, self.hints,
-                                          self.puzzle_bg_music)
+                                          self.puzzle_music)
         self.on_win = False
 
         self.run_gds()
@@ -133,10 +133,10 @@ class PuzzlePlayer(TwoScreenRenderer):
         return self.inp.get_key(pg.K_y)
 
     def unload(self):
-        self.puzzle_bg_music.stop()
+        self.puzzle_music.stop()
 
     def update(self, dt: float):
-        self.puzzle_bg_music.update(dt)
+        self.puzzle_music.update(dt)
 
         if self.on_hints:
             self.on_hints = self.hints.update(dt)
@@ -162,7 +162,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         if self.music_toggle.get_pressed(self.btm_camera):
             PuzzlePlayer.MUSIC_ACTIVE = not PuzzlePlayer.MUSIC_ACTIVE
             self.music_toggle.set_tag("OFF" if PuzzlePlayer.MUSIC_ACTIVE else "ON")
-            self.puzzle_bg_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
+            self.puzzle_music.set_volume(0.5 if PuzzlePlayer.MUSIC_ACTIVE else 0)
 
         if self.text_pos < len(self.puzzle_data.text):
             self.current_between_letters += dt
@@ -187,7 +187,7 @@ class PuzzlePlayer(TwoScreenRenderer):
         if self.update_submitted(dt):
             self.win_screen.enter(self.check_solution())
             self.on_win = True
-            self.puzzle_bg_music.fade(1, False)
+            self.puzzle_music.fade(1, False)
             return
         super(PuzzlePlayer, self).update(dt)
 

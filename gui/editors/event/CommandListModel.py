@@ -114,7 +114,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             elif command.command == 0x8e:
                 tm_def = TimeDefinitionsDlz(rom=self._event.rom, filename="data_lt2/rc/tm_def.dlz")
                 frames = tm_def[command.params[0]]
-                line = f"Time Definition {command.params[0]} ({frames} Frames)"
+                line = f"Time Definition {command.params[0]} ({frames} frames)"
             return f"Wait {line}"
         elif command.command in [0x21, 0x22]:
             return f"Load {'Bottom' if command.command == 0x21 else 'Top'} Background\n" \
@@ -190,6 +190,11 @@ class CommandListModel(QtCore.QAbstractListModel):
             return "Flash Bottom Screen"
         elif command.command == 0x89:
             return "Stop Train Sound"
+        elif command.command in [0x8a, 0x8b]:
+            tm_def = TimeDefinitionsDlz(rom=self._event.rom, filename="data_lt2/rc/tm_def.dlz")
+            frames = tm_def[command.params[1]]
+            return f"Music Fade {'Out' if command.command == 0x8a else 'In'}\n" \
+                   f"In Time Definition {command.params[1]} ({frames} frames)"
         elif command.command in [0x96, 0x97]:
             return f"{'Add' if command.command == 0x96 else 'Remove'} Companion {command.params[0]}"
         elif command.command == 0xa1:

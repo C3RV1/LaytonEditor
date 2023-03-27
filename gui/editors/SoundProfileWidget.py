@@ -40,7 +40,7 @@ class SoundProfileEditor(SoundProfileUI):
         if selected.isValid():
             self.form_widget.show()
             self.sound_profile: SoundProfile = selected.data(QtCore.Qt.ItemDataRole.UserRole)
-            self.bg_music_id_spin.setValue(self.sound_profile.bg_music_id)
+            self.music_id_spin.setValue(self.sound_profile.music_id)
             self.unk0_spin.setValue(self.sound_profile.unk0)
             self.unk1_spin.setValue(self.sound_profile.unk1)
         else:
@@ -52,8 +52,8 @@ class SoundProfileEditor(SoundProfileUI):
         self.sound_profile_model.set_snd_dlz(snd_dlz)
         self.sound_profiles_list.setModel(self.sound_profile_model)
 
-    def bg_music_id_spin_edit(self, value: int):
-        self.sound_profile.bg_music_id = value
+    def music_id_spin_edit(self, value: int):
+        self.sound_profile.music_id = value
 
     def unk0_spin_edit(self, value: int):
         self.sound_profile.unk0 = value

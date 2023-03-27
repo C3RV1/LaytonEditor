@@ -48,6 +48,7 @@
 0x8a: bgm_fade_out
 0x8b: bgm_fade_in
 0x8c: bg_music2 - Music ID, Volume, unk2 (2)
+0x8e: wait_tm_def - tm_def_id
 0x96: add_companion - Companion ID?
 0x97: remove_companion - Companion ID?
 0x99: play_sfx_after? - SAD ID, volume_start, volume_end, 1 if dialogue - 2 if other

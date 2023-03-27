@@ -9,4 +9,5 @@ class SetVoiceUI(QtWidgets.QWidget):
         self.setLayout(self.form_layout)
 
         self.voice_clip = QtWidgets.QSpinBox()
+        self.voice_clip.setMaximum(65536)
         self.form_layout.addRow("Voice Clip", self.voice_clip)

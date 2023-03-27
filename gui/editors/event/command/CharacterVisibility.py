@@ -22,12 +22,12 @@ class CharacterVisibility(CommandEditor, CharacterVisibilityUI):
 
         if command.command in [0x2a, 0x2b]:
             self.alpha.setChecked(False)
-            self.shown.setCurrentIndex(1 if command.command == 0x2a else 0)
+            self.shown.setCurrentIndex(0 if command.command == 0x2a else 1)
         else:
             self.alpha.setChecked(True)
             if abs(command.params[1]) != 2.0:
                 logging.warning(f"Event {event.event_id}: Character visibility is not +-0.2 ({command.params[1]})")
-            self.shown.setChecked(1 if command.params[1] > 0 else 0)
+            self.shown.setCurrentIndex(0 if command.params[1] > 0 else 1)
 
     def save(self):
         self.command.params = [self.character.currentData(QtCore.Qt.ItemDataRole.UserRole)]

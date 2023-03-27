@@ -16,10 +16,10 @@ class SoundProfileUI(QtWidgets.QWidget):
         self.form_widget = QtWidgets.QWidget()
         self.form_layout = QtWidgets.QFormLayout()
 
-        self.bg_music_id_spin = QtWidgets.QSpinBox()
-        self.bg_music_id_spin.setMaximum(65535)
-        self.bg_music_id_spin.valueChanged.connect(self.bg_music_id_spin_edit)
-        self.form_layout.addRow("Background Music ID", self.bg_music_id_spin)
+        self.music_id_spin = QtWidgets.QSpinBox()
+        self.music_id_spin.setMaximum(65535)
+        self.music_id_spin.valueChanged.connect(self.music_id_spin_edit)
+        self.form_layout.addRow("Music ID", self.music_id_spin)
 
         self.unk0_spin = QtWidgets.QSpinBox()
         self.unk0_spin.valueChanged.connect(self.unk0_spin_edit)
@@ -57,7 +57,7 @@ class SoundProfileUI(QtWidgets.QWidget):
     def save_btn_click(self):
         pass
 
-    def bg_music_id_spin_edit(self, value: int):
+    def music_id_spin_edit(self, value: int):
         pass
 
     def unk0_spin_edit(self, value: int):
