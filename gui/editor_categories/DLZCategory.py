@@ -1,7 +1,7 @@
 from ..EditorTypes import EditorCategory, EditorObject
 
 from PySide6 import QtCore, QtWidgets, QtGui
-from formats.dlz import SoundProfileDlz, SoundProfile
+from formats.dlz import SoundProfileDlz, TimeDefinitionsDlz
 
 
 class SoundProfileNode(EditorObject):
@@ -9,7 +9,6 @@ class SoundProfileNode(EditorObject):
         super(SoundProfileNode, self).__init__()
         self.category = category
         self.name = "Sound Profiles"
-        self.items = {}
         self.sound_profile_dlz: SoundProfileDlz = None
 
     def reset_file_system(self, rom):
@@ -22,11 +21,31 @@ class SoundProfileNode(EditorObject):
         return "Sound Profiles"
 
 
+class TimeDefinitionsNode(EditorObject):
+    def __init__(self, category):
+        super().__init__()
+        self.category = category
+        self.name = "Time Definitions"
+        self.time_def_dlz: TimeDefinitionsDlz = None
+
+    def reset_file_system(self, rom):
+        self.time_def_dlz = TimeDefinitionsDlz(rom=rom, filename="/data_lt2/rc/tm_def.dlz")
+
+    def get_time_definitions_dlz(self):
+        return self.time_def_dlz
+
+    def data(self):
+        return "Time Definitions"
+
+
 class DLZCategory(EditorCategory):
     def __init__(self):
         super(DLZCategory, self).__init__()
         self.name = "DLZ"
-        self.dlz_items = [SoundProfileNode(self)]
+        self.dlz_items = [
+            SoundProfileNode(self),
+            TimeDefinitionsNode(self)
+        ]
 
     def reset_file_system(self):
         for dlz_item in self.dlz_items:

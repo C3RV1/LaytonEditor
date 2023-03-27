@@ -223,3 +223,39 @@ class EventInf2Dlz(Dlz):
         constructed.sort(key=lambda x: x[0])
         self.pack("<HHH6s", constructed)
         super(EventInf2Dlz, self).write_stream(stream)
+
+
+class TimeDefinitionsDlz(Dlz):  # tm_def.dlz
+    def __init__(self, *args, **kwargs):
+        self.time_definitions = {}
+        super().__init__(*args, **kwargs)
+
+    def __len__(self):
+        return len(self.time_definitions)
+
+    def __getitem__(self, item):
+        if item not in self.time_definitions:
+            logging.warning(f"Time definition {item} not found in tm_def.dlz")
+            return 0
+        return self.time_definitions[item]
+
+    def __setitem__(self, key, value):
+        self.time_definitions[key] = value
+
+    def index_key(self, i):
+        keys = self.time_definitions.keys()
+        return list(keys)[i]
+
+    def read_stream(self, stream: BinaryIO):
+        super().read_stream(stream)
+        unpacked_data = self.unpack("<HH")  # e_id, id, time_frames TODO: figure out other
+        for tm_def in unpacked_data:
+            self.time_definitions[tm_def[0]] = tm_def[1]
+
+    def write_stream(self, stream: BinaryIO):
+        constructed = []
+        for tm_def_id, frames in self.time_definitions.items():
+            constructed.append([tm_def_id, frames])
+        constructed.sort(key=lambda x: x[0])
+        self.pack("<HH", constructed)
+        super().write_stream(stream)

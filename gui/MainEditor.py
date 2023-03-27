@@ -46,6 +46,7 @@ class MainEditor(MainEditorUI):
         self.sprite_editor = SpriteEditor(self)
         self.sound_profile_editor = SoundProfileEditor()
         self.sound_bank_editor = SoundBankEditor()
+        self.time_definitions_editor = TimeDefinitionsEditor()
 
         self.event_editor.hide()
         self.puzzle_editor.hide()
@@ -56,6 +57,7 @@ class MainEditor(MainEditorUI):
         self.sprite_editor.hide()
         self.sound_profile_editor.hide()
         self.sound_bank_editor.hide()
+        self.time_definitions_editor.hide()
 
         self.horizontal_layout.addWidget(self.event_editor, 3)
         self.horizontal_layout.addWidget(self.puzzle_editor, 3)
@@ -66,6 +68,7 @@ class MainEditor(MainEditorUI):
         self.horizontal_layout.addWidget(self.sprite_editor, 3)
         self.horizontal_layout.addWidget(self.sound_profile_editor, 3)
         self.horizontal_layout.addWidget(self.sound_bank_editor, 3)
+        self.horizontal_layout.addWidget(self.time_definitions_editor, 3)
 
         self.active_editor = self.empty_editor
 
@@ -208,6 +211,9 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, SoundProfileNode):
             self.active_editor = self.sound_profile_editor
             self.sound_profile_editor.set_snd_profile(node.get_sound_profile_dlz())
+        elif isinstance(node, TimeDefinitionsNode):
+            self.active_editor = self.time_definitions_editor
+            self.time_definitions_editor.set_time_dlz(node.get_time_definitions_dlz())
         elif isinstance(node, SpriteAsset):
             self.active_editor = self.sprite_editor
             self.sprite_editor.set_sprite(node.get_sprite())
