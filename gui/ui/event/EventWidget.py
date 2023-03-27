@@ -30,6 +30,8 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.command_list.setDragEnabled(True)
         self.command_list.setDropIndicatorShown(True)
         self.command_list.selectionChanged = self.command_list_selection_ui
+        self.command_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.command_list.customContextMenuRequested.connect(self.command_list_context_menu)
         self.script_layout.addWidget(self.command_list, 1)
 
         self.btn_window_layout = QtWidgets.QGridLayout()
@@ -68,6 +70,9 @@ class EventWidgetUI(QtWidgets.QWidget):
         pass
 
     def command_list_selection(self, selected: QtCore.QModelIndex):
+        pass
+
+    def command_list_context_menu(self, point: QtCore.QPoint):
         pass
 
     def get_event_properties_widget(self):

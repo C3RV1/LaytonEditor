@@ -19,6 +19,7 @@ from gui.editor_categories.Events import EventCategory, EventNode
 from .CommandListModel import CommandListModel
 from .command import get_command_widget
 from .command.CommandEditor import CommandEditor
+from .ContextMenu import CommandListContextMenu
 
 
 class EventEditor(EventWidgetUI):
@@ -29,6 +30,8 @@ class EventEditor(EventWidgetUI):
         self.command_model = CommandListModel()
         self.active_editor: [CommandEditor] = None
         self.main_editor: MainEditor = main_editor
+
+        self.context_menu = CommandListContextMenu()
 
     def tab_changed(self, current: int):
         if current != 1:
@@ -106,3 +109,6 @@ class EventEditor(EventWidgetUI):
         self.active_editor = get_command_widget(selected.data(QtCore.Qt.ItemDataRole.UserRole), self.event)
         if isinstance(self.active_editor, QtWidgets.QWidget):
             self.script_layout.addWidget(self.active_editor, 1)
+
+    def command_list_context_menu(self, point: QtCore.QPoint):
+        self.context_menu.exec(self.command_list.mapToGlobal(point))

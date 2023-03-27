@@ -185,7 +185,7 @@ class CommandListModel(QtCore.QAbstractListModel):
             return f"Character {char_name}: {char_id} Slot\n" \
                    f"Moving to slot {slot_name}"
         elif command.command == 0x37:
-            return f"Screen: Bottom Tint (RGBA: {command.params})"
+            return f"Screen: Set Bottom Tint (RGBA: {command.params})"
         elif command.command == 0x3f:
             char_id = command.params[0]
             char_name = self.settings_manager.character_id_to_name[char_id]

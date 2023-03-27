@@ -2,7 +2,7 @@ Screen:
     Fade,
     Load Background,
     Show Chapter,
-    Bottom Tint,
+    Set Bottom Tint,
     Shake,
     Flash Bottom
 Dialogue:
