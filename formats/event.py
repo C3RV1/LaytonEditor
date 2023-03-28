@@ -126,6 +126,7 @@ class Event:
         file = events_packed.open(f"d{prefix}_{postfix}.dat", "wb")
         self.write_stream(file)
         file.close()
+        self._sort_and_remove_unused_texts()
         self._save_gds()
         self._clear_event_texts()
         self._save_texts()
@@ -233,6 +234,22 @@ class Event:
         event_texts = self._list_event_texts()
         for dial_id, filename in event_texts.items():
             self.texts[dial_id] = formats.gds.GDS(filename=filename, rom=self._texts_archive)
+
+    def _sort_and_remove_unused_texts(self):
+        text_order = []
+        # sort in order of appearance
+        for command in self.gds.commands:
+            if command.command == 0x4:
+                text_order.append(command.params[0])
+                command.params[0] = len(text_order) * 100
+
+        # replace in texts, while dropping the ones not present
+        old_texts = self.texts
+        self.texts = {}
+        for text_key in old_texts.keys():
+            if text_key in text_order:
+                text = old_texts[text_key]
+                self.texts[(text_order.index(text_key) + 1) * 100] = text
 
     def _save_texts(self):
         prefix, postfix, complete = self._resolve_event_id()

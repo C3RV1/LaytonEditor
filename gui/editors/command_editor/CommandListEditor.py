@@ -11,7 +11,12 @@ class CommandListEditor(CommandListEditorUI):
         self.active_editor: [CommandEditor] = None
         self.get_widget_func = get_widget_function
         self.command_model = CommandListModel(command_parser)
-        self.context_menu = CommandListContextMenu(context_menu_structure)
+        self.context_menu = CommandListContextMenu(
+            context_menu_structure,
+            self.command_model.layoutAboutToBeChanged.emit,
+            self.command_model.layoutChanged.emit,
+            self.clear_selection
+        )
 
     def clear_selection(self):
         self.command_list.setCurrentIndex(QtCore.QModelIndex())
@@ -22,6 +27,7 @@ class CommandListEditor(CommandListEditorUI):
 
     def set_gds_and_data(self, gds, **kwargs):
         self.command_model.set_gds_and_data(gds, **kwargs)
+        self.context_menu.set_gds_and_data(gds, **kwargs)
         self.command_list.setModel(self.command_model)
 
     def command_list_selection(self, selected: QtCore.QModelIndex):
@@ -35,10 +41,13 @@ class CommandListEditor(CommandListEditorUI):
             self.active_editor = None
 
         if not selected.isValid():
+            self.context_menu.hide_remove()
             return
+        active_command = selected.data(QtCore.Qt.ItemDataRole.UserRole)
+        self.context_menu.show_remove(active_command)
 
         self.active_editor = self.get_widget_func(
-            selected.data(QtCore.Qt.ItemDataRole.UserRole),
+            active_command,
             **self.command_model.cmd_data
         )
         if isinstance(self.active_editor, QtWidgets.QWidget):

@@ -1,9 +1,10 @@
+import logging
+
 from formats.event import Event
-from formats.gds import GDSCommand
+from formats.gds import GDSCommand, GDS
 from gui.SettingsManager import SettingsManager
 from utility.replace_substitutions import replace_substitutions
 from formats.dlz import TimeDefinitionsDlz
-from .CommandListModel import CommandListModel
 
 
 def parse_fade(command: GDSCommand, **_kwargs):
@@ -31,8 +32,9 @@ def parse_fade(command: GDSCommand, **_kwargs):
            f"{screens} ({duration})"
 
 
-def parse_dialogue(command: GDSCommand, event: Event=None, **_kwargs):
+def parse_dialogue(command: GDSCommand, event: Event = None, **_kwargs):
     if event is None:
+        logging.error("Error: Dialogue event=None???", exc_info=True)
         return "Error: Dialogue event=None???"
     text_id = command.params[0]
     text = event.get_text(text_id)
@@ -94,7 +96,7 @@ def parse_wait(command: GDSCommand, rom=None, **_kwargs):
         line = f"Tap"
     elif command.command == 0x6c:
         line = f"Tap or {command.params[0]} Frames"
-    elif command.command == 0x8e:
+    else:  # 0x8e
         if rom is None:
             return f"Error: Wait Time Definition rom=None???"
         tm_def = TimeDefinitionsDlz(rom=rom, filename="data_lt2/rc/tm_def.dlz")
@@ -110,7 +112,8 @@ def parse_load_screen(command: GDSCommand, **_kwargs):
 
 def parse_character_visibility(command: GDSCommand, event=None, **_kwargs):
     if event is None:
-        return f"Error: Character Visibility event=None???"
+        logging.error("Error: Character Visibility event=None???", exc_info=True)
+        return "Error: Character Visibility event=None???"
     if command.command in [0x2a, 0x2b]:
         show = command.command == 0x2a
     else:
@@ -130,7 +133,8 @@ def parse_chapter(command: GDSCommand, _event, _rom):
 
 def parse_character_slot(command: GDSCommand, event=None, **_kwargs):
     if event is None:
-        return f"Error: Character Slot event=None???"
+        logging.error("Error: Character Slot event=None???", exc_info=True)
+        return "Error: Character Slot event=None???"
     char_id = event.characters[command.params[0]]
     char_name = SettingsManager().character_id_to_name[char_id]
 
@@ -161,7 +165,7 @@ def parse_character_animation(command: GDSCommand, **_kwargs):
 
 
 def parse_voice_clip(command: GDSCommand, **_kwargs):
-    return f"Dialogue: Set Voice Clip {command.params[0]}"
+    return f"Audio: Set Voice Clip {command.params[0]}"
 
 
 def parse_sound_effect(command: GDSCommand, **_kwargs):
@@ -301,56 +305,79 @@ script_cmd_parsers = (
 )
 
 
+class CommandFactory:
+    def __init__(self, command: int, parameters: tuple):
+        self.command: int = command
+        self.parameters: tuple = parameters
+
+    def create(self, **kwargs):
+        return GDSCommand(self.command, list(self.parameters))
+
+
+class DialogueCommandFactory(CommandFactory):
+    def __init__(self, command=0x4, parameters=tuple()):
+        super().__init__(command, parameters)
+
+    def create(self, event: Event = None, **kwargs):
+        if event is None:
+            logging.error("Error: DialogueFactory event=None???", exc_info=True)
+            return None
+        text_index = 100
+        while text_index in event.texts:
+            text_index += 100
+        event.texts[text_index] = GDS(params=[0, "NONE", "NONE", 2, ""])
+        return GDSCommand(0x4, [text_index])
+
+
 event_cmd_context_menu = (
     ("Screen", (
-        ("Fade", None),
-        ("Load Background", None),
-        ("Set Bottom Tint", None),
-        ("Shake", None),
-        ("Flash Bottom", None)
+        ("Fade", CommandFactory(0x2, tuple())),
+        ("Load Background", CommandFactory(0x21, ("", 3))),
+        ("Set Bottom Tint", CommandFactory(0x37, (15, 5, 0, 120))),
+        ("Shake", CommandFactory(0x6a, (30,))),
+        ("Flash Bottom", CommandFactory(0x82, tuple()))
     )),
-    ("Dialogue", (
-        ("Dialogue Line", None),
-        ("Voice Clip", None)
-    )),
+    ("Dialogue", DialogueCommandFactory()),
     ("Character", (
-        ("Set Visibility", None),
-        ("Set Slot", None),
+        ("Set Visibility", CommandFactory(0x2a, (0,))),
+        ("Set Slot", CommandFactory(0x30, (0, 0))),
         ("Set Animation", None),
-        ("Shake", None)
+        ("Shake", CommandFactory(0x7e, (0, 10)))
     )),
     ("Sequencing", (
-        ("Set Mode", None),
-        ("Set Mode ID", None)
+        ("Set Mode", CommandFactory(0x6, ("puzzle",))),
+        ("Set Mode ID", CommandFactory(0x5, (0,)))
     )),
-    ("Wait", None),
+    ("Wait", CommandFactory(0x69, tuple())),
     (None, None),
     ("Audio", (
-        ("Sound Effect", None),
-        ("Stop Train Sound", None),
-        ("Play Music", None),
-        ("Fade Music", None)
+        ("Sound Effect", CommandFactory(0x5d, (0,))),
+        ("Stop Train Sound", CommandFactory(0x89, tuple())),
+        ("Play Music", CommandFactory(0x62, (0, 1.0, 0))),
+        ("Fade Music", CommandFactory(0x8a, (0.0, 0))),
+        ("Voice Clip", CommandFactory(0x5c, (0,)))
     )),
     ("Progression", (
-        ("Unlock Journal", None),
-        ("Reveal/Solve Mystery", None),
-        ("Send Puzzles to Granny Riddleton", None),
-        ("Pick Up/Remove Item", None),
-        ("Save Progress Prompt", None),
-        ("Unlock Minigame", None),
-        ("Companion", None),
-        ("Complete Game", None)
-    ))
+        ("Unlock Journal", CommandFactory(0x70, (0,))),
+        ("Reveal/Solve Mystery", CommandFactory(0x71, (1,))),
+        ("Send Puzzles to Granny Riddleton", CommandFactory(0x76, (1,))),
+        ("Pick Up/Remove Item", CommandFactory(0x77, (0,))),
+        ("Save Progress Prompt", CommandFactory(0x7b, (0,))),
+        ("Unlock Minigame", CommandFactory(0x79, (0,))),
+        ("Companion", CommandFactory(0x96, (1,))),
+        ("Complete Game", CommandFactory(0xa1, tuple()))
+    )),
+    ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
 )
 
 
 script_cmd_context_menu = (
     ("Screen", (
-        ("Fade", None),
-        ("Load Background", None),
-        ("Set Bottom Tint", None),
-        ("Shake", None),
-        ("Flash Bottom", None)
+        ("Fade", CommandFactory(0x2, tuple())),
+        ("Load Background", CommandFactory(0x21, ("", 3))),
+        ("Shake", CommandFactory(0x6a, (30,))),
+        ("Flash Bottom", CommandFactory(0x82, tuple()))
     )),
-    ("Wait", None)
+    ("Wait", CommandFactory(0x69, tuple())),
+    ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
 )

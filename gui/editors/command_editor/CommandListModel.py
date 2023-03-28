@@ -9,7 +9,7 @@ class CommandListModel(QtCore.QAbstractListModel):
     def __init__(self, command_parsers):
         super(CommandListModel, self).__init__()
         self._gds: GDS = None
-        self.cmd_data: dict = None
+        self.cmd_data: dict = {}
         self._command_parsers = {}
         for cmd_list, cmd_parser in command_parsers:
             for cmd in cmd_list:
