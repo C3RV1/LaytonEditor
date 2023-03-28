@@ -31,6 +31,13 @@ class BGImage(FileFormat):
     """
 
     _compressed_default = 2
+    
+    def __init__(self, filename: str = None, **kwargs):
+        self._compressed_default = 2
+        if filename is not None:
+            if filename.endswith(".arb"):
+                self._compressed_default = 0
+        super().__init__(filename=filename, **kwargs)
 
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):
