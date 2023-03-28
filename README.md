@@ -13,7 +13,7 @@ tested, but would probably lack many features, and stability is not guaranteed.
 Note: LaytonEditor requires Python3 (developed under 3.9).
 
 To install LaytonEditor, just clone the repository and install the required dependencies from the
-requirements.txt file using pip install -r requirements.txt. Then, run
+requirements.txt file using `pip install -r requirements.txt`. Then, run
 `python .\setup.py build_ext --inplace` to compile the cython sources.
 
 To start the editor, run `python laytonEditor.py`.
