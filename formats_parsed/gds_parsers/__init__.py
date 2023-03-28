@@ -2,7 +2,6 @@ from .WriteGDSParser import WriteGDSParser
 from .TileRotate2GDSParser import TileRotate2GDSParser
 from .MultipleChoiceGDSParser import MultipleChoiceGDSParser
 from .OnOffGDSParser import OnOffGDSParser
-from .EventGDSParser import EventGDSParser
 from .SortGDSParser import SortGDSParser
 from .SlideGDSParser import SlideGDSParser
 from .AreaGDSParser import AreaGDSParser
