@@ -2,8 +2,6 @@ import logging
 
 from gui.ui.event.EventWidget import EventWidgetUI
 from formats.event import Event
-from formats_parsed.gds_parsers.EventGDSParser import EventGDSParser
-from formats_parsed.dcc import DCCParser
 from gui.editors.command_editor.command_parsers import event_cmd_parsers, event_cmd_context_menu
 
 from previewers.event.EventPlayer import EventPlayer
@@ -47,11 +45,6 @@ class EventEditor(EventWidgetUI):
         self.script_editor.set_gds_and_data(self.event.gds, event=self.event, rom=self.event.rom)
         self.script_editor.clear_selection()
 
-        dcc_parser = DCCParser()
-        EventGDSParser(ev).serialize_into_dcc(ev.gds, dcc_parser)
-        serialized = dcc_parser.serialize()
-        self.text_editor.setPlainText(serialized)
-
     def preview_click(self):
         self.script_editor.save()
         self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
@@ -61,28 +54,6 @@ class EventEditor(EventWidgetUI):
         self.event.save_to_rom()
         self.reload_category_preview()
         self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-
-    def preview_dcc_btn_click(self):
-        text = self.text_editor.toPlainText()
-        dcc_parser = DCCParser()
-        dcc_parser.parse(text)
-        is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
-        if is_ok:
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        else:
-            logging.error(f"Error compiling DCC: {error}")
-
-    def save_dcc_btn_click(self):
-        text = self.text_editor.toPlainText()
-        dcc_parser = DCCParser()
-        dcc_parser.parse(text)
-        is_ok, error = EventGDSParser(self.event).parse_from_dcc(self.event.gds, dcc_parser)
-        if is_ok:
-            self.event.save_to_rom()
-            self.reload_category_preview()
-            self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
-        else:
-            logging.error(f"Error compiling DCC: {error}")
 
     def reload_category_preview(self):
         event_node: EventNode = self.event_node.internalPointer()
