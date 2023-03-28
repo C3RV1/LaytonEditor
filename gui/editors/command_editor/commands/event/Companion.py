@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.Companion import CompanionUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class Companion(CommandEditor, CompanionUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(Companion, self).set_command(command, event)
+class Companion(CommandEditorEvent, CompanionUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(Companion, self).set_command(command, event=event, **kwargs)
         if command.command == 0x96:
             self.mode.setCurrentIndex(0)
         else:

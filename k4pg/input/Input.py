@@ -120,7 +120,6 @@ class Input(object):
                 self._joystick_hat[event.joy] = event.value
                 self._joystick_hat_or_axis[event.joy] = 1
             elif event.type == pygame.JOYBUTTONDOWN:
-                print(event.button)
                 self._joystick_buttons_down[event.joy][event.button] = True
                 self._joystick_buttons_updated[event.joy].append(event.button)
             elif event.type == pygame.JOYBUTTONUP:

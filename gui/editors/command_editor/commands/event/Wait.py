@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.Wait import WaitUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class Wait(CommandEditor, WaitUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(Wait, self).set_command(command, event)
+class Wait(CommandEditorEvent, WaitUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(Wait, self).set_command(command, event=event, **kwargs)
         if command.command == 0x8e:
             self.time_definition.setChecked(True)
             self.time_definition_id.setEnabled(True)

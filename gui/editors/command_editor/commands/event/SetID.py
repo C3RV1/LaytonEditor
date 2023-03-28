@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.SetID import SetIDUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class SetID(CommandEditor, SetIDUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(SetID, self).set_command(command, event)
+class SetID(CommandEditorEvent, SetIDUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(SetID, self).set_command(command, event=event, **kwargs)
         mode_index = {
             0x5: 0,
             0x8: 1,

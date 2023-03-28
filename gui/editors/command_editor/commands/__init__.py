@@ -1,5 +1,5 @@
 from .event.Fade import Fade
-from .event.Unknown import Unknown
+from .Unknown import Unknown
 from .event.BackgroundLoad import BackgroundLoad
 from .event.SetID import SetID
 from .event.SetMode import SetMode
@@ -24,12 +24,11 @@ from .event.SaveProgress import SaveProgress
 from .event.MusicFade import MusicFade
 
 from formats.gds import GDSCommand
-from formats.event import Event
 from PySide6 import QtWidgets
 from .CommandEditor import CommandEditor
 
 
-def get_event_command_widget(command: GDSCommand, event: Event = None, **_kwargs) -> [CommandEditor]:
+def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
     if command.command in [0x2, 0x3, 0x32, 0x33, 0x72, 0x7f, 0x80, 0x81, 0x87, 0x88]:
         widget = Fade()
     elif command.command == 0x4:
@@ -81,5 +80,5 @@ def get_event_command_widget(command: GDSCommand, event: Event = None, **_kwargs
     else:
         widget = Unknown()
     if isinstance(widget, CommandEditor):
-        widget.set_command(command, event)
+        widget.set_command(command, **kwargs)
     return widget

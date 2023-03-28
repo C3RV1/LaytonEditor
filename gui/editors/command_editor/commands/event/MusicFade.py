@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.MusicFade import MusicFadeUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class MusicFade(CommandEditor, MusicFadeUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(MusicFade, self).set_command(command, event)
+class MusicFade(CommandEditorEvent, MusicFadeUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(MusicFade, self).set_command(command, event=event, **kwargs)
         if command.command == 0x8b:
             self.fade_type.setCurrentIndex(0)
         else:

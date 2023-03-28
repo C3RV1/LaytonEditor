@@ -60,7 +60,6 @@ class FolderNode(EditorObject):
                 name: str = self.files[row2]
                 if name.endswith(".plz"):
                     path = self.path + "/" + name
-                    print(path)
                     self.children[row] = self.create_folder(self.category, self.path + "/" + name,
                                                             self.category.rom.get_archive(path), parent_idx)
                 else:

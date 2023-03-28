@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.BackgroundLoad import BackgroundLoadUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class BackgroundLoad(CommandEditor, BackgroundLoadUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(BackgroundLoad, self).set_command(command, event)
+class BackgroundLoad(CommandEditorEvent, BackgroundLoadUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(BackgroundLoad, self).set_command(command, event=event, **kwargs)
         self.screens.setCurrentIndex(0 if command.command == 0x21 else 1)
         self.path.setText(command.params[0])
 

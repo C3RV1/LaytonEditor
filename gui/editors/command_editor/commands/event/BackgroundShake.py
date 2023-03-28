@@ -1,13 +1,13 @@
 from gui.ui.command_editor.commands.event.BackgroundShake import BackgroundShakeUI
-from ..CommandEditor import CommandEditor
+from ..CommandEditor import CommandEditorEvent
 from formats.gds import GDSCommand
 from formats.event import Event
 from PySide6 import QtCore
 
 
-class BackgroundShake(CommandEditor, BackgroundShakeUI):
-    def set_command(self, command: GDSCommand, event: Event):
-        super(BackgroundShake, self).set_command(command, event)
+class BackgroundShake(CommandEditorEvent, BackgroundShakeUI):
+    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+        super(BackgroundShake, self).set_command(command, event=event, **kwargs)
         if command.command == 0x6a:
             self.fade_screens.setCurrentIndex(0)
         else:
