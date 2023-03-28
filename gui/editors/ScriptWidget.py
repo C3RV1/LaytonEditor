@@ -1,29 +1,32 @@
-from ..ui.TextWidget import TextWidgetUI
+from ..ui.ScriptWidget import ScriptWidgetUI
 
 from formats.gds import GDS
-from formats_parsed.gds_parsers import EventGDSParser
-from formats_parsed.dcc import DCCParser
+
+from gui.editors.command_editor.CommandListEditor import CommandListEditor
+from gui.editors.command_editor.commands import get_event_command_widget
+from gui.editors.command_editor.command_parsers import script_cmd_parsers, script_cmd_context_menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..MainEditor import MainEditor
 
 
-class ScriptEditor(TextWidgetUI):
+class ScriptEditor(ScriptWidgetUI):
+    script_editor: CommandListEditor
+
     def __init__(self, main_editor):
         super(ScriptEditor, self).__init__()
         self.main_editor: MainEditor = main_editor
         self.gds: GDS = None
-        self.dcc_parser = DCCParser()
+
+    def get_command_editor_widget(self):
+        return CommandListEditor(get_event_command_widget, script_cmd_parsers, script_cmd_context_menu)
 
     def set_script(self, gds: GDS):
         self.gds = gds
-        self.dcc_parser.reset()
-        EventGDSParser().serialize_into_dcc(gds, self.dcc_parser)
-        self.text_editor.setPlainText(self.dcc_parser.serialize())
+        self.script_editor.set_gds_and_data(gds, rom=self.main_editor.rom)
+        self.script_editor.clear_selection()
 
     def save_btn_click(self):
-        self.dcc_parser.reset()
-        self.dcc_parser.parse(self.text_editor.toPlainText())
-        EventGDSParser().parse_from_dcc(self.gds, self.dcc_parser)
+        self.script_editor.save()
         self.gds.save()

@@ -26,6 +26,7 @@ unknown event commands
 0x83 17020
 0x6c 18390
 0x9b 18450
+0x9c 17240
 0xa1 18460 (save?)
 0x9e 18490 18500
 0x73 30... (start tea?)

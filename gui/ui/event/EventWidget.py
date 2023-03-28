@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from .EventPropertiesWidget import EventPropertiesWidgetUI
+from gui.ui.command_editor.CommandListWidget import CommandListEditorUI
 
 
 class EventWidgetUI(QtWidgets.QWidget):
@@ -13,26 +14,11 @@ class EventWidgetUI(QtWidgets.QWidget):
         self.character_widget = self.get_event_properties_widget()
         self.tab_widget.addTab(self.character_widget, "Properties")
 
-        self.script_editor = QtWidgets.QWidget()
+        self.script_editor = self.get_command_editor_widget()
         self.tab_widget.addTab(self.script_editor, "Visual Script")
 
         self.text_editor = QtWidgets.QPlainTextEdit(self.tab_widget)
         self.tab_widget.addTab(self.text_editor, "Script")
-
-        self.script_layout = QtWidgets.QHBoxLayout()
-        self.script_editor.setLayout(self.script_layout)
-
-        self.command_list = QtWidgets.QListView()
-        self.command_list.setMovement(QtWidgets.QListView.Movement.Snap)
-        self.command_list.setDragDropMode(QtWidgets.QListView.DragDropMode.InternalMove)
-        self.command_list.setSelectionMode(QtWidgets.QListView.SelectionMode.SingleSelection)
-        self.command_list.setAcceptDrops(True)
-        self.command_list.setDragEnabled(True)
-        self.command_list.setDropIndicatorShown(True)
-        self.command_list.selectionChanged = self.command_list_selection_ui
-        self.command_list.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
-        self.command_list.customContextMenuRequested.connect(self.command_list_context_menu)
-        self.script_layout.addWidget(self.command_list, 1)
 
         self.btn_window_layout = QtWidgets.QGridLayout()
 
@@ -59,20 +45,10 @@ class EventWidgetUI(QtWidgets.QWidget):
 
         self.tab_widget.currentChanged.connect(self.tab_changed)
 
-    def command_list_selection_ui(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection):
-        QtWidgets.QListView.selectionChanged(self.command_list, selected, deselected)
-        if selected.indexes():
-            self.command_list_selection(selected.indexes()[0])
-        else:
-            self.command_list_selection(QtCore.QModelIndex())
+    def get_command_editor_widget(self):
+        return CommandListEditorUI()
 
     def tab_changed(self, current: int):
-        pass
-
-    def command_list_selection(self, selected: QtCore.QModelIndex):
-        pass
-
-    def command_list_context_menu(self, point: QtCore.QPoint):
         pass
 
     def get_event_properties_widget(self):

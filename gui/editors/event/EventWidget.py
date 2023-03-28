@@ -4,7 +4,7 @@ from gui.ui.event.EventWidget import EventWidgetUI
 from formats.event import Event
 from formats_parsed.gds_parsers.EventGDSParser import EventGDSParser
 from formats_parsed.dcc import DCCParser
-from formats_parsed.EventScript import EventScript
+from gui.editors.command_editor.command_parsers import event_cmd_parsers, event_cmd_context_menu
 
 from previewers.event.EventPlayer import EventPlayer
 
@@ -16,26 +16,25 @@ if TYPE_CHECKING:
 from .EventPropertiesWidget import EventPropertiesWidget
 from PySide6 import QtCore, QtWidgets
 from gui.editor_categories.Events import EventCategory, EventNode
-from .CommandListModel import CommandListModel
-from .command import get_command_widget
-from .command.CommandEditor import CommandEditor
-from .ContextMenu import CommandListContextMenu
+from gui.editors.command_editor.commands import get_event_command_widget
+from gui.editors.command_editor.CommandListEditor import CommandListEditor
 
 
 class EventEditor(EventWidgetUI):
+    script_editor: CommandListEditor
+
     def __init__(self, main_editor):
         super(EventEditor, self).__init__()
         self.event = None
         self.event_node: QtCore.QModelIndex = None
-        self.command_model = CommandListModel()
-        self.active_editor: [CommandEditor] = None
         self.main_editor: MainEditor = main_editor
 
-        self.context_menu = CommandListContextMenu()
+    def get_command_editor_widget(self):
+        return CommandListEditor(get_event_command_widget, event_cmd_parsers, event_cmd_context_menu)
 
     def tab_changed(self, current: int):
         if current != 1:
-            self.command_list.clearSelection()
+            self.script_editor.clear_selection()
 
     def get_event_properties_widget(self):
         return EventPropertiesWidget(self)
@@ -45,8 +44,8 @@ class EventEditor(EventWidgetUI):
         self.event_node = ev_index
         self.character_widget.set_event(ev)
 
-        self.command_model.set_event(self.event)
-        self.command_list.setModel(self.command_model)
+        self.script_editor.set_gds_and_data(self.event.gds, event=self.event, rom=self.event.rom)
+        self.script_editor.clear_selection()
 
         dcc_parser = DCCParser()
         EventGDSParser(ev).serialize_into_dcc(ev.gds, dcc_parser)
@@ -54,13 +53,11 @@ class EventEditor(EventWidgetUI):
         self.text_editor.setPlainText(serialized)
 
     def preview_click(self):
-        if isinstance(self.active_editor, CommandEditor):
-            self.active_editor.save()
+        self.script_editor.save()
         self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
 
     def save_click(self):
-        if isinstance(self.active_editor, CommandEditor):
-            self.active_editor.save()
+        self.script_editor.save()
         self.event.save_to_rom()
         self.reload_category_preview()
         self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
@@ -92,23 +89,3 @@ class EventEditor(EventWidgetUI):
         category: EventCategory = event_node.category
         category.load_event_names()
         self.main_editor.tree_model.dataChanged.emit(self.event_node, self.event_node)
-
-    def command_list_selection(self, selected: QtCore.QModelIndex):
-        if self.active_editor is not None:
-            self.active_editor: CommandEditor
-            if isinstance(self.active_editor, CommandEditor):
-                self.active_editor.save()
-            if isinstance(self.active_editor, QtWidgets.QWidget):
-                self.script_layout.removeWidget(self.active_editor)
-                self.active_editor.deleteLater()
-            self.active_editor = None
-
-        if not selected.isValid():
-            return
-
-        self.active_editor = get_command_widget(selected.data(QtCore.Qt.ItemDataRole.UserRole), self.event)
-        if isinstance(self.active_editor, QtWidgets.QWidget):
-            self.script_layout.addWidget(self.active_editor, 1)
-
-    def command_list_context_menu(self, point: QtCore.QPoint):
-        self.context_menu.exec(self.command_list.mapToGlobal(point))
