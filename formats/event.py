@@ -190,21 +190,21 @@ class Event:
         return wtr.data
 
     def _load_dlz(self):
-        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_lch.dlz")
+        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz")
         self.name = event_lch.get(self.event_id, "")
 
-        event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_inf2.dlz")
+        event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_inf2.dlz")
         self.sound_profile = event_inf2[self.event_id]
 
     def _save_dlz(self):
-        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_lch.dlz")
+        event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz")
         if self.name != "":
             event_lch[self.event_id] = self.name
         else:
             event_lch.pop(self.event_id)
         event_lch.save()
 
-        event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{conf.LANG}/ev_inf2.dlz")
+        event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_inf2.dlz")
         event_inf2[self.event_id] = self.sound_profile
         event_inf2.save()
 
@@ -225,7 +225,7 @@ class Event:
     @property
     def _texts_archive(self):
         prefix, postfix, complete = self._resolve_event_id()
-        return self.rom.get_archive(f"/data_lt2/event/?/ev_t{complete}.plz".replace("?", conf.LANG))
+        return self.rom.get_archive(f"/data_lt2/event/{self.rom.lang}/ev_t{complete}.plz")
 
     def _load_texts(self):
         if self.rom is None:

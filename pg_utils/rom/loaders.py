@@ -25,7 +25,7 @@ class SpriteLoaderROM(k4pg.SpriteLoaderOS):
         if self._base_path_rom is not None:
             path = os.path.join(self._base_path_rom, path).replace("\\", "/")
         sprite_sheet = path.startswith("data_lt2/ani")
-        path = path.replace("?", conf.LANG)
+        path = path.replace("?", self.rom.lang)
         if path.endswith(".arj"):
             path = set_extension(path, ".arj")
         else:
@@ -93,7 +93,7 @@ class FontLoaderROM(k4pg.FontLoaderOS):
         rom_path = path
         if self.base_path_rom is not None:
             rom_path = os.path.join(self.base_path_rom, path).replace("\\", "/")
-        rom_path = rom_path.replace("?", conf.LANG)
+        rom_path = rom_path.replace("?", self.rom.lang)
         rom_path = set_extension(rom_path, ".NFTR")
         if rom_path not in self.rom.filenames:
             super().load(path, size, text)

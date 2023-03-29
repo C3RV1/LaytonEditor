@@ -19,7 +19,7 @@ def set_extension(path, ext):
 def load_sadl(path: str, rom=None) -> sadl.SADL:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", conf.LANG)
+    path = path.replace("?", rom.lang)
     sadl_obj = sadl.SADL(path, 0, rom=rom)
 
     return sadl_obj
@@ -28,7 +28,7 @@ def load_sadl(path: str, rom=None) -> sadl.SADL:
 def load_smd(path: str, rom=None) -> tuple:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
-    path = path.replace("?", conf.LANG)
+    path = path.replace("?", rom.lang)
 
     smd_obj = smdl.SMDL(filename=path, rom=rom)
 

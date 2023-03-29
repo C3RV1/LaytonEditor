@@ -84,29 +84,17 @@ class MainEditor(MainEditorUI):
 
         # Load language from arm9
         if rom.name == b"LAYTON2":
-            arm9 = rom.loadArm9()
-            lang_address = 0x02000d3c - arm9.ramAddress
-            lang_id = rom.arm9[lang_address]
-            lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
-            try:
-                conf.LANG = lang_table[lang_id]
-            except IndexError:  # US version?
-                # TODO: Figure out how to read it properly
-                ret = QtWidgets.QMessageBox.warning(self, "Version not recognised",
-                                                    "Language not recognised, assume US?",
+            logging.info(f"Game language: {rom.lang}")
+            if not rom.is_eu:
+                ret = QtWidgets.QMessageBox.warning(self, "Version is not PAL",
+                                                    "Non-PAL Layton2 versions are not fully supported. Proceed?",
                                                     buttons=QtWidgets.QMessageBox.StandardButton.Abort |
                                                             QtWidgets.QMessageBox.StandardButton.Yes,
                                                     defaultButton=QtWidgets.QMessageBox.StandardButton.Abort)
                 if ret == QtWidgets.QMessageBox.StandardButton.Abort:
                     return
-                logging.warning(f"Game language not recognized: assuming US")
-                conf.LANG = "en"
-            logging.info(f"Game language: {conf.LANG}")
-            if conf.LANG == "jp":
-                return
         else:
             logging.warning("Not LAYTON2 game.")
-            conf.LANG = "en"
 
         self.rom = rom
         RomSingleton(rom=self.rom)

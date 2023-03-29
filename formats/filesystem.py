@@ -154,6 +154,22 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.lang = "en"
+        self.is_eu = False
+        if self.name == b"LAYTON2":
+            if self.idCode == b"YLTE":
+                self.lang = "en"
+            elif self.idCode == b"YLTJ":
+                self.lang = "jp"
+            elif self.idCode == b"YLTP":
+                self.is_eu = True
+                arm9 = self.loadArm9()
+                lang_address = 0x02000d3c - arm9.ramAddress
+                lang_id = self.arm9[lang_address]
+                lang_table = ["jp", "en", "sp", "fr", "it", "ge", "du", "ko", "ch"]
+                self.lang = lang_table[lang_id]
+
         self._opened_files = []
         """List of currently opened files."""
         self._loaded_archives: Dict[str, PlzArchive] = {}

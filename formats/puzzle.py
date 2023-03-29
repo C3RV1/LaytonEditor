@@ -183,7 +183,7 @@ class Puzzle:
         if bank > 3:
             bank = 3
 
-        plz: formats.filesystem.PlzArchive = rom.get_archive(f"/data_lt2/nazo/?/nazo{bank}.plz".replace("?", conf.LANG))
+        plz: formats.filesystem.PlzArchive = rom.get_archive(f"/data_lt2/nazo/{self.rom.lang}/nazo{bank}.plz")
         if f"n{self.internal_id}.dat" not in plz.filenames:
             logging.error(f"Nazo dat not found (internal id {self.internal_id})")
             return None
@@ -212,7 +212,7 @@ class Puzzle:
         self.export_data(dat_file)
         dat_file.close()
 
-        nz_lst_dlz = formats.dlz.NazoListDlz(filename=f"data_lt2/rc/{conf.LANG}/nz_lst.dlz", rom=self.rom)
+        nz_lst_dlz = formats.dlz.NazoListDlz(filename=f"data_lt2/rc/{self.rom.lang}/nz_lst.dlz", rom=self.rom)
         nz_lst_dlz[self.internal_id] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
         nz_lst_dlz.save()
 

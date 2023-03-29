@@ -41,7 +41,7 @@ class MovieAsset(AssetNodeBasename):
         num = self.get_num()
         if num is None:
             return None
-        return SADL(f"/data_lt2/stream/movie/{conf.LANG}/M{num}.SAD", rom=self.rom)
+        return SADL(f"/data_lt2/stream/movie/{self.rom.lang}/M{num}.SAD", rom=self.rom)
 
     def has_audio(self):
         return self.rom.name == b"LAYTON2" and self.get_num() is not None

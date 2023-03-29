@@ -83,7 +83,7 @@ class EventCategory(EditorCategory):
 
     def load_event_names(self):
         self.event_names = {}
-        dlz_file = EventLchDlz(f"/data_lt2/rc/{conf.LANG}/ev_lch.dlz", rom=self.rom)
+        dlz_file = EventLchDlz(f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz", rom=self.rom)
         self.event_names = dlz_file.event_names
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):

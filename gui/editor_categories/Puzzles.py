@@ -40,12 +40,12 @@ class PuzzleCategory(EditorCategory):
         return self._puzzle_nodes
 
     def generate_puzzle_nodes(self):
-        puzzle_folder: Folder = self.rom.filenames[f"/data_lt2/nazo/{conf.LANG}"]
+        puzzle_folder: Folder = self.rom.filenames[f"/data_lt2/nazo/{self.rom.lang}"]
         for filename in puzzle_folder.files:
             filename: str
             if not re.match("nazo[1-3].plz", filename):
                 continue
-            archive = self.rom.get_archive(f"/data_lt2/nazo/{conf.LANG}/{filename}")
+            archive = self.rom.get_archive(f"/data_lt2/nazo/{self.rom.lang}/{filename}")
             for filename_ in archive.filenames:
                 if match := re.match("n([0-9]+).dat", filename_):
                     internal_id = int(match.group(1))
