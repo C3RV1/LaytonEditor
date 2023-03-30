@@ -1,3 +1,4 @@
+import cython
 import numpy as np
 cimport numpy as np
 np.import_array()
@@ -14,10 +15,6 @@ cdef int[5][2] PROC_COEF = [
     [122, -60]
 ]
 
-cdef struct Pack2Int:
-    int int1
-    int int2
-
 cdef class Procyon:
     cdef int[2] hist
     cdef np.ndarray tmp_array
@@ -26,6 +23,9 @@ cdef class Procyon:
         self.hist = [0, 0]
         self.tmp_array = np.zeros((0x10,), dtype=np.uint8)
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
     cdef int decode_sample(self, int sample, int coef1, int coef2, int scale):
         cdef int error = sample
         error <<= (6 + scale)
@@ -42,7 +42,10 @@ cdef class Procyon:
 
         return clamp
 
-    cdef Pack2Int encode_sample(self, int sample, int coef1, int coef2, int scale):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
+    cdef (int, int) encode_sample(self, int sample, int coef1, int coef2, int scale):
         cdef int value = sample << 6
         cdef int pred = (self.hist[0] * coef1 + self.hist[1] * coef2 + 32) >> 6
         cdef int error = value - pred
@@ -63,8 +66,11 @@ cdef class Procyon:
         clamp = clamp >> 6 << 6
 
         cdef int diff = abs(sample - clamp)
-        return Pack2Int(result, diff)
+        return result, diff
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
     cpdef decode_block(self, TYPE_8_BIT[:] block,
                        TYPE_16_BIT[:] destination):
         cdef int header = block[0xF] ^ 0x80
@@ -85,22 +91,28 @@ cdef class Procyon:
             sample = ((sample + 8) % 16) - 8
             destination[i] = self.decode_sample(sample, coef1, coef2, scale)
 
-    cpdef encode_block(self, np.ndarray[TYPE_16_BIT, ndim=1] block,
-                       np.ndarray[TYPE_8_BIT, ndim=1] destination):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
+    cpdef encode_block(self, TYPE_16_BIT[:] block,
+                       TYPE_16_BIT[:] destination):
         # TODO: Encoding improve performance (currently it's brute force)
         if len(block) < 30:
             append_block = np.zeros((30 - len(block),), np.int16)
             block = np.append(block, append_block)
         cdef int scale, coef_index
-        cdef Pack2Int best_encoding = self.search_best_encode(block, destination)
-        scale = best_encoding.int1
-        coef_index = best_encoding.int2
+        cdef (int, int) best_encoding = self.search_best_encode(block, destination)
+        scale = best_encoding[0]
+        coef_index = best_encoding[0]
 
         header = (coef_index << 4) | scale
         destination[0xF] = header ^ 0x80
 
-    cdef Pack2Int search_best_encode(self, np.ndarray[TYPE_16_BIT, ndim=1] block,
-                                     np.ndarray[TYPE_8_BIT, ndim=1] destination):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
+    cdef (int, int) search_best_encode(self, TYPE_16_BIT[:] block,
+                                     TYPE_16_BIT[:] destination):
         cdef int coef_index = 0
         cdef int scale = 0
 
@@ -130,11 +142,14 @@ cdef class Procyon:
             if min_difference == 0:
                 break
         self.hist = new_hist
-        return Pack2Int(scale, coef_index)
+        return scale, coef_index
 
-    cdef int get_encoding_difference(self, np.ndarray[TYPE_16_BIT, ndim=1] block, int coef_index, int scale,
-                                     int min_difference, np.ndarray[TYPE_8_BIT, ndim=1] tmp_array,
-                                     np.ndarray[TYPE_8_BIT, ndim=1] destination):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
+    cdef int get_encoding_difference(self, TYPE_16_BIT[:] block, int coef_index, int scale,
+                                     int min_difference, TYPE_16_BIT[:] tmp_array,
+                                     TYPE_16_BIT[:] destination):
         cdef int coef1 = PROC_COEF[coef_index][0]
         cdef int coef2 = PROC_COEF[coef_index][1]
 
@@ -142,12 +157,12 @@ cdef class Procyon:
 
         cdef int i, sample, r, diff
         cdef int block_len = block.shape[0]
-        cdef Pack2Int encode_result
+        cdef (int, int) encode_result
         for i in range(block_len):
             sample = block[i]
             encode_result = self.encode_sample(sample, coef1, coef2, scale)
-            r = encode_result.int1
-            diff = encode_result.int2
+            r = encode_result[0]
+            diff = encode_result[1]
             r = (r + 16) % 16  # Make positive
             if i % 2 == 0:
                 tmp_array[i//2] = r
