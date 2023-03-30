@@ -45,6 +45,7 @@ class Coding:
 class SADL(FileFormat):
     chunk_id: bytes
     original_header: bytes
+    file_name: bytes
 
     file_size: int
     loop_flag: int
@@ -53,6 +54,7 @@ class SADL(FileFormat):
     coding: int
     sample_rate: int
     num_samples: int
+    volume_maybe: int
     interleave_block_size: int = 0x10
 
     buffer: np.ndarray
@@ -73,6 +75,8 @@ class SADL(FileFormat):
         self.chunk_id = rdr.read(4)
         if self.chunk_id != b"sadl":
             raise ValueError("SADL does not start with magic value")
+        rdr.seek(0x20)
+        self.file_name = rdr.read_string(0x10)
         rdr.seek(0x31)
         self.loop_flag = rdr.read_uint8()
         self.channels = rdr.read_uint8()
@@ -94,12 +98,17 @@ class SADL(FileFormat):
         else:
             raise NotImplementedError()
 
-        rdr.seek(0x54)
-        if self.loop_flag != 0:
+        rdr.seek(0x44)
+        if self.loop_flag != 0:  # TODO??
+            loop_raw = rdr.read_uint32()
             if self.coding == Coding.INT_IMA:
-                self.loop_offset = int((rdr.read_uint32() - 0x100) / self.channels * 2)
+                self.loop_offset = int((loop_raw - 0x100) / self.channels * 2)
             elif self.coding == Coding.NDS_PROCYON:
-                self.loop_offset = int((rdr.read_uint32() - 0x100) / self.channels / 16 * 30)
+                self.loop_offset = int((loop_raw - 0x100) / self.channels / 16 * 30)
+            print(loop_raw)
+
+        rdr.seek(0x60)
+        self.volume_maybe = rdr.read_uint8()
 
         rdr.seek(0x100)
         buffer = rdr.read(self.file_size - 0x100)
@@ -128,6 +137,8 @@ class SADL(FileFormat):
         wtr.write(self.original_header)
         wtr.seek(0)
         wtr.write(self.chunk_id)
+        wtr.seek(0x20)
+        wtr.write_string(self.file_name, 0x10)
         wtr.seek(0x31)
         wtr.write_uint8(self.loop_flag)
         wtr.write_uint8(self.channels)
@@ -141,6 +152,17 @@ class SADL(FileFormat):
             raise NotImplementedError()
         wtr.write_uint8(coding)
 
+        wtr.seek(0x44)
+        if self.loop_flag != 0:
+            if self.coding == Coding.INT_IMA:
+                loop_raw = (self.loop_offset * self.channels / 2) + 0x100
+            else:
+                loop_raw = (self.loop_offset * self.channels * 16 / 30) + 0x100
+            wtr.write_uint32(int(loop_raw))
+
+        wtr.seek(0x60)
+        wtr.write_uint8(self.volume_maybe)
+
         wtr.seek(0x100)
         buffer = self.buffer.copy()
         buffer = buffer.reshape((buffer.shape[0], buffer.shape[1] // 0x10, 0x10))
@@ -148,6 +170,8 @@ class SADL(FileFormat):
         wtr.write(buffer.tobytes())
 
         size = wtr.tell()
+        wtr.seek(0x08)
+        wtr.write_uint32(size)
         wtr.seek(0x40)
         wtr.write_uint32(size)
 

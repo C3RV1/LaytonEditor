@@ -16,7 +16,8 @@ class TestSADL(unittest.TestCase):
         cls.rom = NintendoDSRom.fromFile(rom_path + "/../../../test_rom.nds")
 
     def get_sadl(self):
-        return self.rom.open("data_lt2/stream/ST_001.SAD", "rb")
+        # return self.rom.open("data_lt2/stream/ST_001.SAD", "rb")
+        return self.rom.open("data_lt2/stream/bgm/BG_031.SAD", "rb")
 
     def test_SADReadAndSave(self):
         sad_file = self.get_sadl()
