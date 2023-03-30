@@ -22,6 +22,7 @@ from .event.BackgroundShake import BackgroundShake
 from .event.StartTea import StartTea
 from .event.SaveProgress import SaveProgress
 from .event.MusicFade import MusicFade
+from .event.MusicPlay import MusicPlay
 
 from formats.gds import GDSCommand
 from PySide6 import QtWidgets
@@ -55,6 +56,8 @@ def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
         widget = SetVoice()
     elif command.command in [0x5d, 0x5e]:
         widget = SFX()
+    elif command.command in [0x62, 0x8c]:
+        widget = MusicPlay()
     elif command.command in [0x6a, 0x6b]:
         widget = BackgroundShake()
     elif command.command == 0x70:
