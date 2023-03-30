@@ -1,5 +1,6 @@
 import numpy as np
 cimport numpy as np
+import cython
 np.import_array()
 
 
@@ -36,6 +37,9 @@ cdef class Adpcm:
 
         self.predicted_sample = 0
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
     cpdef np.ndarray[TYPE_16_BIT, ndim=1] decompress(self, np.ndarray[TYPE_8_BIT, ndim=1] data):
         cdef int* step_size_table = STEP_SIZE_TABLE
         cdef int* index_table = INDEX_TABLE
@@ -96,7 +100,10 @@ cdef class Adpcm:
 
         return result
 
-    cpdef np.ndarray[TYPE_8_BIT, ndim=1] compress(self, np.ndarray[TYPE_16_BIT, ndim=1] data):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.exceptval(False)
+    cpdef np.ndarray[TYPE_8_BIT, ndim=1] compress(self, TYPE_16_BIT[:] data):
         # (v + 1) // 2 = ceil(v / 2)
         cdef np.ndarray[TYPE_8_BIT, ndim=1] result = np.ndarray(((len(data) + 1) // 2,), dtype=np.uint8)
 
