@@ -24,28 +24,27 @@ class MainEditorUI(QtWidgets.QMainWindow):
         menu_bar = self.menuBar()
         self.file_menu = menu_bar.addMenu("File")
 
-        self.file_open_action = QtGui.QAction("Open ROM", self)
+        self.file_open_action = self.file_menu.addAction("Open ROM")
         self.file_open_action.setIcon(open_icon)
-        self.file_menu.addAction(self.file_open_action)
         self.file_open_action.triggered.connect(self.file_menu_open)
 
-        self.file_save_action = QtGui.QAction("Save ROM", self)
+        self.file_save_action = self.file_menu.addAction("Save ROM")
         self.file_save_action.setIcon(save_icon)
-        self.file_menu.addAction(self.file_save_action)
         self.file_save_action.triggered.connect(self.file_menu_save)
         self.file_save_action.setEnabled(False)
 
-        self.file_save_as_action = QtGui.QAction("Save ROM as...", self)
+        self.file_save_as_action = self.file_menu.addAction("Save ROM as...")
         self.file_save_as_action.setIcon(save_icon)
-        self.file_menu.addAction(self.file_save_as_action)
         self.file_save_as_action.triggered.connect(self.file_menu_save_as)
         self.file_save_as_action.setEnabled(False)
 
         self.settings_menu = menu_bar.addMenu("Settings")
 
-        self.toggle_theme_action = QtGui.QAction("Toggle Theme", self)
-        self.settings_menu.addAction(self.toggle_theme_action)
+        self.toggle_theme_action = self.settings_menu.addAction("Toggle Theme")
         self.toggle_theme_action.triggered.connect(self.toggle_theme)
+
+        self.character_names_action = self.settings_menu.addAction("Set Character ID to Name")
+        self.character_names_action.triggered.connect(self.character_id_to_name)
 
         self.window = QtWidgets.QWidget()
 
@@ -85,6 +84,9 @@ class MainEditorUI(QtWidgets.QMainWindow):
         pass
 
     def toggle_theme(self):
+        pass
+
+    def character_id_to_name(self):
         pass
 
     def tree_changed_selection(self, current: QtCore.QModelIndex, previous: QtCore.QModelIndex):
