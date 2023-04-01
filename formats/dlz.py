@@ -80,29 +80,28 @@ class Dlz(FileFormat):
 
 class NazoListDlz(Dlz):
     def __init__(self, *args, **kwargs):
-        self.nazo_lst = []
+        self.nazo_lst = {}
         super(NazoListDlz, self).__init__(*args, **kwargs)
 
     def __getitem__(self, item):
-        for puz in self.nazo_lst:
-            if puz[0] == item:
-                return puz[2]
+        if item in self.nazo_lst:
+            return self.nazo_lst[item][1]
         raise IndexError()
 
     def __setitem__(self, key, value):
-        for puz in self.nazo_lst:
-            if puz[0] == key:
-                puz[2] = value
-                break
-        else:
-            logging.warning(f"Puzzle {key} not in NazoListDlz")
+        self.nazo_lst[key][1] = value
 
     def read_stream(self, stream: BinaryIO):
         super(NazoListDlz, self).read_stream(stream)
-        self.nazo_lst = self.unpack("<hh48sh")
+        unpacked_data = self.unpack("<hh48sh")
+        for id_, *values in unpacked_data:
+            self.nazo_lst[id_] = list(values)
         
     def write_stream(self, stream: BinaryIO):
-        self.pack("<hh48sh", self.nazo_lst)
+        packed_data = []
+        for key, values in self.nazo_lst.items():
+            packed_data.append([key] + values)
+        self.pack("<hh48sh", packed_data)
         super(NazoListDlz, self).write_stream(stream)
 
 
