@@ -41,7 +41,7 @@ def parse_dialogue(command: GDSCommand, event: Event = None, **_kwargs):
 
     char_id = text.params[0]
     if char_id != 0:
-        char_name = SettingsManager().character_id_to_name[char_id]
+        char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
     else:
         char_name = "Narrator"
 
@@ -121,7 +121,7 @@ def parse_character_visibility(command: GDSCommand, event=None, **_kwargs):
     alpha = "" if command.command != 0x2c else ' (alpha)'
 
     char_id = event.characters[command.params[0]]
-    char_name = SettingsManager().character_id_to_name[char_id]
+    char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
 
     return f"Character {char_name}: {char_id} Visibility\n" \
            f"{'Show' if show else 'Hide'}{alpha}"
@@ -136,7 +136,7 @@ def parse_character_slot(command: GDSCommand, event=None, **_kwargs):
         logging.error("Error: Character Slot event=None???", exc_info=True)
         return "Error: Character Slot event=None???"
     char_id = event.characters[command.params[0]]
-    char_name = SettingsManager().character_id_to_name[char_id]
+    char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
 
     slot_name = {
         0: "Left 1",
@@ -158,7 +158,7 @@ def parse_bottom_tint(command: GDSCommand, **_kwargs):
 
 def parse_character_animation(command: GDSCommand, **_kwargs):
     char_id = command.params[0]
-    char_name = SettingsManager().character_id_to_name[char_id]
+    char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
 
     return f"Character {char_name}: {char_id} Animation\n" \
            f"Setting animation to {command.params[1]}"
@@ -219,7 +219,7 @@ def parse_unlock_minigame(command: GDSCommand, **_kwargs):
 
 def parse_character_shake(command: GDSCommand, event=None, **_kwargs):
     char_id = event.characters[command.params[0]]
-    char_name = SettingsManager().character_id_to_name[char_id]
+    char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
     return f"Character {char_name}: {char_id} Shake\n" \
            f"Duration?: {command.params[1]}"
 

@@ -21,12 +21,27 @@ class SettingsManager(object):
             self.import_path = str(self.qt_setting.value("importPath", ""))
             self.theme = str(self.qt_setting.value("theme", "dark"))
             self.advanced_mode = True if str(self.qt_setting.value("advancedMode", "False")) == "True" else False
-            self.character_id_to_name = {}
-            with open("data_permanent/character_names.json", "r") as character_names_f:
-                data: dict = json.load(character_names_f)
-                for key, value in data.items():
-                    self.character_id_to_name[int(key)] = value
+            self.cid_to_name_json = str(self.qt_setting.value("cidToName", ""))
+            if self.cid_to_name_json == "":
+                self.character_id_to_name = self.original_character_names()
+            else:
+                cid_to_name: dict = json.loads(self.cid_to_name_json)
+                self.character_id_to_name = {}
+                for key, item in cid_to_name.items():
+                    self.character_id_to_name[int(key)] = item
             SettingsManager.__inited = True
+
+    @staticmethod
+    def original_character_names():
+        character_id_to_name = {}
+        with open("data_permanent/character_names.json", "r") as character_names_f:
+            data: dict = json.load(character_names_f)
+            for key, value in data.items():
+                character_id_to_name[int(key)] = value
+        return character_id_to_name
+
+    def save_character_names(self):
+        self.qt_setting.setValue("cidToName", json.dumps(self.character_id_to_name))
 
     def open_rom(self, parent: QtWidgets.QWidget) -> str:
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(parent, "Open ROM", filter="NDS Rom (*.nds)",

@@ -31,13 +31,16 @@ class EventCharacterTable(QtCore.QAbstractTableModel):
         self.pos_combobox = []
         for i, character in enumerate(self.event.characters[:self.char_count]):
             combobox = QtWidgets.QComboBox()
-            index = 0
+            index = None
             for j, (key, value) in enumerate(self.settings.character_id_to_name.items()):
                 combobox.addItem(f"{value}: {key}", key)
                 if character == key:
                     index = j
-            if index != 0:
+            if index is not None:
                 combobox.setCurrentIndex(index)
+            else:
+                combobox.addItem(f"Unnamed {character}")
+                combobox.setCurrentIndex(combobox.count() - 1)
             combobox.currentIndexChanged.connect(lambda _idx, combo_i=i: self.char_combobox_change(combo_i))
             self.char_combobox.append(combobox)
             self.view.setIndexWidget(self.index(i, 0), combobox)

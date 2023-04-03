@@ -19,7 +19,7 @@ class Dialogue(CommandEditorEvent, DialogueUI):
         for i, char_id in enumerate(event.characters):
             if char_id == 0:
                 break
-            char_name = settings.character_id_to_name[char_id]
+            char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
             self.character.addItem(f"{char_name}: {char_id}", char_id)
             if char_id == text.params[0]:
                 index = i + 1

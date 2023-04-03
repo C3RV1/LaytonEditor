@@ -11,5 +11,19 @@ class CharacterNamesWidgetUI(QtWidgets.QWidget):
         self.table_widget = QtWidgets.QTableWidget()
         self.v_layout.addWidget(self.table_widget)
 
+        self.buttons_layout = QtWidgets.QHBoxLayout()
+        self.v_layout.addLayout(self.buttons_layout)
+
         self.save_button = QtWidgets.QPushButton("Save")
-        self.v_layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_clicked)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.save_button = QtWidgets.QPushButton("Reset")
+        self.save_button.clicked.connect(self.save_clicked)
+        self.buttons_layout.addWidget(self.save_button)
+
+    def save_clicked(self):
+        pass
+
+    def reset_clicked(self):
+        pass

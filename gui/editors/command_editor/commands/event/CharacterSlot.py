@@ -14,7 +14,7 @@ class CharacterSlot(CommandEditorEvent, CharacterSlotUI):
         for i, char_id in enumerate(self.event.characters):
             if char_id == 0:
                 break
-            char_name = settings.character_id_to_name[char_id]
+            char_name = SettingsManager().character_id_to_name.get(char_id, f"Unnamed {char_id}")
             self.character.addItem(f"{char_name}: {char_id}", i)
         self.character.setCurrentIndex(command.params[0])
 
