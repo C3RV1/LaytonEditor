@@ -46,6 +46,10 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.character_names_action = self.settings_menu.addAction("Set Character ID to Name")
         self.character_names_action.triggered.connect(self.character_id_to_name)
 
+        self.advanced_mode_action = self.settings_menu.addAction("Advanced Mode (Requires Restart)")
+        self.advanced_mode_action.setCheckable(True)
+        self.advanced_mode_action.toggled.connect(self.advanced_mode_toggled)
+
         self.window = QtWidgets.QWidget()
 
         self.horizontal_layout = QtWidgets.QHBoxLayout()
@@ -87,6 +91,9 @@ class MainEditorUI(QtWidgets.QMainWindow):
         pass
 
     def character_id_to_name(self):
+        pass
+
+    def advanced_mode_toggled(self, checked: bool):
         pass
 
     def tree_changed_selection(self, current: QtCore.QModelIndex, previous: QtCore.QModelIndex):

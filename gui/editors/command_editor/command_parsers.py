@@ -329,7 +329,7 @@ class DialogueCommandFactory(CommandFactory):
         return GDSCommand(0x4, [text_index])
 
 
-event_cmd_context_menu = (
+event_cmd_context_menu = [
     ("Screen", (
         ("Fade", CommandFactory(0x2, tuple())),
         ("Load Background", CommandFactory(0x21, ("", 3))),
@@ -366,18 +366,24 @@ event_cmd_context_menu = (
         ("Unlock Minigame", CommandFactory(0x79, (0,))),
         ("Companion", CommandFactory(0x96, (1,))),
         ("Complete Game", CommandFactory(0xa1, tuple()))
-    )),
-    ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
-)
+    ))
+]
+if SettingsManager().advanced_mode:
+    event_cmd_context_menu.append(
+        ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
+    )
 
 
-script_cmd_context_menu = (
+script_cmd_context_menu = [
     ("Screen", (
         ("Fade", CommandFactory(0x2, tuple())),
         ("Load Background", CommandFactory(0x21, ("", 3))),
         ("Shake", CommandFactory(0x6a, (30,))),
         ("Flash Bottom", CommandFactory(0x82, tuple()))
     )),
-    ("Wait", CommandFactory(0x69, tuple())),
-    ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
-)
+    ("Wait", CommandFactory(0x69, tuple()))
+]
+if SettingsManager().advanced_mode:
+    script_cmd_context_menu.append(
+        ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
+    )

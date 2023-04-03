@@ -1,6 +1,7 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from gui.ui.SoundProfileWidget import SoundProfileUI
 from formats.dlz import SoundProfile, SoundProfileDlz
+from ..SettingsManager import SettingsManager
 
 
 class SoundProfileModel(QtCore.QAbstractListModel):
@@ -35,14 +36,18 @@ class SoundProfileEditor(SoundProfileUI):
         self.snd_dlz: SoundProfileDlz = None
         self.sound_profile: SoundProfile = None
         self.sound_profile_model = SoundProfileModel()
+        if not SettingsManager().advanced_mode:
+            self.form_layout.removeRow(self.unk0_spin)
+            self.form_layout.removeRow(self.unk1_spin)
 
     def sound_profiles_list_selection(self, selected: QtCore.QModelIndex):
         if selected.isValid():
             self.form_widget.show()
             self.sound_profile: SoundProfile = selected.data(QtCore.Qt.ItemDataRole.UserRole)
             self.music_id_spin.setValue(self.sound_profile.music_id)
-            self.unk0_spin.setValue(self.sound_profile.unk0)
-            self.unk1_spin.setValue(self.sound_profile.unk1)
+            if SettingsManager().advanced_mode:
+                self.unk0_spin.setValue(self.sound_profile.unk0)
+                self.unk1_spin.setValue(self.sound_profile.unk1)
         else:
             self.form_widget.hide()
             self.sound_profile = None

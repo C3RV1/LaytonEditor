@@ -20,6 +20,7 @@ class SettingsManager(object):
             self.export_path = str(self.qt_setting.value("exportPath", ""))
             self.import_path = str(self.qt_setting.value("importPath", ""))
             self.theme = str(self.qt_setting.value("theme", "dark"))
+            self.advanced_mode = True if str(self.qt_setting.value("advancedMode", "False")) == "True" else False
             self.character_id_to_name = {}
             with open("data_permanent/character_names.json", "r") as character_names_f:
                 data: dict = json.load(character_names_f)
@@ -65,3 +66,9 @@ class SettingsManager(object):
         else:
             self.theme = "dark"
         self.qt_setting.setValue("theme", self.theme)
+
+    def toggle_advanced_mode(self, advanced_mode):
+        # Don't set here as it won't affect whole program
+        # Instead, require restart
+        # self.advanced_mode = not self.advanced_mode
+        self.qt_setting.setValue("advancedMode", str(advanced_mode))

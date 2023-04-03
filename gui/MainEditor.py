@@ -28,6 +28,8 @@ class MainEditor(MainEditorUI):
 
         super(MainEditor, self).__init__(*args, **kwargs)
 
+        self.advanced_mode_action.setChecked(SettingsManager().advanced_mode)
+
         self.rom: Union[NintendoDSRom, None] = None
         self.last_path = None
 
@@ -129,9 +131,11 @@ class MainEditor(MainEditorUI):
             actions = category.get_context_menu(index, self.tree_changed_selection)
             if not actions:
                 return
-            for action_data in actions:
-                if action_data is None:
+            for i, action_data in enumerate(actions):
+                if action_data is None and i != 0 and i != len(actions) - 1:
                     self.ft_context_menu.addSeparator()
+                    continue
+                elif action_data is None:
                     continue
                 name, callback = action_data
                 action = QtGui.QAction(name, self.ft_context_menu)
@@ -235,3 +239,6 @@ class MainEditor(MainEditorUI):
     def toggle_theme(self):
         SettingsManager().toggle_theme()
         qdarktheme.setup_theme(SettingsManager().theme)
+
+    def advanced_mode_toggled(self, checked: bool):
+        SettingsManager().toggle_advanced_mode(checked)

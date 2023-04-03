@@ -229,7 +229,7 @@ class FilesystemCategory(EditorCategory):
 
     def get_context_menu(self, index: QtCore.QModelIndex,
                          refresh_function: Callable) -> List[Union[Tuple[str, Callable], None]]:
-        if isinstance(index.internalPointer(), AssetNode):
+        if isinstance(index.internalPointer(), AssetNode) and SettingsManager().advanced_mode:
             return [
                 ("Replace raw data", lambda: self.import_(index, refresh_function, False)),
                 ("Export raw data", lambda: self.export(index, False)),

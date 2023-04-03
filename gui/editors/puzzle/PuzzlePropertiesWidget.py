@@ -1,12 +1,16 @@
 from gui.ui.puzzle.PuzzlePropertiesWidget import PuzzlePropertiesWidgetUI
 from formats.puzzle import Puzzle
 from PySide6 import QtCore, QtWidgets, QtGui
+from gui.SettingsManager import SettingsManager
 
 
 class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
     def __init__(self, *args, **kwargs):
         super(PuzzlePropertiesWidget, self).__init__(*args, **kwargs)
         self.puzzle: Puzzle = None
+        if not SettingsManager().advanced_mode:
+            self.form_layout.removeRow(self.unk0_input)
+            self.form_layout.removeRow(self.unk1_input)
 
     def set_puzzle(self, puzzle: Puzzle):
         self.puzzle = puzzle
@@ -31,8 +35,9 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
         self.has_answer_bg_checkbox.setChecked(self.puzzle.has_answer_bg)
         self.judge_character_input.setValue(self.puzzle.judge_char)
-        self.unk0_input.setValue(self.puzzle.unk0)
-        self.unk1_input.setValue(self.puzzle.unk1)
+        if SettingsManager().advanced_mode:
+            self.unk0_input.setValue(self.puzzle.unk0)
+            self.unk1_input.setValue(self.puzzle.unk1)
 
         self.ans_bg_lang_checkbox.setEnabled(self.puzzle.has_answer_bg)
 

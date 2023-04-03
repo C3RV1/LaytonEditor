@@ -3,6 +3,7 @@ from typing import List, Sequence, Any
 from PySide6 import QtCore
 from .editor_categories import *
 from .EditorTypes import EditorObject
+from .SettingsManager import SettingsManager
 
 
 class EditorTree(QtCore.QAbstractItemModel):
@@ -13,9 +14,11 @@ class EditorTree(QtCore.QAbstractItemModel):
     def set_rom(self, rom):
         self.beginResetModel()
         self.layoutAboutToBeChanged.emit()
+        self.categories = []
+        if SettingsManager().advanced_mode:
+            self.categories.append(FilesystemCategory())
         if rom.name == b"LAYTON2":
-            self.categories = [
-                FilesystemCategory(),
+            self.categories.extend([
                 SpriteCategory(),
                 BackgroundsCategory(),
                 EventCategory(),
@@ -30,17 +33,16 @@ class EditorTree(QtCore.QAbstractItemModel):
                 SequencedAudioCategory(),
                 SoundBankCategory(),
                 DLZCategory()
-            ]
+            ])
         else:
-            self.categories = [
-                FilesystemCategory(),
+            self.categories.extend([
                 SpriteCategory(),
                 BackgroundsCategory(),
                 FontsCategory(),
                 StreamedAudioCategory(),
                 TextsCategory(),
                 ScriptsCategory()
-            ]
+            ])
         for category in self.categories:
             category.set_rom(rom)
         self.layoutChanged.emit()

@@ -27,6 +27,7 @@ from .event.MusicPlay import MusicPlay
 from formats.gds import GDSCommand
 from PySide6 import QtWidgets
 from .CommandEditor import CommandEditor
+from gui.SettingsManager import SettingsManager
 
 
 def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
@@ -81,7 +82,10 @@ def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
     elif command.command in [0x82, 0x89, 0xa1]:
         widget = QtWidgets.QWidget()
     else:
-        widget = Unknown()
+        if SettingsManager().advanced_mode:
+            widget = Unknown()
+        else:
+            widget = QtWidgets.QWidget()
     if isinstance(widget, CommandEditor):
         widget.set_command(command, **kwargs)
     return widget
