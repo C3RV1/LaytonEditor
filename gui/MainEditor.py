@@ -13,12 +13,12 @@ from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
 
 from formats.filesystem import NintendoDSRom
-from formats import conf
 
 import logging
 from typing import Union
 import qdarktheme
 from .SettingsManager import SettingsManager
+from .editors.CharacterNamesWidget import CharacterNamesEditor
 
 
 class MainEditor(MainEditorUI):
@@ -235,6 +235,9 @@ class MainEditor(MainEditorUI):
         self.pg_previewer.loop_lock.acquire()
         self.pg_previewer.gm.exit()
         self.pg_previewer.loop_lock.release()
+
+    def character_id_to_name(self):
+        CharacterNamesEditor(self.rom, self, QtCore.Qt.WindowType.Window)
 
     def toggle_theme(self):
         SettingsManager().toggle_theme()
