@@ -243,6 +243,13 @@ def parse_companion(command: GDSCommand, **_kwargs):
     return f"Progression: {'Add' if command.command == 0x96 else 'Remove'} Companion {command.params[0]}"
 
 
+def parse_play_train_sound(command: GDSCommand, **_kwargs):
+    text = "Audio: Play train sound"
+    if command.params[0] != 100:
+        text += f"\nStrange Unk0: {command.params[0]}!"
+    return text
+
+
 def parse_complete_game(_command: GDSCommand, **_kwargs):
     return "Progression: Complete Game"
 
@@ -275,6 +282,7 @@ event_cmd_parsers = (
     ((0x89,), parse_stop_train_sound),
     ((0x8a, 0x8b), parse_music_fade),
     ((0x96, 0x97), parse_companion),
+    ((0x9f,), parse_play_train_sound),
     ((0xa1,), parse_complete_game),
 )
 
@@ -353,6 +361,7 @@ event_cmd_context_menu = [
     ("Audio", (
         ("Sound Effect", CommandFactory(0x5d, (0,))),
         ("Stop Train Sound", CommandFactory(0x89, tuple())),
+        ("Play Train Sound", CommandFactory(0x9f, (100,))),
         ("Play Music", CommandFactory(0x62, (0, 1.0, 0))),
         ("Fade Music", CommandFactory(0x8a, (0.0, 0))),
         ("Voice Clip", CommandFactory(0x5c, (0,)))
