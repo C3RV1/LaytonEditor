@@ -6,7 +6,7 @@ from ..Alignment import Alignment
 
 
 class Font:
-    def render(self, text: str, color: pg.Color, bg_color: pg.Color, line_spacing=0,
+    def render(self, text: str, color: pg.Color, bg_color: [pg.Color, None], line_spacing=0,
                h_align: int = Alignment.LEFT, antialiasing: bool = False) -> Tuple[pg.Surface, Any]:
         lines = text.split("\n")
         alpha = bg_color is None

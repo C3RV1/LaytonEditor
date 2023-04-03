@@ -19,7 +19,7 @@ class CharacterNamesWidgetUI(QtWidgets.QWidget):
         self.buttons_layout.addWidget(self.save_button)
 
         self.save_button = QtWidgets.QPushButton("Reset")
-        self.save_button.clicked.connect(self.save_clicked)
+        self.save_button.clicked.connect(self.reset_clicked)
         self.buttons_layout.addWidget(self.save_button)
 
     def save_clicked(self):

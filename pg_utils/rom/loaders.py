@@ -89,7 +89,7 @@ class FontLoaderROM(k4pg.FontLoaderOS):
         self.rom = rom
         self.base_path_rom = base_path_rom
 
-    def load(self, path: str, size: int, text: k4pg.Text):
+    def load(self, path: str, size: int, text: k4pg.FontSupportive):
         rom_path = path
         if self.base_path_rom is not None:
             rom_path = os.path.join(self.base_path_rom, path).replace("\\", "/")
