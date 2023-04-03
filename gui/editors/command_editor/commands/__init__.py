@@ -78,7 +78,7 @@ def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
         widget = Companion()
     elif command.command in [0x8a, 0x8b]:
         widget = MusicFade()
-    elif command.command in [0x82, 0x89, 0xa1]:
+    elif command.command in [0x82, 0x89, 0x9f, 0xa1]:
         widget = QtWidgets.QWidget()
     else:
         widget = Unknown()
