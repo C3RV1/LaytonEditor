@@ -8,7 +8,7 @@ from typing import Callable, List, Union, Tuple
 import threading
 import subprocess
 
-from formats import conf
+from formats.movie import Movie
 from formats.sound.sadl import SADL
 from formats_parsed.sound.wav import WAV
 from previewers.sound.SoundPreview import SoundPreview
@@ -30,18 +30,20 @@ class MovieFolder(FolderNodeOneLevel):
 
 
 class MovieAsset(AssetNodeBasename):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.movie = None
+
     def get_num(self):
         if (num := get_movie_num(self.path)) >= 0:
             return num
         return None
 
-    def get_sad(self):
-        if not self.rom.name == b"LAYTON2":
-            return None
-        num = self.get_num()
-        if num is None:
-            return None
-        return SADL(f"/data_lt2/stream/movie/{self.rom.lang}/M{num}.SAD", rom=self.rom)
+    def get_movie(self):
+        if self.movie is None:
+            self.movie = Movie(self.rom, self.get_num())
+            self.movie.load_from_rom()
+        return self.movie
 
     def has_audio(self):
         return self.rom.name == b"LAYTON2" and self.get_num() is not None
@@ -94,7 +96,7 @@ class MoviesCategory(FilesystemCategory):
         t1.start()
 
         if asset.has_audio():
-            sound_previewer = SoundPreview(SADLStreamPlayer(), asset.get_sad(),
+            sound_previewer = SoundPreview(SADLStreamPlayer(), asset.movie.get_sad(),
                                            f"Movie {asset.get_num()}")
             PygamePreviewer.INSTANCE.start_renderer(sound_previewer)
             sound_previewer.start_sound()
@@ -118,7 +120,7 @@ class MoviesCategory(FilesystemCategory):
             return progress_dialog.wasCanceled()
 
         progress_dialog.setValue(0)
-        sadl = node.get_sad()
+        sadl = node.movie.get_sad()
         if wav_file.to_sadl(sadl, progress_callback=update_progress):
             sadl.save()
 
@@ -140,7 +142,7 @@ class MoviesCategory(FilesystemCategory):
             progress_dialog.setValue(value)
             return progress_dialog.wasCanceled()
 
-        wav_file, successful = WAV.from_sadl(node.get_sad(), progress_callback=update_progress)
+        wav_file, successful = WAV.from_sadl(node.movie.get_sad(), progress_callback=update_progress)
         if not successful:
             return
         with open(export_path, "wb") as export_file:

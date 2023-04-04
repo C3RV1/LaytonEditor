@@ -412,7 +412,7 @@ class FileFormat:
     _last_rom: Archive = None
     """The last rom used when opening the file."""
 
-    def __init__(self, filename: str = None, file=None, compressed=None, rom: NintendoDSRom = None, **kwargs):
+    def __init__(self, filename: str = None, file=None, compressed=None, rom: Archive = None, **kwargs):
         if filename is not None:
             self._last_filename = filename
             self._last_rom = rom
@@ -433,7 +433,7 @@ class FileFormat:
         if filename is not None:
             file.close()  # we opened the file here, we close the file here
 
-    def save(self, filename=None, file=None, compressed=None, rom: NintendoDSRom = None):
+    def save(self, filename=None, file=None, compressed=None, rom: Archive = None):
         should_close = False
         if not file:
             should_close = True

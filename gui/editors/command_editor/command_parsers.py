@@ -1,6 +1,7 @@
 import logging
 
 from formats.event import Event
+from formats.movie import Movie
 from formats.gds import GDSCommand, GDS
 from gui.SettingsManager import SettingsManager
 from utility.replace_substitutions import replace_substitutions
@@ -250,6 +251,12 @@ def parse_play_train_sound(command: GDSCommand, **_kwargs):
     return text
 
 
+def parse_movie_subtitle(command: GDSCommand, **_kwargs):
+    return f"Movie: Subtitle\n" \
+           f"Start: {command.params[1]:.2f}\n" \
+           f"End: {command.params[2]:.2f}"
+
+
 def parse_complete_game(_command: GDSCommand, **_kwargs):
     return "Progression: Complete Game"
 
@@ -312,6 +319,10 @@ script_cmd_parsers = (
     ((0xa1,), parse_complete_game),
 )
 
+movie_cmd_parsers = (
+    ((0xa2,), parse_movie_subtitle),
+)
+
 
 class CommandFactory:
     def __init__(self, command: int, parameters: tuple):
@@ -323,18 +334,33 @@ class CommandFactory:
 
 
 class DialogueCommandFactory(CommandFactory):
-    def __init__(self, command=0x4, parameters=tuple()):
-        super().__init__(command, parameters)
+    def __init__(self):
+        super().__init__(0x4, tuple())
 
     def create(self, event: Event = None, **kwargs):
         if event is None:
-            logging.error("Error: DialogueFactory event=None???", exc_info=True)
+            logging.error("Error: DialogueCommandFactory event=None???", exc_info=True)
             return None
         text_index = 100
         while text_index in event.texts:
             text_index += 100
         event.texts[text_index] = GDS(params=[0, "NONE", "NONE", 2, ""])
         return GDSCommand(0x4, [text_index])
+
+
+class SubtitleCommandFactory(CommandFactory):
+    def __init__(self):
+        super().__init__(0xa2, tuple())
+
+    def create(self, movie: Movie = None, **kwargs):
+        if movie is None:
+            logging.error("Error: SubtitleCommandFactory movie=None???", exc_info=True)
+            return None
+        sub_index = 0
+        while sub_index in movie.subtitles:
+            sub_index += 1
+        movie.subtitles[sub_index] = ""
+        return GDSCommand(0xa2, [sub_index, 0.0, 0.0])
 
 
 event_cmd_context_menu = [
@@ -394,5 +420,14 @@ script_cmd_context_menu = [
 ]
 if SettingsManager().advanced_mode:
     script_cmd_context_menu.append(
+        ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
+    )
+
+
+movie_cmd_context_menu = [
+    ("Movie Subtitle", SubtitleCommandFactory())
+]
+if SettingsManager().advanced_mode:
+    movie_cmd_context_menu.append(
         ("Unknown (Dangerous!)", CommandFactory(0x0, tuple()))
     )

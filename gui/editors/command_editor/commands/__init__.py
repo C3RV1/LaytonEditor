@@ -24,6 +24,8 @@ from .event.SaveProgress import SaveProgress
 from .event.MusicFade import MusicFade
 from .event.MusicPlay import MusicPlay
 
+from .movie.Subtitle import Subtitle
+
 from formats.gds import GDSCommand
 from PySide6 import QtWidgets
 from .CommandEditor import CommandEditor
@@ -81,6 +83,19 @@ def get_event_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
         widget = MusicFade()
     elif command.command in [0x82, 0x89, 0x9f, 0xa1]:
         widget = QtWidgets.QWidget()
+    else:
+        if SettingsManager().advanced_mode:
+            widget = Unknown()
+        else:
+            widget = QtWidgets.QWidget()
+    if isinstance(widget, CommandEditor):
+        widget.set_command(command, **kwargs)
+    return widget
+
+
+def get_movie_command_widget(command: GDSCommand, **kwargs) -> [CommandEditor]:
+    if command.command == 0xa2:
+        widget = Subtitle()
     else:
         if SettingsManager().advanced_mode:
             widget = Unknown()

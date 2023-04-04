@@ -246,7 +246,7 @@ class Event:
         # replace in texts, while dropping the ones not present
         old_texts = self.texts
         self.texts = {}
-        for text_key in old_texts.keys():
+        for text_key in old_texts:
             if text_key in text_order:
                 text = old_texts[text_key]
                 self.texts[(text_order.index(text_key) + 1) * 100] = text

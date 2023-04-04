@@ -49,6 +49,7 @@ class MainEditor(MainEditorUI):
         self.sound_profile_editor = SoundProfileEditor()
         self.sound_bank_editor = SoundBankEditor()
         self.time_definitions_editor = TimeDefinitionsEditor()
+        self.movie_editor = MovieEditor()
 
         self.event_editor.hide()
         self.puzzle_editor.hide()
@@ -60,6 +61,7 @@ class MainEditor(MainEditorUI):
         self.sound_profile_editor.hide()
         self.sound_bank_editor.hide()
         self.time_definitions_editor.hide()
+        self.movie_editor.hide()
 
         self.horizontal_layout.addWidget(self.event_editor, 3)
         self.horizontal_layout.addWidget(self.puzzle_editor, 3)
@@ -71,6 +73,7 @@ class MainEditor(MainEditorUI):
         self.horizontal_layout.addWidget(self.sound_profile_editor, 3)
         self.horizontal_layout.addWidget(self.sound_bank_editor, 3)
         self.horizontal_layout.addWidget(self.time_definitions_editor, 3)
+        self.horizontal_layout.addWidget(self.movie_editor, 3)
 
         self.active_editor = self.empty_editor
 
@@ -210,6 +213,9 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, SWDLNode):
             self.active_editor = self.sound_bank_editor
             self.sound_bank_editor.set_swdl(node.get_swdl())
+        elif isinstance(node, MovieAsset):
+            self.active_editor = self.movie_editor
+            self.movie_editor.set_movie(node)
 
         if self.active_editor is None:
             self.active_editor = self.empty_editor
