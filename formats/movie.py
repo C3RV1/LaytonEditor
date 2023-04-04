@@ -4,6 +4,7 @@ import re
 import formats.filesystem
 import formats.gds
 import formats.sound.sadl
+from utility.replace_substitutions import replace_substitutions, convert_substitutions
 
 
 class Movie:
@@ -28,6 +29,7 @@ class Movie:
 
         if gds_filename not in movie_plz_file.filenames:
             logging.error(f"GDS for movie {self.movie_id} not found")
+            self.gds = formats.gds.GDS()
             return
 
         self.gds = formats.gds.GDS(gds_filename, rom=movie_plz_file)
@@ -44,7 +46,7 @@ class Movie:
             if match := re.match(f"m{self.movie_id}_([0-9]+)\\.txt", filename):
                 subtitle_id = int(match.group(1))
                 with subtitle_plz.open(filename, "rb") as subtitle_file:
-                    self.subtitles[subtitle_id] = subtitle_file.read().decode("cp1252")
+                    self.subtitles[subtitle_id] = replace_substitutions(subtitle_file.read().decode("cp1252"))
 
     def _save_subtitles(self):
         subtitle_plz = self.rom.get_archive(f"/data_lt2/txt/{self.rom.lang}/txt.plz")
@@ -59,7 +61,7 @@ class Movie:
             subtitle_text = self.subtitles[subtitle_id]
             print(f"Saving {subtitle_text} to m{self.movie_id}_{subtitle_id}.txt")
             with subtitle_plz.open(f"m{self.movie_id}_{subtitle_id}.txt", "wb+") as subtitle_file:
-                subtitle_file.write(subtitle_text.encode("cp1252"))
+                subtitle_file.write(convert_substitutions(subtitle_text).encode("cp1252"))
 
     def _sort_and_remove_unused_subtitles(self):
         subtitle_order = []

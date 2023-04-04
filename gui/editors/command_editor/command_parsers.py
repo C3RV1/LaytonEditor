@@ -8,6 +8,9 @@ from utility.replace_substitutions import replace_substitutions
 from formats.dlz import TimeDefinitionsDlz
 
 
+MAX_TEXT_LENGTH = 50
+
+
 def parse_fade(command: GDSCommand, **_kwargs):
     fade_in = command.command in [0x2, 0x32, 0x80, 0x81, 0x88]
     fade_time = None
@@ -49,8 +52,8 @@ def parse_dialogue(command: GDSCommand, event: Event = None, **_kwargs):
     text_parsed = replace_substitutions(text.params[4])
 
     text_one_line = text_parsed.split('\n')
-    if len(text_one_line) > 1:
-        text_one_line = text_one_line[0] + "..."
+    if len(text_one_line) > 1 or len(text_one_line[0]) > MAX_TEXT_LENGTH:
+        text_one_line = text_one_line[0][:MAX_TEXT_LENGTH] + " [...]"
     else:
         text_one_line = text_one_line[0]
 
@@ -251,10 +254,17 @@ def parse_play_train_sound(command: GDSCommand, **_kwargs):
     return text
 
 
-def parse_movie_subtitle(command: GDSCommand, **_kwargs):
-    return f"Movie: Subtitle\n" \
-           f"Start: {command.params[1]:.2f}\n" \
-           f"End: {command.params[2]:.2f}"
+def parse_movie_subtitle(command: GDSCommand, movie=None, **_kwargs):
+    if movie is None:
+        logging.error("Error: Movie Subtitle movie=None???", exc_info=True)
+        return "Error: Movie Subtitle movie=None???"
+    text = movie.subtitles[command.params[0]].split("\n")
+    if len(text) > 1 or len(text[0]) > MAX_TEXT_LENGTH:
+        text = text[0][:MAX_TEXT_LENGTH] + " [...]"
+    else:
+        text = text[0]
+    return f"Movie: Subtitle from {command.params[1]:.2f}s to {command.params[2]:.2f}s\n" \
+           f"{text}"
 
 
 def parse_complete_game(_command: GDSCommand, **_kwargs):

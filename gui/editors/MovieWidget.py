@@ -17,6 +17,7 @@ class MovieEditor(MovieWidgetUI):
     def set_movie(self, movie_asset: MovieAsset):
         self.movie = movie_asset.get_movie()
         self.subtitle_editor.set_gds_and_data(self.movie.gds, rom=movie_asset.rom, movie=movie_asset.movie)
+        self.subtitle_editor.clear_selection()
 
     def get_command_editor(self):
         return CommandListEditor(get_movie_command_widget, movie_cmd_parsers, movie_cmd_context_menu)
