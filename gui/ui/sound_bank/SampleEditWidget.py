@@ -86,6 +86,7 @@ class SampleEditWidgetUI(QtWidgets.QWidget):
         play_pixmap = QtWidgets.QStyle.StandardPixmap.SP_MediaPlay
         play_icon = self.style().standardIcon(play_pixmap)
         self.play_button = QtWidgets.QPushButton(play_icon, "Play")
+        self.play_button.clicked.connect(self.play_click)
         self.button_layout.addWidget(self.play_button)
 
         self.import_button = QtWidgets.QPushButton("Import")
@@ -93,3 +94,6 @@ class SampleEditWidgetUI(QtWidgets.QWidget):
 
         self.export_button = QtWidgets.QPushButton("Export")
         self.button_layout.addWidget(self.export_button)
+
+    def play_click(self):
+        pass

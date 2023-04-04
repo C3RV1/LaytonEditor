@@ -92,6 +92,7 @@ class SoundBankEditor(SoundBankWidgetUI):
         self.sample_model = SampleListModel()
         self.program_model = ProgramListModel()
         self.key_group_model = KeyGroupListModel()
+        self.save_btn.setEnabled(False)
 
     def set_swdl(self, swdl: SWDL):
         self.swdl = swdl
