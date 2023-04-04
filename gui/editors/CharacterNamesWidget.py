@@ -19,6 +19,7 @@ class CharacterNamesEditor(CharacterNamesWidgetUI):
 
         self.setFixedSize(QtCore.QSize(600, 600))
         self.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+        self.setWindowTitle("Character ID to Name Table")
         self.show()
 
     def setup_table(self, names_dict):
@@ -34,12 +35,14 @@ class CharacterNamesEditor(CharacterNamesWidgetUI):
             self.table_widget.setItem(char_id, 0, table_widget_item)
 
             if char_id != 23:
-                create_btn = QtWidgets.QPushButton("Generate")
+                if self.rom is None:
+                    create_btn = QtWidgets.QPushButton("Needs an open ROM")
+                    create_btn.setEnabled(False)
+                else:
+                    create_btn = QtWidgets.QPushButton("Generate")
                 create_btn.clicked.connect(
                     lambda *_args, l_char_id=char_id, button=create_btn: self.generate_name_sprite(l_char_id, button)
                 )
-                if self.rom is None:
-                    create_btn.setEnabled(False)
                 self.table_widget.setCellWidget(char_id, 1, create_btn)
             else:
                 template_text = QtWidgets.QLabel("Used as template")

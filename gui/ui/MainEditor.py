@@ -43,7 +43,7 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.toggle_theme_action = self.settings_menu.addAction("Toggle Theme")
         self.toggle_theme_action.triggered.connect(self.toggle_theme)
 
-        self.character_names_action = self.settings_menu.addAction("Set Character ID to Name")
+        self.character_names_action = self.settings_menu.addAction("Character ID to Name Table")
         self.character_names_action.triggered.connect(self.character_id_to_name)
 
         self.advanced_mode_action = self.settings_menu.addAction("Advanced Mode (Requires Restart)")
