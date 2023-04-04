@@ -98,14 +98,13 @@ class SADL(FileFormat):
         else:
             raise NotImplementedError()
 
-        rdr.seek(0x44)
+        rdr.seek(0x54)
         if self.loop_flag != 0:  # TODO??
             loop_raw = rdr.read_uint32()
             if self.coding == Coding.INT_IMA:
                 self.loop_offset = int((loop_raw - 0x100) / self.channels * 2)
             elif self.coding == Coding.NDS_PROCYON:
                 self.loop_offset = int((loop_raw - 0x100) / self.channels / 16 * 30)
-            print(loop_raw)
 
         rdr.seek(0x60)
         self.volume_maybe = rdr.read_uint8()
@@ -152,7 +151,7 @@ class SADL(FileFormat):
             raise NotImplementedError()
         wtr.write_uint8(coding)
 
-        wtr.seek(0x44)
+        wtr.seek(0x54)
         if self.loop_flag != 0:
             if self.coding == Coding.INT_IMA:
                 loop_raw = (self.loop_offset * self.channels / 2) + 0x100

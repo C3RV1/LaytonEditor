@@ -95,7 +95,7 @@ cdef class Procyon:
     @cython.wraparound(False)
     @cython.exceptval(False)
     cpdef encode_block(self, TYPE_16_BIT[:] block,
-                       TYPE_16_BIT[:] destination):
+                       TYPE_8_BIT[:] destination):
         # TODO: Encoding improve performance (currently it's brute force)
         if len(block) < 30:
             append_block = np.zeros((30 - len(block),), np.int16)
@@ -103,7 +103,7 @@ cdef class Procyon:
         cdef int scale, coef_index
         cdef (int, int) best_encoding = self.search_best_encode(block, destination)
         scale = best_encoding[0]
-        coef_index = best_encoding[0]
+        coef_index = best_encoding[1]
 
         header = (coef_index << 4) | scale
         destination[0xF] = header ^ 0x80
@@ -112,7 +112,7 @@ cdef class Procyon:
     @cython.wraparound(False)
     @cython.exceptval(False)
     cdef (int, int) search_best_encode(self, TYPE_16_BIT[:] block,
-                                     TYPE_16_BIT[:] destination):
+                                       TYPE_8_BIT[:] destination):
         cdef int coef_index = 0
         cdef int scale = 0
 
@@ -148,8 +148,8 @@ cdef class Procyon:
     @cython.wraparound(False)
     @cython.exceptval(False)
     cdef int get_encoding_difference(self, TYPE_16_BIT[:] block, int coef_index, int scale,
-                                     int min_difference, TYPE_16_BIT[:] tmp_array,
-                                     TYPE_16_BIT[:] destination):
+                                     int min_difference, TYPE_8_BIT[:] tmp_array,
+                                     TYPE_8_BIT[:] destination):
         cdef int coef1 = PROC_COEF[coef_index][0]
         cdef int coef2 = PROC_COEF[coef_index][1]
 
