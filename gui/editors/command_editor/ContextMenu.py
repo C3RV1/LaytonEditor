@@ -18,8 +18,11 @@ class CommandListContextMenu(QtWidgets.QMenu):
 
         self.showing_remove = False
         self.remove_action: QtGui.QAction = None
-        self.remove_separator: QtGui.QAction = None
         self.active_command: GDSCommand = None
+
+        self.clear_action = self.addAction("Clear All")
+        self.clear_action.triggered.connect(self.clear_all_command)
+        self.addSeparator()
 
         def helper(menu: QtWidgets.QMenu, menu_struct: tuple):
             for name, element in menu_struct:
@@ -42,7 +45,6 @@ class CommandListContextMenu(QtWidgets.QMenu):
         self.remove_action = QtGui.QAction("Remove")
         self.remove_action.triggered.connect(self.remove_command)
         self.insertAction(first_action, self.remove_action)
-        self.remove_separator = self.insertSeparator(first_action)
         self.active_command = active_command
 
     def hide_remove(self):
@@ -52,14 +54,17 @@ class CommandListContextMenu(QtWidgets.QMenu):
         self.removeAction(self.remove_action)
         self.remove_action.deleteLater()
         self.remove_action = None
-        self.removeAction(self.remove_separator)
-        self.remove_separator.deleteLater()
-        self.remove_separator = None
         self.active_command = None
 
     def remove_command(self):
         self.on_pre_update()
         self.gds.commands.remove(self.active_command)
+        self.on_update()
+        self.on_remove()
+
+    def clear_all_command(self):
+        self.on_pre_update()
+        self.gds.commands = []
         self.on_update()
         self.on_remove()
 
