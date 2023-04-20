@@ -120,6 +120,8 @@ class Sprite(Renderable):
                 self._update_cropped()
 
     def set_tag(self, name: str):
+        if name is None:
+            return
         for tag in self._tag_info:
             if tag.name == name:
                 if tag != self._active_tag:
