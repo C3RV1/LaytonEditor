@@ -216,6 +216,8 @@ class EventPlayer(TwoScreenRenderer):
                 return
             character = None
             for char in self.characters:
+                if char is None:
+                    continue
                 char: EventCharacter
                 if char.get_char_id() == int(command_split[1]):
                     character = char

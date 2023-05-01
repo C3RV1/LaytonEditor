@@ -96,7 +96,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
             self.load_bg()
             self.bg_timer = self.bg_anim_time
             self.clearing = False
-            self.voice.load_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD"))
+            voice_sadl = load_sadl(f"data_lt2/stream/nazo/?/ST_0{self.voice_base}.SAD")
+            if voice_sadl is not None:
+                self.voice.load_sound(voice_sadl)
             self.voice.play()
         elif self.stage == self.STATE_MOVE_UP:
             self.bg.position.y = 192
@@ -105,7 +107,9 @@ class PuzzleWinScreen(TwoScreenRenderer):
         elif self.stage == self.STATE_PICARATS:
             self.fader.fade_in(None)
             vid = self.voice_base + (10 if self.is_correct else 20)
-            self.voice.load_sound(load_sadl(f"data_lt2/stream/nazo/?/ST_0{vid}.SAD"))
+            voice_sadl = load_sadl(f"data_lt2/stream/nazo/?/ST_0{vid}.SAD")
+            if voice_sadl is not None:
+                self.voice.load_sound(voice_sadl)
             self.voice.play()
         elif self.stage == self.STATE_FADE_OUT2:
             self.fader.fade_out(None)

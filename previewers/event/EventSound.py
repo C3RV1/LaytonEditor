@@ -12,6 +12,8 @@ class EventSound:
 
     def play_smdl(self, path, vol):
         smd_obj, swd_file, sample_bank = load_smd(path)
+        if smd_obj is None or swd_file is None or sample_bank is None:
+            return
         self.bg_player.create_temporal_sf2(swd_file, sample_bank)
         self.bg_player.load_sound(smd_obj)
         self.bg_player.play()
@@ -22,8 +24,9 @@ class EventSound:
 
     def play_sadl(self, path):
         sadl = load_sadl(path)
-        self.sadl_player.load_sound(sadl)
-        self.sadl_player.play()
+        if sadl is not None:
+            self.sadl_player.load_sound(sadl)
+            self.sadl_player.play()
 
     def stop_sadl(self):
         self.sadl_player.stop()

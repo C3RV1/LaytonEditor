@@ -445,7 +445,7 @@ class FileFormat:
                 if self._last_rom:
                     file = self._last_rom.open(self._last_filename, "wb+")
                 else:
-                    open(self._last_filename, "wb+")
+                    file = open(self._last_filename, "wb+")
 
         if compressed is None:
             compressed = self._last_compressed

@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 
@@ -20,7 +21,11 @@ def load_sadl(path: str, rom=None) -> sadl.SADL:
     if rom is None:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", rom.lang)
-    sadl_obj = sadl.SADL(path, 0, rom=rom)
+    try:
+        sadl_obj = sadl.SADL(path, 0, rom=rom)
+    except FileNotFoundError as e:
+        logging.exception(e)
+        return None
 
     return sadl_obj
 
@@ -30,13 +35,17 @@ def load_smd(path: str, rom=None) -> tuple:
         rom = RomSingleton.RomSingleton().rom
     path = path.replace("?", rom.lang)
 
-    smd_obj = smdl.SMDL(filename=path, rom=rom)
+    try:
+        smd_obj = smdl.SMDL(filename=path, rom=rom)
 
-    swd_path = path.split(".")[0] + ".SWD"
-    swd_file = swdl.SWDL(swd_path, rom=rom)
+        swd_path = path.split(".")[0] + ".SWD"
+        swd_file = swdl.SWDL(swd_path, rom=rom)
 
-    sample_bank_path = "/".join(path.split("/")[:-1]) + "/BG_999.SWD"
-    sample_bank = swdl.SWDL(sample_bank_path, rom=rom)
+        sample_bank_path = "/".join(path.split("/")[:-1]) + "/BG_999.SWD"
+        sample_bank = swdl.SWDL(sample_bank_path, rom=rom)
+    except FileNotFoundError as e:
+        logging.exception(e)
+        return None, None, None
     return smd_obj, swd_file, sample_bank
 
 
