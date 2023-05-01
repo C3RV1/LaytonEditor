@@ -31,3 +31,4 @@ exported
 formats/sound/compression/*.c
 formats/sound/compression/*.pyd
 formats/sound/compression/*.html
+*.bak
