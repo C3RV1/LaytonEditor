@@ -131,7 +131,7 @@ def parse_character_visibility(command: GDSCommand, event=None, **_kwargs):
            f"{'Show' if show else 'Hide'}{alpha}"
 
 
-def parse_chapter(command: GDSCommand, _event, _rom):
+def parse_chapter(command: GDSCommand, **kwargs):
     return f"Screen: Show Chapter {command.params[0]}"
 
 
