@@ -9,6 +9,7 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         super(PuzzlePropertiesWidget, self).__init__(*args, **kwargs)
         self.puzzle: Puzzle = None
         if not SettingsManager().advanced_mode:
+            self.form_layout.removeRow(self.flag_2_bit_checkbox)
             self.form_layout.removeRow(self.unk0_input)
             self.form_layout.removeRow(self.unk1_input)
 
@@ -32,14 +33,14 @@ class PuzzlePropertiesWidget(PuzzlePropertiesWidgetUI):
         self.hint_3_input.setPlainText(self.puzzle.hint3)
         self.bg_lang_checkbox.setChecked(self.puzzle.bg_lang)
         self.ans_bg_lang_checkbox.setChecked(self.puzzle.ans_bg_lang)
-        self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
         self.has_answer_bg_checkbox.setChecked(self.puzzle.has_answer_bg)
         self.judge_character_input.setValue(self.puzzle.judge_char)
+        self.ans_bg_lang_checkbox.setEnabled(self.puzzle.has_answer_bg)
+
         if SettingsManager().advanced_mode:
+            self.flag_2_bit_checkbox.setChecked(self.puzzle.flag_bit2)
             self.unk0_input.setValue(self.puzzle.unk0)
             self.unk1_input.setValue(self.puzzle.unk1)
-
-        self.ans_bg_lang_checkbox.setEnabled(self.puzzle.has_answer_bg)
 
     def number_spin_edit(self, value: int):
         self.puzzle.number = value
