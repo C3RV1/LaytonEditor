@@ -169,6 +169,7 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         self.character_table.setModel(self.char_table_model)
         if not SettingsManager().advanced_mode:
             self.form_layout.removeRow(self.unk0_input)
+            self.form_layout.removeRow(self.unk1_input)
 
     def set_event(self, ev: Event):
         self.event = ev
@@ -178,6 +179,7 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         self.map_btm_id_input.setValue(self.event.map_bottom_id)
         if SettingsManager().advanced_mode:
             self.unk0_input.setValue(self.event.unk0)
+            self.unk1_input.setValue(self.event.unk1)
         self.sound_profile_input.setValue(self.event.sound_profile)
 
     def name_input_edit(self, value: str):
@@ -193,6 +195,9 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
 
     def unk0_edit(self, value: int):
         self.event.unk0 = value
+
+    def unk1_edit(self, value: int):
+        self.event.unk1 = value
 
     def sound_profile_edit(self, value: int):
         self.event.sound_profile = value

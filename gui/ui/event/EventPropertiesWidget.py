@@ -31,9 +31,14 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         self.form_layout.addRow("Map Bottom ID", self.map_btm_id_input)
 
         self.unk0_input = QtWidgets.QSpinBox(self)
-        self.unk0_input.setMaximum(65535)
+        self.unk0_input.setMaximum(255)
         self.unk0_input.valueChanged.connect(self.unk0_edit)
         self.form_layout.addRow("Unk0", self.unk0_input)
+
+        self.unk1_input = QtWidgets.QSpinBox(self)
+        self.unk1_input.setMaximum(255)
+        self.unk1_input.valueChanged.connect(self.unk1_edit)
+        self.form_layout.addRow("Unk1", self.unk1_input)
 
         self.sound_profile_input = QtWidgets.QSpinBox(self)
         self.sound_profile_input.setMaximum(65535)
@@ -69,6 +74,9 @@ class EventPropertiesWidgetUI(QtWidgets.QWidget):
         pass
 
     def unk0_edit(self, value: int):
+        pass
+
+    def unk1_edit(self, value: int):
         pass
 
     def sound_profile_edit(self, value: int):

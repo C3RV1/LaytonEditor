@@ -1,0 +1,122 @@
+== autoevent2 (0x2000) ==
+Contains a 0x40 length entry for each place, for a maximum of 128 (0-127) places.
+Each place entry contains:
+- 8 entries? (8 bytes each)
+- seems to be 4 ushorts
+  - [0] is assigned to some save_data var if the bounds are correct
+  - [1] is lower bound for something
+  - [2] is higher bound for something
+
+2_020849f8 clears fields 0x825c-0x8267
+
+== storyflag2 (0x2200) ==
+Each entry seems to be 0x22.
+0x0 (short): expected current story flag.
+0x2: 8 conditions (0x4 each) which must be met before moving to the next story flag.
+   - 0x0: Condition type (0 - none, 1 - story flag, 2 - puzzle)
+   - 0x2: None/Story flag which must be set/Puzzle which must be solved (according to first byte)
+
+
+FUN_overlay_d_2__020820ec interesting, seems that maybe it was used for logging a while back. (passes a fourth argument, which is a string, which isn't used, and the function itself is used to set flags in some type of progression struct at SaveData->0xc8).
+
+== PlaceFlag (0x3800) ==
+Place flag has two arrays of two different structures:
+- 128 PlaceFlagP1Place structures (0x40 each) -> 0x2000
+  - Each contains up to 16 PlaceFlagRange structures (0x4 each, last marked with 0,0):
+     - (ushort) lower_bound
+     - (ushort) higher_bound
+     - The version is considered if current_story_step in [lower_bound, higher_bound]
+- 128 PlaceFlagP2Place structures (0x30 each) -> 0x1800
+  - Each contains up to 16 PlaceFlagCondition structures (0x3 each)
+      - (u8) place_flag_id (must be != 0 to be consideres a valid version)
+      - (u8) comparator (0: ==, 1: !=, 2: <=) first op is check_value
+      - (u8) check_value
+
+Place Flags
+- 0x18 -> Photo pieces collected.
+
+Investigate where these are set. Can't find any references!
+
+== SaveData (structure at c8 with length 0x320) ==
+Seems to be flags for various things.
+
+puzzle flags bits01 (0-2)
+- == 0 -> default (not attempted)
+- == 1 -> attempted? (probably)
+- == 2 -> solved
+
+puzzle flags bits23
+- tries on the puzzle (0-3) maybe?? picarats depend on this. don't know why we'd need a value 3 in there, it really is the same picarats 2 and 3
+
+puzzle flags bits45
+- hints bought (0-3)
+
+puzzle flags bit6
+- puzzle sent to granny riddleton
+
+puzzle flags bit7
+- puzzle favortite
+
+for figuring out bits 7 and 6
+FUN_overlay_d_2__02082424 -> follow call xrefs and try to figure out what bit 6 does
+FUN_overlay_d_2__0208243c -> same (if xrefs leads to nothing, try program text search, as that yields calls as SUB_**** from other overlays)
+
+== EvInf2 ==
+Each entry is 0xC bytes.
+- Frist entry (ushort) is event_id.
+- Second entry (ushort) is behaviour:
+  - 1: Hide character after event is played.
+  - 2: Increment event id by 1 when replayed.
+  - 4: Hide when puzzle has been completed.
+  - 5: Increment event id by 2 if puzzle_count less than specified. (Determined by ev_fix).
+  - 6: Play on room enter maybe?
+- Third entry (ushort) is sound_profile to play.
+- Fourth entry (ushort) is puzzle_to_play if event_id in [20000, 30000) (0xFFFF to deactivate)
+- Fifth entry (ushort) is unk
+- Sixth entry (ushort) is the story flag to set (0xFFFF to deactivate).
+
+Interesting: Investigate this behaviour, and the other values.
+
+== EvFix ==
+What does this do???
+Each entry is 0x6 bytes.
+- First entry (ushort) is event_id.
+- Second entry (ushort) seems to be solved puzzle count needed to progress (maybe).
+- Third entry (ushort) unk
+
+== Event Unknowns ==
+I think event.sound_profile is never used. Instead, the evinf2 entry value is used.
+(for most events, these are 0, 0)
+Couldn't find one event where unk1 == 2 and unk0 == 3, must automate to look for it. Must be some crazy exception.
+
+both unks have to do with audio? what exactly? no clue.
+seems that unk0 is used for fading in/out when entering or exiting the event.
+pseudocode (event_load_data):
+if unk1 != 2 && unk0 != 3:
+  sqm_load(sound profile, 1)
+else
+  sqm_load(sound profile, 0)
+  if unk0 == 3:
+    sqm_start_maybe(0x3f000000)
+  else:
+    save->field576_0x81d2 = sound profile
+
+pseudocode (event_main_standard):
+if unk1 != 2 && unk0 != 3:
+  play_sfx(100) -> is this really like this or is it loading the sound?
+                   probably load, but then how does it know if it should play it
+                   maybe sound profile?
+...
+switch(unk0)
+case 1:
+  break;
+case 2:
+  fade_in(both?) (slow??)
+  break;
+case 0:
+case 3:
+  set_default_btm_tint();
+  fade_in_default(both?)?
+...
+if unk1 != 1:
+  fade_out(both??)

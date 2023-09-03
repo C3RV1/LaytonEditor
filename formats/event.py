@@ -52,6 +52,7 @@ class Event:
         self.map_bottom_id = 0
         """ID of the image at the bottom screen. Corresponds to data_lt2/bg/map/main<id>.arc"""
         self.unk0 = 0
+        self.unk1 = 0
         self.characters = [0, 0, 0, 0, 0, 0, 0, 0]
         """List of the IDs of the characters present in the event."""
         self.characters_pos = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -145,7 +146,8 @@ class Event:
             reader = binary.BinaryReader(reader)
         self.map_bottom_id = reader.read_uint16()
         self.map_top_id = reader.read_uint16()
-        self.unk0 = reader.read_uint16()
+        self.unk0 = reader.read_uint8()
+        self.unk1 = reader.read_uint8()
 
         self.characters = []
         for _indexChar in range(8):
@@ -174,7 +176,8 @@ class Event:
             wtr = binary.BinaryWriter(wtr)
         wtr.write_uint16(self.map_bottom_id)
         wtr.write_uint16(self.map_top_id)
-        wtr.write_uint16(self.unk0)
+        wtr.write_uint8(self.unk0)
+        wtr.write_uint8(self.unk1)
 
         for char in self.characters:
             wtr.write_uint8(char)
