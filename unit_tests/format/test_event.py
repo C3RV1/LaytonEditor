@@ -2,7 +2,6 @@ import io
 
 import formats.event as evdat
 from formats.filesystem import NintendoDSRom
-from formats_parsed.dcc import DCCParser
 import unittest
 import os
 

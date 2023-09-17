@@ -5,7 +5,7 @@ from formats.movie import Movie
 from formats.gds import GDSCommand, GDS
 from gui.SettingsManager import SettingsManager
 from utility.replace_substitutions import replace_substitutions
-from formats.dlz import TimeDefinitionsDlz
+from formats.dlz_types.TimeDefinitions import TimeDefinitionsDlz
 
 
 MAX_TEXT_LENGTH = 50
@@ -104,7 +104,7 @@ def parse_wait(command: GDSCommand, rom=None, **_kwargs):
         if rom is None:
             return f"Error: Wait Time Definition rom=None???"
         tm_def = TimeDefinitionsDlz(rom=rom, filename="data_lt2/rc/tm_def.dlz")
-        frames = tm_def[command.params[0]]
+        frames = tm_def.get(command.params[0], -1)
         line = f"Time Definition {command.params[0]} ({frames} frames)"
     return f"Wait: {line}"
 
@@ -131,7 +131,7 @@ def parse_character_visibility(command: GDSCommand, event=None, **_kwargs):
            f"{'Show' if show else 'Hide'}{alpha}"
 
 
-def parse_chapter(command: GDSCommand, **kwargs):
+def parse_chapter(command: GDSCommand, **_kwargs):
     return f"Screen: Show Chapter {command.params[0]}"
 
 
@@ -238,7 +238,7 @@ def parse_stop_train_sound(_command: GDSCommand, **_kwargs):
 
 def parse_music_fade(command: GDSCommand, rom=None, **_kwargs):
     tm_def = TimeDefinitionsDlz(rom=rom, filename="data_lt2/rc/tm_def.dlz")
-    frames = tm_def[command.params[1]]
+    frames = tm_def.get(command.params[1], -1)
     return f"Audio: Fade Music {'Out' if command.command == 0x8a else 'In'}\n" \
            f"In Time Definition {command.params[1]} ({frames} frames)"
 

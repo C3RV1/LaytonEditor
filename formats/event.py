@@ -1,14 +1,15 @@
 # Ported from shortbrim
 import io
+import logging
 import re
 
 import formats.binary as binary
 import formats.gds
 import formats.filesystem as fs
-from typing import Optional, Union
+from typing import Union
 
-from formats import conf
-from formats.dlz import EventLchDlz, EventInf2Dlz
+from formats.dlz_types.EventInf2 import EventInf2Dlz
+from formats.dlz_types.EventLch import EventLchDlz, EventLchEntry
 
 
 class Event:
@@ -62,7 +63,7 @@ class Event:
         self.characters_anim_index = [0, 0, 0, 0, 0, 0, 0, 0]
         """List of the animation indexes of the characters when the event starts."""
 
-        self.sound_profile = 0
+        self.sound_fix = 0
         """Sound profile in snd_fix.dlz"""
 
         self.name = ""
@@ -162,7 +163,7 @@ class Event:
         for _indexChar in range(8):
             self.characters_anim_index.append(reader.read_uint8())
 
-        self.sound_profile = reader.read_uint16()
+        self.sound_fix = reader.read_uint16()
 
     def write_stream(self, wtr: Union[binary.BinaryWriter, io.BytesIO]):
         """
@@ -188,27 +189,39 @@ class Event:
         for char_anim in self.characters_anim_index:
             wtr.write_uint8(char_anim)
 
-        wtr.write_uint16(self.sound_profile)
+        wtr.write_uint16(self.sound_fix)
 
         return wtr.data
 
     def _load_dlz(self):
         event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz")
-        self.name = event_lch.get(self.event_id, "")
+        event_lch_entry: EventLchEntry = event_lch.get(self.event_id)
+        if event_lch_entry is None:
+            self.name = ""
+        else:
+            self.name = event_lch_entry.event_name
 
         event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_inf2.dlz")
-        self.sound_profile = event_inf2[self.event_id]
+        if self.event_id in event_inf2:
+            self.sound_fix = event_inf2[self.event_id].sound_fix
+        else:
+            logging.warning(f"Couldn't find event_inf2 for event {self.event_id}")
+            self.sound_fix = 0
 
     def _save_dlz(self):
         event_lch = EventLchDlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz")
         if self.name != "":
-            event_lch[self.event_id] = self.name
+            if self.event_id not in event_lch:
+                event_lch[self.event_id] = EventLchEntry(0, self.name)
+            else:
+                event_lch[self.event_id].event_name = self.name
         else:
             event_lch.pop(self.event_id)
         event_lch.save()
 
         event_inf2 = EventInf2Dlz(rom=self.rom, filename=f"/data_lt2/rc/{self.rom.lang}/ev_inf2.dlz")
-        event_inf2[self.event_id] = self.sound_profile
+        event_inf2[self.event_id].sound_fix = self.sound_fix
+        # TODO: Add other progression data
         event_inf2.save()
 
     def _load_gds(self):

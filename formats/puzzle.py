@@ -4,11 +4,10 @@ from typing import Optional
 import formats.filesystem
 import formats.gds
 import formats.graphics.bg
-import formats.dlz
+from formats.dlz_types.NazoList import NazoListDlz, NazoListEntry
 from formats.binary import BinaryReader, BinaryWriter
 
 import utility.replace_substitutions as subs
-from formats import conf
 
 import enum
 
@@ -212,8 +211,12 @@ class Puzzle:
         self.export_data(dat_file)
         dat_file.close()
 
-        nz_lst_dlz = formats.dlz.NazoListDlz(filename=f"data_lt2/rc/{self.rom.lang}/nz_lst.dlz", rom=self.rom)
-        nz_lst_dlz[self.internal_id] = self.pad_with_0(self.title.encode(self.encoding), 0x30)
+        nz_lst_dlz = NazoListDlz(filename=f"data_lt2/rc/{self.rom.lang}/nz_lst.dlz", rom=self.rom)
+        if self.internal_id not in nz_lst_dlz:
+            nz_lst_dlz[self.internal_id] = NazoListEntry(self.number, self.title, 0)
+        else:
+            nz_lst_dlz[self.internal_id].puzzle_number = self.number
+            nz_lst_dlz[self.internal_id].puzzle_name = self.title
         nz_lst_dlz.save()
 
         self.save_gds()

@@ -36,7 +36,7 @@ class EditorCategory(EditorObject):
     def row_count(self, index: QtCore.QModelIndex, model: 'EditorTree') -> int:
         return 0
 
-    def column_count(self, index: QtCore.QModelIndex, model: 'EditorTree') -> int:
+    def column_count(self, _index: QtCore.QModelIndex, _model: 'EditorTree') -> int:
         return 1
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,

@@ -180,7 +180,7 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         if SettingsManager().advanced_mode:
             self.unk0_input.setValue(self.event.unk0)
             self.unk1_input.setValue(self.event.unk1)
-        self.sound_profile_input.setValue(self.event.sound_profile)
+        self.sound_profile_input.setValue(self.event.sound_fix)
 
     def name_input_edit(self, value: str):
         self.event.name = value[:48]
@@ -200,7 +200,7 @@ class EventPropertiesWidget(EventPropertiesWidgetUI):
         self.event.unk1 = value
 
     def sound_profile_edit(self, value: int):
-        self.event.sound_profile = value
+        self.event.sound_fix = value
 
     def add_character_click(self):
         self.char_table_model.add_character()

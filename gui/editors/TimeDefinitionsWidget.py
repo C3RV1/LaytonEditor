@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from gui.ui.TimeDefinitionsWidget import TimeDefinitionsUI
-from formats.dlz import TimeDefinitionsDlz
+from formats.dlz_types.TimeDefinitions import TimeDefinitionsDlz
 
 
 class TimeDefinitionsModel(QtCore.QAbstractListModel):

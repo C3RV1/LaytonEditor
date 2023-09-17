@@ -3,15 +3,19 @@ Contains a 0x40 length entry for each place, for a maximum of 128 (0-127) places
 Each place entry contains:
 - 8 entries? (8 bytes each)
 - seems to be 4 ushorts
-  - [0] is assigned to some save_data var if the bounds are correct
-  - [1] is lower bound for something
-  - [2] is higher bound for something
+  - [0] is event_id
+  - [1] is lower bound for story step?
+  - [2] is higher bound for story step?
+  - [3] (always 0)
 
 2_020849f8 clears fields 0x825c-0x8267
 
 == storyflag2 (0x2200) ==
+There seems to be 256 story steps.
+Seems to hold the story progress conditions. Each story step contains a maximum of 8 conditions to advance to the next one. These story steps determine the autoevent2 entries that play, the place versions that are considered... (and what else?).
+
 Each entry seems to be 0x22.
-0x0 (short): expected current story flag.
+0x0 (short): story step.
 0x2: 8 conditions (0x4 each) which must be met before moving to the next story flag.
    - 0x0: Condition type (0 - none, 1 - story flag, 2 - puzzle)
    - 0x2: None/Story flag which must be set/Puzzle which must be solved (according to first byte)
@@ -20,6 +24,8 @@ Each entry seems to be 0x22.
 FUN_overlay_d_2__020820ec interesting, seems that maybe it was used for logging a while back. (passes a fourth argument, which is a string, which isn't used, and the function itself is used to set flags in some type of progression struct at SaveData->0xc8).
 
 == PlaceFlag (0x3800) ==
+This file decides which version of a place is loaded. It takes into account, first, the current story step, which must be in a specific range. Then, the PlaceFlagP2Condition corresponding to that version is checked, and it must be true for the version to be chosen.
+
 Place flag has two arrays of two different structures:
 - 128 PlaceFlagP1Place structures (0x40 each) -> 0x2000
   - Each contains up to 16 PlaceFlagRange structures (0x4 each, last marked with 0,0):
@@ -28,14 +34,66 @@ Place flag has two arrays of two different structures:
      - The version is considered if current_story_step in [lower_bound, higher_bound]
 - 128 PlaceFlagP2Place structures (0x30 each) -> 0x1800
   - Each contains up to 16 PlaceFlagCondition structures (0x3 each)
-      - (u8) place_flag_id (must be != 0 to be consideres a valid version)
+      - (u8) place_flag_id (must be != 0 for the condition to be checked)
       - (u8) comparator (0: ==, 1: !=, 2: <=) first op is check_value
       - (u8) check_value
 
 Place Flags
-- 0x18 -> Photo pieces collected.
+- 1 -> 11050, 11060
+- 2 -> 21020
+(3 missing in events)
+- 4 -> 10050
+- 5 -> 11240
+- 6 -> 21003
+(7 missing in events)
+- 8 -> 11290
+- 9 -> 11220
+(10 missing in events)
+- 11 -> 14130
+- 12 -> 14160
+- 13 -> 16130
+(14 missing in events)
+- 15 -> 12040
+(16 missing in events)
+- 17 -> 14180
+(18 missing in events)
+- 19 -> 11175
+- 20 -> 24103, 24123, 24163, 24733
+- 21 -> 17023, 25003
+- 22 -> 15020, 30001
+- 23 -> 14170
+- 24 (not in events, hardcoded instead) -> Photo pieces collected.
+- 25 -> 24193
+- 26 -> 24213
+- 27 -> 24223
+- 28 -> 24203
+- 29 -> 24623
+- 30 -> 24663
+- 31 -> 24673
+(32-36 missing in events)
+- 37 -> 24713
+- 38 -> 24723
+- 39 -> 17260
+- 40 -> 25043
+- 41 -> 11100, 21013, 21014
+- 42 -> 12100
+- 43 -> 12282
+- 44 -> 24273
+- 45 -> 24473
+- 46 -> 14100
+- 47 -> 14380
+- 48 -> 14390
+(49 missing in events)
+- 50 -> 11412
+- 51 -> 14502
+- 52 -> 12282
+- 53 -> 24683
+- 54 -> 24693
+(55-58 missing in events)
+- 59 -> 22183
+- 60 -> 22163
 
-Investigate where these are set. Can't find any references!
+Investigate where these are set. Can't find any references! Update: Set using gds command 0x36. (but not the other place flag commands? strange considering 0x36 ORs the value of the place flag).
 
 == SaveData (structure at c8 with length 0x320) ==
 Seems to be flags for various things.
@@ -61,35 +119,13 @@ for figuring out bits 7 and 6
 FUN_overlay_d_2__02082424 -> follow call xrefs and try to figure out what bit 6 does
 FUN_overlay_d_2__0208243c -> same (if xrefs leads to nothing, try program text search, as that yields calls as SUB_**** from other overlays)
 
-== EvInf2 ==
-Each entry is 0xC bytes.
-- Frist entry (ushort) is event_id.
-- Second entry (ushort) is behaviour:
-  - 1: Hide character after event is played.
-  - 2: Increment event id by 1 when replayed.
-  - 4: Hide when puzzle has been completed.
-  - 5: Increment event id by 2 if puzzle_count less than specified. (Determined by ev_fix).
-  - 6: Play on room enter maybe?
-- Third entry (ushort) is sound_profile to play.
-- Fourth entry (ushort) is puzzle_to_play if event_id in [20000, 30000) (0xFFFF to deactivate)
-- Fifth entry (ushort) is unk
-- Sixth entry (ushort) is the story flag to set (0xFFFF to deactivate).
-
-Interesting: Investigate this behaviour, and the other values.
-
-== EvFix ==
-What does this do???
-Each entry is 0x6 bytes.
-- First entry (ushort) is event_id.
-- Second entry (ushort) seems to be solved puzzle count needed to progress (maybe).
-- Third entry (ushort) unk
-
 == Event Unknowns ==
 I think event.sound_profile is never used. Instead, the evinf2 entry value is used.
+Unknowns:
 (for most events, these are 0, 0)
 Couldn't find one event where unk1 == 2 and unk0 == 3, must automate to look for it. Must be some crazy exception.
 
-both unks have to do with audio? what exactly? no clue.
+both unks have to do with audio? (doesn't seem like it is) what exactly? no clue.
 seems that unk0 is used for fading in/out when entering or exiting the event.
 pseudocode (event_load_data):
 if unk1 != 2 && unk0 != 3:
@@ -120,3 +156,49 @@ case 3:
 ...
 if unk1 != 1:
   fade_out(both??)
+
+== DLZ research ==
+Used:
+ev_fix.dlz
+ev_inf2.dlz
+chp_inf.dlz
+tm_def.dlz
+sm_inf.dlz
+goal_inf.dlz
+snd_fix.dlz
+nz_lst.dlz
+sb_pht.dlz
+ht_elm.dlz
+ht_rcp.dlz
+ht_event.dlz
+ht_talk.dlz
+
+Unused (known so far):
+ev_inf.dlz
+ev_lch.dlz
+ev_str.dlz
+
+== EvInf2 ==
+Each entry is 0xC bytes.
+- First entry (ushort) is event_id.
+- Second entry (ushort) is behaviour:
+  - 1: Hide character after event is played.
+  - 2: Increment event id by 1 when replayed.
+  - 4: Hide when puzzle has been completed.
+  - 5: Increment event id by 2 if puzzle_count less than specified. (Determined by ev_fix).
+  - 6: Play on room enter maybe?
+- Third entry (ushort) is sound_profile to play.
+- Fourth entry (ushort) is puzzle_to_play if event_id in [20000, 30000) (0xFFFF to deactivate)
+- Fifth entry (ushort) is unk
+- Sixth entry (ushort) is the story flag to set (0xFFFF to deactivate).
+
+Interesting: Investigate this behaviour, and the other values.
+
+== EvFix ==
+What does this do???
+Each entry is 0x6 bytes.
+- First entry (ushort) is event_id.
+- Second entry (ushort) seems to be solved puzzle count needed to progress (maybe).
+- Third entry (ushort) unk
+  Maybe is the event view flag associated with the event?
+  Look at set_event_viewed_flag_maybe (overlay2 02084c38)

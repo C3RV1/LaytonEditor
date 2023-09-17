@@ -201,7 +201,7 @@ class MainEditor(MainEditorUI):
         elif isinstance(node, BackgroundAsset):
             self.active_editor = self.background_editor
             self.background_editor.set_image(node.get_bg())
-        elif isinstance(node, SoundProfileNode):
+        elif isinstance(node, SoundFixNode):
             self.active_editor = self.sound_profile_editor
             self.sound_profile_editor.set_snd_profile(node.get_sound_profile_dlz())
         elif isinstance(node, TimeDefinitionsNode):

@@ -199,7 +199,7 @@ class NintendoDSRom(ndspy.rom.NintendoDSRom, Archive):
             raise ValueError("Path should start with slash.")
         if path not in self._loaded_archives:
             self._get_archive_call = True
-            self._loaded_archives[path] = PlzArchive(path, rom=self)
+            self._loaded_archives[path] = PlzArchive(filename=path, rom=self)
             self._get_archive_call = False
         return self._loaded_archives[path]
 
@@ -413,6 +413,7 @@ class FileFormat:
     """The last rom used when opening the file."""
 
     def __init__(self, filename: str = None, file=None, compressed=None, rom: Archive = None, **kwargs):
+        super().__init__()
         if filename is not None:
             self._last_filename = filename
             self._last_rom = rom

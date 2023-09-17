@@ -9,7 +9,6 @@ from gui.SettingsManager import SettingsManager
 class CharacterAnimation(CommandEditorEvent, CharacterAnimationUI):
     def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
         super(CharacterAnimation, self).set_command(command, event=event, **kwargs)
-        settings = SettingsManager()
 
         index = -1
         for i, char_id in enumerate(self.event.characters):

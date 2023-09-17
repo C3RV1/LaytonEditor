@@ -12,7 +12,6 @@ class Dialogue(CommandEditorEvent, DialogueUI):
         super(Dialogue, self).set_command(command, event=event, **kwargs)
         text_num = command.params[0]
         text = event.get_text(text_num)
-        settings = SettingsManager()
 
         self.character.addItem("Narrator", 0)
         index = 0

@@ -5,8 +5,7 @@ from PySide6 import QtCore
 from ..EditorTypes import EditorCategory, EditorObject
 from formats.filesystem import Folder
 from formats.event import Event
-from formats.dlz import EventLchDlz
-from formats import conf
+from formats.dlz_types.EventLch import EventLchDlz
 
 
 class EventNode(EditorObject):
@@ -84,7 +83,7 @@ class EventCategory(EditorCategory):
     def load_event_names(self):
         self.event_names = {}
         dlz_file = EventLchDlz(f"/data_lt2/rc/{self.rom.lang}/ev_lch.dlz", rom=self.rom)
-        self.event_names = dlz_file.event_names
+        self.event_names = {v[0]: v[1].event_name for v in dlz_file.items()}
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
         if index.internalPointer() != self:

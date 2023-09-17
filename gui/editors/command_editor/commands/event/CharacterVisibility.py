@@ -11,7 +11,6 @@ from gui.SettingsManager import SettingsManager
 class CharacterVisibility(CommandEditorEvent, CharacterVisibilityUI):
     def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
         super(CharacterVisibility, self).set_command(command, event=event, **kwargs)
-        settings = SettingsManager()
 
         for i, char_id in enumerate(self.event.characters):
             if char_id == 0:

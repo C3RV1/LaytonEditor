@@ -9,7 +9,6 @@ from gui.SettingsManager import SettingsManager
 class CharacterSlot(CommandEditorEvent, CharacterSlotUI):
     def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
         super(CharacterSlot, self).set_command(command, event=event, **kwargs)
-        settings = SettingsManager()
 
         for i, char_id in enumerate(self.event.characters):
             if char_id == 0:

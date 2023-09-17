@@ -1,21 +1,22 @@
 from ..EditorTypes import EditorCategory, EditorObject
 
 from PySide6 import QtCore, QtWidgets, QtGui
-from formats.dlz import SoundProfileDlz, TimeDefinitionsDlz
+from formats.dlz_types.TimeDefinitions import TimeDefinitionsDlz
+from formats.dlz_types.SoundFix import SoundFixDlz
 
 
-class SoundProfileNode(EditorObject):
+class SoundFixNode(EditorObject):
     def __init__(self, category):
-        super(SoundProfileNode, self).__init__()
+        super(SoundFixNode, self).__init__()
         self.category = category
-        self.name = "Sound Profiles"
-        self.sound_profile_dlz: SoundProfileDlz = None
+        self.name = "Sound Fix"
+        self.sound_fix_dlz: SoundFixDlz = None
 
     def reset_file_system(self, rom):
-        self.sound_profile_dlz = SoundProfileDlz(rom=rom, filename="/data_lt2/rc/snd_fix.dlz")
+        self.sound_fix_dlz = SoundFixDlz(rom=rom, filename="/data_lt2/rc/snd_fix.dlz")
 
-    def get_sound_profile_dlz(self):
-        return self.sound_profile_dlz
+    def get_sound_profile_dlz(self) -> SoundFixDlz:
+        return self.sound_fix_dlz
 
     def data(self):
         return "Sound Profiles"
@@ -43,7 +44,7 @@ class DLZCategory(EditorCategory):
         super(DLZCategory, self).__init__()
         self.name = "DLZ"
         self.dlz_items = [
-            SoundProfileNode(self),
+            SoundFixNode(self),
             TimeDefinitionsNode(self)
         ]
 
@@ -74,4 +75,3 @@ class DLZCategory(EditorCategory):
         if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
             return index.internalPointer().data()
         return None
-
