@@ -103,9 +103,11 @@ cdef class Adpcm:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.exceptval(False)
-    cpdef np.ndarray[TYPE_8_BIT, ndim=1] compress(self, TYPE_16_BIT[:] data):
+    cpdef compress(self, TYPE_16_BIT[:] data,
+                   np.ndarray[TYPE_8_BIT, ndim=1] destination):
         # (v + 1) // 2 = ceil(v / 2)
-        cdef np.ndarray[TYPE_8_BIT, ndim=1] result = np.ndarray(((len(data) + 1) // 2,), dtype=np.uint8)
+        # cdef np.ndarray[TYPE_8_BIT, ndim=1] result = np.ndarray(((len(data) + 1) // 2,), dtype=np.uint8)
+        # TODO: Do first?
 
         cdef int index = self.index
         cdef short original_sample, predicted_sample, new_sample = self.predicted_sample
@@ -143,9 +145,9 @@ cdef class Adpcm:
             predicted_sample += different
 
             if i % 2 == 0:
-                result[i // 2] = new_sample & 0xF
+                destination[i // 2] = new_sample & 0xF
             else:
-                result[i // 2] += new_sample & 0xF << 4
+                destination[i // 2] += new_sample & 0xF << 4
 
             index += INDEX_TABLE[new_sample]
             if index < 0:
@@ -155,6 +157,4 @@ cdef class Adpcm:
         self.index = index
         self.predicted_sample = predicted_sample
 
-        return result
-
-
+        return destination
