@@ -87,6 +87,7 @@ class SADL(FileFormat):
             rdr = BinaryReader(stream)
         else:
             rdr = stream
+        # TODO: Figure out unknowns so as to not need the original header.
         self.original_header = rdr.read(0x100)
         rdr.seek(0)
 
@@ -287,7 +288,7 @@ class SADL(FileFormat):
         return True
 
     def _encode_int_ima(self, decoded: np.ndarray, progress_callback: Union[Callable, None]):
-        self.buffer = np.zeros((decoded.shape[0], int(math.ceil(self.num_samples / 2))), dtype=np.uint8)
+        self.buffer = np.zeros((decoded.shape[0], int(math.ceil(self.num_samples / 0x20) * 0x10)), dtype=np.uint8)
         return self._encode_helper(decoded, progress_callback, encode_channel_int_ima)
 
     def _encode_procyon(self, decoded: np.ndarray, progress_callback: Union[Callable, None] = None):
@@ -300,6 +301,6 @@ class SADL(FileFormat):
         if self.coding == Coding.NDS_PROCYON:
             return self._encode_procyon(decoded, progress_callback)
         elif self.coding == Coding.INT_IMA:
-            return self._encode_procyon(decoded, progress_callback)
+            return self._encode_int_ima(decoded, progress_callback)
         else:
             raise NotImplementedError()

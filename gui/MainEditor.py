@@ -50,6 +50,7 @@ class MainEditor(MainEditorUI):
         self.sound_bank_editor = SoundBankEditor()
         self.time_definitions_editor = TimeDefinitionsEditor()
         self.movie_editor = MovieEditor()
+        self.stream_editor = StreamEditor(self)
 
         self.event_editor.hide()
         self.puzzle_editor.hide()
@@ -62,6 +63,7 @@ class MainEditor(MainEditorUI):
         self.sound_bank_editor.hide()
         self.time_definitions_editor.hide()
         self.movie_editor.hide()
+        self.stream_editor.hide()
 
         self.horizontal_layout.addWidget(self.event_editor, 3)
         self.horizontal_layout.addWidget(self.puzzle_editor, 3)
@@ -74,6 +76,7 @@ class MainEditor(MainEditorUI):
         self.horizontal_layout.addWidget(self.sound_bank_editor, 3)
         self.horizontal_layout.addWidget(self.time_definitions_editor, 3)
         self.horizontal_layout.addWidget(self.movie_editor, 3)
+        self.horizontal_layout.addWidget(self.stream_editor, 3)
 
         self.active_editor = self.empty_editor
 
@@ -179,9 +182,14 @@ class MainEditor(MainEditorUI):
             self.active_editor = self.script_editor
             self.script_editor.set_script(node.to_gds())
         elif isinstance(node, SADLNode):
+            self.active_editor = self.stream_editor
+            sadl = node.get_sadl()
             sadl_player = SADLStreamPlayer()
-            self.pg_previewer.start_renderer(SoundPreview(sadl_player, node.get_sadl(),
-                                                          node.data()))
+            name = node.data()
+            self.stream_editor.set_sadl(sadl, name)
+            self.pg_previewer.start_renderer(
+                SoundPreview(sadl_player, sadl, name)
+            )
             set_previewer = True
         elif isinstance(node, SMDLNode):
             smdl_player = SMDLStreamPlayer()

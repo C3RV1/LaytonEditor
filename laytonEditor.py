@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     # Initial setup before any imports
 
-    VERSION = "v0.6-pre3"
+    VERSION = "v0.7-pre1"
 
     os.chdir(os.path.dirname(__file__))  # Ensure that the cwd is set correctly
 

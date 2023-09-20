@@ -131,7 +131,7 @@ class WAV:
         return wav_obj, wav_obj.data.data is not None
 
     def to_sadl(self, sadl: SADL, progress_callback: Union[Callable, None] = None):
-        # TODO: Change to generate SADL
+        # TODO: Change to generate SADL (needed?)
         sadl.channels = min(self.fmt.num_channels, 2)
         sadl.sample_rate = self.fmt.sample_rate
         if sadl.sample_rate <= 16364:

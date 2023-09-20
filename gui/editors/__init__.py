@@ -9,3 +9,4 @@ from .sprite.SpriteWidget import SpriteEditor
 from .SoundProfileWidget import SoundProfileEditor
 from .TimeDefinitionsWidget import TimeDefinitionsEditor
 from .MovieWidget import MovieEditor
+from .stream.StreamWidget import StreamEditor

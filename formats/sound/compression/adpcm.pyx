@@ -30,12 +30,12 @@ cdef class Adpcm:
     cdef int index, new_sample, predicted_sample
     cdef bint first
 
-    def __init__(self, bint do_first):
-        self.index = 0
+    def __init__(self, bint do_first, index=0, predicted_sample=0):
+        self.index = index
         self.new_sample = 0
         self.first = do_first
 
-        self.predicted_sample = 0
+        self.predicted_sample = predicted_sample
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -103,51 +103,61 @@ cdef class Adpcm:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.exceptval(False)
-    cpdef compress(self, TYPE_16_BIT[:] data,
+    cpdef compress(self, np.ndarray[TYPE_16_BIT, ndim=1] data,
                    np.ndarray[TYPE_8_BIT, ndim=1] destination):
         # (v + 1) // 2 = ceil(v / 2)
         # cdef np.ndarray[TYPE_8_BIT, ndim=1] result = np.ndarray(((len(data) + 1) // 2,), dtype=np.uint8)
         # TODO: Do first?
 
+        if self.first:
+            print("Error!")
+            return None
+
         cdef int index = self.index
-        cdef short original_sample, predicted_sample, new_sample = self.predicted_sample
-        cdef int i, step, different, mask, temp_step_size
-        for i in range(0, len(data)):
+        cdef short original_sample, new_sample, predicted_sample = self.predicted_sample
+        cdef int i, step, difference, mask, temp_step_size
+        for i in range(0, data.shape[0]):
             step = STEP_SIZE_TABLE[index]
             original_sample = data[i]
-            different = original_sample - predicted_sample
+            difference = original_sample - predicted_sample
 
-            if different >= 0:
+            if difference >= 0:
                 new_sample = 0
             else:
                 new_sample = 8
-                different = -different
+                difference = -difference
 
             mask = 4
             temp_step_size = step
             for j in range(0, 3):
-                if different >= temp_step_size:
+                if difference >= temp_step_size:
                     new_sample |= mask
-                    different -= temp_step_size
+                    difference -= temp_step_size
                 temp_step_size >>= 1
                 mask >>= 1
 
-            different = step >> 3
+            if i % 2 == 0:
+                destination[i // 2] = new_sample
+            else:
+                destination[i // 2] += new_sample << 4
+
+            difference = 0
             if new_sample & 4:
-                different += step
+                difference += step
             if new_sample & 2:
-                different += step >> 1
+                difference += step >> 1
             if new_sample & 1:
-                different += step >> 2
+                difference += step >> 2
+            difference += step >> 3
 
             if new_sample & 8:
-                different = -different
-            predicted_sample += different
+                difference = -difference
+            predicted_sample += difference
 
-            if i % 2 == 0:
-                destination[i // 2] = new_sample & 0xF
-            else:
-                destination[i // 2] += new_sample & 0xF << 4
+            if predicted_sample > 32767:
+                predicted_sample = 32767
+            elif predicted_sample < -32768:
+                predicted_sample = -32768
 
             index += INDEX_TABLE[new_sample]
             if index < 0:
