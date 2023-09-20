@@ -2,6 +2,8 @@ from PySide6 import QtCore, QtWidgets, QtGui
 
 
 class StreamWidgetUI(QtWidgets.QWidget):
+    
+    # TODO: Loop
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
