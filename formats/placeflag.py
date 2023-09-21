@@ -7,7 +7,7 @@ from typing import BinaryIO
 class PlaceFlagComparator(IntEnum):
     EQUALS = 0
     NOT_EQUALS = 1
-    LESS_THAN = 2
+    GREATER_THAN_OR_EQUALS = 2
 
 
 class PlaceFlagVersion:
@@ -66,7 +66,7 @@ class PlaceFlagVersion:
             comparator_str = {
                 PlaceFlagComparator.EQUALS: "==",
                 PlaceFlagComparator.NOT_EQUALS: "!=",
-                PlaceFlagComparator.LESS_THAN: "<="
+                PlaceFlagComparator.GREATER_THAN_OR_EQUALS: ">="
             }[self.comparator]
             return f"PlaceVersion<{range_str}, " \
                    f"place_flag {self.place_flag_id} {comparator_str} {self.check_value}>"

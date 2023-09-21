@@ -15,6 +15,9 @@ class EventFixEntry:
     def to_data(self) -> bytes:
         return struct.pack("<HH", self.unk0, self.unk1)
 
+    def __repr__(self):
+        return f"EventFixEntry<unk0={self.unk0}, unk1={self.unk1}>"
+
 
 class EventFixDlz(Dlz):
     def _construct_entry_object(self, entry_data: bytes) -> EventFixEntry:

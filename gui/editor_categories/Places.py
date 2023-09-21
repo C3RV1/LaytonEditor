@@ -35,6 +35,7 @@ class PlaceTop(EditorObject):
 
     def add_version(self, version: PlaceVersion):
         self.versions.append(version)
+        self.versions.sort(key=lambda x: x.version)
 
     def child_count(self):
         return len(self.versions)

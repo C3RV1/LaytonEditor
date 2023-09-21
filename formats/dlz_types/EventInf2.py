@@ -33,6 +33,10 @@ class EventInf2Entry:
         return struct.pack("<HHHHH", self.behaviour, self.sound_fix, self.puzzle,
                            self.unk0, self.story_flag)
 
+    def __repr__(self):
+        return f"EventInf2Entry<behaviour={self.behaviour}, sound_fix={self.sound_fix}, puzzle={self.puzzle}, " \
+               f"unk0={self.unk0}, story_flag={self.story_flag}>"
+
 
 class EventInf2Dlz(Dlz):
     def _construct_entry_object(self, entry_data: bytes) -> EventInf2Entry:
