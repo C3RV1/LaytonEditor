@@ -1,5 +1,5 @@
 from PySide6 import QtCore, QtWidgets, QtGui
-from gui.ui.SoundProfileWidget import SoundProfileUI
+from gui.ui.SoundFixWidget import SoundProfileUI
 from formats.dlz_types.SoundFix import SoundFixEntry, SoundFixDlz
 from ..SettingsManager import SettingsManager
 
@@ -30,9 +30,9 @@ class SoundFixModel(QtCore.QAbstractListModel):
         return None
 
 
-class SoundProfileEditor(SoundProfileUI):
+class SoundFixEditor(SoundProfileUI):
     def __init__(self):
-        super(SoundProfileEditor, self).__init__()
+        super(SoundFixEditor, self).__init__()
         self.snd_dlz: SoundFixDlz = None
         self.sound_fix_entry: SoundFixEntry = None
         self.sound_profile_model = SoundFixModel()

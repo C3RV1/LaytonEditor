@@ -39,15 +39,15 @@ Place flag has two arrays of two different structures:
       - (u8) check_value
 
 Place Flags
-- 1 -> 11050, 11060
-- 2 -> 21020
+- 1 -> 11050, 11060 (2) (9.5 >= 2, 9.7 >= 2, 9.9 >= 2, 9.12 >= 2, 9.13 == 1)
+- 2 -> 21020 (16.10 == 1)
 (3 missing in events)
-- 4 -> 10050
-- 5 -> 11240
-- 6 -> 21003
+- 4 -> 10050 (3.2 == 1)
+- 5 -> 11240 (11.8 == 1)
+- 6 -> 21003 (8.2 != 1, 8.4 != 1)
 (7 missing in events)
-- 8 -> 11290
-- 9 -> 11220
+- 8 -> 11290 (11.6 == 1)
+- 9 -> 11220 (16.8 != 1)
 (10 missing in events)
 - 11 -> 14130
 - 12 -> 14160
@@ -57,9 +57,9 @@ Place Flags
 (16 missing in events)
 - 17 -> 14180
 (18 missing in events)
-- 19 -> 11175
-- 20 -> 24103, 24123, 24163, 24733
-- 21 -> 17023, 25003
+- 19 -> 11175 (9.10 != 1)
+- 20 -> 24103 (2), 24123, 24163 (4), 24733
+- 21 -> 17023, 25003 (2)
 - 22 -> 15020, 30001
 - 23 -> 14170
 - 24 (not in events, hardcoded instead) -> Photo pieces collected.
@@ -75,7 +75,7 @@ Place Flags
 - 38 -> 24723
 - 39 -> 17260
 - 40 -> 25043
-- 41 -> 11100, 21013, 21014
+- 41 -> 11100, 21013 (2), 21014 (4) (11.10 == 5, 11.11 == 4, 11.12 == 3, 11.13 == 2)
 - 42 -> 12100
 - 43 -> 12282
 - 44 -> 24273
@@ -84,7 +84,7 @@ Place Flags
 - 47 -> 14380
 - 48 -> 14390
 (49 missing in events)
-- 50 -> 11412
+- 50 -> 11412 (16.7 != 1)
 - 51 -> 14502
 - 52 -> 12282
 - 53 -> 24683
@@ -110,7 +110,7 @@ puzzle flags bits45
 - hints bought (0-3)
 
 puzzle flags bit6
-- puzzle sent to granny riddleton
+- puzzle sent to granny riddleton (or in granny riddleton?)
 
 puzzle flags bit7
 - puzzle favortite
@@ -184,6 +184,7 @@ Each entry is 0xC bytes.
 - Second entry (ushort) is behaviour:
   - 1: Hide character after event is played.
   - 2: Increment event id by 1 when replayed.
+  - 3: Unknown yet.
   - 4: Hide when puzzle has been completed.
   - 5: Increment event id by 2 if puzzle_count less than specified. (Determined by ev_fix).
   - 6: Play on room enter maybe?
@@ -198,7 +199,22 @@ Interesting: Investigate this behaviour, and the other values.
 What does this do???
 Each entry is 0x6 bytes.
 - First entry (ushort) is event_id.
-- Second entry (ushort) seems to be solved puzzle count needed to progress (maybe).
+- Second entry (ushort) seems to be (always corresponds to ev_inf2.puzzle. WHY HAVE IT TWICE?):
+    - solved puzzle count needed to progress.
+    - also puzzle to play. Used in overlay_place 0x020f0b9c. used for the multiple puzzle attempts [20000, 30000)
+        - +1 if retrying
+        - +2 if already solved (puzzles which disappear don't have this event)
+  21251 has some exception in overlay_place 020f2ed0
 - Third entry (ushort) unk
-  Maybe is the event view flag associated with the event?
+  Maybe is the event view flag associated with the event? Seems like it is.
+  Is unique for all events that have one.
+  Should maybe add an automatic manager for these in the editor???
+  Some events have no event viewed flag then.
+  Maximum of 0x400 event viewed flags.
   Look at set_event_viewed_flag_maybe (overlay2 02084c38)
+  Most events with behaviour have this != 0xFFFF (not all?)
+
+== To check ==
+
+In events [20000, 30000) (puzzles) does the puzzle also play if:
+- we remove the commands which play the puzzle. (do ev_inf2 or ev_fix rewrite it anyway?) then why did they leave the commands in????

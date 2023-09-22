@@ -9,9 +9,12 @@ from abc import ABC
 
 class Dlz(FileFormat, ABC, dict):
     """
-    DLZ file format on the Layton ROM.
+    Dictionary format in the Layton2 game.
+    Each key is an ushort.
+    Each value is a structure.
 
-    Each DLZ file consists of a binary structure repeated over and over.
+    They are sorted in the file, because the game uses
+    a binary search to look for the specified value.
     """
     _compressed_default = 1
 
@@ -32,7 +35,7 @@ class Dlz(FileFormat, ABC, dict):
             entry_id = rdr.read_uint16()
             entry_data = rdr.read(entry_length - 2)
             if entry_id in self:
-                logging.warn(f"Duplicate value ({entry_id}) in {self._last_filename}, ignoring")
+                logging.warning(f"Duplicate value ({entry_id}) in {self._last_filename}, ignoring")
                 continue
             self[entry_id] = self._construct_entry_object(entry_data)
 

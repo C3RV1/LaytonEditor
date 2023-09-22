@@ -50,24 +50,8 @@ class MainEditorUI(QtWidgets.QMainWindow):
         self.advanced_mode_action.setCheckable(True)
         self.advanced_mode_action.toggled.connect(self.advanced_mode_toggled)
 
-        self.window = QtWidgets.QWidget()
-
-        self.horizontal_layout = QtWidgets.QHBoxLayout()
-
-        self.file_tree = QtWidgets.QTreeView(self.window)
-        self.file_tree.setSelectionMode(self.file_tree.SelectionMode.SingleSelection)
-        self.file_tree.setHeaderHidden(True)
-        self.file_tree.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
-        self.file_tree.customContextMenuRequested.connect(self.file_tree_context_menu)
-        self.file_tree.currentChanged = self.tree_changed_selection
-        self.horizontal_layout.addWidget(self.file_tree, 1)
-
-        self.ft_context_menu = QtWidgets.QMenu()
-
-        self.empty_editor = QtWidgets.QWidget()
-        self.horizontal_layout.addWidget(self.empty_editor, 3)
-
-        self.window.setLayout(self.horizontal_layout)
+        self.window = QtWidgets.QTabWidget()
+        self.tabs = []
         self.setCentralWidget(self.window)
 
         self.setMinimumSize(QtCore.QSize(1280, 720))
@@ -75,8 +59,16 @@ class MainEditorUI(QtWidgets.QMainWindow):
 
         self.show()
 
-    def file_tree_context_menu(self, point: QtCore.QPoint):
-        pass
+    def setup_tabs(self, tabs):
+        self.window.clear()
+        for tab in self.tabs:
+            tab: QtWidgets.QWidget
+            tab.deleteLater()
+
+        self.tabs.clear()
+        for tab_name, tab in tabs:
+            self.window.addTab(tab, tab_name)
+            self.tabs.append(tab)
 
     def file_menu_open(self):
         pass
@@ -94,7 +86,4 @@ class MainEditorUI(QtWidgets.QMainWindow):
         pass
 
     def advanced_mode_toggled(self, checked: bool):
-        pass
-
-    def tree_changed_selection(self, current: QtCore.QModelIndex, previous: QtCore.QModelIndex):
         pass

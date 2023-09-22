@@ -19,7 +19,7 @@ class TimeDefinitionsModel(QtCore.QAbstractListModel):
     def data(self, index: QtCore.QModelIndex, role: int):
         if not index.isValid():
             return None
-        key = self.time_def_dlz.index_key(index.row())
+        key = list(self.time_def_dlz.keys())[index.row()]
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             return f"Time Definition {key}"
         elif role == QtCore.Qt.ItemDataRole.EditRole:

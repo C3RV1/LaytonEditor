@@ -189,6 +189,8 @@ class FilesystemCategory(EditorCategory):
         self._root = FolderNode(self, "", self.rom.filenames, None)
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
+        if not index.isValid():
+            return self._root.child_count()
         if index.internalPointer() is self:
             return self._root.child_count()
         node = index.internalPointer()
@@ -199,7 +201,9 @@ class FilesystemCategory(EditorCategory):
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,
               model: QtCore.QAbstractItemModel):
         parent_idx = parent
-        if parent.internalPointer() is self:
+        if not parent.isValid():
+            parent = self._root
+        elif parent.internalPointer() is self:
             parent = self._root
         else:
             parent = parent.internalPointer()
@@ -272,6 +276,8 @@ class FilesystemCategory(EditorCategory):
 
     def flags(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel) -> QtCore.Qt.ItemFlag:
         default_flags = super(FilesystemCategory, self).flags(index, model)
+        if not index.isValid():
+            return default_flags
         if index.internalPointer() is self or not self.allow_rename:
             return default_flags
         return default_flags | QtCore.Qt.ItemFlag.ItemIsEditable
