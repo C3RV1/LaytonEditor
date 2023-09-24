@@ -1,4 +1,4 @@
-from gui.ui.PlaceWidget import PlaceWidgetUI
+from gui.ui.place.PlaceWidget import PlaceWidgetUI
 from formats.place import Place
 from .PropertiesModel import PropertiesModel
 from .HintCoinModel import HintCoinModel
@@ -11,14 +11,14 @@ from previewers import PlacePreview
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from gui.MainEditor import MainEditor
+    from gui.tabs.PlacesTab import PlacesTab
 
 
 # TODO: Hide all disabled items (all elements 0) and implement Add/Remove buttons
 
 
 class PlaceEditor(PlaceWidgetUI):
-    def __init__(self, main_editor: 'MainEditor', *args, **kwargs):
+    def __init__(self, main_editor: 'PlacesTab', *args, **kwargs):
         super(PlaceEditor, self).__init__(*args, **kwargs)
         self.place = None
         self.main_editor = main_editor

@@ -98,5 +98,3 @@ class SoundTab(BaseTab):
             self.pg_previewer.stop_renderer()
 
         self.active_editor.show()
-
-

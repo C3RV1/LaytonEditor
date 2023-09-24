@@ -53,13 +53,13 @@ class PuzzleCategory(EditorCategory):
                         self._puzzle_nodes[internal_id] = PuzzleNode(self, internal_id)
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
-        if index.internalPointer() is not self:
+        if index.isValid() and index.internalPointer() is not self:
             return 0
         return len(self.puzzle_nodes)
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,
               model: QtCore.QAbstractItemModel):
-        if parent.internalPointer() is not self:
+        if parent.isValid() and parent.internalPointer() is not self:
             return QtCore.QModelIndex()
         key = sorted(list(self.puzzle_nodes.keys()))[row]
         child = self.puzzle_nodes[key]
@@ -67,11 +67,11 @@ class PuzzleCategory(EditorCategory):
 
     def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QModelIndex,
                model: QtCore.QAbstractItemModel):
-        if index.internalPointer() is self:
+        if index.internalPointer() is self or not index.isValid():
             return QtCore.QModelIndex()
         return category_index
 
     def data(self, index: QtCore.QModelIndex, role, model: QtCore.QAbstractItemModel):
-        if index.isValid() and role == QtCore.Qt.DisplayRole and index .internalPointer() is not self:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
             return index.internalPointer().data()
         return None

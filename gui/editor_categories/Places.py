@@ -1,6 +1,7 @@
 import re
 from typing import Dict
 
+from formats.placeflag import PlaceFlag, PlaceFlagVersion
 from ..EditorTypes import EditorObject, EditorCategory
 from formats.filesystem import Folder, Archive
 from formats.place import Place
@@ -25,10 +26,23 @@ class PlaceVersion(EditorObject):
 
 
 class PlaceTop(EditorObject):
-    def __init__(self, category, top):
+    def __init__(self, category, top, place_flag: PlaceFlag):
         self.category = category
         self.top = top
         self.versions = []
+        self.filtered = []
+        self.place_flag = place_flag
+
+    def update_filtered(self, story_step_filter):
+        self.filtered = self.versions.copy()
+        if story_step_filter is None:
+            return
+        for version in self.versions:
+            version: PlaceVersion
+            pf_place = self.place_flag[self.top]
+            pf_version: PlaceFlagVersion = pf_place[version.version]
+            if not pf_version.check_range(story_step_filter):
+                self.filtered.remove(version)
 
     def name_str(self):
         return f"PlaceTop {self.top}"
@@ -38,22 +52,23 @@ class PlaceTop(EditorObject):
         self.versions.sort(key=lambda x: x.version)
 
     def child_count(self):
-        return len(self.versions)
+        return len(self.filtered)
 
     def child(self, row):
         if 0 > row or row >= self.child_count():
             return None
-        return self.versions[row]
+        return self.filtered[row]
 
     def data(self):
         return f"Place {self.top}"
 
 
 class PlaceCategory(EditorCategory):
-    def __init__(self):
+    def __init__(self, place_flag: PlaceFlag):
         super(PlaceCategory, self).__init__()
         self._place_nodes: Dict[int, PlaceTop] = {}
         self.name = "Places"
+        self.place_flag = place_flag
 
     def reset_file_system(self):
         self._place_nodes = {}
@@ -76,12 +91,19 @@ class PlaceCategory(EditorCategory):
                     top = int(match.group(1))
                     version = int(match.group(2))
                     if top not in self._place_nodes:
-                        self._place_nodes[top] = PlaceTop(self, top)
+                        self._place_nodes[top] = PlaceTop(self, top, self.place_flag)
                     version_obj = PlaceVersion(self, top, version, archive)
                     self._place_nodes[top].add_version(version_obj)
 
+        for place_node in self._place_nodes.values():
+            place_node.update_filtered(None)
+
+    def filter_by_story_step(self, story_step):
+        for place_node in self._place_nodes.values():
+            place_node.update_filtered(story_step)
+
     def row_count(self, index: QtCore.QModelIndex, model) -> int:
-        if index.internalPointer() is self:
+        if not index.isValid() or index.internalPointer() is self:
             return len(list(self.place_nodes.keys()))
         node = index.internalPointer()
         if isinstance(node, PlaceTop):
@@ -90,16 +112,15 @@ class PlaceCategory(EditorCategory):
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,
               model) -> QtCore.QModelIndex:
-        parent_node = parent.internalPointer()
-
-        if isinstance(parent_node, PlaceVersion):
-            return QtCore.QModelIndex
-
-        if parent_node is self:
+        if parent.internalPointer() is self or not parent.isValid():
             keys = sorted(list(self.place_nodes.keys()))
             if 0 > row or row >= len(keys):
                 return QtCore.QModelIndex()
             return model.createIndex(row, column, self.place_nodes[keys[row]])
+
+        parent_node = parent.internalPointer()
+        if isinstance(parent_node, PlaceVersion):
+            return QtCore.QModelIndex
 
         parent_node: PlaceTop
         child = parent_node.child(row)
@@ -109,9 +130,9 @@ class PlaceCategory(EditorCategory):
 
     def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QModelIndex,
                model) -> QtCore.QModelIndex:
-        node = index.internalPointer()
-        if node is self:
+        if index.internalPointer() is self or not index.isValid():
             return QtCore.QModelIndex()
+        node = index.internalPointer()
         if isinstance(node, PlaceTop):
             return category_index
 

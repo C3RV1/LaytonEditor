@@ -1,4 +1,5 @@
 from PySide6 import QtCore, QtWidgets, QtGui
+from .PlaceProgressionWidget import PlaceProgressionWidgetUI
 
 
 class PlaceWidgetUI(QtWidgets.QWidget):
@@ -26,6 +27,9 @@ class PlaceWidgetUI(QtWidgets.QWidget):
         self.exits_tab = QtWidgets.QTableView()
         self.tab_widget.addTab(self.exits_tab, "Exits")
 
+        self.progression_tab = self.get_place_progression_widget()
+        self.tab_widget.addTab(self.progression_tab, "Progression")
+
         self.v_layout.addWidget(self.tab_widget, 4)
 
         self.save_btn = QtWidgets.QPushButton("Save")
@@ -33,6 +37,9 @@ class PlaceWidgetUI(QtWidgets.QWidget):
         self.v_layout.addWidget(self.save_btn, 1)
 
         self.setLayout(self.v_layout)
+
+    def get_place_progression_widget(self) -> PlaceProgressionWidgetUI:
+        return PlaceProgressionWidgetUI()
 
     def save_click(self):
         pass

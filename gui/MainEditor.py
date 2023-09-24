@@ -2,10 +2,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from .ui.MainEditor import MainEditorUI
 from pg_utils.rom.RomSingleton import RomSingleton
 from .PygamePreviewer import PygamePreviewer
-from .tabs.OldTab import OldTab
-from .tabs.FilesystemTab import FilesystemTab
-from .tabs.GraphicsTab import GraphicsTab
-from .tabs.SoundTab import SoundTab
+from .tabs import *
 
 from formats.filesystem import NintendoDSRom
 
@@ -61,14 +58,19 @@ class MainEditor(MainEditorUI):
         self.file_save_action.setEnabled(True)
         self.file_save_as_action.setEnabled(True)
 
-        self.setup_tabs(
-            (
-                ("Old", OldTab(self.rom, self.pg_previewer)),
-                ("Filesystem", FilesystemTab(self.rom)),
-                ("Graphics", GraphicsTab(self.rom)),
-                ("Sound", SoundTab(self.rom, self.pg_previewer))
-            )
-        )
+        tabs = []
+        if SettingsManager().advanced_mode:
+            tabs.append(("Filesystem", FilesystemTab(self.rom)))
+        tabs.extend([
+            ("Graphics", GraphicsTab(self.rom)),
+            ("Sound", SoundTab(self.rom, self.pg_previewer)),
+            ("Places", PlacesTab(self.rom, self.pg_previewer)),
+            ("Events", EventsTab(self.rom, self.pg_previewer)),
+            ("Puzzles", PuzzlesTab(self.rom, self.pg_previewer)),
+            ("Other", OtherTab(self.rom))
+        ])
+
+        self.setup_tabs(tabs)
 
         self.pg_previewer.stop_renderer()
 

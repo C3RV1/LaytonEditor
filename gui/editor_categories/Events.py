@@ -86,7 +86,7 @@ class EventCategory(EditorCategory):
         self.event_names = {v[0]: v[1].event_name for v in dlz_file.items()}
 
     def row_count(self, index: QtCore.QModelIndex, model: QtCore.QAbstractItemModel):
-        if index.internalPointer() != self:
+        if index.isValid() and index.internalPointer() is not self:
             node = index.internalPointer()
             if isinstance(node, EventTopNode):
                 return node.child_count()
@@ -95,7 +95,7 @@ class EventCategory(EditorCategory):
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex,
               model: QtCore.QAbstractItemModel):
-        if parent.internalPointer() != self:
+        if parent.isValid() and parent.internalPointer() is not self:
             parent_node = parent.internalPointer()
             if not isinstance(parent_node, EventTopNode):
                 return QtCore.QModelIndex()
@@ -107,7 +107,7 @@ class EventCategory(EditorCategory):
 
     def parent(self, index: QtCore.QModelIndex, category_index: QtCore.QAbstractItemModel,
                model: QtCore.QAbstractItemModel):
-        if index.internalPointer() == self:
+        if not index.isValid() or index.internalPointer() is self:
             return QtCore.QModelIndex()
         if isinstance(index.internalPointer(), EventTopNode):
             return category_index

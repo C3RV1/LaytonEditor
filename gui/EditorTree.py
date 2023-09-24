@@ -1,9 +1,7 @@
-from typing import List, Sequence, Any
+from typing import Any
 
 from PySide6 import QtCore
-from .editor_categories import *
 from .EditorTypes import EditorObject, EditorCategory
-from .SettingsManager import SettingsManager
 
 
 class AbstractEditorTree(QtCore.QAbstractItemModel):
@@ -14,42 +12,14 @@ class AbstractEditorTree(QtCore.QAbstractItemModel):
         pass
 
 
-class DefaultEditorTree(AbstractEditorTree):
-    def __init__(self):
-        super(DefaultEditorTree, self).__init__()
-        self.categories = []
+class MultipleCategoriesEditorTree(AbstractEditorTree):
+    def __init__(self, categories):
+        super(MultipleCategoriesEditorTree, self).__init__()
+        self.categories = categories
 
     def set_rom(self, rom):
         self.beginResetModel()
         self.layoutAboutToBeChanged.emit()
-        self.categories = []
-        if rom.name == b"LAYTON2":
-            self.categories.extend([
-                SpriteCategory(),
-                BackgroundsCategory(),
-                EventCategory(),
-                PuzzleCategory(),
-                PlaceCategory(),
-                FontsCategory(),
-                MoviesCategory(),
-                SoundEffectCategory(),
-                TextsCategory(),
-                ScriptsCategory(),
-                StreamedAudioCategory(),
-                SequencedAudioCategory(),
-                SoundBankCategory(),
-                TimeDefinitionsNode(),
-                SoundFixCategory(),
-            ])
-        else:
-            self.categories.extend([
-                SpriteCategory(),
-                BackgroundsCategory(),
-                FontsCategory(),
-                StreamedAudioCategory(),
-                TextsCategory(),
-                ScriptsCategory()
-            ])
         for category in self.categories:
             category.set_rom(rom)
         self.layoutChanged.emit()
@@ -70,7 +40,7 @@ class DefaultEditorTree(AbstractEditorTree):
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         if not index.isValid():
-            return super(DefaultEditorTree, self).flags(index)
+            return super().flags(index)
         return index.internalPointer().category.flags(index, self)
 
     def rowCount(self, index: QtCore.QModelIndex) -> int:
@@ -112,20 +82,6 @@ class DefaultEditorTree(AbstractEditorTree):
             return None
         editor_obj: EditorObject = index.internalPointer()
         return editor_obj.category.data(index, role, self)
-
-
-class MultipleCategoriesEditorTree(DefaultEditorTree):
-    def __init__(self, categories):
-        super(MultipleCategoriesEditorTree, self).__init__()
-        self.categories = categories
-
-    def set_rom(self, rom):
-        self.beginResetModel()
-        self.layoutAboutToBeChanged.emit()
-        for category in self.categories:
-            category.set_rom(rom)
-        self.layoutChanged.emit()
-        self.endResetModel()
 
 
 class OneCategoryEditorTree(AbstractEditorTree):

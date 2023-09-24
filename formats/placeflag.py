@@ -57,6 +57,11 @@ class PlaceFlagVersion:
         wtr.write_uint8(self.comparator)
         wtr.write_uint8(self.check_value)
 
+    def check_range(self, story_step):
+        if self.lower_bound == 0 and self.upper_bound == 0:
+            return True
+        return self.lower_bound <= story_step <= self.upper_bound
+
     def __repr__(self):
         range_str = f"range=[{self.lower_bound}, {self.upper_bound}]"
         if self.lower_bound == 0 and self.upper_bound == 0:
