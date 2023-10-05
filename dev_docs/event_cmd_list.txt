@@ -18,7 +18,7 @@
 0x32: fade
 0x33: fade
 0x34: [[unused]] Seems to set some place flag.
-0x35: [[unused]] Maybe increments some place flag.
+0x35: Increments some place flag.
 0x36: OR? some place flag with value - place_flag_id, value -> further investigation
 0x37: bg_tint - red, green, blue, Opacity
 0x3f: chr_anim - Character ID, Animation
@@ -45,7 +45,7 @@
 0x80: fade
 0x81: fade
 0x82: flash_btm
-0x83: [[unused]] Switches to event if place flag is set?
+0x83: Switches to event if place flag is set?
 0x87: fade
 0x88: fade
 0x89: stop_train_sound -> further investigation

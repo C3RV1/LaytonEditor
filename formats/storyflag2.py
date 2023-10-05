@@ -42,9 +42,9 @@ class StoryStepEntry:
     def __init__(self, step_id: int = 0, story_step_conditions: list[StoryStepCondition] = None):
         self.step_id = step_id
         if story_step_conditions is not None:
-            self.conditions = story_step_conditions
+            self.conditions: list[StoryStepCondition] = story_step_conditions
         else:
-            self.conditions = []
+            self.conditions: list[StoryStepCondition] = []
 
     def __repr__(self):
         return f"StoryStep<id={self.step_id}, conditions={self.conditions}>"
@@ -71,7 +71,7 @@ class StoryStepEntry:
             condition.write_stream(wtr)
 
 
-class StoryFlag2(FileFormat, list):
+class StoryFlag2(FileFormat, list[StoryStepEntry]):
     def read_stream(self, stream):
         if isinstance(stream, BinaryReader):
             rdr = stream

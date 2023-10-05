@@ -8,7 +8,7 @@ from previewers.event.EventPlayer import EventPlayer
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from gui.MainEditor import MainEditor
+    from gui.tabs.EventsTab import EventsTab
 
 
 from .EventPropertiesWidget import EventPropertiesWidget
@@ -21,11 +21,11 @@ from gui.editors.command_editor.CommandListEditor import CommandListEditor
 class EventEditor(EventWidgetUI):
     script_editor: CommandListEditor
 
-    def __init__(self, main_editor):
+    def __init__(self, main_editor: 'EventsTab'):
         super(EventEditor, self).__init__()
         self.event = None
         self.event_node: QtCore.QModelIndex = None
-        self.main_editor: MainEditor = main_editor
+        self.main_editor: EventsTab = main_editor
 
     def get_command_editor_widget(self):
         return CommandListEditor(get_event_command_widget, event_cmd_parsers, event_cmd_context_menu)

@@ -32,12 +32,15 @@ class Dlz(FileFormat, ABC, dict):
         self.clear()
 
         for i in range(n_entries):
-            entry_id = rdr.read_uint16()
-            entry_data = rdr.read(entry_length - 2)
-            if entry_id in self:
-                logging.warning(f"Duplicate value ({entry_id}) in {self._last_filename}, ignoring")
-                continue
-            self[entry_id] = self._construct_entry_object(entry_data)
+            self.read_entry(rdr, entry_length)
+
+    def read_entry(self, rdr: BinaryReader, entry_length):
+        entry_id = rdr.read_uint16()
+        entry_data = rdr.read(entry_length - 2)
+        if entry_id in self:
+            logging.warning(f"Duplicate value ({entry_id}) in {self._last_filename}, ignoring")
+            return
+        self[entry_id] = self._construct_entry_object(entry_data)
 
     def _construct_entry_object(self, entry_data: bytes) -> object:
         """Derived classes must implement"""
@@ -60,7 +63,7 @@ class Dlz(FileFormat, ABC, dict):
         wtr.write_uint16(0)
         wtr.write_uint16(0)
 
-        entries = list(self.values())
+        entries = list(self.items())
         entries.sort(key=lambda x: x[0])
         for entry_id, entry_object in entries:
             wtr.write_uint16(entry_id)

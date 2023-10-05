@@ -214,6 +214,21 @@ Each entry is 0x6 bytes.
   Look at set_event_viewed_flag_maybe (overlay2 02084c38)
   Most events with behaviour have this != 0xFFFF (not all?)
 
+== SmInf ==
+
+This DLZ (a little different to the others) contains the information to show on screen the arrows that guide you towards your next objective.
+Each entry (8 bytes) is composed of:
+- an id, which is 4 bytes (a little endian int):
+   - the first two bytes, the story id
+   - the next byte, the place id
+   - the last two bytes, the "event viewed flag" to check for: can only be 0 (or ignored), 0x8A or 0x6D (the reason can be found at overlay_7 020f46e4)
+- (uint8) the arrow animation id
+- (uint8) the arrow x position
+- (uint8) the arrow y position
+- (uint8) always 0
+
+Seems that a place can have two arrows at once? must check.
+
 == To check ==
 
 In events [20000, 30000) (puzzles) does the puzzle also play if:

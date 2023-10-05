@@ -21,15 +21,9 @@ class ChapterInfEntry:
                f"event_id_2={self.event_id_2}>"
 
 
-class ChapterInfDlz(Dlz):
+class ChapterInfDlz(Dlz[int, ChapterInfEntry]):
     def _construct_entry_object(self, entry_data: bytes) -> ChapterInfEntry:
         return ChapterInfEntry.from_data(entry_data)
 
     def _serialize_entry_object(self, entry_object: ChapterInfEntry) -> bytes:
         return entry_object.to_data()
-
-    def __getitem__(self, item: int) -> ChapterInfEntry:
-        return super().__getitem__(item)
-
-    def __setitem__(self, key: int, value: ChapterInfEntry):
-        super().__setitem__(key, value)

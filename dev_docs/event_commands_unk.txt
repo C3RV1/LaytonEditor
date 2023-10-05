@@ -1,16 +1,27 @@
 unknown event commands
-0x49 10140 11170
+0x35 24053 30191 30201 30221 (look at event_cmd_list)
+0x36 10050 10060 11050 11060 (idem 0x35)
+0x49 10140 11170 (maybe audio set volume in frames? must look at other examples)
+                  or maybe is time def?
+0x5f 24193 24203 24213
+0x61 12270 18450 19020
 0x74 11100 11175 18000 20003
 0x75 18000 20003
 0x78 11100 11175 14110 16130
-0x83 17020 -> look at event_cmd_list for an idea from the src code.
+0x7c 16050 16050 16210
+0x83 17020 24103 24123 -> look at event_cmd_list for an idea from the src code.
 0x84 14250 15230 (get photo scraps?)
-0x90 14340 14350 14370
-0x91 15040
-0x98 16020
+0x90 14340 14350 14370 15430
+0x91 15040 24103 24123
+0x92 10030 (first touch)
+0x94 11101
+0x95 20023 chelmey took the photos (20023)
+0x98 16020 16050 30001 30002
 0x9b 18450
 0x9c 17240
-0x9e 18490 18500
+0x9d 17067
+0x9e 18490 18500 18510
+0xa0 22043
 
 menu mode 18010 18430
 challenge mode 18020
@@ -68,3 +79,5 @@ event unk0
 257 - 0001 0000 0001 (10150)
 259 - 0001 0000 0011 (10000, narration)
 513 - 0010 0000 0001 (10130, movies)
+
+place unk 0 maybe has something to do with whether it can be clicked without clicking the shoe

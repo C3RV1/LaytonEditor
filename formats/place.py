@@ -76,9 +76,8 @@ class Place(FileFormat):
     def read_stream(self, stream):
         # TODO: Polish
         rdr = stream if isinstance(stream, BinaryReader) else BinaryReader(stream)
-        self.index = rdr.read_uint16()  # what does index represent?
-        # missing data?
-        rdr.seek(0x18)
+        self.index = rdr.read_uint16()  # what does index represent? corresponds to the place id (but not for place 3?)
+        assert rdr.read(0x16) == b"\0"*0x16
         self.map_x = rdr.read_uint8()
         self.map_y = rdr.read_uint8()
         self.background_image_index = rdr.read_uint8()
@@ -103,7 +102,7 @@ class Place(FileFormat):
             comment.height = rdr.read_uint8()
             comment.character_index = rdr.read_uint16()
             comment.text_index = rdr.read_uint16()
-            rdr.read_uint16()  # 0
+            assert rdr.read_uint16() == 0  # 0
         # pos: 0xcc
         for sprite in self.sprites:
             sprite.x = rdr.read_uint8()
@@ -138,7 +137,7 @@ class Place(FileFormat):
     def write_stream(self, stream):
         wtr = BinaryWriter(stream)
         wtr.write_uint16(self.index)
-        wtr.seek(0x18)
+        wtr.write(b"\0"*0x16)
         wtr.write_uint8(self.map_x)
         wtr.write_uint8(self.map_y)
         wtr.write_uint8(self.background_image_index)

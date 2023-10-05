@@ -19,15 +19,9 @@ class SoundFixEntry:
         return struct.pack("<HHH", self.music_id, self.unk0, self.unk1)
 
 
-class SoundFixDlz(Dlz):
+class SoundFixDlz(Dlz[int, SoundFixEntry]):
     def _construct_entry_object(self, entry_data: bytes) -> SoundFixEntry:
         return SoundFixEntry.from_data(entry_data)
 
     def _serialize_entry_object(self, entry_object: SoundFixEntry) -> bytes:
         return entry_object.to_data()
-
-    def __getitem__(self, item: int) -> SoundFixEntry:
-        return super().__getitem__(item)
-
-    def __setitem__(self, key: int, value: SoundFixEntry):
-        super().__setitem__(key, value)

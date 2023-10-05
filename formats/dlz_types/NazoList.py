@@ -21,15 +21,9 @@ class NazoListEntry:
         return struct.pack("<h48sh", self.puzzle_number, self.puzzle_name.encode("cp1252"), self.unk0)
 
 
-class NazoListDlz(Dlz):
+class NazoListDlz(Dlz[int, NazoListEntry]):
     def _construct_entry_object(self, entry_data: bytes) -> NazoListEntry:
         return NazoListEntry.from_data(entry_data)
 
     def _serialize_entry_object(self, entry_object: NazoListEntry) -> bytes:
         return entry_object.to_data()
-
-    def __getitem__(self, item: int) -> NazoListEntry:
-        return super().__getitem__(item)
-
-    def __setitem__(self, key: int, value: NazoListEntry):
-        super().__setitem__(key, value)

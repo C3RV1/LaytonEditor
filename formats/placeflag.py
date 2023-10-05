@@ -57,8 +57,8 @@ class PlaceFlagVersion:
         wtr.write_uint8(self.comparator)
         wtr.write_uint8(self.check_value)
 
-    def check_range(self, story_step):
-        if self.lower_bound == 0 and self.upper_bound == 0:
+    def check_range(self, story_step, include_defaults):
+        if self.lower_bound == 0 and self.upper_bound == 0 and include_defaults:
             return True
         return self.lower_bound <= story_step <= self.upper_bound
 
@@ -79,7 +79,7 @@ class PlaceFlagVersion:
             return f"PlaceVersion<{range_str}>"
 
 
-class PlaceFlagPlace(list):
+class PlaceFlagPlace(list[PlaceFlagVersion]):
 
     def read_part1(self, rdr: BinaryReader, place_id: int):
         rdr.seek(place_id * 0x40)
@@ -116,7 +116,7 @@ class PlaceFlagPlace(list):
             version.write_part2(wtr)
 
 
-class PlaceFlag(FileFormat, list):
+class PlaceFlag(FileFormat, list[PlaceFlagPlace]):
     def read_stream(self, stream):
         if isinstance(stream, BinaryReader):
             rdr = stream

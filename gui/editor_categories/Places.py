@@ -33,7 +33,7 @@ class PlaceTop(EditorObject):
         self.filtered = []
         self.place_flag = place_flag
 
-    def update_filtered(self, story_step_filter):
+    def update_filtered(self, story_step_filter, include_defaults):
         self.filtered = self.versions.copy()
         if story_step_filter is None:
             return
@@ -41,7 +41,7 @@ class PlaceTop(EditorObject):
             version: PlaceVersion
             pf_place = self.place_flag[self.top]
             pf_version: PlaceFlagVersion = pf_place[version.version]
-            if not pf_version.check_range(story_step_filter):
+            if not pf_version.check_range(story_step_filter, include_defaults):
                 self.filtered.remove(version)
 
     def name_str(self):
@@ -67,6 +67,7 @@ class PlaceCategory(EditorCategory):
     def __init__(self, place_flag: PlaceFlag):
         super(PlaceCategory, self).__init__()
         self._place_nodes: Dict[int, PlaceTop] = {}
+        self._filtered_nodes: Dict[int, PlaceTop] = {}
         self.name = "Places"
         self.place_flag = place_flag
 
@@ -77,7 +78,7 @@ class PlaceCategory(EditorCategory):
     def place_nodes(self):
         if len(self._place_nodes) == 0:
             self.generate_place_nodes()
-        return self._place_nodes
+        return self._filtered_nodes
 
     def generate_place_nodes(self):
         place_folder: Folder = self.rom.filenames["/data_lt2/place"]
@@ -95,12 +96,15 @@ class PlaceCategory(EditorCategory):
                     version_obj = PlaceVersion(self, top, version, archive)
                     self._place_nodes[top].add_version(version_obj)
 
-        for place_node in self._place_nodes.values():
-            place_node.update_filtered(None)
+        self.filter_by_story_step(None, True)
 
-    def filter_by_story_step(self, story_step):
+    def filter_by_story_step(self, story_step, include_defaults):
         for place_node in self._place_nodes.values():
-            place_node.update_filtered(story_step)
+            place_node.update_filtered(story_step, include_defaults)
+        self._filtered_nodes = {}
+        for key, node in self._place_nodes.items():
+            if node.child_count() > 0:
+                self._filtered_nodes[key] = node
 
     def row_count(self, index: QtCore.QModelIndex, model) -> int:
         if not index.isValid() or index.internalPointer() is self:
@@ -138,6 +142,8 @@ class PlaceCategory(EditorCategory):
 
         node: PlaceVersion
         keys = sorted(list(self.place_nodes.keys()))
+        if node.top not in keys:
+            return QtCore.QModelIndex()
         row = keys.index(node.top)
         top = self.place_nodes[node.top]
         return model.createIndex(row, 0, top)

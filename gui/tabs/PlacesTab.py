@@ -45,10 +45,13 @@ class PlacesTab(BaseTab):
         self.story_step_combo = QtWidgets.QComboBox()
         self.story_step_form.addRow("Story Step", self.story_step_combo)
 
+        self.include_default = QtWidgets.QCheckBox("Include versions 0")
+        self.include_default.stateChanged.connect(self.include_defaults_change)
+
         self.story_step_chapter = QtWidgets.QSpinBox()
         self.story_step_chapter.setRange(10000, 40000)
 
-        self.uses_second_chapter = QtWidgets.QCheckBox("Uses second chapter")
+        self.uses_second_chapter = QtWidgets.QCheckBox("Change Story So Far after watching it")
 
         self.story_step_chapter2 = QtWidgets.QSpinBox()
         self.story_step_chapter2.setRange(10000, 40000)
@@ -83,24 +86,33 @@ class PlacesTab(BaseTab):
 
         self.story_step_combo.setCurrentIndex(0)
 
-    def story_step_combo_change(self, index: int):
+    def story_step_combo_change(self, _index: int):
+        self.update_filtering()
+
+    def include_defaults_change(self, _state: int):
+        self.update_filtering()
+
+    def update_filtering(self):
         self.tree_model.layoutAboutToBeChanged.emit()
 
         data = self.story_step_combo.currentData(QtCore.Qt.ItemDataRole.UserRole)
         if data is None:
-            self.place_category.filter_by_story_step(None)
+            self.place_category.filter_by_story_step(None, True)
             if self.shown_story_step_info:
-                self.story_step_form.removeRow(self.story_step_chapter)
-                self.story_step_form.removeRow(self.uses_second_chapter)
-                self.story_step_form.removeRow(self.story_step_chapter2)
+                self.story_step_form.takeRow(self.include_default)
+                self.story_step_form.takeRow(self.story_step_chapter)
+                self.story_step_form.takeRow(self.uses_second_chapter)
+                self.story_step_form.takeRow(self.story_step_chapter2)
                 self.shown_story_step_info = False
         else:
             data: StoryStepEntry
-            self.place_category.filter_by_story_step(data.step_id)
+            self.place_category.filter_by_story_step(data.step_id,
+                                                     self.include_default.checkState() == QtCore.Qt.CheckState.Checked)
             if not self.shown_story_step_info:
-                self.story_step_form.addRow("In Previous Chapters", self.story_step_chapter)
+                self.story_step_form.addWidget(self.include_default)
+                self.story_step_form.addRow("The Story So Far", self.story_step_chapter)
                 self.story_step_form.addWidget(self.uses_second_chapter)
-                self.story_step_form.addRow("In Previous Chapters (2)", self.story_step_chapter2)
+                self.story_step_form.addRow("The Story So Far (2)", self.story_step_chapter2)
                 self.shown_story_step_info = True
             chp_entry = self.chp_inf.get(data.step_id, None)
             if chp_entry is not None:

@@ -14,13 +14,18 @@ class OtherTab(BaseTab):
         super().__init__(*args, **kwargs)
         self.rom = rom
 
-        self.tree_model = MultipleCategoriesEditorTree(
-            [
+        if self.rom == b"LAYTON2":
+            categories = [
                 TextsCategory(),
                 ScriptsCategory(),
                 TimeDefinitionsNode()
             ]
-        )
+        else:
+            categories = [
+                TextsCategory(),
+                ScriptsCategory()
+            ]
+        self.tree_model = MultipleCategoriesEditorTree(categories)
         self.file_tree.setModel(self.tree_model)
 
         self.tree_model.set_rom(rom)

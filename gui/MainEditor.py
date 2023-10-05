@@ -61,14 +61,21 @@ class MainEditor(MainEditorUI):
         tabs = []
         if SettingsManager().advanced_mode:
             tabs.append(("Filesystem", FilesystemTab(self.rom)))
-        tabs.extend([
-            ("Graphics", GraphicsTab(self.rom)),
-            ("Sound", SoundTab(self.rom, self.pg_previewer)),
-            ("Places", PlacesTab(self.rom, self.pg_previewer)),
-            ("Events", EventsTab(self.rom, self.pg_previewer)),
-            ("Puzzles", PuzzlesTab(self.rom, self.pg_previewer)),
-            ("Other", OtherTab(self.rom))
-        ])
+        if rom.name == b"LAYTON2":
+            tabs.extend([
+                ("Graphics", GraphicsTab(self.rom)),
+                ("Sound", SoundTab(self.rom, self.pg_previewer)),
+                ("Places", PlacesTab(self.rom, self.pg_previewer)),
+                ("Events", EventsTab(self.rom, self.pg_previewer)),
+                ("Puzzles", PuzzlesTab(self.rom, self.pg_previewer)),
+                ("Other", OtherTab(self.rom))
+            ])
+        else:
+            tabs.extend([
+                ("Graphics", GraphicsTab(self.rom)),
+                ("Sound", SoundTab(self.rom, self.pg_previewer)),
+                ("Other", OtherTab(self.rom))
+            ])
 
         self.setup_tabs(tabs)
 

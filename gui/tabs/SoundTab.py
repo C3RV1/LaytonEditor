@@ -30,10 +30,7 @@ class SoundTab(BaseTab):
             ]
         else:
             categories = [
-                StreamedAudioCategory(),
-                SequencedAudioCategory(),
-                SoundEffectCategory(),
-                SoundBankCategory()
+                StreamedAudioCategory()
             ]
 
         self.tree_model = MultipleCategoriesEditorTree(categories)

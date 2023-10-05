@@ -27,7 +27,7 @@ class AutoEvent2Entry:
                f"{self.story_step_upper_bound}]>"
 
 
-class AutoEvent2Place(list):
+class AutoEvent2Place(list[AutoEvent2Entry]):
     @classmethod
     def read_stream(cls, rdr: BinaryReader):
         ret = cls()
@@ -49,7 +49,7 @@ class AutoEvent2Place(list):
             entry.write_stream(wtr)
 
 
-class AutoEvent2(FileFormat, list):
+class AutoEvent2(FileFormat, list[AutoEvent2Place]):
     def read_stream(self, stream: BinaryIO):
         if isinstance(stream, BinaryReader):
             rdr = stream
