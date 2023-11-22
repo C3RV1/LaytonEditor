@@ -6,7 +6,9 @@ from formats.binary import BinaryReader, BinaryWriter
 from formats.filesystem import FileFormat
 
 
-@dataclass
+# Remove equality operator because if an event contains two commands with the same parameters
+# we want to consider them different from each other.
+@dataclass(eq=False)
 class GDSCommand:
     """
     Representation of a single GDS command.
