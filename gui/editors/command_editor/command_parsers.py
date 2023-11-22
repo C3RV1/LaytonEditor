@@ -377,6 +377,7 @@ event_cmd_context_menu = [
     ("Screen", (
         ("Fade", CommandFactory(0x2, tuple())),
         ("Load Background", CommandFactory(0x21, ("", 3))),
+        ("Show Chapter", CommandFactory(0x2d, (1,))),
         ("Set Bottom Tint", CommandFactory(0x37, (15, 5, 0, 120))),
         ("Shake", CommandFactory(0x6a, (30,))),
         ("Flash Bottom", CommandFactory(0x82, tuple()))
