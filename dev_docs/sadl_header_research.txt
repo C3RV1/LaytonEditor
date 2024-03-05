@@ -1,0 +1,42 @@
+all values specified are little endian
+
+offset      size    name            type            notes
+0x0         0x4     chunk_id        char[4]         "sadl"
+0x4         0x4     0s                              0x00000000
+0x8         0x4     file_size       uint32
+0xC         0x4     version         uint32          (0x00000415)
+0x10        0x8     0s                              0x00000000 00000000
+0x18        0x2     year            uint16          (2007, for instance)
+0x1A        0x1     month           uint8
+0x1B        0x1     day??           uint8
+0x1C        0x1     hour            uint8
+0x1D        0x1     minute          uint8
+0x1E        0x1     second          uint8
+0x1F        0x1     centisecond?    uint8
+0x20        0x10    file_name       char[10] padded with 0x00
+0x30        0x1     unk2            unknown         maybe merge with next one?
+0x31        0x1     loop_flag       bool
+0x32        0x1     channels        uint8
+0x33        0x1     coding          flags           See CODING underneath.
+0x34-0x40                                           Seems constant (00 0E 04 1E 15 04 10 00 00 00 00 00) from BG1 and BG2
+0x40        0x4     file_size2      uint32          Why is it duplicated?
+0x50        0x4     content_size?   uint32          Usually file_size-32. why?
+0x54        0x4     loop_offset     uint32          Offset from start of file in bytes.
+0x58        0x4     content_size2?  uint32
+0x5C        0x4     0s                              0x00000000
+0x60        0x1     volume?         uint8
+0x61        0x1     panning?        uint8
+0x62        0x1     unk             uint8           2
+0x63        0x1     unk             uint8           2
+0x64        0x4     loop_offset2?   uint32          Same as loop offset.
+0x68        0x4     unk             uint32          Takes values such as 5000, 3500, 3600, 8000...
+
+CODING
+======
+- coding & 0xf0 (0b11110000)
+    - == 0x70 -> INT_IMA
+    - == 0xB0 -> PROCYON
+- coding & 0x06 (0b110)
+    - == 4 -> sample rate = 32728
+    - == 2 -> sample rate = 16364
+- what about bits 0b00001001 ?

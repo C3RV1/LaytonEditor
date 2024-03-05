@@ -105,7 +105,12 @@ class SADL(FileFormat):
             self.sample_rate = 32728
         elif coding & 0x06 == 2:
             self.sample_rate = 16364
+        else:
+            raise ValueError(f"Unrecognised sample rate value: {coding & 0x06}")
+
         self.coding = coding & 0xf0
+        if self.coding != Coding.INT_IMA and self.coding != Coding.NDS_PROCYON:
+            raise ValueError(f"Unrecognised coding value: {self.coding}")
 
         rdr.seek(0x40)
         self.file_size = rdr.read_uint32()
@@ -114,8 +119,6 @@ class SADL(FileFormat):
             self.num_samples = int((self.file_size - 0x100) / self.channels * 2)
         elif self.coding == Coding.NDS_PROCYON:
             self.num_samples = int((self.file_size - 0x100) / self.channels / 16 * 30)
-        else:
-            raise NotImplementedError()
 
         rdr.seek(0x54)
         if self.loop_flag != 0:  # TODO??
@@ -127,6 +130,10 @@ class SADL(FileFormat):
 
         rdr.seek(0x60)
         self.volume_maybe = rdr.read_uint8()
+
+        rdr.seek(0x68)
+        v = rdr.read(0x6C-0x68)
+        print("0x68-0x6C:", " ".join(hex(n)[2:] for n in v), self.loop_flag)
 
         rdr.seek(0x100)
         buffer = rdr.read(self.file_size - 0x100)
