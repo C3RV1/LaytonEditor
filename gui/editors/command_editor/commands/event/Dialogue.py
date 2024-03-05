@@ -39,3 +39,4 @@ class Dialogue(CommandEditorEvent, DialogueUI):
         text.params[2] = self.end_anim.text()
         text.params[3] = self.pitch.value()
         text.params[4] = convert_substitutions(self.text.toPlainText())
+        super().save()

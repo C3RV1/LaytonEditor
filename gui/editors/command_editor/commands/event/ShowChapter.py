@@ -12,3 +12,4 @@ class ShowChapter(CommandEditorEvent, ShowChapterUI):
 
     def save(self):
         self.command.params = [self.chapter.value()]
+        super().save()

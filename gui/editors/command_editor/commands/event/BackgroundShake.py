@@ -17,4 +17,5 @@ class BackgroundShake(CommandEditorEvent, BackgroundShakeUI):
     def save(self):
         self.command.command = self.fade_screens.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.unk0.value()]
+        super().save()
 

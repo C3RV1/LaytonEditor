@@ -24,3 +24,4 @@ class CharacterShake(CommandEditorEvent, CharacterShakeUI):
             self.character.currentData(QtCore.Qt.ItemDataRole.UserRole),
             self.duration.value()
         ]
+        super().save()

@@ -1,6 +1,9 @@
+import copy
+
 import k4pg
 import pygame as pg
 from pg_utils.ScreenFader import ScreenFader
+from previewers.event.state.EventCharacterState import EventCharacterState
 
 
 class EventCharacter(k4pg.Sprite):
@@ -19,6 +22,8 @@ class EventCharacter(k4pg.Sprite):
 
     def __init__(self, character_id, slot, anim_num, visibility, loader, *args, **kwargs):
         super(EventCharacter, self).__init__(*args, **kwargs)
+        self.state = EventCharacterState(slot, ScreenFader.FADE_OUT, visibility, False)
+
         self.orientation = EventCharacter.FACING_RIGHT
         self.center.y = k4pg.Alignment.BOTTOM
         self.position.y = 192 // 2
@@ -31,10 +36,12 @@ class EventCharacter(k4pg.Sprite):
 
         self.load_character(loader)
         self.set_tag_by_num(anim_num)
+        self.state.anim = self.get_tag().name
         self.update_visibility(visibility)
 
         self.fading = False
-        self.fade_in = ScreenFader.FADING_IN
+        self.fade = ScreenFader.FADE_IN
+        self.state.fade = True
         self.current_fade_time = 0
 
     def set_tag(self, name: str):
@@ -88,6 +95,7 @@ class EventCharacter(k4pg.Sprite):
 
     def update_visibility(self, visible):
         if visible != self.visible:
+            self.state.visible = visible
             self.visible = visible
             if self.character_mouth is not None:
                 self.character_mouth.visible = visible
@@ -98,17 +106,21 @@ class EventCharacter(k4pg.Sprite):
     def hide(self):
         self.update_visibility(False)
 
-    def set_visibility(self, visibility):
-        self.fade_in = ScreenFader.FADING_IN if visibility else ScreenFader.FADING_OUT
-        self.current_fade_time = self.FADE_TIME
+    def set_opacity(self, visibility, instant=False):
+        self.fade = ScreenFader.FADE_IN if visibility else ScreenFader.FADE_OUT
+        self.state.fade = visibility
+        if not instant:
+            self.current_fade_time = self.FADE_TIME
+        else:
+            self.current_fade_time = 0
         self.update_fade(0)
         self.update_visibility(True)
 
     def update_fade(self, dt: float):
-        if self.current_fade_time > 0:
+        if self.current_fade_time >= 0:
             self.current_fade_time -= dt
             alpha = int(255 * max(self.current_fade_time / self.FADE_TIME, 0.0))
-            if self.fade_in == ScreenFader.FADING_IN:
+            if self.fade == ScreenFader.FADE_IN:
                 alpha = 255 - alpha
             self.alpha = alpha
             if self.character_mouth is not None:
@@ -119,15 +131,17 @@ class EventCharacter(k4pg.Sprite):
 
     def set_slot(self, slot):
         self.slot = slot
+        self.state.slot = slot
         self.update_()
 
     def set_anim(self, anim: str):
+        self.state.anim = anim
         anim = anim.replace("surprise", "suprise")
         self.set_tag(anim)
         if self.talking:
-            self.set_talking()
+            self.set_talking(True)
         else:
-            self.set_not_talking()
+            self.set_talking(False)
 
     def load_character(self, loader: k4pg.SpriteLoader):
         if loader:
@@ -143,21 +157,21 @@ class EventCharacter(k4pg.Sprite):
         if self.character_mouth:
             self.character_mouth.animate(dt)
 
-    def set_talking(self):
-        self.talking = True
+    def set_talking(self, talking: bool):
+        if self.talking == talking:
+            return
+        self.talking = talking
         current_tag = self.get_tag().name
-        if not current_tag.startswith("*") and self.get_tag_num() + 1 < self.tag_count:
-            new_tag = self.tag_names[self.get_tag_num() + 1]
-            if new_tag.startswith("*"):
-                self.set_tag(new_tag)
-
-    def set_not_talking(self):
-        self.talking = False
-        current_tag = self._active_tag.name
-        if current_tag.endswith(" "):
-            current_tag = current_tag[:-1]
-        if current_tag.startswith("*"):
-            self.set_tag(current_tag[1:])
+        if self.talking:
+            if not current_tag.startswith("*") and self.get_tag_num() + 1 < self.tag_count:
+                new_tag = self.tag_names[self.get_tag_num() + 1]
+                if new_tag.startswith("*"):
+                    self.set_tag(new_tag)
+        else:
+            if current_tag.endswith(" "):
+                current_tag = current_tag[:-1]
+            if current_tag.startswith("*"):
+                self.set_tag(current_tag[1:])
 
     def get_char_id(self):
         return self.char_id
@@ -171,3 +185,13 @@ class EventCharacter(k4pg.Sprite):
     def draw(self, cam: k4pg.Camera):
         super(EventCharacter, self).draw(cam)
         self.character_mouth.draw(cam)
+
+    def copy_state(self) -> EventCharacterState:
+        return copy.copy(self.state)
+
+    def load_state(self, state: EventCharacterState):
+        self.set_anim(state.anim)
+        self.set_opacity(state.fade, True)
+        self.update_visibility(state.visible)
+        self.set_slot(state.slot)
+        self.set_talking(self.talking)

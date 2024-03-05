@@ -12,3 +12,4 @@ class UnlockMinigame(CommandEditorEvent, UnlockMinigameUI):
 
     def save(self):
         self.command.params = [self.minigame_id.value()]
+        super().save()

@@ -19,3 +19,4 @@ class SetMode(CommandEditorEvent, SetModeUI):
     def save(self):
         self.command.command = self.next_mode_type.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.mode.currentData(QtCore.Qt.ItemDataRole.UserRole)]
+        super().save()

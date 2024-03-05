@@ -14,3 +14,4 @@ class SFX(CommandEditorEvent, SFXUI):
     def save(self):
         self.command.command = self.sfx_type.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.sfx_id.value()]
+        super().save()

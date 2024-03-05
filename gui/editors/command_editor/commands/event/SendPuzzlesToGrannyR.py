@@ -14,4 +14,5 @@ class SendPuzzlesToGrannyR(CommandEditorEvent, SendPuzzlesToGrannyRUI):
         self.command.params = [
             self.puzzle_group_id.value()
         ]
+        super().save()
 

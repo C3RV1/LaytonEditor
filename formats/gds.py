@@ -6,7 +6,7 @@ from formats.binary import BinaryReader, BinaryWriter
 from formats.filesystem import FileFormat
 
 
-@dataclass
+@dataclass(eq=False)
 class GDSCommand:
     """
     Representation of a single GDS command.

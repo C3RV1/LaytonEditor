@@ -7,12 +7,15 @@ class CommandEditor:
     def __init__(self):
         super(CommandEditor, self).__init__()
         self.command: GDSCommand = None
+        self.on_command_saved = None
 
-    def set_command(self, command: GDSCommand, **_kwargs):
+    def set_command(self, command: GDSCommand, on_command_saved=None, **_kwargs):
         self.command = command
+        self.on_command_saved = on_command_saved
 
     def save(self):
-        pass
+        if self.on_command_saved:
+            self.on_command_saved(self.command)
 
 
 class CommandEditorEvent(CommandEditor):
@@ -20,7 +23,7 @@ class CommandEditorEvent(CommandEditor):
         super().__init__()
         self.event: Event = None
 
-    def set_command(self, command: GDSCommand, event: Event = None, **kwargs):
+    def set_command(self, command: GDSCommand, on_command_saved, event: Event = None, **kwargs):
         super().set_command(command, **kwargs)
         self.event = event
 

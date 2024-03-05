@@ -23,3 +23,4 @@ class BackgroundTint(CommandEditorEvent, BackgroundTintUI):
             color.blue(),
             color.alpha()
         ]
+        super().save()

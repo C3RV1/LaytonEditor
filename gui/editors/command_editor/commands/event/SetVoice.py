@@ -12,3 +12,4 @@ class SetVoice(CommandEditorEvent, SetVoiceUI):
 
     def save(self):
         self.command.params = [self.voice_clip.value()]
+        super().save()

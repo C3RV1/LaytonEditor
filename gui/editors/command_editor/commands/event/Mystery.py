@@ -18,3 +18,4 @@ class Mystery(CommandEditorEvent, MysteryUI):
     def save(self):
         self.command.command = self.mode.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.mystery_id.value()]
+        super().save()

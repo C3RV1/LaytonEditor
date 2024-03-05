@@ -16,4 +16,5 @@ class StartTea(CommandEditorEvent, StartTeaUI):
             self.hint_id.value(),
             self.solution_id.value()
         ]
+        super().save()
 

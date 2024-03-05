@@ -58,7 +58,11 @@ class CommandListContextMenu(QtWidgets.QMenu):
 
     def remove_command(self):
         self.on_pre_update()
-        self.gds.commands.remove(self.active_command)
+        # Delete based on identity.
+        for i, command in enumerate(self.gds.commands):
+            if command is self.active_command:
+                self.gds.commands.pop(i)
+                break
         self.on_update()
         self.on_remove()
 

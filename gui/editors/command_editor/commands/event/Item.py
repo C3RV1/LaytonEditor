@@ -18,3 +18,4 @@ class Item(CommandEditorEvent, ItemUI):
     def save(self):
         self.command.command = self.mode.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.item_id.value()]
+        super().save()

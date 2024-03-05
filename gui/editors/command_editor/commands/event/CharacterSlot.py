@@ -24,3 +24,4 @@ class CharacterSlot(CommandEditorEvent, CharacterSlotUI):
             self.character.currentData(QtCore.Qt.ItemDataRole.UserRole),
             self.slot.currentData(QtCore.Qt.ItemDataRole.UserRole)
         ]
+        super().save()

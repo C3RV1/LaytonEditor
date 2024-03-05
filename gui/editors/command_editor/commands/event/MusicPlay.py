@@ -34,6 +34,7 @@ class MusicPlay(CommandEditorEvent, MusicPlayUI):
                 self.volume.value(),
                 self.fade_in_frames.value()
             ]
+        super().save()
 
     def variation_edit(self, state: int):
         state = QtCore.Qt.CheckState(state)

@@ -11,6 +11,23 @@ if TYPE_CHECKING:
 from utility.replace_substitutions import replace_substitutions
 
 
+class TextPage:
+    def __init__(self, text: str):
+        self.text = text
+        self.page_loaded_once = False
+        self.character_states = []
+        self.current_pause_start = 0
+
+    @classmethod
+    def from_text(cls, text):
+        return cls(text)
+
+    @classmethod
+    def text_to_pages(cls, text) -> list:
+        pages_text = text.split("@c\n")
+        return [cls.from_text(t) for t in pages_text]
+
+
 class EventDialogue(k4pg.Sprite):
     NUMBER_OF_LINES = 5
 
@@ -27,10 +44,12 @@ class EventDialogue(k4pg.Sprite):
 
         self.inp = k4pg.Input()
 
-        self.current_line = 0
         self.current_pause = 0
+
+        self.pages: list[TextPage] = []
+        self.current_page = 0
+
         self.text_left_to_do = ""
-        self.current_text = ""
         self.paused = False
 
         self.current_time_between_progress = 0
@@ -71,9 +90,12 @@ class EventDialogue(k4pg.Sprite):
         self.reset_all()
         if chr_anim is not None and self.character_talking is not None:
             self.character_talking.set_anim(chr_anim)
-        self.text_left_to_do = text
         # self.text_left_to_do = "I can change the #rcolor@B Also continue next line#x."
-        self.text_left_to_do = replace_substitutions(self.text_left_to_do)
+
+        self.pages = TextPage.text_to_pages(replace_substitutions(text))
+        self.current_page = 0
+        self.load_page()
+
         self.voice_line = voice
         self.dialogue_sfx_id = dialogue_sfx
         self.on_dialogue = True
@@ -83,6 +105,24 @@ class EventDialogue(k4pg.Sprite):
         else:
             self.char_name.visible = False
         self.set_talking()
+
+    def load_page(self):
+        if self.current_page == len(self.pages):
+            return
+        if not self.pages[self.current_page].page_loaded_once:
+            self.pages[self.current_page].current_pause_start = self.current_pause
+            for i in range(8):
+                if self.event_player.characters[i] is None:
+                    break
+                self.pages[self.current_page].character_states.append(
+                    self.event_player.characters[i].copy_state()
+                )
+            self.pages[self.current_page].page_loaded_once = True
+        else:
+            self.current_pause = self.pages[self.current_page].current_pause_start
+            for i, state in enumerate(self.pages[self.current_page].character_states):
+                self.event_player.characters[i].load_state(state)
+        self.text_left_to_do = self.pages[self.current_page].text
 
     def set_talking(self):
         # If there is a voice line play it (first we stop it)
@@ -94,11 +134,11 @@ class EventDialogue(k4pg.Sprite):
                 self.voice_player.play()
 
         if self.character_talking is not None:
-            self.character_talking.set_talking()
+            self.character_talking.set_talking(True)
 
     def set_not_talking(self):
         if self.character_talking is not None:
-            self.character_talking.set_not_talking()
+            self.character_talking.set_talking(False)
 
     def init_text(self, font_loader: k4pg.FontLoader):
         # Init dialogue positions
@@ -108,16 +148,26 @@ class EventDialogue(k4pg.Sprite):
         self.inner_text.line_spacing = 3
         self.char_name.position.update(- 256 // 2 + 2, self.get_world_rect().y + 12)
 
+    def end(self):
+        self.on_dialogue = False
+        self.hide()
+        self.set_not_talking()
+        self.voice_player.stop()
+        self.dialogue_sfx_player.stop()
+
     def interact(self, cam: k4pg.Camera, dt: float):
         self.update_(dt)
         if self.finished and not self.paused:
-            self.on_dialogue = False
-            self.hide()
-            self.set_not_talking()
-            self.voice_player.stop()
-            self.dialogue_sfx_player.stop()
+            self.end()
             return
         self.on_dialogue = True
+
+        # TODO: Tie to edit mode.
+        if self.inp.get_key_down(pg.K_LEFT):
+            self.current_page = max(0, self.current_page - 1)
+            self.load_page()
+            self.reset_texts()
+            self.unpause()
 
         # Get if the mouse was pressed in the display port of the current camera (bottom camera)
         mouse_pressed = self.inp.get_mouse_down(1) and cam.viewport.collidepoint(self.inp.get_mouse_pos())
@@ -137,14 +187,17 @@ class EventDialogue(k4pg.Sprite):
 
     def progress_text(self):
         # Commands starting with & (event 10060) and @s
-        if self.text_left_to_do.startswith("@p"):  # Pause
+        if self.finished_page:
+            self.current_page += 1
+            self.load_page()
+            if not self.finished:
+                self.reset_texts()
+            else:
+                self.pause()
+        elif self.text_left_to_do.startswith("@p"):  # Pause
             self.current_pause += 1
             self.pause()
             self.text_left_to_do = self.text_left_to_do[2:]
-            return
-        elif self.text_left_to_do.startswith("@c\n"):  # Next page
-            self.reset_texts()
-            self.text_left_to_do = self.text_left_to_do[3:]
             return
         elif self.text_left_to_do.startswith("&"):
             command = ""
@@ -167,16 +220,11 @@ class EventDialogue(k4pg.Sprite):
                     self.dialogue_sfx_player.play()
 
         # Move one character from self.text_left_to_do to current_text
-        self.current_text += self.text_left_to_do[:1]
+        self.inner_text.text += self.text_left_to_do[:1]
         self.text_left_to_do = self.text_left_to_do[1:]
 
         # Update current text object
         self.inner_text.color = pg.Color(0, 0, 0)
-        self.inner_text.text = self.current_text
-
-        # If we have finished we pause
-        if self.finished:
-            self.pause()
 
     # Complete until we pause
     def complete(self):
@@ -185,12 +233,11 @@ class EventDialogue(k4pg.Sprite):
 
     # Reset the texts
     def reset_texts(self):
-        self.current_line = 0
-        self.current_text = ""
         self.inner_text.text = ""
 
     # Reset all (texts, paused, and current_pause)
     def reset_all(self):
+        self.current_page = 0
         self.current_pause = 0
         self.paused = False
         self.reset_texts()
@@ -212,8 +259,12 @@ class EventDialogue(k4pg.Sprite):
             self.set_talking()
 
     @property
-    def finished(self):
+    def finished_page(self):
         return self.text_left_to_do == ""
+
+    @property
+    def finished(self):
+        return self.finished_page and self.current_page == len(self.pages)
 
     def busy(self):
         return self.on_dialogue

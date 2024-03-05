@@ -45,6 +45,7 @@ class Wait(CommandEditorEvent, WaitUI):
             return
         self.command.command = 0x31
         self.command.params = [self.frame_value.value()]
+        super().save()
 
     def tap_edit(self, state: int):
         state = QtCore.Qt.CheckState(state)

@@ -28,3 +28,4 @@ class CharacterAnimation(CommandEditorEvent, CharacterAnimationUI):
             self.character.currentData(QtCore.Qt.ItemDataRole.UserRole),
             self.animation.text()
         ]
+        super().save()

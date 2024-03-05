@@ -21,3 +21,4 @@ class MusicFade(CommandEditorEvent, MusicFadeUI):
             (0.0 if self.command.command == 0x8a else 1.0),
             self.time_def_id.value()
         ]
+        super().save()

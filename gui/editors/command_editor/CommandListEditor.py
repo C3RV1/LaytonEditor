@@ -1,3 +1,5 @@
+from typing import Callable
+
 from gui.ui.command_editor.CommandListWidget import CommandListEditorUI
 from .CommandListModel import CommandListModel
 from .ContextMenu import CommandListContextMenu
@@ -6,7 +8,9 @@ from PySide6 import QtCore, QtWidgets
 
 
 class CommandListEditor(CommandListEditorUI):
-    def __init__(self, get_widget_function, command_parser, context_menu_structure):
+    def __init__(self, get_widget_function, command_parser, context_menu_structure,
+                 on_command_selected: Callable = None,
+                 on_command_saved: Callable = None):
         super().__init__()
         self.active_editor: [CommandEditor] = None
         self.get_widget_func = get_widget_function
@@ -17,6 +21,8 @@ class CommandListEditor(CommandListEditorUI):
             self.command_model.layoutChanged.emit,
             self.clear_selection
         )
+        self.on_command_selected = on_command_selected
+        self.on_command_saved = on_command_saved
 
     def clear_selection(self):
         self.command_list.setCurrentIndex(QtCore.QModelIndex())
@@ -44,10 +50,15 @@ class CommandListEditor(CommandListEditorUI):
             self.context_menu.hide_remove()
             return
         active_command = selected.data(QtCore.Qt.ItemDataRole.UserRole)
+
+        if self.on_command_selected:
+            self.on_command_selected(active_command)
+
         self.context_menu.show_remove(active_command)
 
         self.active_editor = self.get_widget_func(
             active_command,
+            self.on_command_saved,
             **self.command_model.cmd_data
         )
         if isinstance(self.active_editor, QtWidgets.QWidget):

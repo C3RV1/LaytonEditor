@@ -14,4 +14,5 @@ class SaveProgress(CommandEditorEvent, SaveProgressUI):
         self.command.params = [
             self.next_event.value()
         ]
+        super().save()
 

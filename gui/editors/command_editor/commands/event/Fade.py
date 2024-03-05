@@ -67,6 +67,7 @@ class Fade(CommandEditorEvent, FadeUI):
             self.command.params = [fade_duration]
         else:
             self.command.params = []
+        super().save()
 
     def default_duration_edit(self, state: int):
         state = QtCore.Qt.CheckState(state)

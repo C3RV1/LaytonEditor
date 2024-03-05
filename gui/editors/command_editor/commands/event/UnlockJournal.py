@@ -12,3 +12,4 @@ class UnlockJournal(CommandEditorEvent, UnlockJournalUI):
 
     def save(self):
         self.command.params = [self.entry_id.value()]
+        super().save()

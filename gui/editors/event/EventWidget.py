@@ -24,11 +24,19 @@ class EventEditor(EventWidgetUI):
     def __init__(self, main_editor: 'EventsTab'):
         super(EventEditor, self).__init__()
         self.event = None
+        self.previewer: EventPlayer = None
         self.event_node: QtCore.QModelIndex = None
         self.main_editor: EventsTab = main_editor
 
     def get_command_editor_widget(self):
-        return CommandListEditor(get_event_command_widget, event_cmd_parsers, event_cmd_context_menu)
+        return CommandListEditor(get_event_command_widget, event_cmd_parsers, event_cmd_context_menu,
+                                 self.on_command_selected, self.on_command_saved)
+
+    def on_command_selected(self, command_selected):
+        self.previewer.enter_edit_mode(command_selected)
+
+    def on_command_saved(self, command_saved):
+        pass
 
     def tab_changed(self, current: int):
         if current != 1:
@@ -42,18 +50,22 @@ class EventEditor(EventWidgetUI):
         self.event_node = ev_index
         self.character_widget.set_event(ev)
 
+        self.previewer = EventPlayer(self.event)
+        self.main_editor.pg_previewer.start_renderer(self.previewer)
         self.script_editor.set_gds_and_data(self.event.gds, event=self.event, rom=self.event.rom)
         self.script_editor.clear_selection()
 
     def preview_click(self):
         self.script_editor.save()
-        self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+        self.previewer = EventPlayer(self.event)
+        self.main_editor.pg_previewer.start_renderer(self.previewer)
 
     def save_click(self):
         self.script_editor.save()
         self.event.save_to_rom()
         self.reload_category_preview()
-        self.main_editor.pg_previewer.start_renderer(EventPlayer(self.event))
+        self.previewer = EventPlayer(self.event)
+        self.main_editor.pg_previewer.start_renderer(self.previewer)
 
     def reload_category_preview(self):
         event_node: EventNode = self.event_node.internalPointer()

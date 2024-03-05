@@ -38,3 +38,4 @@ class CharacterVisibility(CommandEditorEvent, CharacterVisibilityUI):
         else:
             self.command.command = 0x2c
             self.command.params.append(2.0 if self.shown.currentData(QtCore.Qt.ItemDataRole.UserRole) else -2.0)
+        super().save()

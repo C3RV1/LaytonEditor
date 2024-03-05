@@ -14,3 +14,4 @@ class BackgroundLoad(CommandEditorEvent, BackgroundLoadUI):
     def save(self):
         self.command.command = self.screens.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.path.text(), 3]
+        super().save()

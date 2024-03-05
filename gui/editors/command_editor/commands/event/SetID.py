@@ -20,3 +20,4 @@ class SetID(CommandEditorEvent, SetIDUI):
     def save(self):
         self.command.command = self.mode.currentData(QtCore.Qt.ItemDataRole.UserRole)
         self.command.params = [self.value.value()]
+        super().save()
