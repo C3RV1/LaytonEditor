@@ -30,13 +30,18 @@ class EventEditor(EventWidgetUI):
 
     def get_command_editor_widget(self):
         return CommandListEditor(get_event_command_widget, event_cmd_parsers, event_cmd_context_menu,
-                                 self.on_command_selected, self.on_command_saved)
+                                 self.on_command_selected, self.on_command_saved, self.on_cmd_list_changed)
 
     def on_command_selected(self, command_selected):
-        self.previewer.enter_edit_mode(command_selected)
+        self.previewer.enter_edit_mode(command_selected, False)
 
     def on_command_saved(self, command_saved):
-        pass
+        self.previewer.enter_edit_mode(command_saved, False)
+
+    def on_cmd_list_changed(self):
+        self.previewer.enter_edit_mode(
+            None, True
+        )
 
     def tab_changed(self, current: int):
         if current != 1:

@@ -6,7 +6,7 @@ from gui.SettingsManager import SettingsManager
 
 
 class CommandListModel(QtCore.QAbstractListModel):
-    def __init__(self, command_parsers):
+    def __init__(self, command_parsers, on_command_move=None):
         super(CommandListModel, self).__init__()
         self._gds: GDS = None
         self.cmd_data: dict = {}
@@ -14,6 +14,7 @@ class CommandListModel(QtCore.QAbstractListModel):
         for cmd_list, cmd_parser in command_parsers:
             for cmd in cmd_list:
                 self._command_parsers[cmd] = cmd_parser
+        self.on_command_move = on_command_move
         self.settings_manager = SettingsManager()
 
     def set_gds_and_data(self, gds, **kwargs):
@@ -68,6 +69,9 @@ class CommandListModel(QtCore.QAbstractListModel):
         self._gds.commands.pop(src_row)
         self._gds.commands.insert(row, command)
         self.layoutChanged.emit()
+        if self.on_command_move is not None:
+            print("Moved")
+            self.on_command_move()
         return True
 
     def parse_command(self, command: GDSCommand):

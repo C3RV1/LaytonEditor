@@ -47,14 +47,14 @@ class EventPlayer(TwoScreenRenderer):
             self.characters[i] = char
             self.initial_character_states.append(char.copy_state())
 
-        self.reset_all(False)
-
         self.dialogue = EventDialogue(self, position=pg.Vector2(0, 192//2 + 3),
                                       center=pg.Vector2(k4pg.Alignment.CENTER, k4pg.Alignment.BOTTOM))
         self.sprite_loader.load("data_lt2/ani/event/twindow.ani", self.dialogue, True)
         self.dialogue.init_text(self.font_loader)
 
         self.inp = k4pg.Input()
+
+        self.reset_all(False)
 
         self.edit_command_i = None
 
@@ -86,13 +86,18 @@ class EventPlayer(TwoScreenRenderer):
         if self.dialogue.on_dialogue:
             self.dialogue.end()
 
-    def enter_edit_mode(self, edit_command):
+    def enter_edit_mode(self, edit_command, force_reload: bool):
         self.loading_lock.acquire()
-        if self.edit_command_i is not None:
-            if self.event.gds.commands[self.edit_command_i] is edit_command:
-                return
-        self.edit_command_i = self.event.gds.commands.index(edit_command)
-        if self.edit_command_i < self.current_command:
+
+        if edit_command is None:
+            self.edit_command_i = 0
+        else:
+            if self.edit_command_i is not None and not force_reload:
+                if self.event.gds.commands[self.edit_command_i] is edit_command:
+                    return
+            self.edit_command_i = self.event.gds.commands.index(edit_command)
+
+        if self.edit_command_i < self.current_command or force_reload:
             self.reset_all(True)
         else:
             if self.dialogue.on_dialogue:

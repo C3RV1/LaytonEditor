@@ -10,19 +10,29 @@ from PySide6 import QtCore, QtWidgets
 class CommandListEditor(CommandListEditorUI):
     def __init__(self, get_widget_function, command_parser, context_menu_structure,
                  on_command_selected: Callable = None,
-                 on_command_saved: Callable = None):
+                 on_command_saved: Callable = None,
+                 on_cmd_list_changed: Callable = None):
         super().__init__()
         self.active_editor: [CommandEditor] = None
         self.get_widget_func = get_widget_function
-        self.command_model = CommandListModel(command_parser)
+        self.on_cmd_list_changed = on_cmd_list_changed
+        self.command_model = CommandListModel(
+            command_parser,
+            on_cmd_list_changed
+        )
         self.context_menu = CommandListContextMenu(
             context_menu_structure,
-            self.command_model.layoutAboutToBeChanged.emit,
+            self.on_update,
             self.command_model.layoutChanged.emit,
             self.clear_selection
         )
         self.on_command_selected = on_command_selected
         self.on_command_saved = on_command_saved
+
+    def on_update(self):
+        self.command_model.layoutChanged.emit()
+        if self.on_cmd_list_changed:
+            self.on_cmd_list_changed()
 
     def clear_selection(self):
         self.command_list.setCurrentIndex(QtCore.QModelIndex())
