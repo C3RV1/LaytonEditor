@@ -15,13 +15,16 @@ class PlaceProgressionWidgetUI(QtWidgets.QWidget):
         self.lower_bound_spin = QtWidgets.QSpinBox()
         self.lower_bound_spin.setRange(0, 1000)
         self.range_layout.addWidget(self.lower_bound_spin)
+        self.lower_bound_spin.valueChanged.connect(self.lower_range_edit)
 
         self.upper_bound_spin = QtWidgets.QSpinBox()
         self.upper_bound_spin.setRange(0, 1000)
         self.range_layout.addWidget(self.upper_bound_spin)
+        self.upper_bound_spin.valueChanged.connect(self.upper_bound_spin)
 
         self.place_flag_checkbox = QtWidgets.QCheckBox("Check place flag")
         self.form_layout.addRow(self.place_flag_checkbox)
+        self.place_flag_checkbox.stateChanged.connect(self.place_flag_checkbox_edit)
 
         self.place_flag_layout = QtWidgets.QHBoxLayout()
         self.form_layout.addRow(self.place_flag_layout)
@@ -29,6 +32,7 @@ class PlaceProgressionWidgetUI(QtWidgets.QWidget):
         self.place_flag_id_spin = QtWidgets.QSpinBox()
         self.place_flag_id_spin.setRange(0, 100)
         self.place_flag_layout.addWidget(self.place_flag_id_spin)
+        self.place_flag_id_spin.valueChanged.connect(self.place_flag_id_spin_edit)
 
         self.place_flag_id_comparator = QtWidgets.QComboBox()
         self.place_flag_id_comparator.addItem(
@@ -41,9 +45,29 @@ class PlaceProgressionWidgetUI(QtWidgets.QWidget):
             ">=", userData=PlaceFlagComparator.GREATER_THAN_OR_EQUALS
         )
         self.place_flag_layout.addWidget(self.place_flag_id_comparator)
+        self.place_flag_id_comparator.currentIndexChanged.connect(self.place_flag_id_comparator_edit)
 
         self.place_flag_value_spin = QtWidgets.QSpinBox()
         self.place_flag_value_spin.setRange(0, 100)
         self.place_flag_layout.addWidget(self.place_flag_value_spin)
+        self.place_flag_value_spin.valueChanged.connect(self.place_flag_value_spin_edit)
 
-        # (Next day) TODO: Connect all changed slots and add it to place ui as tab
+        # TODO: Add behaviour to all changed.
+
+    def lower_range_edit(self, state: int) -> None:
+        pass
+
+    def upper_range_edit(self, state: int) -> None:
+        pass
+
+    def place_flag_checkbox_edit(self, state: int) -> None:
+        pass
+
+    def place_flag_id_spin_edit(self, state: int) -> None:
+        pass
+
+    def place_flag_id_comparator_edit(self, state: int) -> None:
+        pass
+
+    def place_flag_value_spin_edit(self, state: int) -> None:
+        pass
